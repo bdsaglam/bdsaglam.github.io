@@ -1,1 +1,1 @@
-Sitemap: https://bdsaglam.github.io/blog/sitemap.xml
+Sitemap: https://github.com/bdsaglam/blog/sitemap.xml
