@@ -121,56 +121,56 @@
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html",
     "href": "posts/fastai-huggingface-datasets/index.html",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "",
     "text": "In this tutorial, we will show you how to use a HuggingFace dataset with fastai to train a model for image classification. We will use the Beans dataset, which consists of images of beans with three different types of diseases."
   },
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html#step-1-install-the-required-libraries",
     "href": "posts/fastai-huggingface-datasets/index.html#step-1-install-the-required-libraries",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "Step 1: Install the required libraries",
     "text": "Step 1: Install the required libraries\nBefore starting, we need to install the required libraries. Run the following commands to install fastai and HuggingFace’s datasets:\n\n!pip install -Uqq fastai\n!pip install -Uqq datasets\n\nLogin to HuggingFace Hub to download the dataset.\n\n!huggingface-cli login"
   },
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html#step-2-import-the-required-modules",
     "href": "posts/fastai-huggingface-datasets/index.html#step-2-import-the-required-modules",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "Step 2: Import the required modules",
     "text": "Step 2: Import the required modules\n\nimport torch\nfrom torchvision import transforms\nfrom fastai.data.all import *\nfrom fastai.vision.all import *\nfrom datasets import load_dataset\n\n\nDEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\nDEVICE"
   },
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html#step-3-load-the-dataset",
     "href": "posts/fastai-huggingface-datasets/index.html#step-3-load-the-dataset",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "Step 3: Load the dataset",
     "text": "Step 3: Load the dataset\nLet’s load Beans dataset, which is a dataset of images of beans taken in the field using smartphone cameras. It consists of 3 classes: 2 disease classes and the healthy class.\n\nraw_ds = load_dataset(\"beans\")\nraw_ds\n\nThe dataset is splitted into train, validation, and test sets.\nLet’s see label names.\n\nclass_names = raw_ds['train'].features['labels'].names\nclass_names"
   },
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html#step-4-preprocess-the-dataset",
     "href": "posts/fastai-huggingface-datasets/index.html#step-4-preprocess-the-dataset",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "Step 4: Preprocess the dataset",
     "text": "Step 4: Preprocess the dataset\nOften, we need preprocessing raw data before training a model with it. HuggingFace datasets library provides two methods for preprocessing:\n\nmap: This method is used to apply a function to each example in the dataset, possibly in a batched manner. The function can be applied to one or more columns of the dataset, and the result can be stored in a new column or overwrite the existing one. The map function also allows you to remove some columns from the dataset, if needed. This method is useful for preprocessing the dataset, such as resizing images, tokenizing text, or encoding categorical features. It caches outputs so that they’re not computed again.\nset_transforms: This method is used to set a transform function that is applied on-the-fly when accessing examples from the dataset. This means that the dataset is not modified in-place, and the transform function is applied only when the examples are accessed. This method is useful for applying data augmentation techniques or normalization that should be applied dynamically during training without modifying the dataset beforehand.\n\nLet’s resize each image to 224x244.\n\ndef preprocess(records):\n    records[\"image\"] = [image.convert(\"RGB\").resize((224, 224)) for image in records[\"image\"]]\n    return records\n\nBefore batching samples, we need to remove unnecessary columns in the dataset such as image_file_path.\n\nds = raw_ds.map(preprocess, remove_columns=[\"image_file_path\"], batched=True)\n\n\nds['train'][0]\n\nWe won’t use set_transform as fastai’s DataBlock can apply item-level and batch-level transforms, e.g. data augmentations. When we use a pretrained model, it actually applies necessary transforms such as normalization automatically."
   },
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html#step-5-create-the-datablock",
     "href": "posts/fastai-huggingface-datasets/index.html#step-5-create-the-datablock",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "Step 5: Create the DataBlock",
     "text": "Step 5: Create the DataBlock\nNow, we can create dataloaders for the dataset using DataBlock from fastai. As the dataset is already splitted into train, validation, and test sets, we don’t need to split it further. Hence, we will use nosplit function.\n\ndef nosplit(items): \n    return list(range(len(items))), []\n\n\ndblock = DataBlock(\n    blocks=(ImageBlock, CategoryBlock),\n    get_x=lambda record: record['image'],\n    get_y=lambda record: class_names[record['labels']],\n    splitter = nosplit,\n)\n\ntrain_dl = dblock.dataloaders(ds['train']).train\nvalid_dl = dblock.dataloaders(ds['validation']).train\ndls = DataLoaders(train_dl, valid_dl, device=DEVICE)\ndls.show_batch()\n\n\nlen(dls.train.dataset),len(dls.valid.dataset)"
   },
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html#step-6-training",
     "href": "posts/fastai-huggingface-datasets/index.html#step-6-training",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "Step 6: Training",
     "text": "Step 6: Training\nLet’s fine-tune a pretrained ResNet model on our dataset using Learner.fine_tune method.\n\n# Create a learner\nlearn = vision_learner(\n    dls, \n    resnet34, \n    loss_func=CrossEntropyLossFlat(),\n    metrics=accuracy, \n)\n\n\n# Find a good learning rate\nlearn.lr_find()\n\n\n# Fine-tune the model\nlearn.fine_tune(3, 1e-3, freeze_epochs=1)"
   },
   {
     "objectID": "posts/fastai-huggingface-datasets/index.html#step-7-evaluation",
     "href": "posts/fastai-huggingface-datasets/index.html#step-7-evaluation",
-    "title": "How to use a HuggingFace dataset with fastai?",
+    "title": "How to use HuggingFace datasets with fastai?",
     "section": "Step 7: Evaluation",
     "text": "Step 7: Evaluation\nFine-tuned model achieves 93.97% accuracy on validation set, not too bad!\n\nloss, accuracy = learn.validate(dl=dls.valid)\nprint(f\"Loss {loss:.6f}\\nAccuracy: {accuracy:.2%}\")\n\nLet’s check predictions visually.\n\nlearn.show_results(dl=valid_dl)\n\nLet’s predict and evaluate on test set.\n\ntst_dl = dls.test_dl(ds['test'], with_labels=True)\nprobs, targets, preds = learn.get_preds(dl=tst_dl, with_decoded=True)\n\n\nloss, accuracy = learn.validate(dl=tst_dl)\nprint(f\"Loss {loss:.6f}\\nAccuracy: {accuracy:.2%}\")"
   },
@@ -186,6 +186,6 @@
     "href": "index.html",
     "title": "Curiosity Trace",
     "section": "",
-    "text": "How to use a HuggingFace dataset with fastai?\n\n\n\n\n\n\n\nfastai\n\n\nhuggingface\n\n\ndatasets\n\n\n\n\n\n\n\n\n\n\n\nApr 30, 2023\n\n\n\n\n\n\n  \n\n\n\n\nHow to use a custom model with fastai cnn_learner?\n\n\n\n\n\n\n\nfastai\n\n\n\n\n\n\n\n\n\n\n\nFeb 11, 2022\n\n\n\n\n\n\n  \n\n\n\n\nHow many coin flips does high confidence need?\n\n\n\n\n\n\n\nmath\n\n\n\n\n\n\n\n\n\n\n\nJul 25, 2020\n\n\n\n\n\n\n  \n\n\n\n\nWhy is initialization important in neural networks?\n\n\n\n\n\n\n\nneural-network\n\n\n\n\n\n\n\n\n\n\n\nJun 25, 2020\n\n\n\n\n\n\n  \n\n\n\n\nFourier Transform\n\n\n\n\n\n\n\nmath\n\n\n\n\nA minimal introduction\n\n\n\n\n\n\nJun 23, 2020\n\n\n\n\n\n\n  \n\n\n\n\nHalting problem\n\n\n\n\n\n\n\ncomputer-science\n\n\n\n\n\n\n\n\n\n\n\nApr 7, 2020\n\n\n\n\n\n\nNo matching items"
+    "text": "How to use HuggingFace datasets with fastai?\n\n\n\n\n\n\n\nfastai\n\n\nhuggingface\n\n\ndatasets\n\n\n\n\n\n\n\n\n\n\n\nApr 30, 2023\n\n\n\n\n\n\n  \n\n\n\n\nHow to use a custom model with fastai cnn_learner?\n\n\n\n\n\n\n\nfastai\n\n\n\n\n\n\n\n\n\n\n\nFeb 11, 2022\n\n\n\n\n\n\n  \n\n\n\n\nHow many coin flips does high confidence need?\n\n\n\n\n\n\n\nmath\n\n\n\n\n\n\n\n\n\n\n\nJul 25, 2020\n\n\n\n\n\n\n  \n\n\n\n\nWhy is initialization important in neural networks?\n\n\n\n\n\n\n\nneural-network\n\n\n\n\n\n\n\n\n\n\n\nJun 25, 2020\n\n\n\n\n\n\n  \n\n\n\n\nFourier Transform\n\n\n\n\n\n\n\nmath\n\n\n\n\nA minimal introduction\n\n\n\n\n\n\nJun 23, 2020\n\n\n\n\n\n\n  \n\n\n\n\nHalting problem\n\n\n\n\n\n\n\ncomputer-science\n\n\n\n\n\n\n\n\n\n\n\nApr 7, 2020\n\n\n\n\n\n\nNo matching items"
   }
 ]
