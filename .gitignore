@@ -149,3 +149,5 @@ _site/
 .experiments
 /tmp
 
+
+/.quarto/
