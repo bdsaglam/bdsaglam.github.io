@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/tgi-litellm-openai/index.html",
       "/posts/fastai-huggingface-datasets/index.html",
       "/posts/fastai-custom-model/index.html",
       "/posts/confidence-intervals/index.html",
