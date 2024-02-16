@@ -18,6 +18,8 @@ about:
 
 I am a software engineer with a passion for artificial intelligence. I built AI-centric products in various industries, including auto insurance, and healthcare. If you are looking for a hands-on consultant to innovate your product with AI, reach me out on [LinkedIn](https://linkedin.com/in/bdsaglam).
 
+Skills: System design, cloud computing, machine learning, deep learning, natural language processing, retrieval-augmented generation, computer vision, data engineering, fine-tuning/serving large language models, CI/CD, Python, TypeScript...
+
 ```
 Beneath the code and cosmic splendor,
 A software engineer, a dreamer, a ponderer,
