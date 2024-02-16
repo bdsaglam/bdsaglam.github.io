@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/posts/fast-fourier-transform/index.html</loc>
-    <lastmod>2024-01-08T20:13:05.500Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/tgi-litellm-openai/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.810Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/posts/fastai-custom-model/index.html</loc>
-    <lastmod>2024-01-08T20:13:04.700Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/initialization-in-nn/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.806Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/posts/tgi-litellm-openai/index.html</loc>
-    <lastmod>2024-01-08T20:13:03.804Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/fastai-custom-model/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.790Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/posts/confidence-intervals/index.html</loc>
-    <lastmod>2024-01-08T20:13:02.936Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/fastai-huggingface-datasets/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.802Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/about.html</loc>
-    <lastmod>2024-01-08T20:13:01.408Z</lastmod>
+    <loc>https://bdsaglam.github.io/about.html</loc>
+    <lastmod>2024-02-16T17:34:23.778Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/index.html</loc>
-    <lastmod>2024-01-08T20:13:02.416Z</lastmod>
+    <loc>https://bdsaglam.github.io/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.778Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/posts/initialization-in-nn/index.html</loc>
-    <lastmod>2024-01-08T20:13:03.336Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/fast-fourier-transform/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.782Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/posts/halting-problem/index.html</loc>
-    <lastmod>2024-01-08T20:13:04.064Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/halting-problem/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.802Z</lastmod>
   </url>
   <url>
-    <loc>https://github.com/bdsaglam/bdsaglam.github.io/posts/fastai-huggingface-datasets/index.html</loc>
-    <lastmod>2024-01-08T20:13:05.080Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/confidence-intervals/index.html</loc>
+    <lastmod>2024-02-16T17:34:23.778Z</lastmod>
   </url>
 </urlset>

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.550">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -47,7 +47,13 @@ ul.task-list li input[type="checkbox"] {
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -56,6 +62,7 @@ ul.task-list li input[type="checkbox"] {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -103,16 +110,43 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
 <link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
     <span class="navbar-title">Curiosity Trace</span>
     </a>
@@ -124,23 +158,23 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html" rel="" target="">
- <span class="menu-text">About</span></a>
+    <a class="nav-link" href="./about.html"> 
+<span class="menu-text">About</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/bdsaglam" rel="" target=""><i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/bdsaglam"> <i class="bi bi-github" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/bdsaglam" rel="" target=""><i class="bi bi-twitter" role="img">
+    <a class="nav-link" href="https://twitter.com/bdsaglam"> <i class="bi bi-twitter" role="img">
 </i> 
- <span class="menu-text"></span></a>
+<span class="menu-text"></span></a>
   </li>  
 </ul>
-            <div class="quarto-navbar-tools">
-</div>
           </div> <!-- /navcollapse -->
+          <div class="quarto-navbar-tools">
+</div>
       </div> <!-- /container-fluid -->
     </nav>
 </header>
@@ -153,7 +187,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   </div>
     
   
-  <div class="quarto-title-meta">
+  <div class="quarto-title-meta column-page-left">
 
       
     
@@ -177,21 +211,22 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 
 
 
+
 <div class="quarto-listing quarto-listing-container-default" id="listing-listing">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="llm,huggingface,openai,litellm" data-listing-date-sort="1704672000000" data-listing-file-modified-sort="1704744769996" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
+<div class="quarto-post image-right" data-index="0" data-categories="llm,huggingface,openai,litellm" data-listing-date-sort="1704672000000" data-listing-file-modified-sort="1708104863810" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="274">
 <div class="thumbnail">
-<p><a href="./posts/tgi-litellm-openai/index.html"> <img src="./posts/tgi-litellm-openai/ai-puzzle.png" class="thumbnail-image"> </a></p>
+<p><a href="./posts/tgi-litellm-openai/index.html" class="no-external"></a></p><a href="./posts/tgi-litellm-openai/index.html" class="no-external">
+<p><img src="./posts/tgi-litellm-openai/ai-puzzle.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/tgi-litellm-openai/index.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/tgi-litellm-openai/index.html">
 <h3 class="no-anchor listing-title">
-Serving open source LLM as OpenAI API
+<a href="./posts/tgi-litellm-openai/index.html" class="no-external">Serving open source LLM as OpenAI API</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/tgi-litellm-openai/index.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('llm'); return false;">
 llm
@@ -206,33 +241,31 @@ openai
 litellm
 </div>
 </div>
-<a href="./posts/tgi-litellm-openai/index.html">
 <div class="listing-description">
-In this tutorial, we’ll see how to serve an open source…
+<a href="./posts/tgi-litellm-openai/index.html" class="no-external">In this tutorial, we’ll see how to serve an open source language model with OpenAI compatible API using HuggingFace Text Generation Inference and LiteLLM OpenAI proxy…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/tgi-litellm-openai/index.html">
+<a href="./posts/tgi-litellm-openai/index.html" class="no-external">
 <div class="listing-date">
 Jan 8, 2024
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="fastai,huggingface,datasets" data-listing-date-sort="1682812800000" data-listing-file-modified-sort="1704744769984" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3">
+<div class="quarto-post image-right" data-index="1" data-categories="fastai,huggingface,datasets" data-listing-date-sort="1682812800000" data-listing-file-modified-sort="1708104863802" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="426">
 <div class="thumbnail">
-<p><a href="./posts/fastai-huggingface-datasets/index.html"> <p class="card-img-top"><img src="posts/fastai-huggingface-datasets/index_files/figure-html/cell-13-output-1.png"  class="thumbnail-image card-img"/></p> </a></p>
+<p><a href="./posts/fastai-huggingface-datasets/index.html" class="no-external"></a></p><a href="./posts/fastai-huggingface-datasets/index.html" class="no-external">
+<p class="card-img-top"><img src="posts/fastai-huggingface-datasets/index_files/figure-html/cell-13-output-1.png"  class="thumbnail-image card-img"/></p>
+</a><p><a href="./posts/fastai-huggingface-datasets/index.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/fastai-huggingface-datasets/index.html">
 <h3 class="no-anchor listing-title">
-How to use HuggingFace datasets with fastai?
+<a href="./posts/fastai-huggingface-datasets/index.html" class="no-external">How to use HuggingFace datasets with fastai?</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/fastai-huggingface-datasets/index.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('fastai'); return false;">
 fastai
@@ -244,174 +277,162 @@ huggingface
 datasets
 </div>
 </div>
-<a href="./posts/fastai-huggingface-datasets/index.html">
 <div class="listing-description">
-In this tutorial, we will show you how to use a HuggingFace dataset with fastai to train a model for image classification. We will use the Beans dataset, which consists of images of beans with three…
+<a href="./posts/fastai-huggingface-datasets/index.html" class="no-external">In this tutorial, we will show you how to use a HuggingFace dataset with fastai to train a model for image classification. We will use the Beans dataset, which consists of…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/fastai-huggingface-datasets/index.html">
+<a href="./posts/fastai-huggingface-datasets/index.html" class="no-external">
 <div class="listing-date">
 Apr 30, 2023
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-categories="fastai" data-listing-date-sort="1644537600000" data-listing-file-modified-sort="1704744769964" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4">
+<div class="quarto-post image-right" data-index="2" data-categories="fastai" data-listing-date-sort="1644537600000" data-listing-file-modified-sort="1708104863790" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="710">
 <div class="thumbnail">
-<p><a href="./posts/fastai-custom-model/index.html"> <p class="card-img-top"><img src="posts/fastai-custom-model/index_files/figure-html/cell-9-output-2.png"  class="thumbnail-image card-img"/></p> </a></p>
+<p><a href="./posts/fastai-custom-model/index.html" class="no-external"></a></p><a href="./posts/fastai-custom-model/index.html" class="no-external">
+<p class="card-img-top"><img src="posts/fastai-custom-model/index_files/figure-html/cell-9-output-2.png"  class="thumbnail-image card-img"/></p>
+</a><p><a href="./posts/fastai-custom-model/index.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/fastai-custom-model/index.html">
 <h3 class="no-anchor listing-title">
-How to use a custom model with fastai cnn_learner?
+<a href="./posts/fastai-custom-model/index.html" class="no-external">How to use a custom model with fastai cnn_learner?</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/fastai-custom-model/index.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('fastai'); return false;">
 fastai
 </div>
 </div>
-<a href="./posts/fastai-custom-model/index.html">
 <div class="listing-description">
-fastai library offers many pre-trained models for vision tasks. However, we sometimes need to…<code></code>
+<a href="./posts/fastai-custom-model/index.html" class="no-external">fastai library offers many pre-trained models for vision tasks. However, we sometimes need to use a custom model available in another library or created from scratch. In…<code></code></a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/fastai-custom-model/index.html">
+<a href="./posts/fastai-custom-model/index.html" class="no-external">
 <div class="listing-date">
 Feb 11, 2022
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-categories="math" data-listing-date-sort="1595635200000" data-listing-file-modified-sort="1704744769952" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5">
+<div class="quarto-post image-right" data-index="3" data-categories="math" data-listing-date-sort="1595635200000" data-listing-file-modified-sort="1708104863778" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="976">
 <div class="thumbnail">
-<p><a href="./posts/confidence-intervals/index.html"> <img src="./posts/confidence-intervals/coin.png" class="thumbnail-image"> </a></p>
+<p><a href="./posts/confidence-intervals/index.html" class="no-external"></a></p><a href="./posts/confidence-intervals/index.html" class="no-external">
+<p><img src="./posts/confidence-intervals/coin.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/confidence-intervals/index.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/confidence-intervals/index.html">
 <h3 class="no-anchor listing-title">
-How many coin flips does high confidence need?
+<a href="./posts/confidence-intervals/index.html" class="no-external">How many coin flips does high confidence need?</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/confidence-intervals/index.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('math'); return false;">
 math
 </div>
 </div>
-<a href="./posts/confidence-intervals/index.html">
 <div class="listing-description">
-You walked into a casino, there is a game of tossing…
+<a href="./posts/confidence-intervals/index.html" class="no-external">You walked into a casino, there is a game of tossing coins. You don’t know whether the coin is biased or fair. But, you can observe the game and keep the stats. How many…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/confidence-intervals/index.html">
+<a href="./posts/confidence-intervals/index.html" class="no-external">
 <div class="listing-date">
 Jul 25, 2020
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="neural-network" data-listing-date-sort="1593043200000" data-listing-file-modified-sort="1704744769992" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3">
+<div class="quarto-post image-right" data-index="4" data-categories="neural-network" data-listing-date-sort="1593043200000" data-listing-file-modified-sort="1708104863806" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="558">
 <div class="thumbnail">
-<p><a href="./posts/initialization-in-nn/index.html"> <img src="./posts/initialization-in-nn/normal-distributions.png" class="thumbnail-image"> </a></p>
+<p><a href="./posts/initialization-in-nn/index.html" class="no-external"></a></p><a href="./posts/initialization-in-nn/index.html" class="no-external">
+<p><img src="./posts/initialization-in-nn/normal-distributions.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/initialization-in-nn/index.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/initialization-in-nn/index.html">
 <h3 class="no-anchor listing-title">
-Why is initialization important in neural networks?
+<a href="./posts/initialization-in-nn/index.html" class="no-external">Why is initialization important in neural networks?</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/initialization-in-nn/index.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('neural-network'); return false;">
 neural-network
 </div>
 </div>
-<a href="./posts/initialization-in-nn/index.html">
 <div class="listing-description">
-Today, when we build a deep neural network with standard layers and activation functions, we don’t worry much about the initialization of network’s parameters. But, this…
+<a href="./posts/initialization-in-nn/index.html" class="no-external">Today, when we build a deep neural network with standard layers and activation functions, we don’t worry much about the initialization of network’s parameters. But, this…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/initialization-in-nn/index.html">
+<a href="./posts/initialization-in-nn/index.html" class="no-external">
 <div class="listing-date">
 Jun 25, 2020
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-categories="math" data-listing-date-sort="1592870400000" data-listing-file-modified-sort="1704744769956" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4">
+<div class="quarto-post image-right" data-index="5" data-categories="math" data-listing-date-sort="1592870400000" data-listing-file-modified-sort="1708104863782" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="715">
 <div class="thumbnail">
-<p><a href="./posts/fast-fourier-transform/index.html"> <img src="./posts/fast-fourier-transform/fourier-transform.png" class="thumbnail-image"> </a></p>
+<p><a href="./posts/fast-fourier-transform/index.html" class="no-external"></a></p><a href="./posts/fast-fourier-transform/index.html" class="no-external">
+<p><img src="./posts/fast-fourier-transform/fourier-transform.png" class="thumbnail-image"></p>
+</a><p><a href="./posts/fast-fourier-transform/index.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/fast-fourier-transform/index.html">
 <h3 class="no-anchor listing-title">
-Fourier Transform
+<a href="./posts/fast-fourier-transform/index.html" class="no-external">Fourier Transform</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/fast-fourier-transform/index.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('math'); return false;">
 math
 </div>
 </div>
-<a href="./posts/fast-fourier-transform/index.html">
 <div class="listing-description">
-<p>A minimal introduction</p>
+<a href="./posts/fast-fourier-transform/index.html" class="no-external">A minimal introduction</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/fast-fourier-transform/index.html">
+<a href="./posts/fast-fourier-transform/index.html" class="no-external">
 <div class="listing-date">
 Jun 23, 2020
 </div>
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="computer-science" data-listing-date-sort="1586217600000" data-listing-file-modified-sort="1704744769988" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2">
+<div class="quarto-post image-right" data-index="6" data-categories="computer-science" data-listing-date-sort="1586217600000" data-listing-file-modified-sort="1708104863802" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="312">
 <div class="thumbnail">
-<p><a href="./posts/halting-problem/index.html"> <img src="./posts/halting-problem/spinning.jpg" class="thumbnail-image"> </a></p>
+<p><a href="./posts/halting-problem/index.html" class="no-external"></a></p><a href="./posts/halting-problem/index.html" class="no-external">
+<p><img src="./posts/halting-problem/spinning.jpg" class="thumbnail-image"></p>
+</a><p><a href="./posts/halting-problem/index.html" class="no-external"></a></p>
 </div>
 <div class="body">
-<a href="./posts/halting-problem/index.html">
 <h3 class="no-anchor listing-title">
-Halting problem
+<a href="./posts/halting-problem/index.html" class="no-external">Halting problem</a>
 </h3>
 <div class="listing-subtitle">
-
+<a href="./posts/halting-problem/index.html" class="no-external"></a>
 </div>
-</a>
 <div class="listing-categories">
 <div class="listing-category" onclick="window.quartoListingCategory('computer-science'); return false;">
 computer-science
 </div>
 </div>
-<a href="./posts/halting-problem/index.html">
 <div class="listing-description">
-Halting problem was proved to be unsolvable by Alan Turing in his seminal paper, in 1936. It states that there cannot be a general algorithm to…
+<a href="./posts/halting-problem/index.html" class="no-external">Halting problem was proved to be unsolvable by Alan Turing in his seminal paper, in 1936. It states that there cannot be a general algorithm to decide whether an arbitrary…</a>
 </div>
-</a>
 </div>
 <div class="metadata">
-<a href="./posts/halting-problem/index.html">
+<a href="./posts/halting-problem/index.html" class="no-external">
 <div class="listing-date">
 Apr 7, 2020
 </div>
@@ -502,10 +523,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -515,8 +535,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -529,6 +558,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -572,6 +720,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -597,6 +746,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -657,6 +832,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
+
 
 
 
