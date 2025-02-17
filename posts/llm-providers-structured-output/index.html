@@ -201,7 +201,9 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li><strong>TGI:</strong> Succeeds only when using <code>json_object</code> with the schema provided as a <code>value</code> in the <code>response_format</code>; simply including the schema in the prompt isn’t sufficient.</li>
 </ul>
 </blockquote>
-<div id="cell-2" class="cell" data-execution_count="1">
+<p>Structured outputs for large language models (LLMs) refer to the ability of these models to generate outputs in a predefined format or structure. This can include generating JSON objects, tables, or other structured data formats that are easier to parse and utilize in downstream applications.</p>
+<p>Let’s use a simple example to illustrate this. Suppose we have a text and we want to extract the entities and relations from it. We can use a structured output to extract the entities and relations from the text.</p>
+<div id="cell-3" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
@@ -217,8 +219,6 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(json.dumps(obj, indent<span class="op">=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Structured outputs for large language models (LLMs) refer to the ability of these models to generate outputs in a predefined format or structure. This can include generating JSON objects, tables, or other structured data formats that are easier to parse and utilize in downstream applications.</p>
-<p>Let’s use a simple example to illustrate this. Suppose we have a text and we want to extract the entities and relations from it. We can use a structured output to extract the entities and relations from the text.</p>
 <div id="cell-4" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> EntityRelationExtraction(BaseModel):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    triples: <span class="bu">list</span>[<span class="bu">str</span>] <span class="op">=</span> Field(description<span class="op">=</span><span class="st">"The `subject | predicate | object` triples extracted from the text."</span>)</span>
