@@ -1,47 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://bdsaglam.github.io/posts/fast-fourier-transform/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.186Z</lastmod>
-  </url>
-  <url>
-    <loc>https://bdsaglam.github.io/posts/fastai-custom-model/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.192Z</lastmod>
+    <loc>https://bdsaglam.github.io/index.html</loc>
+    <lastmod>2025-02-17T11:34:27.971Z</lastmod>
   </url>
   <url>
     <loc>https://bdsaglam.github.io/posts/initialization-in-nn/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.209Z</lastmod>
-  </url>
-  <url>
-    <loc>https://bdsaglam.github.io/posts/fastai-huggingface-datasets/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.205Z</lastmod>
-  </url>
-  <url>
-    <loc>https://bdsaglam.github.io/posts/confidence-intervals/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.184Z</lastmod>
-  </url>
-  <url>
-    <loc>https://bdsaglam.github.io/about.html</loc>
-    <lastmod>2025-01-26T02:29:42.180Z</lastmod>
-  </url>
-  <url>
-    <loc>https://bdsaglam.github.io/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.181Z</lastmod>
+    <lastmod>2025-02-17T11:34:27.999Z</lastmod>
   </url>
   <url>
     <loc>https://bdsaglam.github.io/posts/halting-problem/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.206Z</lastmod>
+    <lastmod>2025-02-17T11:34:27.996Z</lastmod>
   </url>
   <url>
-    <loc>https://bdsaglam.github.io/posts/py-cuda-kernel/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.212Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/fastai-huggingface-datasets/index.html</loc>
+    <lastmod>2025-02-17T11:34:27.995Z</lastmod>
   </url>
   <url>
-    <loc>https://bdsaglam.github.io/posts/tgi-litellm-openai/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.215Z</lastmod>
+    <loc>https://bdsaglam.github.io/posts/fastai-custom-model/index.html</loc>
+    <lastmod>2025-02-17T11:34:27.982Z</lastmod>
+  </url>
+  <url>
+    <loc>https://bdsaglam.github.io/posts/fast-fourier-transform/index.html</loc>
+    <lastmod>2025-02-17T11:34:27.976Z</lastmod>
+  </url>
+  <url>
+    <loc>https://bdsaglam.github.io/about.html</loc>
+    <lastmod>2025-02-17T11:34:27.971Z</lastmod>
   </url>
   <url>
     <loc>https://bdsaglam.github.io/posts/is-everything-an-abstraction/index.html</loc>
-    <lastmod>2025-01-26T02:29:42.209Z</lastmod>
+    <lastmod>2025-02-17T11:34:27.999Z</lastmod>
+  </url>
+  <url>
+    <loc>https://bdsaglam.github.io/posts/py-cuda-kernel/index.html</loc>
+    <lastmod>2025-02-17T11:34:28.002Z</lastmod>
+  </url>
+  <url>
+    <loc>https://bdsaglam.github.io/posts/confidence-intervals/index.html</loc>
+    <lastmod>2025-02-17T11:34:27.974Z</lastmod>
+  </url>
+  <url>
+    <loc>https://bdsaglam.github.io/posts/tgi-litellm-openai/index.html</loc>
+    <lastmod>2025-02-17T11:34:28.005Z</lastmod>
+  </url>
+  <url>
+    <loc>https://bdsaglam.github.io/posts/llm-providers-structured-output/index.html</loc>
+    <lastmod>2025-02-17T11:34:28.001Z</lastmod>
   </url>
 </urlset>
