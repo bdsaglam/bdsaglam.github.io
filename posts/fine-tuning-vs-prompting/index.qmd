@@ -86,11 +86,15 @@ Analysis of these results reveals several key patterns:
    - Interestingly, using 1,000 examples led to higher ELO ratings than using 8,870 examples, suggesting possible overfitting with the full dataset
    - This indicates that beyond a certain point, additional training data may lead to diminishing returns
 
+<p></p>
+
 2. **Prompt optimization demonstrates remarkable efficiency:**
    - Using MIPROv2-Medium with just 8 examples achieved the highest ELO rating (1510.6) despite lower F1 scores
    - F1 scores improve rapidly with additional examples but plateau around 16 examples
    - These results indicate that prompt optimization may be more sample-efficient for achieving real-world quality
    - The approach requires significantly less computational resources compared to fine-tuning
+
+<p></p>
 
 3. **Zero-shot prompting underscores adaptation importance:**
    - Without any examples, performance is poor (0.02 Exact F1, 0.34 Fuzzy F1)
@@ -106,6 +110,8 @@ The gap between classical metrics (F1 scores) and ELO ratings reveals important 
    - Minor variations in phrasing that preserve meaning are penalized
    - Alternative but valid entity boundaries may reduce scores
    - Semantically equivalent relationships expressed differently lower F1 scores
+
+<p></p>
 
 2. **ELO ratings from the judge model capture more nuanced aspects:**
    - Factual correctness and alignment with source text
@@ -124,15 +130,21 @@ The choice between fine-tuning and prompt optimization involves several trade-of
    - Prompt optimization needs only inference resources
    - Storage requirements differ substantially
 
+<p></p>
+
 2. **Deployment Flexibility:**
    - Prompts can be modified quickly in production
    - Fine-tuned models require full redeployment
    - Iteration speed varies significantly
 
+<p></p>
+
 3. **Data Requirements:**
    - Fine-tuning needs large datasets for best results
    - Prompt optimization works well with limited examples
    - Data collection and preparation costs differ
+
+<p></p>
 
 4. **Maintenance:**
    - Prompts are easier to version control and update
@@ -147,9 +159,13 @@ The analysis has several limitations that point to interesting future directions
    - A 32B parameter model was used for pairwise comparisons. Using larger models like Llama-70B or GPT-4o could provide more reliable judgments.
    - The evaluation prompt could be further optimized. For instance, self-consistency prompting (Wang, Xuezhi et al. 2022) could be employed to improve the quality of the judge LLM.
 
+<p></p>
+
 2. **Task and Dataset Coverage:**
    - Results are specific to entity-relation extraction. Testing on other NLP tasks (classification, Q&A) would provide broader insights.
    - Additional datasets would help validate findings.
+
+<p></p>
 
 3. **Statistical Significance of Results:**
    - The differences in ELO ratings and F1 scores across configurations are relatively small.
