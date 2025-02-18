@@ -53,7 +53,7 @@ Performance was evaluated using three key metrics:
    - Two competing model outputs (triples, with randomized order to eliminate position bias)
    - A rubric emphasizing factual correctness, completeness, and precision
    
-The judge was instructed to evaluate the triples based on key criteria including **completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation**. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the `dev` split.
+The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the `dev` split.
 
 ## Results
 
