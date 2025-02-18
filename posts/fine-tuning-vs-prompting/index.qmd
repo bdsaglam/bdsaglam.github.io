@@ -29,10 +29,15 @@ For the analysis, the [WebNLG](https://huggingface.co/datasets/webnlg-challenge/
 Experiments were conducted using [Llama-3 8B](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct), comparing fine-tuning and prompting approaches.
 
 For fine-tuning, **LoRA** (Hu et al. 2021) with rank 64 was used to efficiently adapt the model weights using varying amounts of training data (100 to 8,870 examples). The configuration included:
+
 - **Learning rate:** 1.0e-4
+
 - **Batch size:** 8
+
 - **Training epochs:** 1
+
 - **Scheduler:** cosine with 0.1 warmup ratio
+
 - **Mixed precision:** bf16
 
 For prompt optimization, the [DSPy library](https://github.dev/stanfordnlp/dspy) (Khattab et al. 2024) was used to optimize prompts with different numbers of few-shot examples (0 to 24). All experiments used **greedy decoding** (temperature=0.0) to maintain consistency and reproducibility.
