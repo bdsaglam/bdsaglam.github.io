@@ -18,9 +18,9 @@ Consider the following input text:
 
 The extracted triples would be:
 
-- **Buzz Aldrin -> birth place -> Glen Ridge, New Jersey**
+- Buzz Aldrin -> birth place -> Glen Ridge, New Jersey
 
-- **Buzz Aldrin -> birth date -> January 20th, 1930**
+- Buzz Aldrin -> birth date -> January 20th, 1930
 
 ## Method and Experimental Setup
 
