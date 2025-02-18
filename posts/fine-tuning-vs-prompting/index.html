@@ -193,7 +193,14 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="method-and-experimental-setup">Method and Experimental Setup</h2>
 <p>For the analysis, the <a href="https://huggingface.co/datasets/webnlg-challenge/web_nlg">WebNLG</a> dataset was used, where each example consists of a natural language text and its corresponding entity-relation triples. The dataset was preprocessed by converting relations to plain English (e.g., “birthPlace” to “birth place”) and randomly concatenated 1–7 samples to create texts of varying lengths. This approach was intended to simulate real-world documents where context and content vary in length and complexity. However, it is acknowledged that this method may not fully capture the natural coherence and structural characteristics of actual documents. A conversation format version with user-assistant message pairs was also created for fine-tuning. The preprocessed dataset is available on <a href="https://huggingface.co/datasets/bdsaglam/web_nlg-erx">Hugging Face</a>. The <code>train</code> split was used for model adaptation and the <code>dev</code> split for benchmarking.</p>
 <p>Experiments were conducted using <a href="https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct">Llama-3 8B</a>, comparing fine-tuning and prompting approaches.</p>
-<p>For fine-tuning, <strong>LoRA</strong> (Hu et al.&nbsp;2021) with rank 64 was used to efficiently adapt the model weights using varying amounts of training data (100 to 8,870 examples). The configuration included: - <strong>Learning rate:</strong> 1.0e-4 - <strong>Batch size:</strong> 8 - <strong>Training epochs:</strong> 1 - <strong>Scheduler:</strong> cosine with 0.1 warmup ratio - <strong>Mixed precision:</strong> bf16</p>
+<p>For fine-tuning, <strong>LoRA</strong> (Hu et al.&nbsp;2021) with rank 64 was used to efficiently adapt the model weights using varying amounts of training data (100 to 8,870 examples). The configuration included:</p>
+<ul>
+<li><p><strong>Learning rate:</strong> 1.0e-4</p></li>
+<li><p><strong>Batch size:</strong> 8</p></li>
+<li><p><strong>Training epochs:</strong> 1</p></li>
+<li><p><strong>Scheduler:</strong> cosine with 0.1 warmup ratio</p></li>
+<li><p><strong>Mixed precision:</strong> bf16</p></li>
+</ul>
 <p>For prompt optimization, the <a href="https://github.dev/stanfordnlp/dspy">DSPy library</a> (Khattab et al.&nbsp;2024) was used to optimize prompts with different numbers of few-shot examples (0 to 24). All experiments used <strong>greedy decoding</strong> (temperature=0.0) to maintain consistency and reproducibility.</p>
 <p>Performance was evaluated using three key metrics:</p>
 <ol type="1">
