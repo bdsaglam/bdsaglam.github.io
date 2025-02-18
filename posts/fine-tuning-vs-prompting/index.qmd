@@ -16,11 +16,11 @@ Consider the following input text:
 
 *"Buzz Aldrin was born in Glen Ridge, New Jersey on January 20th, 1930."*
 
-The extracted triples would be:
+The extracted triples could be:
 
-- Buzz Aldrin -> birth place -> Glen Ridge, New Jersey
+- Buzz Aldrin | birth place | Glen Ridge, New Jersey
 
-- Buzz Aldrin -> birth date -> January 20th, 1930
+- Buzz Aldrin | birth date | January 20th, 1930
 
 ## Method and Experimental Setup
 
