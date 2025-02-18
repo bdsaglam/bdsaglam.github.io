@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/fine-tuning-vs-prompting/index.html",
       "/posts/llm-providers-structured-output/index.html",
       "/posts/is-everything-an-abstraction/index.html",
       "/posts/py-cuda-kernel/index.html",

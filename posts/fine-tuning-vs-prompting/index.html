@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-02-18">
+
+<title>Fine-tuning vs Prompting – Curiosity Trace</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-5c67a7444eebc356e54fdce0a63e8750.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Curiosity Trace</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/bdsaglam"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/bdsaglam"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Fine-tuning vs Prompting</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">NLP</div>
+                <div class="quarto-category">LLM</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">February 18, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#problem" id="toc-problem" class="nav-link active" data-scroll-target="#problem">Problem</a></li>
+  <li><a href="#method-and-experimental-setup" id="toc-method-and-experimental-setup" class="nav-link" data-scroll-target="#method-and-experimental-setup">Method and Experimental Setup</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
+  <ul class="collapse">
+  <li><a href="#understanding-metric-discrepancy" id="toc-understanding-metric-discrepancy" class="nav-link" data-scroll-target="#understanding-metric-discrepancy">Understanding Metric Discrepancy</a></li>
+  <li><a href="#practical-implementation-considerations" id="toc-practical-implementation-considerations" class="nav-link" data-scroll-target="#practical-implementation-considerations">Practical Implementation Considerations</a></li>
+  </ul></li>
+  <li><a href="#limitations-and-future-work" id="toc-limitations-and-future-work" class="nav-link" data-scroll-target="#limitations-and-future-work">Limitations and Future Work</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a>
+  <ul class="collapse">
+  <li><a href="#example-comparisons" id="toc-example-comparisons" class="nav-link" data-scroll-target="#example-comparisons">Example Comparisons</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="problem" class="level2">
+<h2 class="anchored" data-anchor-id="problem">Problem</h2>
+<p>Large Language Models (LLMs) have become incredibly powerful, but they often need adaptation to perform specific tasks effectively. While fine-tuning model weights was traditionally the default approach, the massive size of modern LLMs makes it less practical. With LLMs’ strong general capabilities, <strong>prompt engineering</strong> has become the preferred method for adaptation. But how do these approaches compare in practice?</p>
+<p>In this post, we explore this question through a case study on <strong>joint entity-relation extraction</strong>, a fundamental NLP task used in constructing knowledge graphs. The task involves identifying both entities and their relationships from unstructured text.</p>
+<p>Consider the following input text:</p>
+<p><em>“Buzz Aldrin was born in Glen Ridge, New Jersey on January 20th, 1930.”</em></p>
+<p>The extracted triples would be:</p>
+<ul>
+<li><p><strong>Buzz Aldrin -&gt; birth place -&gt; Glen Ridge, New Jersey</strong></p></li>
+<li><p><strong>Buzz Aldrin -&gt; birth date -&gt; January 20th, 1930</strong></p></li>
+</ul>
+</section>
+<section id="method-and-experimental-setup" class="level2">
+<h2 class="anchored" data-anchor-id="method-and-experimental-setup">Method and Experimental Setup</h2>
+<p>For our study, we used the <a href="https://huggingface.co/datasets/webnlg-challenge/web_nlg">WebNLG</a> dataset, where each example consists of a natural language text and its corresponding entity-relation triples. We preprocessed the dataset by converting relations to plain English (e.g., “birthPlace” to “birth place”) and randomly concatenated 1–7 samples to create texts of varying lengths. This approach was intended to simulate real-world documents where context and content vary in length and complexity. However, we acknowledge that this method may not fully capture the natural coherence and structural characteristics of actual documents. We also created a conversation format version with user-assistant message pairs for fine-tuning. The preprocessed dataset is available on <a href="https://huggingface.co/datasets/bdsaglam/web_nlg-erx">Hugging Face</a>. We used the <code>train</code> split for model adaptation and the <code>dev</code> split for benchmarking.</p>
+<p>We conducted our experiments using <a href="https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct">Llama-3 8B</a>, comparing fine-tuning and prompting approaches.</p>
+<p>For fine-tuning, we used <strong>LoRA</strong> (Hu et al.&nbsp;2021) with rank 64 to efficiently adapt the model weights using varying amounts of training data (100 to 8,870 examples). The configuration included: - <strong>Learning rate:</strong> 1.0e-4 - <strong>Batch size:</strong> 8 - <strong>Training epochs:</strong> 1 - <strong>Scheduler:</strong> cosine with 0.1 warmup ratio - <strong>Mixed precision:</strong> bf16</p>
+<p>For prompt optimization, we used the <a href="https://github.dev/stanfordnlp/dspy">DSPy library</a> (Khattab et al.&nbsp;2024) to optimize prompts with different numbers of few-shot examples (0 to 24). All experiments used <strong>greedy decoding</strong> (temperature=0.0) to maintain consistency and reproducibility.</p>
+<p>We evaluated performance using three key metrics:</p>
+<ol type="1">
+<li><p><strong>Exact Match F1:</strong> This measures the model’s ability to extract triples that exactly match the ground truth, considering both precision and recall.</p></li>
+<li><p><strong>Fuzzy Match F1:</strong> This more lenient metric allows for minor variations in entity boundaries and relation phrases while still capturing the core semantic relationships.</p></li>
+<li><p><strong>Pairwise Comparisons:</strong> We employed <a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen-2.5-32B</a> as a judge to directly compare outputs from different models. For each test example, we presented the judge with:</p>
+<ul>
+<li>The input text</li>
+<li>Two competing model outputs (triples, with randomized order to eliminate position bias)</li>
+<li>A rubric emphasizing factual correctness, completeness, and precision</li>
+</ul></li>
+</ol>
+<p>The judge was instructed to evaluate the triples based on key criteria including <strong>completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation</strong>. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of <code>A</code>, <code>B</code>, or <code>DRAW</code>. These decisions were then aggregated into <strong>ELO ratings</strong>, providing a more nuanced evaluation of output quality beyond string matching. This comparison is applied to 100 samples randomly chosen from the <code>dev</code> split.</p>
+</section>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<p>Our evaluation used both traditional metrics (F1 scores) and pairwise comparisons judged by another LLM. Here are the key results:</p>
+<p><strong>Table 1:</strong> Comparison of fine-tuning and prompting approaches across different metrics.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 18%">
+<col style="width: 19%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Adaptation Method</strong></th>
+<th><strong>Num of Samples</strong></th>
+<th><strong>Optimizer</strong></th>
+<th><strong>Exact F1</strong></th>
+<th><strong>Fuzzy F1</strong></th>
+<th><strong>ELO Rating</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fine-tuning</td>
+<td>8,870</td>
+<td>AdamW</td>
+<td>0.94</td>
+<td>0.98</td>
+<td>1502.4</td>
+</tr>
+<tr class="even">
+<td>Fine-tuning</td>
+<td>1,000</td>
+<td>AdamW</td>
+<td>0.81</td>
+<td>0.93</td>
+<td>1506.5</td>
+</tr>
+<tr class="odd">
+<td>Fine-tuning</td>
+<td>100</td>
+<td>AdamW</td>
+<td>0.62</td>
+<td>0.84</td>
+<td>1448.4</td>
+</tr>
+<tr class="even">
+<td>Prompting</td>
+<td>24</td>
+<td>BFSRS-High</td>
+<td>0.32</td>
+<td>0.69</td>
+<td>1507.8</td>
+</tr>
+<tr class="odd">
+<td>Prompting</td>
+<td>8</td>
+<td>MIPROv2-Medium</td>
+<td>0.24</td>
+<td>0.63</td>
+<td>1510.6</td>
+</tr>
+<tr class="even">
+<td>Prompting</td>
+<td>0</td>
+<td>None</td>
+<td>0.02</td>
+<td>0.34</td>
+<td>1472.4</td>
+</tr>
+</tbody>
+</table>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="prompt-optim-n_shot-vs-f1.png" class="img-fluid figure-img"></p>
+<figcaption>F1 Score vs Number of Few-Shot Examples</figcaption>
+</figure>
+</div>
+<p><strong>Figure 1:</strong> The relationship between F1 scores and number of few-shot examples.</p>
+<p>The plot demonstrates that F1 scores initially improve rapidly with additional few-shot examples but begin to plateau after around 16 examples. This saturation effect suggests there may be limited benefit to including more than 16 examples in the prompt, as the marginal gains diminish.</p>
+<p>Analysis of these results reveals several key patterns:</p>
+<ol type="1">
+<li><strong>Fine-tuning demonstrates strong but nuanced performance:</strong>
+<ul>
+<li>Performance scales clearly with data, improving from 0.62 to 0.94 Exact F1 score as shown in Table 1</li>
+<li>The full dataset (8,870 examples) achieves the best F1 results</li>
+<li>Even with limited data (100 examples), the model produces reasonable results</li>
+<li>Interestingly, using 1,000 examples led to higher ELO ratings than using 8,870 examples, suggesting possible overfitting with the full dataset</li>
+<li>This indicates that beyond a certain point, additional training data may lead to diminishing returns</li>
+</ul></li>
+<li><strong>Prompt optimization demonstrates remarkable efficiency:</strong>
+<ul>
+<li>Using MIPROv2-Medium with just 8 examples achieved the highest ELO rating (1510.6) despite lower F1 scores</li>
+<li>F1 scores improve rapidly with additional examples but plateau around 16 examples</li>
+<li>These results indicate that prompt optimization may be more sample-efficient for achieving real-world quality</li>
+<li>The approach requires significantly less computational resources compared to fine-tuning</li>
+</ul></li>
+<li><strong>Zero-shot prompting underscores adaptation importance:</strong>
+<ul>
+<li>Without any examples, performance is poor (0.02 Exact F1, 0.34 Fuzzy F1)</li>
+<li>Zero-shot approach yields the lowest performance across all metrics (ELO rating 1472.4)</li>
+<li>Adding even a few examples leads to dramatic improvements, as illustrated in Figure 1</li>
+<li>This clearly demonstrates that task-specific guidance is crucial for effective performance</li>
+</ul></li>
+</ol>
+<section id="understanding-metric-discrepancy" class="level3">
+<h3 class="anchored" data-anchor-id="understanding-metric-discrepancy">Understanding Metric Discrepancy</h3>
+<p>The gap between classical metrics (F1 scores) and ELO ratings reveals important insights about evaluation:</p>
+<ol type="1">
+<li><strong>Classical metrics like F1 scores measure exact matching against ground truth, which may be overly strict:</strong>
+<ul>
+<li>Minor variations in phrasing that preserve meaning are penalized</li>
+<li>Alternative but valid entity boundaries may reduce scores</li>
+<li>Semantically equivalent relationships expressed differently lower F1 scores</li>
+</ul></li>
+<li><strong>ELO ratings from the judge model capture more nuanced aspects:</strong>
+<ul>
+<li>Factual correctness and alignment with source text</li>
+<li>Completeness of relationship extraction</li>
+<li>Precision without redundancy or overgeneration</li>
+<li>Overall quality and usefulness of the extracted information</li>
+</ul></li>
+</ol>
+<p>This explains why prompt optimization can achieve high ELO ratings despite lower F1 scores - it may produce high-quality outputs that differ slightly from the exact ground truth format.</p>
+</section>
+<section id="practical-implementation-considerations" class="level3">
+<h3 class="anchored" data-anchor-id="practical-implementation-considerations">Practical Implementation Considerations</h3>
+<p>The choice between fine-tuning and prompt optimization involves several trade-offs:</p>
+<ol type="1">
+<li><strong>Computational Resources:</strong>
+<ul>
+<li>Fine-tuning requires significant compute for training</li>
+<li>Prompt optimization needs only inference resources</li>
+<li>Storage requirements differ substantially</li>
+</ul></li>
+<li><strong>Deployment Flexibility:</strong>
+<ul>
+<li>Prompts can be modified quickly in production</li>
+<li>Fine-tuned models require full redeployment</li>
+<li>Iteration speed varies significantly</li>
+</ul></li>
+<li><strong>Data Requirements:</strong>
+<ul>
+<li>Fine-tuning needs large datasets for best results</li>
+<li>Prompt optimization works well with limited examples</li>
+<li>Data collection and preparation costs differ</li>
+</ul></li>
+<li><strong>Maintenance:</strong>
+<ul>
+<li>Prompts are easier to version control and update</li>
+<li>Fine-tuned models require careful weight management</li>
+<li>Debugging complexity varies between approaches</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="limitations-and-future-work" class="level2">
+<h2 class="anchored" data-anchor-id="limitations-and-future-work">Limitations and Future Work</h2>
+<p>Our study has several limitations that point to interesting future directions:</p>
+<ol type="1">
+<li><strong>Judge LLM Constraints:</strong>
+<ul>
+<li>We used a 32B parameter model for pairwise comparisons</li>
+<li>Using larger models like Llama-70B or GPT-4o could provide more reliable judgments</li>
+<li>The evaluation prompt could be further optimized</li>
+<li>Self-consistency prompting (Wang, Xuezhi et al.&nbsp;2022) could be employed to improve the quality of the judge LLM</li>
+</ul></li>
+<li><strong>Task and Dataset Coverage:</strong>
+<ul>
+<li>Results are specific to entity-relation extraction</li>
+<li>Testing on other NLP tasks (classification, Q&amp;A) would provide broader insights</li>
+<li>Additional datasets would help validate findings</li>
+</ul></li>
+<li><strong>Statistical Significance of Results:</strong>
+<ul>
+<li>The differences in ELO ratings and F1 scores across configurations are relatively small.</li>
+<li>Future work should include statistical significance testing to determine if these differences are meaningful.</li>
+<li>Incorporating confidence intervals or p-values could provide a clearer understanding of the reliability of the results.</li>
+<li>This would help in assessing whether observed performance differences are due to chance or represent true performance variations.</li>
+</ul></li>
+</ol>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>While fine-tuning achieves higher F1 scores, prompt optimization can be surprisingly effective when properly implemented. The choice between these approaches depends on specific constraints and requirements:</p>
+<ul>
+<li>If you have sufficient training data and computational resources, fine-tuning provides robust performance</li>
+<li>If you’re limited in data or compute, optimized prompting can offer a viable alternative</li>
+<li>When rapid iteration or deployment flexibility is crucial, prompt optimization has clear advantages</li>
+<li>In cases where exact matching is critical, fine-tuning may be preferable</li>
+</ul>
+<blockquote class="blockquote">
+<p><strong>Note:</strong><br>
+The gap between traditional metrics and LLM-based evaluation suggests that while quantitative scores provide one perspective, qualitative assessment might be necessary to understanding real-world performance.</p>
+</blockquote>
+<p>The code for our experiments and analysis is available at <a href="https://github.com/bdsaglam/pipeline-llm-adaptation">this GitHub repository</a>.</p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ol type="1">
+<li><a href="https://arxiv.org/abs/2402.07747">Khattab, Omar and Singhvi, Arnav and Maheshwari, Paridhi and Zhang, Zhiyuan and Santhanam, Keshav and Vardhamanan, Sri and Haq, Saiful and Sharma, Ashutosh and Joshi, Thomas T. and Moazam, Hanna and Miller, Heather and Zaharia, Matei and Potts, Christopher. (2024). DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines. In The Twelfth International Conference on Learning Representations.</a></li>
+<li><a href="https://huggingface.co/datasets/webnlg-challenge/web_nlg">WebNLG</a></li>
+<li><a href="https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct">Llama-3 8B</a></li>
+<li><a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen-2.5-32B</a></li>
+<li><a href="https://arxiv.org/abs/2106.09685">Hu, J.E., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., &amp; Chen, W. (2021). LoRA: Low-Rank Adaptation of Large Language Models. ArXiv, abs/2106.09685.</a></li>
+<li><a href="https://arxiv.org/abs/2203.11171">Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E.H., &amp; Zhou, D. (2022). Self-Consistency Improves Chain of Thought Reasoning in Language Models. ArXiv, abs/2203.11171.</a></li>
+</ol>
+<hr>
+<details>
+<summary>
+<strong>Appendix</strong>
+</summary>
+<section id="example-comparisons" class="level3">
+<h3 class="anchored" data-anchor-id="example-comparisons">Example Comparisons</h3>
+<p>To further illustrate the differences between fine-tuning and prompt optimization, we present a few selected examples from our model comparison, where <code>A</code> and <code>B</code> denote best performing fine-tuned and prompt optimized models respectively:</p>
+<section id="example-1-decision-was-a" class="level4">
+<h4 class="anchored" data-anchor-id="example-1-decision-was-a">Example 1: Decision was A</h4>
+<p><strong>Text:</strong><br>
+Cornell University is in Ithaca, New York and their nickname is Cornell Big Red. They are the publisher of Administrative Science Quarterly and are affiliated with the Association of American Universities.</p>
+<p><strong>Triples A:</strong><br>
+- “Administrative Science Quarterly | publisher | Cornell University” - “Cornell University | nickname | Cornell Big Red” - “Cornell University | affiliation | Association of American Universities” - “Cornell University | city | Ithaca, New York”</p>
+<p><strong>Triples B:</strong><br>
+- “Cornell University | city | Ithaca, New York” - “Cornell University | nickname | Cornell Big Red” - “Cornell University | academic publisher | Administrative Science Quarterly” - “Cornell University | affiliation | Association of American Universities”</p>
+<p><strong>Explanation:</strong><br>
+Set A correctly identifies ‘Cornell University’ as the publisher of ‘Administrative Science Quarterly’, whereas Set B incorrectly reverses this relationship. Therefore, Set A is more correct and complete.</p>
+</section>
+<section id="example-2-decision-was-b" class="level4">
+<h4 class="anchored" data-anchor-id="example-2-decision-was-b">Example 2: Decision was B</h4>
+<p><strong>Text:</strong><br>
+Alpena County Regional Airport runway name is 1/19. Swords is a part of the Dublin European Parliamentary constituency. The United States (with a leader, John Roberts) boasts the Bacon Explosion. American Abraham A. Ribicoff was born in New Britain, Connecticut and is married to Ruth Ribicoff. One of the ethnic groups in the U.S. are Native Americans. Georgia is in the country of United States. Atlanta; has a total area of 347.1 square kilometres, a population density of 1299.0 inhabitants per square kilometre, and the area codes: 404, 678, and 470. The birthplace of Alfred Garth Jones is Manchester, (part of Greater Manchester), England. In Manchester the Labour Party is in the majority.</p>
+<p><strong>Triples A:</strong><br>
+- “Alpena County Regional Airport | runway name | 1/19” - “Swords, Dublin | is part of | Dublin (European Parliament constituency)” - “Bacon Explosion | country | United States” - “United States | leader | John Roberts” - “Abraham A. Ribicoff | birth place | New Britain, Connecticut” - “Abraham A. Ribicoff | spouse | Ruth Ribicoff” - “United States | ethnic group | Native Americans in the United States” - “Abraham A. Ribicoff | nationality | American” - “Georgia (U.S. state) | country | United States” - “Atlanta | area code | 404, 678, 470” - “Atlanta | population density | 1299.0 (inhabitants per square kilometre)” - “Atlanta | area total | 347.1 (square kilometres)” - “Alfred Garth Jones | birth place | England” - “Alfred Garth Jones | birth place | Manchester” - “Manchester | is part of | Greater Manchester” - “Manchester | leader | Labour Party (UK)”</p>
+<p><strong>Triples B:</strong><br>
+- “Alpena County Regional Airport | runway name | 1/19” - “Swords | is part of | Dublin (European Parliament constituency)” - “United States | leader | John Roberts” - “United States | dish variation | Bacon Explosion” - “Abraham A. Ribicoff | spouse | Ruth Ribicoff” - “Abraham A. Ribicoff | birth place | New Britain, Connecticut” - “United States | ethnic group | Native Americans in the United States” - “Georgia (U.S. state) | country | United States” - “Atlanta | area code | 404, 678, 470” - “Atlanta | population density | 1299.0 (inhabitants per square kilometre)” - “Atlanta | total area | 347.1 (square kilometres)” - “Alfred Garth Jones | birth place | Manchester, England” - “Manchester | has to its majority | Labour Party” - “Manchester | is part of | Greater Manchester”</p>
+<p><strong>Explanation:</strong><br>
+Model B’s triples are complete, correct, and consistent with the text. It correctly states the birth place of Alfred Garth Jones as ‘Manchester, England’ and avoids the duplication issue. Therefore, Model B’s triples are better.</p>
+</section>
+<section id="example-3-decision-was-draw" class="level4">
+<h4 class="anchored" data-anchor-id="example-3-decision-was-draw">Example 3: Decision was DRAW</h4>
+<p><strong>Text:</strong><br>
+The ISBN number of A Long Long Way is 0-670-03380-4.</p>
+<p><strong>Triples A:</strong><br>
+- “A Long Long Way | isbn number | 0-670-03380-4”</p>
+<p><strong>Triples B:</strong><br>
+- “A Long Long Way | isbn number | 0-670-03380-4”</p>
+<p><strong>Explanation:</strong><br>
+Both model A and model B extract the same triple, which is complete, correct, consistent with the text, and does not contain duplicates. Therefore, both models perform equally well.</p>
+</section></section></details>
+
+
+</section>
+
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/bdsaglam\.github\.io\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
