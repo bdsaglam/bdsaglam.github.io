@@ -302,6 +302,10 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>Interestingly, using 1,000 examples led to higher ELO ratings than using 8,870 examples, suggesting possible overfitting with the full dataset</li>
 <li>This indicates that beyond a certain point, additional training data may lead to diminishing returns</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="2" type="1">
 <li><strong>Prompt optimization demonstrates remarkable efficiency:</strong>
 <ul>
 <li>Using MIPROv2-Medium with just 8 examples achieved the highest ELO rating (1510.6) despite lower F1 scores</li>
@@ -309,6 +313,10 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>These results indicate that prompt optimization may be more sample-efficient for achieving real-world quality</li>
 <li>The approach requires significantly less computational resources compared to fine-tuning</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="3" type="1">
 <li><strong>Zero-shot prompting underscores adaptation importance:</strong>
 <ul>
 <li>Without any examples, performance is poor (0.02 Exact F1, 0.34 Fuzzy F1)</li>
@@ -327,6 +335,10 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>Alternative but valid entity boundaries may reduce scores</li>
 <li>Semantically equivalent relationships expressed differently lower F1 scores</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="2" type="1">
 <li><strong>ELO ratings from the judge model capture more nuanced aspects:</strong>
 <ul>
 <li>Factual correctness and alignment with source text</li>
@@ -347,18 +359,30 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>Prompt optimization needs only inference resources</li>
 <li>Storage requirements differ substantially</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="2" type="1">
 <li><strong>Deployment Flexibility:</strong>
 <ul>
 <li>Prompts can be modified quickly in production</li>
 <li>Fine-tuned models require full redeployment</li>
 <li>Iteration speed varies significantly</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="3" type="1">
 <li><strong>Data Requirements:</strong>
 <ul>
 <li>Fine-tuning needs large datasets for best results</li>
 <li>Prompt optimization works well with limited examples</li>
 <li>Data collection and preparation costs differ</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="4" type="1">
 <li><strong>Maintenance:</strong>
 <ul>
 <li>Prompts are easier to version control and update</li>
@@ -377,11 +401,19 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>A 32B parameter model was used for pairwise comparisons. Using larger models like Llama-70B or GPT-4o could provide more reliable judgments.</li>
 <li>The evaluation prompt could be further optimized. For instance, self-consistency prompting (Wang, Xuezhi et al.&nbsp;2022) could be employed to improve the quality of the judge LLM.</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="2" type="1">
 <li><strong>Task and Dataset Coverage:</strong>
 <ul>
 <li>Results are specific to entity-relation extraction. Testing on other NLP tasks (classification, Q&amp;A) would provide broader insights.</li>
 <li>Additional datasets would help validate findings.</li>
 </ul></li>
+</ol>
+<p>
+</p>
+<ol start="3" type="1">
 <li><strong>Statistical Significance of Results:</strong>
 <ul>
 <li>The differences in ELO ratings and F1 scores across configurations are relatively small.</li>
