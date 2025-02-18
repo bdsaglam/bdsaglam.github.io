@@ -24,7 +24,7 @@ The extracted triples could be:
 
 ## Method and Experimental Setup
 
-For our study, we used the [WebNLG](https://huggingface.co/datasets/webnlg-challenge/web_nlg) dataset, where each example consists of a natural language text and its corresponding entity-relation triples. We preprocessed the dataset by converting relations to plain English (e.g., "birthPlace" to "birth place") and randomly concatenated 1–7 samples to create texts of varying lengths. This approach was intended to simulate real-world documents where context and content vary in length and complexity. However, we acknowledge that this method may not fully capture the natural coherence and structural characteristics of actual documents. We also created a conversation format version with user-assistant message pairs for fine-tuning. The preprocessed dataset is available on [Hugging Face](https://huggingface.co/datasets/bdsaglam/web_nlg-erx). We used the `train` split for model adaptation and the `dev` split for benchmarking.
+For the analysis, we used the [WebNLG](https://huggingface.co/datasets/webnlg-challenge/web_nlg) dataset, where each example consists of a natural language text and its corresponding entity-relation triples. We preprocessed the dataset by converting relations to plain English (e.g., "birthPlace" to "birth place") and randomly concatenated 1–7 samples to create texts of varying lengths. This approach was intended to simulate real-world documents where context and content vary in length and complexity. However, we acknowledge that this method may not fully capture the natural coherence and structural characteristics of actual documents. We also created a conversation format version with user-assistant message pairs for fine-tuning. The preprocessed dataset is available on [Hugging Face](https://huggingface.co/datasets/bdsaglam/web_nlg-erx). We used the `train` split for model adaptation and the `dev` split for benchmarking.
 
 We conducted our experiments using [Llama-3 8B](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct), comparing fine-tuning and prompting approaches.
 
@@ -136,7 +136,7 @@ The choice between fine-tuning and prompt optimization involves several trade-of
 
 ## Limitations and Future Work
 
-Our study has several limitations that point to interesting future directions:
+The analysis has several limitations that point to interesting future directions:
 
 1. **Judge LLM Constraints:**
    - We used a 32B parameter model for pairwise comparisons
