@@ -8,9 +8,9 @@ toc: true
 
 ## Problem
 
-Large Language Models (LLMs) have become incredibly powerful, but they often need adaptation to perform specific tasks effectively. While fine-tuning model weights was traditionally the default approach, the massive size of modern LLMs makes it less practical. With LLMs' strong general capabilities, **prompt engineering** has become the preferred method for adaptation. But how do these approaches compare in practice?
+Large Language Models (LLMs) have become incredibly powerful, but they often need adaptation to perform specific tasks effectively. While fine-tuning model weights was traditionally the default approach, the massive size of modern LLMs makes it less practical. With LLMs' strong general capabilities, **prompt engineering** has become a preferred method for adaptation. But how do these approaches compare in practice?
 
-In this post, we explore this question through a case study on **joint entity-relation extraction**, a fundamental NLP task used in constructing knowledge graphs. The task involves identifying both entities and their relationships from unstructured text.
+This post explores this question through a case study on **joint entity-relation extraction**, a fundamental NLP task used in constructing knowledge graphs. The task involves identifying both entities and their relationships from unstructured text.
 
 Consider the following input text:
 
@@ -24,35 +24,35 @@ The extracted triples could be:
 
 ## Method and Experimental Setup
 
-For the analysis, we used the [WebNLG](https://huggingface.co/datasets/webnlg-challenge/web_nlg) dataset, where each example consists of a natural language text and its corresponding entity-relation triples. We preprocessed the dataset by converting relations to plain English (e.g., "birthPlace" to "birth place") and randomly concatenated 1–7 samples to create texts of varying lengths. This approach was intended to simulate real-world documents where context and content vary in length and complexity. However, we acknowledge that this method may not fully capture the natural coherence and structural characteristics of actual documents. We also created a conversation format version with user-assistant message pairs for fine-tuning. The preprocessed dataset is available on [Hugging Face](https://huggingface.co/datasets/bdsaglam/web_nlg-erx). We used the `train` split for model adaptation and the `dev` split for benchmarking.
+For the analysis, the [WebNLG](https://huggingface.co/datasets/webnlg-challenge/web_nlg) dataset was used, where each example consists of a natural language text and its corresponding entity-relation triples. The dataset was preprocessed by converting relations to plain English (e.g., "birthPlace" to "birth place") and randomly concatenated 1–7 samples to create texts of varying lengths. This approach was intended to simulate real-world documents where context and content vary in length and complexity. However, it is acknowledged that this method may not fully capture the natural coherence and structural characteristics of actual documents. A conversation format version with user-assistant message pairs was also created for fine-tuning. The preprocessed dataset is available on [Hugging Face](https://huggingface.co/datasets/bdsaglam/web_nlg-erx). The `train` split was used for model adaptation and the `dev` split for benchmarking.
 
-We conducted our experiments using [Llama-3 8B](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct), comparing fine-tuning and prompting approaches.
+Experiments were conducted using [Llama-3 8B](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct), comparing fine-tuning and prompting approaches.
 
-For fine-tuning, we used **LoRA** (Hu et al. 2021) with rank 64 to efficiently adapt the model weights using varying amounts of training data (100 to 8,870 examples). The configuration included:
+For fine-tuning, **LoRA** (Hu et al. 2021) with rank 64 was used to efficiently adapt the model weights using varying amounts of training data (100 to 8,870 examples). The configuration included:
 - **Learning rate:** 1.0e-4
 - **Batch size:** 8
 - **Training epochs:** 1
 - **Scheduler:** cosine with 0.1 warmup ratio
 - **Mixed precision:** bf16
 
-For prompt optimization, we used the [DSPy library](https://github.dev/stanfordnlp/dspy) (Khattab et al. 2024) to optimize prompts with different numbers of few-shot examples (0 to 24). All experiments used **greedy decoding** (temperature=0.0) to maintain consistency and reproducibility.
+For prompt optimization, the [DSPy library](https://github.dev/stanfordnlp/dspy) (Khattab et al. 2024) was used to optimize prompts with different numbers of few-shot examples (0 to 24). All experiments used **greedy decoding** (temperature=0.0) to maintain consistency and reproducibility.
 
-We evaluated performance using three key metrics:
+Performance was evaluated using three key metrics:
 
 1. **Exact Match F1:** This measures the model's ability to extract triples that exactly match the ground truth, considering both precision and recall.
 
 2. **Fuzzy Match F1:** This more lenient metric allows for minor variations in entity boundaries and relation phrases while still capturing the core semantic relationships.
 
-3. **Pairwise Comparisons:** We employed [Qwen-2.5-32B](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct) as a judge to directly compare outputs from different models. For each test example, we presented the judge with:
+3. **Pairwise Comparisons:** [Qwen-2.5-32B](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct) was employed as a judge to directly compare outputs from different models. For each test example, the judge was presented with:
    - The input text
    - Two competing model outputs (triples, with randomized order to eliminate position bias)
    - A rubric emphasizing factual correctness, completeness, and precision
    
-The judge was instructed to evaluate the triples based on key criteria including **completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation**. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison is applied to 100 samples randomly chosen from the `dev` split.
+The judge was instructed to evaluate the triples based on key criteria including **completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation**. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the `dev` split.
 
 ## Results
 
-Our evaluation used both traditional metrics (F1 scores) and pairwise comparisons judged by another LLM. Here are the key results:
+The evaluation used both traditional metrics (F1 scores) and pairwise comparisons judged by another LLM. Here are the key results:
 
 **Table 1:** Comparison of fine-tuning and prompting approaches across different metrics.
 
@@ -139,35 +139,30 @@ The choice between fine-tuning and prompt optimization involves several trade-of
 The analysis has several limitations that point to interesting future directions:
 
 1. **Judge LLM Constraints:**
-   - We used a 32B parameter model for pairwise comparisons
-   - Using larger models like Llama-70B or GPT-4o could provide more reliable judgments
-   - The evaluation prompt could be further optimized
-   - Self-consistency prompting (Wang, Xuezhi et al. 2022) could be employed to improve the quality of the judge LLM
+   - A 32B parameter model was used for pairwise comparisons. Using larger models like Llama-70B or GPT-4o could provide more reliable judgments.
+   - The evaluation prompt could be further optimized. For instance, self-consistency prompting (Wang, Xuezhi et al. 2022) could be employed to improve the quality of the judge LLM.
 
 2. **Task and Dataset Coverage:**
-   - Results are specific to entity-relation extraction
-   - Testing on other NLP tasks (classification, Q&A) would provide broader insights
-   - Additional datasets would help validate findings
+   - Results are specific to entity-relation extraction. Testing on other NLP tasks (classification, Q&A) would provide broader insights.
+   - Additional datasets would help validate findings.
 
 3. **Statistical Significance of Results:**
    - The differences in ELO ratings and F1 scores across configurations are relatively small.
    - Future work should include statistical significance testing to determine if these differences are meaningful.
-   - Incorporating confidence intervals or p-values could provide a clearer understanding of the reliability of the results.
-   - This would help in assessing whether observed performance differences are due to chance or represent true performance variations.
 
 ## Conclusion
 
 While fine-tuning achieves higher F1 scores, prompt optimization can be surprisingly effective when properly implemented. The choice between these approaches depends on specific constraints and requirements:
 
-- If you have sufficient training data and computational resources, fine-tuning provides robust performance
-- If you're limited in data or compute, optimized prompting can offer a viable alternative
+- If sufficient training data and computational resources are available, fine-tuning provides robust performance
+- If data or compute is limited, optimized prompting can offer a viable alternative
 - When rapid iteration or deployment flexibility is crucial, prompt optimization has clear advantages
 - In cases where exact matching is critical, fine-tuning may be preferable
 
 > **Note:**  
 > The gap between traditional metrics and LLM-based evaluation suggests that while quantitative scores provide one perspective, qualitative assessment might be necessary to understanding real-world performance.
 
-The code for our experiments and analysis is available at [this GitHub repository](https://github.com/bdsaglam/pipeline-llm-adaptation).
+The code for the experiments and analysis is available at [this GitHub repository](https://github.com/bdsaglam/pipeline-llm-adaptation).
 
 
 ## References
@@ -187,7 +182,7 @@ The code for our experiments and analysis is available at [this GitHub repositor
 
   ### Example Comparisons
 
-  To further illustrate the differences between fine-tuning and prompt optimization, we present a few selected examples from our model comparison, where `A` and `B` denote best performing fine-tuned and prompt optimized models respectively:
+  To further illustrate the differences between fine-tuning and prompt optimization, I present a few selected examples from my model comparison, where `A` and `B` denote best performing fine-tuned and prompt optimized models respectively:
 
   #### Example 1: Decision was A
   **Text:**  
