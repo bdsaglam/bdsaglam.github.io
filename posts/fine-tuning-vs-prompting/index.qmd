@@ -53,7 +53,7 @@ Performance was evaluated using three key metrics:
    - Two competing model outputs (triples, with randomized order to eliminate position bias)
    - A rubric emphasizing factual correctness, completeness, and precision
    
-The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the `dev` split.
+The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation*. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the `dev` split.
 
 ## Results
 
@@ -71,9 +71,9 @@ The evaluation used both traditional metrics (F1 scores) and pairwise comparison
 | Prompting         | 0              | None            | 0.02      | 0.34     | 1472.4       |
 
 
-![F1 Score vs Number of Few-Shot Examples](prompt-optim-n_shot-vs-f1.png)
+![](prompt-optim-n_shot-vs-f1.png)
 
-**Figure 1:** The relationship between F1 scores and number of few-shot examples. 
+**Figure 1:** The impact of the number of few-shot examples on the F1 score.
 
 The plot demonstrates that F1 scores initially improve rapidly with additional few-shot examples but begin to plateau after around 16 examples. This saturation effect suggests there may be limited benefit to including more than 16 examples in the prompt, as the marginal gains diminish.
 
