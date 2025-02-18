@@ -213,7 +213,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>A rubric emphasizing factual correctness, completeness, and precision</li>
 </ul></li>
 </ol>
-<p>The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of <code>A</code>, <code>B</code>, or <code>DRAW</code>. These decisions were then aggregated into <strong>ELO ratings</strong>, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the <code>dev</code> split.</p>
+<p>The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation*. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of <code>A</code>, <code>B</code>, or <code>DRAW</code>. These decisions were then aggregated into <strong>ELO ratings</strong>, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the <code>dev</code> split.</p>
 </section>
 <section id="results" class="level2">
 <h2 class="anchored" data-anchor-id="results">Results</h2>
@@ -289,13 +289,8 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </tr>
 </tbody>
 </table>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="prompt-optim-n_shot-vs-f1.png" class="img-fluid figure-img"></p>
-<figcaption>F1 Score vs Number of Few-Shot Examples</figcaption>
-</figure>
-</div>
-<p><strong>Figure 1:</strong> The relationship between F1 scores and number of few-shot examples.</p>
+<p><img src="prompt-optim-n_shot-vs-f1.png" class="img-fluid"></p>
+<p><strong>Figure 1:</strong> The impact of the number of few-shot examples on the F1 score.</p>
 <p>The plot demonstrates that F1 scores initially improve rapidly with additional few-shot examples but begin to plateau after around 16 examples. This saturation effect suggests there may be limited benefit to including more than 16 examples in the prompt, as the marginal gains diminish.</p>
 <p>Analysis of these results reveals several key patterns:</p>
 <ol type="1">
