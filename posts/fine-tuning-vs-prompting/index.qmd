@@ -48,7 +48,7 @@ Performance was evaluated using three key metrics:
 
 2. **Fuzzy Match F1:** This more lenient metric allows for minor variations in entity boundaries and relation phrases while still capturing the core semantic relationships.
 
-3. **Pairwise Comparisons:** [Qwen-2.5-32B](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct) was employed as a judge to directly compare outputs from different models. For each test example, the judge was presented with:
+3. **Pairwise Comparisons:** [Qwen-2.5-32B](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct) was used to compare outputs from different models with LLM-as-a-judge technique (Zheng et al. 2023). For each test example, the judge was presented with:
    - The input text
    - Two competing model outputs (triples, with randomized order to eliminate position bias)
    - A rubric emphasizing factual correctness, completeness, and precision
@@ -61,7 +61,7 @@ The evaluation used both traditional metrics (F1 scores) and pairwise comparison
 
 **Table 1:** Comparison of fine-tuning and prompting approaches across different metrics.
 
-| **Adaptation Method** | **Num of Samples** | **Optimizer**       | **Exact F1**  | **Fuzzy F1** | **ELO Rating**   |
+| **Adaptation Method** | **Num Samples** | **Optimizer**       | **Exact F1**  | **Fuzzy F1** | **ELO Rating**   |
 |-------------------|----------------|-----------------|-----------|----------|--------------|
 | Fine-tuning       | 8,870          | AdamW           | 0.94      | 0.98     | 1502.4       |
 | Fine-tuning       | 1,000          | AdamW           | 0.81      | 0.93     | 1506.5       |
@@ -126,15 +126,14 @@ This explains why prompt optimization can achieve high ELO ratings despite lower
 The choice between fine-tuning and prompt optimization involves several trade-offs:
 
 1. **Computational Resources:**
-   - Fine-tuning requires significant compute for training
-   - Prompt optimization needs only inference resources
-   - Storage requirements differ substantially
+   - Fine-tuning requires significant compute for training and access to the model weights
+   - Prompt optimization needs only inference resources; hence, it is applicable to proprietary models as well
 
 <p></p>
 
 2. **Deployment Flexibility:**
    - Prompts can be modified quickly in production
-   - Fine-tuned models require full redeployment
+   - Fine-tuned models require redeployment
    - Iteration speed varies significantly
 
 <p></p>
@@ -155,8 +154,8 @@ The choice between fine-tuning and prompt optimization involves several trade-of
 
 The analysis has several limitations that point to interesting future directions:
 
-1. **Judge LLM Constraints:**
-   - A 32B parameter model was used for pairwise comparisons. Using larger models like Llama-70B or GPT-4o could provide more reliable judgments.
+1. **LLM-as-a-Judge Limitations:**
+   - A 32B parameter model was used for pairwise comparisons. Using larger models like Llama-70B or GPT-4o could provide more reliable evaluations.
    - The evaluation prompt could be further optimized. For instance, self-consistency prompting (Wang, Xuezhi et al. 2022) could be employed to improve the quality of the judge LLM.
 
 <p></p>
@@ -194,6 +193,7 @@ The code for the experiments and analysis is available at [this GitHub repositor
 4. [Qwen-2.5-32B](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct)
 5. [Hu, J.E., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., & Chen, W. (2021). LoRA: Low-Rank Adaptation of Large Language Models. ArXiv, abs/2106.09685.](https://arxiv.org/abs/2106.09685)
 6. [Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E.H., & Zhou, D. (2022). Self-Consistency Improves Chain of Thought Reasoning in Language Models. ArXiv, abs/2203.11171.](https://arxiv.org/abs/2203.11171)
+7. [Zheng, L., Chiang, W., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li, Z., Li, D., Xing, E.P., Zhang, H., Gonzalez, J.E., & Stoica, I. (2023). Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. ArXiv, abs/2306.05685.](https://arxiv.org/abs/2306.05685)
 
 
 ----
