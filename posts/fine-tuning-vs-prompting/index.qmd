@@ -208,25 +208,31 @@ The code for the experiments is available at [this repository](https://github.co
   To further illustrate the differences between fine-tuning and prompt optimization, I present a few selected examples from my model comparison, where `A` and `B` denote best performing fine-tuned and prompt optimized models respectively:
 
   #### Example 1: Decision was A
-  **Text:**  
-  Cornell University is in Ithaca, New York and their nickname is Cornell Big Red. They are the publisher of Administrative Science Quarterly and are affiliated with the Association of American Universities.
 
-  **Triples A:**  
-  - "Administrative Science Quarterly | publisher | Cornell University"
-  - "Cornell University | nickname | Cornell Big Red"
-  - "Cornell University | affiliation | Association of American Universities"
-  - "Cornell University | city | Ithaca, New York"
+```
+**Text:**  
+Cornell University is in Ithaca, New York and their nickname is Cornell Big Red. They are the publisher of Administrative Science Quarterly and are affiliated with the Association of American Universities.
 
-  **Triples B:**  
-  - "Cornell University | city | Ithaca, New York"
-  - "Cornell University | nickname | Cornell Big Red"
-  - "Cornell University | academic publisher | Administrative Science Quarterly"
-  - "Cornell University | affiliation | Association of American Universities"
+**Triples A:**  
+- "Administrative Science Quarterly | publisher | Cornell University"
+- "Cornell University | nickname | Cornell Big Red" 
+- "Cornell University | affiliation | Association of American Universities"
+- "Cornell University | city | Ithaca, New York"
 
-  **Explanation:**  
-  Set A correctly identifies 'Cornell University' as the publisher of 'Administrative Science Quarterly', whereas Set B incorrectly reverses this relationship. Therefore, Set A is more correct and complete.
+**Triples B:**  
+- "Cornell University | city | Ithaca, New York"
+- "Cornell University | nickname | Cornell Big Red"
+- "Cornell University | academic publisher | Administrative Science Quarterly"
+- "Cornell University | affiliation | Association of American Universities"
+
+
+**Explanation:**  
+Set A correctly identifies 'Cornell University' as the publisher of 'Administrative Science Quarterly', whereas Set B incorrectly reverses this relationship. Therefore, Set A is more correct and complete.
+```
 
   #### Example 2: Decision was B
+
+```
   **Text:**  
   Alpena County Regional Airport runway name is 1/19. Swords is a part of the Dublin European Parliamentary constituency. The United States (with a leader, John Roberts) boasts the Bacon Explosion. American Abraham A. Ribicoff was born in New Britain, Connecticut and is married to Ruth Ribicoff. One of the ethnic groups in the U.S. are Native Americans. Georgia is in the country of United States. Atlanta; has a total area of 347.1 square kilometres, a population density of 1299.0 inhabitants per square kilometre, and the area codes: 404, 678, and 470. The birthplace of Alfred Garth Jones is Manchester, (part of Greater Manchester), England. In Manchester the Labour Party is in the majority.
 
@@ -266,8 +272,11 @@ The code for the experiments is available at [this repository](https://github.co
 
   **Explanation:**  
   Model B's triples are complete, correct, and consistent with the text. It correctly states the birth place of Alfred Garth Jones as 'Manchester, England' and avoids the duplication issue. Therefore, Model B's triples are better.
+```
 
   #### Example 3: Decision was DRAW
+
+```
   **Text:**  
   The ISBN number of A Long Long Way is 0-670-03380-4.
 
@@ -279,5 +288,6 @@ The code for the experiments is available at [this repository](https://github.co
 
   **Explanation:**  
   Both model A and model B extract the same triple, which is complete, correct, consistent with the text, and does not contain duplicates. Therefore, both models perform equally well.
+```
 
 </details>
