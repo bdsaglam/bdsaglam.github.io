@@ -53,7 +53,7 @@ Performance was evaluated using three key metrics:
    - Two competing model outputs (triples, with randomized order to eliminate position bias)
    - A rubric emphasizing factual correctness, completeness, and precision
    
-The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation*. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the `dev` split.
+The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of `A`, `B`, or `DRAW`. These decisions were then aggregated into **ELO ratings**, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the `dev` split.
 
 ## Results
 
@@ -174,19 +174,18 @@ The analysis has several limitations that point to interesting future directions
 
 ## Conclusion
 
-The experiments reveal important nuances in the performance comparison between fine-tuning and prompt optimization approaches. While fine-tuning demonstrated superior performance in string matching metrics, these automated evaluations may not comprehensively reflect real-world utility. The ELO ratings from our pairwise comparisons using a 32B parameter judge model suggest that prompt optimization can achieve comparable effectiveness in practice.
+The experiments reveal important nuances in the performance comparison between fine-tuning and prompt optimization approaches. While fine-tuning demonstrated superior performance in string matching metrics, these automated evaluations may not comprehensively reflect real-world utility. The ELO ratings from pairwise comparisons using a 32B parameter judge model suggest that prompt optimization can achieve comparable effectiveness in practice.
 
-Based on our empirical analysis, we can draw several key conclusions about choosing between these approaches:
+Based on this empirical analysis, we can draw several key conclusions about choosing between these approaches:
 
 - Fine-tuning demonstrates exceptional performance on tasks with clear, quantifiable metrics like exact string matching, as it can directly optimize for these specific objectives during training.
-- For tasks involving complex or subjective evaluation criteria, prompt optimization shows stronger performance, as evidenced by the ELO ratings in our entity-relation extraction experiments.
+- For tasks involving complex or subjective evaluation criteria, prompt optimization shows stronger performance, as evidenced by the ELO ratings.
 - When substantial training data (hundreds to thousands of examples), computational resources for training, and access to model weights are available, fine-tuning provides consistent and robust performance improvements.
 - In resource-constrained scenarios with limited data, compute, or model access, well-designed prompt optimization strategies can achieve competitive results while being more practical to implement.
 - Organizations requiring rapid experimentation or flexible deployment will benefit from prompt optimization's easier versioning and updating capabilities.
 - For applications where automated evaluation metrics closely align with business success criteria, fine-tuning's ability to directly optimize these metrics makes it particularly attractive.
 
-To promote reproducibility and further research in this area, we have open-sourced our experimental implementation and analysis code at [this GitHub repository](https://github.com/bdsaglam/pipeline-llm-adaptation).
-
+The code for the experiments is available at [this repository](https://github.com/bdsaglam/pipeline-llm-adaptation).
 
 ## References
 
