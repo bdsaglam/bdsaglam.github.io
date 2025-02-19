@@ -189,13 +189,13 @@ The code for the experiments is available at [this repository](https://github.co
 
 ## References
 
-1. [Khattab, Omar and Singhvi, Arnav and Maheshwari, Paridhi and Zhang, Zhiyuan and Santhanam, Keshav and Vardhamanan, Sri and Haq, Saiful and Sharma, Ashutosh and Joshi, Thomas T. and Moazam, Hanna and Miller, Heather and Zaharia, Matei and Potts, Christopher. (2024). DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines. In The Twelfth International Conference on Learning Representations.](https://arxiv.org/abs/2402.07747)
+1. [DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines. Khattab, Omar and Singhvi, Arnav and Maheshwari, Paridhi and Zhang, Zhiyuan and Santhanam, Keshav and Vardhamanan, Sri and Haq, Saiful and Sharma, Ashutosh and Joshi, Thomas T. and Moazam, Hanna and Miller, Heather and Zaharia, Matei and Potts, Christopher. (2024). In The Twelfth International Conference on Learning Representations.](https://arxiv.org/abs/2402.07747)
 2. [WebNLG](https://huggingface.co/datasets/webnlg-challenge/web_nlg)
 3. [Llama-3 8B](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct)
 4. [Qwen-2.5-32B](https://huggingface.co/Qwen/Qwen2.5-32B-Instruct)
-5. [Hu, J.E., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., & Chen, W. (2021). LoRA: Low-Rank Adaptation of Large Language Models. ArXiv, abs/2106.09685.](https://arxiv.org/abs/2106.09685)
-6. [Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E.H., & Zhou, D. (2022). Self-Consistency Improves Chain of Thought Reasoning in Language Models. ArXiv, abs/2203.11171.](https://arxiv.org/abs/2203.11171)
-7. [Zheng, L., Chiang, W., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li, Z., Li, D., Xing, E.P., Zhang, H., Gonzalez, J.E., & Stoica, I. (2023). Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. ArXiv, abs/2306.05685.](https://arxiv.org/abs/2306.05685)
+5. [LoRA: Low-Rank Adaptation of Large Language Models. Hu, J.E., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., & Chen, W. (2021). ArXiv, abs/2106.09685.](https://arxiv.org/abs/2106.09685)
+6. [Self-Consistency Improves Chain of Thought Reasoning in Language Models. Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E.H., & Zhou, D. (2022). ArXiv, abs/2203.11171.](https://arxiv.org/abs/2203.11171)
+7. [Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. Zheng, L., Chiang, W., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li, Z., Li, D., Xing, E.P., Zhang, H., Gonzalez, J.E., & Stoica, I. (2023). ArXiv, abs/2306.05685.](https://arxiv.org/abs/2306.05685)
 
 
 ----
