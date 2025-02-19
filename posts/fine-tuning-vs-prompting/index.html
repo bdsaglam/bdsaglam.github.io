@@ -206,7 +206,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <ol type="1">
 <li><p><strong>Exact Match F1:</strong> This measures the model’s ability to extract triples that exactly match the ground truth, considering both precision and recall.</p></li>
 <li><p><strong>Fuzzy Match F1:</strong> This more lenient metric allows for minor variations in entity boundaries and relation phrases while still capturing the core semantic relationships.</p></li>
-<li><p><strong>Pairwise Comparisons:</strong> <a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen-2.5-32B</a> was employed as a judge to directly compare outputs from different models. For each test example, the judge was presented with:</p>
+<li><p><strong>Pairwise Comparisons:</strong> <a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen-2.5-32B</a> was used to compare outputs from different models with LLM-as-a-judge technique (Zheng et al.&nbsp;2023). For each test example, the judge was presented with:</p>
 <ul>
 <li>The input text</li>
 <li>Two competing model outputs (triples, with randomized order to eliminate position bias)</li>
@@ -231,7 +231,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <thead>
 <tr class="header">
 <th><strong>Adaptation Method</strong></th>
-<th><strong>Num of Samples</strong></th>
+<th><strong>Num Samples</strong></th>
 <th><strong>Optimizer</strong></th>
 <th><strong>Exact F1</strong></th>
 <th><strong>Fuzzy F1</strong></th>
@@ -355,9 +355,8 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <ol type="1">
 <li><strong>Computational Resources:</strong>
 <ul>
-<li>Fine-tuning requires significant compute for training</li>
-<li>Prompt optimization needs only inference resources</li>
-<li>Storage requirements differ substantially</li>
+<li>Fine-tuning requires significant compute for training and access to the model weights</li>
+<li>Prompt optimization needs only inference resources; hence, it is applicable to proprietary models as well</li>
 </ul></li>
 </ol>
 <p>
@@ -366,7 +365,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li><strong>Deployment Flexibility:</strong>
 <ul>
 <li>Prompts can be modified quickly in production</li>
-<li>Fine-tuned models require full redeployment</li>
+<li>Fine-tuned models require redeployment</li>
 <li>Iteration speed varies significantly</li>
 </ul></li>
 </ol>
@@ -396,9 +395,9 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="limitations-and-future-work">Limitations and Future Work</h2>
 <p>The analysis has several limitations that point to interesting future directions:</p>
 <ol type="1">
-<li><strong>Judge LLM Constraints:</strong>
+<li><strong>LLM-as-a-Judge Limitations:</strong>
 <ul>
-<li>A 32B parameter model was used for pairwise comparisons. Using larger models like Llama-70B or GPT-4o could provide more reliable judgments.</li>
+<li>A 32B parameter model was used for pairwise comparisons. Using larger models like Llama-70B or GPT-4o could provide more reliable evaluations.</li>
 <li>The evaluation prompt could be further optimized. For instance, self-consistency prompting (Wang, Xuezhi et al.&nbsp;2022) could be employed to improve the quality of the judge LLM.</li>
 </ul></li>
 </ol>
@@ -445,6 +444,7 @@ The gap between traditional metrics and LLM-based evaluation suggests that while
 <li><a href="https://huggingface.co/Qwen/Qwen2.5-32B-Instruct">Qwen-2.5-32B</a></li>
 <li><a href="https://arxiv.org/abs/2106.09685">Hu, J.E., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., &amp; Chen, W. (2021). LoRA: Low-Rank Adaptation of Large Language Models. ArXiv, abs/2106.09685.</a></li>
 <li><a href="https://arxiv.org/abs/2203.11171">Wang, X., Wei, J., Schuurmans, D., Le, Q., Chi, E.H., &amp; Zhou, D. (2022). Self-Consistency Improves Chain of Thought Reasoning in Language Models. ArXiv, abs/2203.11171.</a></li>
+<li><a href="https://arxiv.org/abs/2306.05685">Zheng, L., Chiang, W., Sheng, Y., Zhuang, S., Wu, Z., Zhuang, Y., Lin, Z., Li, Z., Li, D., Xing, E.P., Zhang, H., Gonzalez, J.E., &amp; Stoica, I. (2023). Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. ArXiv, abs/2306.05685.</a></li>
 </ol>
 <hr>
 <details>
