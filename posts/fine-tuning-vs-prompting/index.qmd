@@ -66,7 +66,7 @@ The evaluation used both traditional metrics (F1 scores) and pairwise comparison
 | Fine-tuning       | 8,870          | AdamW           | 0.94      | 0.98     | 1502.4       |
 | Fine-tuning       | 1,000          | AdamW           | 0.81      | 0.93     | 1506.5       |
 | Fine-tuning       | 100            | AdamW           | 0.62      | 0.84     | 1448.4       |
-| Fine-tuning       | 16             | AdamW           | 0.07      | 0.24     | nan          |
+| Fine-tuning       | 16             | AdamW           | 0.07      | 0.24     | 1430.9       |
 | Prompting         | 24             | BFSRS-High      | 0.32      | 0.69     | 1507.8       |
 | Prompting         | 8              | MIPROv2-Medium  | 0.24      | 0.63     | 1510.6       |
 | Prompting         | 0              | None            | 0.02      | 0.34     | 1472.4       |
@@ -83,8 +83,9 @@ Analysis of these results reveals several key patterns:
 1. **Fine-tuning demonstrates strong but nuanced performance:**
    - Performance scales clearly with data, improving from 0.07 to 0.94 Exact F1 score as shown in Table 1
    - The full dataset (8,870 examples) achieves the best F1 results
-   - Even with limited data (100 examples), the model produces reasonable results
-   - Interestingly, using 1,000 examples led to higher ELO ratings than using 8,870 examples, suggesting possible overfitting with the full dataset
+   - With very limited data (16 examples), fine-tuning performs poorly 
+   - But with reasonable amount of data (100 examples), the model produces reasonable results
+   - Interestingly, using 1,000 examples led to higher ELO ratings than using 8,870 examples, suggesting possible overfitting to the dataset
    - This indicates that beyond a certain point, additional training data may lead to diminishing returns
 
 <p></p>
