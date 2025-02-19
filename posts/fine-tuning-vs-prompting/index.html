@@ -213,7 +213,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>A rubric emphasizing factual correctness, completeness, and precision</li>
 </ul></li>
 </ol>
-<p>The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation*. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of <code>A</code>, <code>B</code>, or <code>DRAW</code>. These decisions were then aggregated into <strong>ELO ratings</strong>, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the <code>dev</code> split.</p>
+<p>The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of <code>A</code>, <code>B</code>, or <code>DRAW</code>. These decisions were then aggregated into <strong>ELO ratings</strong>, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the <code>dev</code> split.</p>
 </section>
 <section id="results" class="level2">
 <h2 class="anchored" data-anchor-id="results">Results</h2>
@@ -431,17 +431,17 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>The experiments reveal important nuances in the performance comparison between fine-tuning and prompt optimization approaches. While fine-tuning demonstrated superior performance in string matching metrics, these automated evaluations may not comprehensively reflect real-world utility. The ELO ratings from our pairwise comparisons using a 32B parameter judge model suggest that prompt optimization can achieve comparable effectiveness in practice.</p>
-<p>Based on our empirical analysis, we can draw several key conclusions about choosing between these approaches:</p>
+<p>The experiments reveal important nuances in the performance comparison between fine-tuning and prompt optimization approaches. While fine-tuning demonstrated superior performance in string matching metrics, these automated evaluations may not comprehensively reflect real-world utility. The ELO ratings from pairwise comparisons using a 32B parameter judge model suggest that prompt optimization can achieve comparable effectiveness in practice.</p>
+<p>Based on this empirical analysis, we can draw several key conclusions about choosing between these approaches:</p>
 <ul>
 <li>Fine-tuning demonstrates exceptional performance on tasks with clear, quantifiable metrics like exact string matching, as it can directly optimize for these specific objectives during training.</li>
-<li>For tasks involving complex or subjective evaluation criteria, prompt optimization shows stronger performance, as evidenced by the ELO ratings in our entity-relation extraction experiments.</li>
+<li>For tasks involving complex or subjective evaluation criteria, prompt optimization shows stronger performance, as evidenced by the ELO ratings.</li>
 <li>When substantial training data (hundreds to thousands of examples), computational resources for training, and access to model weights are available, fine-tuning provides consistent and robust performance improvements.</li>
 <li>In resource-constrained scenarios with limited data, compute, or model access, well-designed prompt optimization strategies can achieve competitive results while being more practical to implement.</li>
 <li>Organizations requiring rapid experimentation or flexible deployment will benefit from prompt optimization’s easier versioning and updating capabilities.</li>
 <li>For applications where automated evaluation metrics closely align with business success criteria, fine-tuning’s ability to directly optimize these metrics makes it particularly attractive.</li>
 </ul>
-<p>To promote reproducibility and further research in this area, we have open-sourced our experimental implementation and analysis code at <a href="https://github.com/bdsaglam/pipeline-llm-adaptation">this GitHub repository</a>.</p>
+<p>The code for the experiments is available at <a href="https://github.com/bdsaglam/pipeline-llm-adaptation">this repository</a>.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
