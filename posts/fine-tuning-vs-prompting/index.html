@@ -431,18 +431,17 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>While fine-tuning achieves higher F1 scores, prompt optimization can be surprisingly effective when properly implemented. The choice between these approaches depends on specific constraints and requirements:</p>
+<p>The experiments reveal important nuances in the performance comparison between fine-tuning and prompt optimization approaches. While fine-tuning demonstrated superior performance in string matching metrics, these automated evaluations may not comprehensively reflect real-world utility. The ELO ratings from our pairwise comparisons using a 32B parameter judge model suggest that prompt optimization can achieve comparable effectiveness in practice.</p>
+<p>Based on our empirical analysis, we can draw several key conclusions about choosing between these approaches:</p>
 <ul>
-<li>If sufficient training data and computational resources are available, fine-tuning provides robust performance</li>
-<li>If data or compute is limited, optimized prompting can offer a viable alternative</li>
-<li>When rapid iteration or deployment flexibility is crucial, prompt optimization has clear advantages</li>
-<li>In cases where exact matching is critical, fine-tuning may be preferable</li>
+<li>Fine-tuning demonstrates exceptional performance on tasks with clear, quantifiable metrics like exact string matching, as it can directly optimize for these specific objectives during training.</li>
+<li>For tasks involving complex or subjective evaluation criteria, prompt optimization shows stronger performance, as evidenced by the ELO ratings in our entity-relation extraction experiments.</li>
+<li>When substantial training data (hundreds to thousands of examples), computational resources for training, and access to model weights are available, fine-tuning provides consistent and robust performance improvements.</li>
+<li>In resource-constrained scenarios with limited data, compute, or model access, well-designed prompt optimization strategies can achieve competitive results while being more practical to implement.</li>
+<li>Organizations requiring rapid experimentation or flexible deployment will benefit from prompt optimization’s easier versioning and updating capabilities.</li>
+<li>For applications where automated evaluation metrics closely align with business success criteria, fine-tuning’s ability to directly optimize these metrics makes it particularly attractive.</li>
 </ul>
-<blockquote class="blockquote">
-<p><strong>Note:</strong><br>
-The gap between traditional metrics and LLM-based evaluation suggests that while quantitative scores provide one perspective, qualitative assessment might be necessary to understanding real-world performance.</p>
-</blockquote>
-<p>The code for the experiments and analysis is available at <a href="https://github.com/bdsaglam/pipeline-llm-adaptation">this GitHub repository</a>.</p>
+<p>To promote reproducibility and further research in this area, we have open-sourced our experimental implementation and analysis code at <a href="https://github.com/bdsaglam/pipeline-llm-adaptation">this GitHub repository</a>.</p>
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
