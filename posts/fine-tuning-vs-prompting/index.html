@@ -264,6 +264,14 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <td>1448.4</td>
 </tr>
 <tr class="even">
+<td>Fine-tuning</td>
+<td>16</td>
+<td>AdamW</td>
+<td>0.07</td>
+<td>0.24</td>
+<td>1430.9</td>
+</tr>
+<tr class="odd">
 <td>Prompting</td>
 <td>24</td>
 <td>BFSRS-High</td>
@@ -271,7 +279,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <td>0.69</td>
 <td>1507.8</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>Prompting</td>
 <td>8</td>
 <td>MIPROv2-Medium</td>
@@ -279,7 +287,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <td>0.63</td>
 <td>1510.6</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>Prompting</td>
 <td>0</td>
 <td>None</td>
@@ -296,10 +304,11 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <ol type="1">
 <li><strong>Fine-tuning demonstrates strong but nuanced performance:</strong>
 <ul>
-<li>Performance scales clearly with data, improving from 0.62 to 0.94 Exact F1 score as shown in Table 1</li>
+<li>Performance scales clearly with data, improving from 0.07 to 0.94 Exact F1 score as shown in Table 1</li>
 <li>The full dataset (8,870 examples) achieves the best F1 results</li>
-<li>Even with limited data (100 examples), the model produces reasonable results</li>
-<li>Interestingly, using 1,000 examples led to higher ELO ratings than using 8,870 examples, suggesting possible overfitting with the full dataset</li>
+<li>With very limited data (16 examples), fine-tuning performs poorly</li>
+<li>But with reasonable amount of data (100 examples), the model produces reasonable results</li>
+<li>Interestingly, using 1,000 examples led to higher ELO ratings than using 8,870 examples, suggesting possible overfitting to the dataset</li>
 <li>This indicates that beyond a certain point, additional training data may lead to diminishing returns</li>
 </ul></li>
 </ol>
