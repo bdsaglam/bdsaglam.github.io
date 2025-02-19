@@ -464,36 +464,80 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <p>To further illustrate the differences between fine-tuning and prompt optimization, I present a few selected examples from my model comparison, where <code>A</code> and <code>B</code> denote best performing fine-tuned and prompt optimized models respectively:</p>
 <section id="example-1-decision-was-a" class="level4">
 <h4 class="anchored" data-anchor-id="example-1-decision-was-a">Example 1: Decision was A</h4>
-<p><strong>Text:</strong><br>
-Cornell University is in Ithaca, New York and their nickname is Cornell Big Red. They are the publisher of Administrative Science Quarterly and are affiliated with the Association of American Universities.</p>
-<p><strong>Triples A:</strong><br>
-- “Administrative Science Quarterly | publisher | Cornell University” - “Cornell University | nickname | Cornell Big Red” - “Cornell University | affiliation | Association of American Universities” - “Cornell University | city | Ithaca, New York”</p>
-<p><strong>Triples B:</strong><br>
-- “Cornell University | city | Ithaca, New York” - “Cornell University | nickname | Cornell Big Red” - “Cornell University | academic publisher | Administrative Science Quarterly” - “Cornell University | affiliation | Association of American Universities”</p>
-<p><strong>Explanation:</strong><br>
-Set A correctly identifies ‘Cornell University’ as the publisher of ‘Administrative Science Quarterly’, whereas Set B incorrectly reverses this relationship. Therefore, Set A is more correct and complete.</p>
+<pre><code>**Text:**  
+Cornell University is in Ithaca, New York and their nickname is Cornell Big Red. They are the publisher of Administrative Science Quarterly and are affiliated with the Association of American Universities.
+
+**Triples A:**  
+- "Administrative Science Quarterly | publisher | Cornell University"
+- "Cornell University | nickname | Cornell Big Red" 
+- "Cornell University | affiliation | Association of American Universities"
+- "Cornell University | city | Ithaca, New York"
+
+**Triples B:**  
+- "Cornell University | city | Ithaca, New York"
+- "Cornell University | nickname | Cornell Big Red"
+- "Cornell University | academic publisher | Administrative Science Quarterly"
+- "Cornell University | affiliation | Association of American Universities"
+
+
+**Explanation:**  
+Set A correctly identifies 'Cornell University' as the publisher of 'Administrative Science Quarterly', whereas Set B incorrectly reverses this relationship. Therefore, Set A is more correct and complete.</code></pre>
 </section>
 <section id="example-2-decision-was-b" class="level4">
 <h4 class="anchored" data-anchor-id="example-2-decision-was-b">Example 2: Decision was B</h4>
-<p><strong>Text:</strong><br>
-Alpena County Regional Airport runway name is 1/19. Swords is a part of the Dublin European Parliamentary constituency. The United States (with a leader, John Roberts) boasts the Bacon Explosion. American Abraham A. Ribicoff was born in New Britain, Connecticut and is married to Ruth Ribicoff. One of the ethnic groups in the U.S. are Native Americans. Georgia is in the country of United States. Atlanta; has a total area of 347.1 square kilometres, a population density of 1299.0 inhabitants per square kilometre, and the area codes: 404, 678, and 470. The birthplace of Alfred Garth Jones is Manchester, (part of Greater Manchester), England. In Manchester the Labour Party is in the majority.</p>
-<p><strong>Triples A:</strong><br>
-- “Alpena County Regional Airport | runway name | 1/19” - “Swords, Dublin | is part of | Dublin (European Parliament constituency)” - “Bacon Explosion | country | United States” - “United States | leader | John Roberts” - “Abraham A. Ribicoff | birth place | New Britain, Connecticut” - “Abraham A. Ribicoff | spouse | Ruth Ribicoff” - “United States | ethnic group | Native Americans in the United States” - “Abraham A. Ribicoff | nationality | American” - “Georgia (U.S. state) | country | United States” - “Atlanta | area code | 404, 678, 470” - “Atlanta | population density | 1299.0 (inhabitants per square kilometre)” - “Atlanta | area total | 347.1 (square kilometres)” - “Alfred Garth Jones | birth place | England” - “Alfred Garth Jones | birth place | Manchester” - “Manchester | is part of | Greater Manchester” - “Manchester | leader | Labour Party (UK)”</p>
-<p><strong>Triples B:</strong><br>
-- “Alpena County Regional Airport | runway name | 1/19” - “Swords | is part of | Dublin (European Parliament constituency)” - “United States | leader | John Roberts” - “United States | dish variation | Bacon Explosion” - “Abraham A. Ribicoff | spouse | Ruth Ribicoff” - “Abraham A. Ribicoff | birth place | New Britain, Connecticut” - “United States | ethnic group | Native Americans in the United States” - “Georgia (U.S. state) | country | United States” - “Atlanta | area code | 404, 678, 470” - “Atlanta | population density | 1299.0 (inhabitants per square kilometre)” - “Atlanta | total area | 347.1 (square kilometres)” - “Alfred Garth Jones | birth place | Manchester, England” - “Manchester | has to its majority | Labour Party” - “Manchester | is part of | Greater Manchester”</p>
-<p><strong>Explanation:</strong><br>
-Model B’s triples are complete, correct, and consistent with the text. It correctly states the birth place of Alfred Garth Jones as ‘Manchester, England’ and avoids the duplication issue. Therefore, Model B’s triples are better.</p>
+<pre><code>  **Text:**  
+  Alpena County Regional Airport runway name is 1/19. Swords is a part of the Dublin European Parliamentary constituency. The United States (with a leader, John Roberts) boasts the Bacon Explosion. American Abraham A. Ribicoff was born in New Britain, Connecticut and is married to Ruth Ribicoff. One of the ethnic groups in the U.S. are Native Americans. Georgia is in the country of United States. Atlanta; has a total area of 347.1 square kilometres, a population density of 1299.0 inhabitants per square kilometre, and the area codes: 404, 678, and 470. The birthplace of Alfred Garth Jones is Manchester, (part of Greater Manchester), England. In Manchester the Labour Party is in the majority.
+
+  **Triples A:**  
+  - "Alpena County Regional Airport | runway name | 1/19"
+  - "Swords, Dublin | is part of | Dublin (European Parliament constituency)"
+  - "Bacon Explosion | country | United States"
+  - "United States | leader | John Roberts"
+  - "Abraham A. Ribicoff | birth place | New Britain, Connecticut"
+  - "Abraham A. Ribicoff | spouse | Ruth Ribicoff"
+  - "United States | ethnic group | Native Americans in the United States"
+  - "Abraham A. Ribicoff | nationality | American"
+  - "Georgia (U.S. state) | country | United States"
+  - "Atlanta | area code | 404, 678, 470"
+  - "Atlanta | population density | 1299.0 (inhabitants per square kilometre)"
+  - "Atlanta | area total | 347.1 (square kilometres)"
+  - "Alfred Garth Jones | birth place | England"
+  - "Alfred Garth Jones | birth place | Manchester"
+  - "Manchester | is part of | Greater Manchester"
+  - "Manchester | leader | Labour Party (UK)"
+
+  **Triples B:**  
+  - "Alpena County Regional Airport | runway name | 1/19"
+  - "Swords | is part of | Dublin (European Parliament constituency)"
+  - "United States | leader | John Roberts"
+  - "United States | dish variation | Bacon Explosion"
+  - "Abraham A. Ribicoff | spouse | Ruth Ribicoff"
+  - "Abraham A. Ribicoff | birth place | New Britain, Connecticut"
+  - "United States | ethnic group | Native Americans in the United States"
+  - "Georgia (U.S. state) | country | United States"
+  - "Atlanta | area code | 404, 678, 470"
+  - "Atlanta | population density | 1299.0 (inhabitants per square kilometre)"
+  - "Atlanta | total area | 347.1 (square kilometres)"
+  - "Alfred Garth Jones | birth place | Manchester, England"
+  - "Manchester | has to its majority | Labour Party"
+  - "Manchester | is part of | Greater Manchester"
+
+  **Explanation:**  
+  Model B's triples are complete, correct, and consistent with the text. It correctly states the birth place of Alfred Garth Jones as 'Manchester, England' and avoids the duplication issue. Therefore, Model B's triples are better.</code></pre>
 </section>
 <section id="example-3-decision-was-draw" class="level4">
 <h4 class="anchored" data-anchor-id="example-3-decision-was-draw">Example 3: Decision was DRAW</h4>
-<p><strong>Text:</strong><br>
-The ISBN number of A Long Long Way is 0-670-03380-4.</p>
-<p><strong>Triples A:</strong><br>
-- “A Long Long Way | isbn number | 0-670-03380-4”</p>
-<p><strong>Triples B:</strong><br>
-- “A Long Long Way | isbn number | 0-670-03380-4”</p>
-<p><strong>Explanation:</strong><br>
-Both model A and model B extract the same triple, which is complete, correct, consistent with the text, and does not contain duplicates. Therefore, both models perform equally well.</p>
+<pre><code>  **Text:**  
+  The ISBN number of A Long Long Way is 0-670-03380-4.
+
+  **Triples A:**  
+  - "A Long Long Way | isbn number | 0-670-03380-4"
+
+  **Triples B:**  
+  - "A Long Long Way | isbn number | 0-670-03380-4"
+
+  **Explanation:**  
+  Both model A and model B extract the same triple, which is complete, correct, consistent with the text, and does not contain duplicates. Therefore, both models perform equally well.</code></pre>
 </section></section></details>
 
 
