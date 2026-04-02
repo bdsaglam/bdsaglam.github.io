@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://barisdeniz.is-a.dev/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.078Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/fine-tuning-vs-prompting/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.104Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/tgi-litellm-openai/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.115Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/confidence-intervals/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.082Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/py-cuda-kernel/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/is-everything-an-abstraction/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.108Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/about.html</loc>
-    <lastmod>2025-02-19T11:59:55.078Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/fast-fourier-transform/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.084Z</lastmod>
-  </url>
-  <url>
     <loc>https://barisdeniz.is-a.dev/posts/fastai-custom-model/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.090Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/fastai-huggingface-datasets/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.104Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/halting-problem/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.105Z</lastmod>
+    <lastmod>2026-04-02T22:26:22.206Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/initialization-in-nn/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.108Z</lastmod>
+    <lastmod>2026-04-02T22:26:22.219Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/llm-providers-structured-output/index.html</loc>
-    <lastmod>2025-02-19T11:59:55.110Z</lastmod>
+    <lastmod>2026-04-02T22:26:22.221Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/fine-tuning-vs-prompting/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.216Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/is-everything-an-abstraction/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.219Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/halting-problem/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.218Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/about.html</loc>
+    <lastmod>2026-04-02T22:26:22.199Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.199Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/confidence-intervals/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.200Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/py-cuda-kernel/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.222Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/fastai-huggingface-datasets/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.216Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/fast-fourier-transform/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.202Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/tgi-litellm-openai/index.html</loc>
+    <lastmod>2026-04-02T22:26:22.225Z</lastmod>
   </url>
 </urlset>
