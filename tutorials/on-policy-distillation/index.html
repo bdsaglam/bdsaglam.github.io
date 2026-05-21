@@ -201,7 +201,7 @@ window.Quarto = {
   <li><a href="#the-mechanic" id="toc-the-mechanic" class="nav-link" data-scroll-target="#the-mechanic">§2 — The mechanic</a>
   <ul class="collapse">
   <li><a href="#information-rate-framing" id="toc-information-rate-framing" class="nav-link" data-scroll-target="#information-rate-framing">Information-rate framing</a></li>
-  <li><a href="#pseudocode" id="toc-pseudocode" class="nav-link" data-scroll-target="#pseudocode">Pseudocode</a></li>
+  <li><a href="#objective-and-pseudocode" id="toc-objective-and-pseudocode" class="nav-link" data-scroll-target="#objective-and-pseudocode">Objective and pseudocode</a></li>
   <li><a href="#core-loss-and-the-divergence-menu" id="toc-core-loss-and-the-divergence-menu" class="nav-link" data-scroll-target="#core-loss-and-the-divergence-menu">Core loss and the divergence menu</a></li>
   <li><a href="#the-teacherstudent-asymmetry" id="toc-the-teacherstudent-asymmetry" class="nav-link" data-scroll-target="#the-teacherstudent-asymmetry">The teacher–student asymmetry</a></li>
   <li><a href="#pi-taxonomy-pointer" id="toc-pi-taxonomy-pointer" class="nav-link" data-scroll-target="#pi-taxonomy-pointer">PI taxonomy pointer</a></li>
@@ -378,9 +378,17 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="information-rate-framing">Information-rate framing</h3>
 <p>The elevator pitch for an RL-fluent reader is a counting argument. A length-<span class="math inline">\(N\)</span> rollout under verifiable-reward RL produces a single scalar at the end — <span class="math inline">\(\mathcal{O}(1)\)</span> bits of supervision per episode. The same rollout under OPD produces a full next-token distribution at every position, i.e.&nbsp;<span class="math inline">\(\mathcal{O}(N)\)</span> bits per episode, modulo divergence choice and truncation. This is the framing the <a href="https://thinkingmachines.ai/blog/on-policy-distillation/">Tinker</a> blog (<a href="https://thinkingmachines.ai/blog/on-policy-distillation/">Lu, 2025, Thinking Machines blog</a>) uses to motivate the empirical 10–100× compute savings observed when OPD replaces RL as the closing post-training stage (<a href="https://thinkingmachines.ai/blog/on-policy-distillation/">Tinker</a>; <a href="https://arxiv.org/abs/2505.09388"><strong>Qwen3</strong></a> (Yang et al., 2025)). OPD inherits the distributional grounding of RL — no exposure bias, since the student is supervised exactly on the support it visits at inference — and the supervision density of KD, without the off-policy mismatch of seq-KD or the sparse-reward degeneracy of RL. The latter matters operationally: under GRPO, all-zero or all-one groups collapse advantages and the gradient vanishes; OPD always has a meaningful gradient whenever <span class="math inline">\(p_T \neq p_S\)</span>.</p>
 </section>
-<section id="pseudocode" class="level3">
-<h3 class="anchored" data-anchor-id="pseudocode">Pseudocode</h3>
-<p>A single OPD step is three lines, modulo bookkeeping:</p>
+<section id="objective-and-pseudocode" class="level3">
+<h3 class="anchored" data-anchor-id="objective-and-pseudocode">Objective and pseudocode</h3>
+<p>The OPD loss is the expected per-token divergence between the student’s and teacher’s next-token distributions, with the expectation taken over rollouts the student itself generates:</p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{OPD}}(\theta) \;=\; \mathbb{E}_{\,x \sim \mathcal{D},\; \hat{y} \sim p_S(\cdot \mid x;\, \theta)}\!\left[\, \frac{1}{N} \sum_{n=1}^{N} D\!\left( p_S(\cdot \mid x, \hat{y}_{&lt;n};\, \theta) \;\big\|\; p_T(\cdot \mid x, \pi, \hat{y}_{&lt;n}) \right) \,\right]
+\]</span></p>
+<p>where <span class="math inline">\(D\)</span> is a divergence (reverse-KL by default — see §2.3), <span class="math inline">\(\pi\)</span> is any privileged information the teacher conditions on (often empty), and <span class="math inline">\(\hat{y} = (\hat{y}_1, \ldots, \hat{y}_N)\)</span> is the student’s own rollout under the current <span class="math inline">\(p_S\)</span>. For reverse-KL the per-position term is</p>
+<p><span class="math display">\[
+D\!\left(p_S \,\|\, p_T\right) \;=\; \sum_{v \in \mathcal{V}} p_S(v) \,\log \frac{p_S(v)}{p_T(v)}
+\]</span></p>
+<p>summed over the vocabulary <span class="math inline">\(\mathcal{V}\)</span>. The corresponding single training step, modulo bookkeeping:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x, pi <span class="kw">in</span> batch:                              <span class="co"># pi = privileged info (may be empty)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    y_hat <span class="op">=</span> student.sample(x)                    <span class="co"># student rolls out alone</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
@@ -388,7 +396,7 @@ window.Quarto = {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    p_S <span class="op">=</span> student.log_probs(x, y_hat)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> mean_n( D(p_S[n] <span class="op">||</span> p_T[n]) )         <span class="co"># per-token rev-KL (mode-seeking)</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    loss.backward()<span class="op">;</span> optimizer.step()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Two details are load-bearing. The teacher <strong>does not generate</strong> — it scores the student’s prefix in one forward pass and emits a next-token distribution over the full vocabulary, conditioned on <span class="math inline">\(x\)</span>, any privileged information <span class="math inline">\(\pi\)</span>, and the student’s already-generated tokens <span class="math inline">\(\hat{y}_{&lt;n}\)</span> (<a href="https://arxiv.org/abs/2601.18734"><strong>OPSD</strong></a> (Zhao et al., 2026)). And gradients flow only through <span class="math inline">\(p_S\)</span>; the teacher is a fixed target. This makes the teacher cost roughly that of one extra forward pass per student rollout — cheap compared to RL’s group-of-G rollouts plus reward model.</p>
+<p>Two details are load-bearing. The teacher <strong>does not generate</strong> — it scores the student’s prefix in one forward pass and emits a next-token distribution over the full vocabulary, conditioned on <span class="math inline">\(x\)</span>, <span class="math inline">\(\pi\)</span>, and <span class="math inline">\(\hat{y}_{&lt;n}\)</span> (<a href="https://arxiv.org/abs/2601.18734"><strong>OPSD</strong></a> (Zhao et al., 2026)). And gradients flow only through <span class="math inline">\(p_S\)</span>; the teacher is a fixed target. This makes the teacher cost roughly that of one extra forward pass per student rollout — cheap compared to RL’s group-of-G rollouts plus reward model.</p>
 </section>
 <section id="core-loss-and-the-divergence-menu" class="level3">
 <h3 class="anchored" data-anchor-id="core-loss-and-the-divergence-menu">Core loss and the divergence menu</h3>
