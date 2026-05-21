@@ -47,9 +47,21 @@ A research tutorial on **On-Policy Distillation (OPD)** for LLM- and RL-fluent r
 
 The elevator pitch for an RL-fluent reader is a counting argument. A length-$N$ rollout under verifiable-reward RL produces a single scalar at the end — $\mathcal{O}(1)$ bits of supervision per episode. The same rollout under OPD produces a full next-token distribution at every position, i.e. $\mathcal{O}(N)$ bits per episode, modulo divergence choice and truncation. This is the framing the [Tinker](https://thinkingmachines.ai/blog/on-policy-distillation/) blog ([Lu, 2025, Thinking Machines blog](https://thinkingmachines.ai/blog/on-policy-distillation/)) uses to motivate the empirical 10–100× compute savings observed when OPD replaces RL as the closing post-training stage ([Tinker](https://thinkingmachines.ai/blog/on-policy-distillation/); [**Qwen3**](https://arxiv.org/abs/2505.09388) (Yang et al., 2025)). OPD inherits the distributional grounding of RL — no exposure bias, since the student is supervised exactly on the support it visits at inference — and the supervision density of KD, without the off-policy mismatch of seq-KD or the sparse-reward degeneracy of RL. The latter matters operationally: under GRPO, all-zero or all-one groups collapse advantages and the gradient vanishes; OPD always has a meaningful gradient whenever $p_T \neq p_S$.
 
-### Pseudocode
+### Objective and pseudocode
 
-A single OPD step is three lines, modulo bookkeeping:
+The OPD loss is the expected per-token divergence between the student's and teacher's next-token distributions, with the expectation taken over rollouts the student itself generates:
+
+$$
+\mathcal{L}_{\text{OPD}}(\theta) \;=\; \mathbb{E}_{\,x \sim \mathcal{D},\; \hat{y} \sim p_S(\cdot \mid x;\, \theta)}\!\left[\, \frac{1}{N} \sum_{n=1}^{N} D\!\left( p_S(\cdot \mid x, \hat{y}_{<n};\, \theta) \;\big\|\; p_T(\cdot \mid x, \pi, \hat{y}_{<n}) \right) \,\right]
+$$
+
+where $D$ is a divergence (reverse-KL by default — see §2.3), $\pi$ is any privileged information the teacher conditions on (often empty), and $\hat{y} = (\hat{y}_1, \ldots, \hat{y}_N)$ is the student's own rollout under the current $p_S$. For reverse-KL the per-position term is
+
+$$
+D\!\left(p_S \,\|\, p_T\right) \;=\; \sum_{v \in \mathcal{V}} p_S(v) \,\log \frac{p_S(v)}{p_T(v)}
+$$
+
+summed over the vocabulary $\mathcal{V}$. The corresponding single training step, modulo bookkeeping:
 
 ```python
 for x, pi in batch:                              # pi = privileged info (may be empty)
@@ -61,7 +73,7 @@ for x, pi in batch:                              # pi = privileged info (may be 
     loss.backward(); optimizer.step()
 ```
 
-Two details are load-bearing. The teacher **does not generate** — it scores the student's prefix in one forward pass and emits a next-token distribution over the full vocabulary, conditioned on $x$, any privileged information $\pi$, and the student's already-generated tokens $\hat{y}_{<n}$ ([**OPSD**](https://arxiv.org/abs/2601.18734) (Zhao et al., 2026)). And gradients flow only through $p_S$; the teacher is a fixed target. This makes the teacher cost roughly that of one extra forward pass per student rollout — cheap compared to RL's group-of-G rollouts plus reward model.
+Two details are load-bearing. The teacher **does not generate** — it scores the student's prefix in one forward pass and emits a next-token distribution over the full vocabulary, conditioned on $x$, $\pi$, and $\hat{y}_{<n}$ ([**OPSD**](https://arxiv.org/abs/2601.18734) (Zhao et al., 2026)). And gradients flow only through $p_S$; the teacher is a fixed target. This makes the teacher cost roughly that of one extra forward pass per student rollout — cheap compared to RL's group-of-G rollouts plus reward model.
 
 ### Core loss and the divergence menu
 
