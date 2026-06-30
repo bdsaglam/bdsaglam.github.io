@@ -47,7 +47,7 @@ pagetitle: "Barış Deniz Sağlam"
 
 ::: {.cvrole}
 [Senior AI Engineer — Independent Contractor]{.rh}
-[2025–present · Genie AI, Novee AI, Bosch Legends Lab · Remote]{.rmeta}
+[2025–present · Bosch Legends Lab, Novee AI, Genie AI · Remote]{.rmeta}
 :::
 ::: {.cvrole}
 [AI Software Engineer — Peppy Health]{.rh}

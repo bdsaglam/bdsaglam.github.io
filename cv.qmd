@@ -22,11 +22,11 @@ continual learning, and neuro-symbolic AI.
 
 ::: {.cvrole}
 [Senior AI Engineer — Independent Contractor]{.rh}
-[2025–present · Genie AI, Novee AI, Bosch Legends Lab · Remote]{.rmeta}
+[2025–present · Bosch Legends Lab, Novee AI, Genie AI · Remote]{.rmeta}
 
 - Own architecture, system design, and tech-stack decisions for production AI — backend, infrastructure, and the evaluation pipelines behind RAG systems and agents.
-- **Novee AI** — architected LLM structured-extraction systems for insurance underwriting (energy-asset, war/terrorism perils, general risk); built the domain-specific evaluation frameworks, failure-mode loops, and human-in-the-loop labeling that anchor iteration.
 - **Bosch Legends Lab** — architecture owner of an AI expert-sourcing platform; introduced Temporal workflow orchestration to replace an event-driven design unfit for long-running, human-in-the-loop AI, and led a microservices → modular-monolith migration. Built CV parsing, profile generation, a web-exploration research agent, and a hybrid-search + re-rank + RAG expert matcher.
+- **Novee AI** — architected LLM structured-extraction systems for insurance underwriting (energy-asset, war/terrorism perils, general risk); built the domain-specific evaluation frameworks, failure-mode loops, and human-in-the-loop labeling that anchor iteration.
 - **Genie AI** — prototyped LLM agents for a legal-writing assistant.
 :::
 
