@@ -7,7 +7,7 @@ pagetitle: "CV"
   <a class="dlcv" href="cv.pdf"><i class="bi bi-file-earmark-arrow-down"></i> Download CV (PDF)</a>
   <h1>Barış Deniz Sağlam</h1>
   <div class="cvtitle">Senior AI Engineer · AI Researcher</div>
-  <div class="cvmeta">Ankara, Turkey · <a href="mailto:bdsaglam@gmail.com">bdsaglam@gmail.com</a> · <a href="https://github.com/bdsaglam">GitHub</a> · <a href="https://linkedin.com/in/bdsaglam">LinkedIn</a> · <a href="https://scholar.google.com/citations?user=ItgIKcYAAAAJ">Scholar</a></div>
+  <div class="cvmeta">Ankara, Turkey · open to relocation · <a href="mailto:bdsaglam@gmail.com">bdsaglam@gmail.com</a> · <a href="https://github.com/bdsaglam">GitHub</a> · <a href="https://linkedin.com/in/bdsaglam">LinkedIn</a> · <a href="https://scholar.google.com/citations?user=ItgIKcYAAAAJ">Scholar</a></div>
 </div>
 ```
 
@@ -21,7 +21,8 @@ continual learning, and neuro-symbolic AI.
 ## Experience
 
 ::: {.cvrole}
-[Senior AI Engineer — Independent Contractor]{.rh} · [2025–present · Genie AI, Novee AI, Bosch Legends Lab]{.rmeta}
+[Senior AI Engineer — Independent Contractor]{.rh}
+[2025–present · Genie AI, Novee AI, Bosch Legends Lab · Remote]{.rmeta}
 
 - Own architecture, system design, and tech-stack decisions for production AI — backend, infrastructure, and the evaluation pipelines behind RAG systems and agents.
 - **Novee AI** — architected LLM structured-extraction systems for insurance underwriting (energy-asset, war/terrorism perils, general risk); built the domain-specific evaluation frameworks, failure-mode loops, and human-in-the-loop labeling that anchor iteration.
@@ -30,7 +31,8 @@ continual learning, and neuro-symbolic AI.
 :::
 
 ::: {.cvrole}
-[AI Software Engineer — Peppy Health]{.rh} · [2023–2025]{.rmeta}
+[AI Software Engineer — Peppy Health]{.rh}
+[2023–2025 · London, UK (remote)]{.rmeta}
 
 - Core contributor and senior engineer on the AI platform that became **Euphoric**, now a standalone company.
 - Designed and built RAG systems — a benefits navigator and health chatbot — with FastAPI, OpenAI, pgvector, and Weaviate.
@@ -39,26 +41,30 @@ continual learning, and neuro-symbolic AI.
 :::
 
 ::: {.cvrole}
-[Senior Software Engineer — Tractable]{.rh} · [2021–2023]{.rmeta}
+[Senior Software Engineer — Tractable]{.rh}
+[2021–2023 · London, UK (remote)]{.rmeta}
 
 - Delivered a production ML system for insurance claim-leakage assessment that directly enabled expansion into new European markets.
 :::
 
 ::: {.cvrole}
-[Software Development Engineer — Amazon Web Services]{.rh} · [2020–2021]{.rmeta}
+[Software Development Engineer — Amazon Web Services]{.rh}
+[2020–2021 · Berlin, Germany (hybrid)]{.rmeta}
 
 - Highly available, low-latency web services for cloud infrastructure.
 :::
 
 ::: {.cvrole}
-[Machine Learning Engineer — Mediate (MIT spin-off)]{.rh} · [2018–2020]{.rmeta}
+[Machine Learning Engineer — Mediate (MIT spin-off)]{.rh}
+[2018–2020 · Boston, USA (remote)]{.rmeta}
 
 - Founding engineer on Supersense, an assistive-tech app for blind and visually impaired users; established the ML and mobile architecture end-to-end.
 - Built a deep-learning document edge-detection system that outperformed classical computer vision, a MobileNet intent classifier, and a Core ML 3D document-orientation system; deployed on-device with TensorFlow Lite and Core ML.
 :::
 
 ::: {.cvrole}
-[R&D Engineer — Turkish Aerospace Industries]{.rh} · [2013–2017]{.rmeta}
+[R&D Engineer — Turkish Aerospace Industries]{.rh}
+[2013–2017 · Ankara, Turkey]{.rmeta}
 
 - Built in-house flight-test data analysis and validation software (Python, NumPy/SciPy/Pandas, MATLAB), replacing costly tooling and improving team productivity.
 :::

@@ -11,7 +11,7 @@ format:
     section-numbering: ""
 ---
 
-Ankara, Turkey · bdsaglam@gmail.com · github.com/bdsaglam · linkedin.com/in/bdsaglam · scholar.google.com/citations?user=ItgIKcYAAAAJ
+Ankara, Turkey · open to relocation · bdsaglam@gmail.com · github.com/bdsaglam · linkedin.com/in/bdsaglam · scholar.google.com/citations?user=ItgIKcYAAAAJ
 
 Senior engineer with 6+ years building and owning production AI systems end-to-end —
 architecture, system design, evaluation, and delivery — across health tech, insurance, legal
@@ -20,7 +20,7 @@ continual learning, and neuro-symbolic AI.
 
 # Experience
 
-**Senior AI Engineer — Independent Contractor** · 2025–present
+**Senior AI Engineer — Independent Contractor** · 2025–present · Remote
 *Genie AI, Novee AI, Bosch Legends Lab*
 
 - Own architecture, system design, and tech-stack decisions for production AI systems — backend, infrastructure, and the evaluation pipelines behind RAG systems and agents.
@@ -28,27 +28,27 @@ continual learning, and neuro-symbolic AI.
 - **Bosch Legends Lab:** De-facto architecture owner of an AI expert-sourcing platform. Introduced Temporal workflow orchestration to replace an event-driven design unfit for long-running, human-in-the-loop AI workflows, and led a microservices → modular-monolith migration (RFCs, team alignment). Built the pipeline end-to-end: CV parsing, profile generation, a web-exploration research agent, and a hybrid-search + re-rank + RAG expert matcher.
 - **Genie AI:** Prototyped LLM agents for a legal-writing assistant.
 
-**AI Software Engineer — Peppy Health / Euphoric** · 2023–2025
+**AI Software Engineer — Peppy Health / Euphoric** · 2023–2025 · London, UK (remote)
 
 - Core contributor and senior engineer on the AI platform that became Euphoric, now a standalone company.
 - Designed and built production RAG systems — a benefits navigator and health chatbot — with pgvector, Weaviate, FastAPI, and OpenAI.
 - Owned evaluation as the product's backbone: pipelines combining classical IR metrics, domain-specific measures, and expert feedback; applied A/B testing and statistical analysis to LLM features.
 - Ran internal knowledge-sharing on information retrieval (keyword → hybrid search → re-ranking).
 
-**Senior Software Engineer — Tractable** · 2021–2023
+**Senior Software Engineer — Tractable** · 2021–2023 · London, UK (remote)
 
 - Delivered a production ML system for insurance claim-leakage assessment that directly enabled expansion into new European markets.
 
-**Software Development Engineer — Amazon Web Services** · 2020–2021
+**Software Development Engineer — Amazon Web Services** · 2020–2021 · Berlin, Germany (hybrid)
 
 - Built highly available, low-latency web services for cloud infrastructure.
 
-**Machine Learning Engineer — Mediate (MIT spin-off)** · 2018–2020
+**Machine Learning Engineer — Mediate (MIT spin-off)** · 2018–2020 · Boston, USA (remote)
 
 - Founding engineer at an MIT spin-out building Supersense, an assistive-tech app for blind and visually impaired users; established the ML and mobile architecture end-to-end.
 - Built a deep-learning document edge-detection system that outperformed classical computer vision in cluttered real-world scenes, a MobileNet intent classifier, and a Core ML 3D document-orientation system; deployed on-device with TensorFlow Lite and Core ML.
 
-**R&D Engineer — Turkish Aerospace Industries** · 2013–2017
+**R&D Engineer — Turkish Aerospace Industries** · 2013–2017 · Ankara, Turkey
 
 - Built in-house flight-test data analysis and validation software (Python, NumPy/SciPy/Pandas, MATLAB), replacing costly tooling and improving team productivity.
 

@@ -130,8 +130,8 @@ h1 { font-size: 2rem; font-weight: 600; color: #1f1b18; margin: 0.3rem 0 0.2rem;
            letter-spacing: 0.05em; text-transform: uppercase; color: #8a7d70; margin: 0.1rem 0 0.5rem; }
 .cvmeta { font-family: "Source Sans 3", sans-serif; font-size: 0.96rem; color: #6a6058; margin-bottom: 0.4rem; }
 .cvrole { margin: 0 0 1.25rem; }
-.cvrole .rh { font-weight: 600; color: #1f1b18; }
-.cvrole .rmeta { color: #8a7d70; font-size: 0.95rem; }
+.cvrole .rh { display: block; font-weight: 600; color: #1f1b18; }
+.cvrole .rmeta { display: block; margin-top: 0.1rem; color: #8a7d70; font-size: 0.95rem; }
 .cvrole ul { margin: 0.35rem 0 0; padding-left: 1.1rem; }
 .cvrole li { margin: 0.2rem 0; font-size: 0.99rem; }
 .skills dl { display: grid; grid-template-columns: 150px 1fr; gap: 0.55rem 1.2rem; margin: 0.3rem 0 0;
