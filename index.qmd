@@ -45,11 +45,21 @@ pagetitle: "Barış Deniz Sağlam"
 
 ## Experience
 
-::: {.roles}
-- **Senior AI Engineer (Contractor)** — 2025–present · Genie AI, Novee AI, Bosch Legends Lab.
-- **Peppy Health** — AI Software Engineer · 2023–25 · RAG assistants & LLM evaluation; core contributor to Euphoric.
-- **Tractable** — Senior Software Engineer · 2021–23 · Production ML for insurance claim assessment.
-- **Amazon Web Services** — Software Development Engineer · 2020–21 · High-availability, low-latency cloud services.
+::: {.cvrole}
+[Senior AI Engineer — Independent Contractor]{.rh}
+[2025–present · Genie AI, Novee AI, Bosch Legends Lab · Remote]{.rmeta}
+:::
+::: {.cvrole}
+[AI Software Engineer — Peppy Health]{.rh}
+[2023–2025 · London, UK (remote)]{.rmeta}
+:::
+::: {.cvrole}
+[Senior Software Engineer — Tractable]{.rh}
+[2021–2023 · London, UK (remote)]{.rmeta}
+:::
+::: {.cvrole}
+[Software Development Engineer — Amazon Web Services]{.rh}
+[2020–2021 · Berlin, Germany (hybrid)]{.rmeta}
 :::
 
 [Full CV →](cv.html){.more}
