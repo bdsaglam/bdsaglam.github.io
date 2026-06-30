@@ -86,7 +86,8 @@ h2 { font-size: 1.4rem; font-weight: 600; color: #1f1b18; margin: 2.3rem 0 0.9re
 .card h3 { margin: 0 0 0.4rem; font-size: 1.18rem; }
 .card h3 a { color: #1f1b18; text-decoration: none; } .card h3 a:hover { color: #9a3b2e; }
 .card p { margin: 0 0 0.7rem; font-size: 0.98rem; color: #45403a; }
-.card .links { font-family: "Source Sans 3", sans-serif; font-size: 0.86rem; color: #8a7d70; }
+.card .links { display: block; margin-top: 0.7rem; font-family: "Source Sans 3", sans-serif;
+               font-size: 0.86rem; color: #8a7d70; }
 .card .links a { color: #9a3b2e; text-decoration: none; } .card .links a:hover { text-decoration: underline; }
 @media (max-width: 600px){ .cards { grid-template-columns: 1fr; } }
 

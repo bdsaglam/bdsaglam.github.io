@@ -21,7 +21,17 @@ solved several ARC-AGI-2 tasks that the verified state of the art missed.
 :::
 
 ::: {.card}
-[2025]{.cdate}
+[Jun 2025]{.cdate}
+
+### [Fine-tuning vs. Prompting for LLM Adaptation](https://github.com/bdsaglam/pipeline-llm-adaptation)
+A study on joint entity–relation extraction (WebNLG) showing that DSPy prompt optimization
+can match LoRA fine-tuning at far lower data and compute cost, evaluated with an LLM-as-judge
+(ELO).
+[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Post](posts/fine-tuning-vs-prompting/index.html)]{.links}
+:::
+
+::: {.card}
+[Apr 2025]{.cdate}
 
 ### [Reinforcement Learning for Multi-Hop QA](https://github.com/bdsaglam/rlvr)
 Fine-tuned Llama-3.1-8B with GRPO to answer multi-hop questions as an agentic task —
@@ -29,16 +39,6 @@ interleaving reasoning, planning, and retrieval tool calls. RL raised answer F1 
 0.48 on MuSiQue (~60% relative) over the base model — evidence that small models can learn to
 use retrieval tools for multi-step reasoning.
 [[Code](https://github.com/bdsaglam/rlvr) · [Details →](#)]{.links}
-:::
-
-::: {.card}
-[2024]{.cdate}
-
-### [Fine-tuning vs. Prompting for LLM Adaptation](https://github.com/bdsaglam/pipeline-llm-adaptation)
-A study on joint entity–relation extraction (WebNLG) showing that DSPy prompt optimization
-can match LoRA fine-tuning at far lower data and compute cost, evaluated with an LLM-as-judge
-(ELO).
-[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Post](posts/fine-tuning-vs-prompting/index.html)]{.links}
 :::
 
 :::

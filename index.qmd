@@ -49,6 +49,7 @@ pagetitle: "Barış Deniz Sağlam"
 - **Senior AI Engineer (Contractor)** — 2025–present · Genie AI, Novee AI, Bosch Legends Lab.
 - **Peppy Health** — AI Software Engineer · 2023–25 · RAG assistants & LLM evaluation; core contributor to Euphoric.
 - **Tractable** — Senior Software Engineer · 2021–23 · Production ML for insurance claim assessment.
+- **Amazon Web Services** — Software Development Engineer · 2020–21 · High-availability, low-latency cloud services.
 :::
 
 [Full CV →](cv.html){.more}
@@ -64,18 +65,18 @@ An LLM agent that solves ARC-AGI puzzles by implicit program synthesis in a Pyth
 [[Code](https://github.com/bdsaglam/epiq)]{.links}
 :::
 ::: {.card}
-[2025]{.cdate}
-
-### [RL for Multi-Hop QA](https://github.com/bdsaglam/rlvr)
-GRPO-trained Llama-3.1-8B learns agentic retrieval — answer F1 0.30 → 0.48 on MuSiQue.
-[[Code](https://github.com/bdsaglam/rlvr)]{.links}
-:::
-::: {.card}
-[2024]{.cdate}
+[Jun 2025]{.cdate}
 
 ### [Fine-tuning vs. Prompting](https://github.com/bdsaglam/pipeline-llm-adaptation)
 Prompt optimization matches LoRA fine-tuning at lower cost on entity–relation extraction.
 [[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Post](posts/fine-tuning-vs-prompting/index.html)]{.links}
+:::
+::: {.card}
+[Apr 2025]{.cdate}
+
+### [RL for Multi-Hop QA](https://github.com/bdsaglam/rlvr)
+GRPO-trained Llama-3.1-8B learns agentic retrieval — answer F1 0.30 → 0.48 on MuSiQue.
+[[Code](https://github.com/bdsaglam/rlvr)]{.links}
 :::
 :::
 
