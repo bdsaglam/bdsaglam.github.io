@@ -1,14 +1,82 @@
 ---
-title: "Curiosity Trace"
-listing:
-  contents: posts
-  sort: "date desc"
-  type: default
-  categories: true
-  sort-ui: false
-  filter-ui: false
-page-layout: full
-title-block-banner: true
+pagetitle: "Barış Deniz Sağlam"
 ---
 
+```{=html}
+<header class="hero">
+  <img class="avatar" src="profile.jpg" alt="Barış Deniz Sağlam">
+  <div class="hero-text">
+    <p>I'm a senior AI engineer and PhD researcher. For six-plus years I've designed and
+    shipped production AI systems — owning architecture, system design, and tech-stack
+    decisions across health tech, insurance, legal tech, and aerospace. Now I'm focused on
+    research — foundation models, continual learning, and neuro-symbolic AI.</p>
+    <div class="herorow">
+      <span class="social">
+        <a href="https://github.com/bdsaglam" aria-label="GitHub"><i class="bi bi-github"></i></a>
+        <a href="https://linkedin.com/in/bdsaglam" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+        <a href="https://scholar.google.com/citations?user=ItgIKcYAAAAJ" aria-label="Google Scholar"><i class="bi bi-mortarboard"></i></a>
+        <a href="mailto:bdsaglam@gmail.com" aria-label="Email"><i class="bi bi-envelope"></i></a>
+      </span>
+      <a class="cvlink" href="cv.html"><i class="bi bi-file-earmark-arrow-down"></i> CV</a>
+    </div>
+  </div>
+</header>
+```
 
+## Recent
+
+::: {.recent}
+- [Jun 2026]{.when}[Won the [**DocVQA**](https://rrc.cvc.uab.es/?com=news&view=data&id=83) challenge at **ICDAR 2026**.]{.what}
+- [Sep 2025]{.when}[Started a **PhD** in Information Systems at METU.]{.what}
+- [Oct 2024]{.when}[Completed an **MSc in Data Informatics** at METU.]{.what}
+:::
+
+## Writing
+
+[**MSc Thesis** — *Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language Models*. METU, 2024. [Open archive](https://open.metu.edu.tr/handle/11511/111317)]{.thesis}
+
+::: {.posts}
+- [**Fine-tuning vs. Prompting**](posts/fine-tuning-vs-prompting/index.html) — when adapting weights beats prompting, and what it costs.
+- [**Is Everything an Abstraction?**](posts/is-everything-an-abstraction/index.html) — physics, Kant, and the layers we build to grasp reality.
+- [**Initialization in Neural Networks**](posts/initialization-in-nn/index.html) — why it matters more than it looks, and the intuition behind the schemes.
+:::
+
+[All writing →](writing.html){.more}
+
+## Experience
+
+::: {.roles}
+- **Senior AI Engineer (Contractor)** — 2025–present · Genie AI, Novee AI, Bosch Legends Lab.
+- **Peppy Health** — AI Software Engineer · 2023–25 · RAG assistants & LLM evaluation; core contributor to Euphoric.
+- **Tractable** — Senior Software Engineer · 2021–23 · Production ML for insurance claim assessment.
+:::
+
+[Full CV →](cv.html){.more}
+
+## Projects
+
+::: {.cards}
+::: {.card}
+[Feb 2026]{.cdate}
+
+### [Abstract Reasoning (epiq)](https://github.com/bdsaglam/epiq)
+An LLM agent that solves ARC-AGI puzzles by implicit program synthesis in a Python REPL, with holdout verification.
+[[Code](https://github.com/bdsaglam/epiq)]{.links}
+:::
+::: {.card}
+[2025]{.cdate}
+
+### [RL for Multi-Hop QA](https://github.com/bdsaglam/rlvr)
+GRPO-trained Llama-3.1-8B learns agentic retrieval — answer F1 0.30 → 0.48 on MuSiQue.
+[[Code](https://github.com/bdsaglam/rlvr)]{.links}
+:::
+::: {.card}
+[2024]{.cdate}
+
+### [Fine-tuning vs. Prompting](https://github.com/bdsaglam/pipeline-llm-adaptation)
+Prompt optimization matches LoRA fine-tuning at lower cost on entity–relation extraction.
+[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Post](posts/fine-tuning-vs-prompting/index.html)]{.links}
+:::
+:::
+
+[All projects →](projects.html){.more}

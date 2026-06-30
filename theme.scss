@@ -1,0 +1,145 @@
+/*-- scss:defaults --*/
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+$font-family-base:       "Newsreader", Georgia, serif;
+$font-family-sans-serif: "Source Sans 3", system-ui, sans-serif;
+$headings-font-family:   "Newsreader", Georgia, serif;
+$body-bg:    #faf7f2;
+$body-color: #2b2724;
+$link-color: #9a3b2e;
+$font-size-base: 1.14rem;
+$line-height-base: 1.7;
+$headings-font-weight: 600;
+
+/*-- scss:rules --*/
+body { background: #faf7f2; -webkit-font-smoothing: antialiased; }
+h1,h2,h3 { font-family: "Newsreader", Georgia, serif; }
+a { color: #9a3b2e; text-decoration: underline; text-decoration-color: #d9bdb6; text-underline-offset: 2px; }
+a:hover { text-decoration-color: #9a3b2e; }
+strong { color: #1f1b18; }
+em { color: #4a443d; }
+
+/* site navbar (Quarto) — styled to match the prototype's text nav */
+.navbar { background: #faf7f2 !important; border-bottom: 1px solid #e7ddcd; box-shadow: none; min-height: 0; }
+.navbar > .navbar-container, .navbar > .container-fluid { max-width: 720px; margin: 0 auto;
+       padding: 0.75rem 1.6rem; }
+.navbar-brand { font-family: "Newsreader", Georgia, serif !important; font-weight: 600; font-size: 1.16rem;
+       color: #1f1b18 !important; }
+.navbar .navbar-nav { gap: 1.25rem; align-items: baseline; }
+.navbar .nav-link { font-family: "Source Sans 3", sans-serif; font-size: 0.96rem; color: #6a6058 !important;
+       padding: 0 !important; }
+.navbar .nav-link:hover, .navbar .nav-link.active { color: #9a3b2e !important; }
+.navbar .navbar-toggler { border: 0; }
+/* keep the page content clear of the navbar's bottom rule */
+#quarto-content > * , main.content > section:first-child > h2:first-child { }
+main.content > section.level2:first-child > h2,
+#quarto-document-content > section.level2:first-child > h2 { border-top: 0; padding-top: 0; margin-top: 1.2rem; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: 132px 1fr; gap: 1.8rem; align-items: start; margin-bottom: 0.5rem; }
+.hero .avatar { width: 132px; height: 156px; object-fit: cover; object-position: 50% 18%; border-radius: 10px;
+                box-shadow: 0 8px 24px -14px rgba(0,0,0,.4); }
+.hero .hello { font-family: "Newsreader", serif; font-weight: 600; font-size: 1.75rem; color: #1f1b18;
+               line-height: 1.1; margin-bottom: 0.5rem; }
+.hero p { margin: 0 0 1rem; }
+.herorow { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.cvlink { font-family: "Source Sans 3", sans-serif; font-size: 0.92rem; font-weight: 600; color: #9a3b2e;
+          text-decoration: none; display: inline-flex; align-items: center; gap: 0.32rem; }
+.cvlink:hover { text-decoration: underline; }
+.social { display: flex; gap: 0.9rem; font-size: 1.2rem; }
+.social a { color: #6a6058; text-decoration: none; } .social a:hover { color: #9a3b2e; }
+
+/* sections */
+h2 { font-size: 1.4rem; font-weight: 600; color: #1f1b18; margin: 2.3rem 0 0.9rem;
+     padding-top: 1.4rem; border-top: 1px solid #e7ddcd; }
+.more { font-family: "Source Sans 3", sans-serif; font-weight: 600; font-size: 0.94rem; }
+
+/* recent */
+.recent ul { list-style: none; padding: 0; margin: 0; }
+.recent li { display: grid; grid-template-columns: 5rem 1fr; gap: 0.7rem; margin-bottom: 0.5rem; font-size: 1rem; }
+.recent .when { font-family: "Source Sans 3", sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em;
+                text-transform: uppercase; color: #b08a7f; padding-top: 0.18rem; }
+.recent .what { color: #3a342f; }
+
+/* posts / roles / projects as lists */
+.posts ul, .roles ul, .projlist ul { list-style: none; padding: 0; margin: 0.4rem 0 0.8rem; }
+.posts li, .projlist li { margin: 0.5rem 0; }
+.posts li a, .projlist li a { color: #1f1b18; text-decoration: none; font-weight: 600; }
+.posts li a:hover, .projlist li a:hover { color: #9a3b2e; text-decoration: underline; }
+.roles li { margin: 0.45rem 0; }
+.thesis { margin: 0 0 0.4rem; }
+.contact { font-size: 1.05rem; }
+
+/* featured posts (B) */
+.feature { margin-bottom: 1.1rem; }
+.feature .ftitle { display: block; font-size: 1.22rem; font-weight: 600; color: #1f1b18; text-decoration: none; }
+.feature .ftitle:hover { color: #9a3b2e; }
+.feature p { margin: 0.15rem 0 0; color: #45403a; }
+.feature .meta { font-family: "Source Sans 3", sans-serif; font-size: 0.76rem; font-weight: 600;
+                 letter-spacing: 0.03em; text-transform: uppercase; color: #b08a7f; }
+
+/* project cards (B) */
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.4rem; }
+.card { background: #fffdfa; border: 1px solid #ece3d5; border-radius: 12px; padding: 1.1rem 1.25rem; transition: .15s; }
+.card:hover { border-color: #d8a99e; box-shadow: 0 10px 28px -18px rgba(0,0,0,.3); }
+.card .cdate { display: block; font-family: "Source Sans 3", sans-serif; font-size: 0.74rem; font-weight: 600;
+               letter-spacing: 0.04em; text-transform: uppercase; color: #b08a7f; margin-bottom: 0.25rem; }
+.card h3 { margin: 0 0 0.4rem; font-size: 1.18rem; }
+.card h3 a { color: #1f1b18; text-decoration: none; } .card h3 a:hover { color: #9a3b2e; }
+.card p { margin: 0 0 0.7rem; font-size: 0.98rem; color: #45403a; }
+.card .links { font-family: "Source Sans 3", sans-serif; font-size: 0.86rem; color: #8a7d70; }
+.card .links a { color: #9a3b2e; text-decoration: none; } .card .links a:hover { text-decoration: underline; }
+@media (max-width: 600px){ .cards { grid-template-columns: 1fr; } }
+
+/* ---- inner pages ---- */
+h1 { font-size: 2rem; font-weight: 600; color: #1f1b18; margin: 0.3rem 0 0.2rem; }
+.pagelead { color: #4a443d; font-size: 1.12rem; margin: 0 0 0.6rem; max-width: 60ch; }
+/* drop the divider rule when a section leads the page (no page title above it) */
+.nav + section.level2 > h2, .nav + h2 { border-top: 0; padding-top: 0; margin-top: 0.6rem; }
+
+/* writing page: publications + post list */
+.pub { margin: 0 0 0.6rem; font-size: 1.05rem; }
+.pub .ptype { font-family: "Source Sans 3", sans-serif; font-size: 0.72rem; font-weight: 700;
+              letter-spacing: 0.06em; text-transform: uppercase; color: #b08a7f; }
+.postlist ul { list-style: none; padding: 0; margin: 0.4rem 0; }
+.postlist li { display: grid; grid-template-columns: 1fr auto; gap: 0.25rem 1rem; align-items: baseline;
+               padding: 0.7rem 0; border-bottom: 1px solid #efe7da; }
+.postlist li:last-child { border-bottom: 0; }
+.postlist .pt { grid-column: 1; grid-row: 1; font-weight: 600; color: #1f1b18; text-decoration: none;
+                font-size: 1.05rem; }
+.postlist .pt:hover { color: #9a3b2e; text-decoration: underline; }
+.postlist .pd { grid-column: 2; grid-row: 1; text-align: right; font-family: "Source Sans 3", sans-serif;
+                font-size: 0.76rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+                color: #b08a7f; white-space: nowrap; }
+.postlist .pdesc { grid-column: 1 / -1; grid-row: 2; color: #4a443d; font-size: 1.05rem; margin: 0; }
+.postlist .pcats { font-family: "Source Sans 3", sans-serif; font-size: 0.74rem; font-weight: 600;
+                   letter-spacing: 0.04em; text-transform: uppercase; color: #b08a7f; }
+.dlcv { display: inline-flex; align-items: center; gap: 0.35rem; font-family: "Source Sans 3", sans-serif;
+        font-size: 0.92rem; font-weight: 600; color: #9a3b2e; text-decoration: none; margin: 0.4rem 0 0.9rem; }
+.dlcv:hover { text-decoration: underline; }
+.cvhead { position: relative; }
+.cvhead h1 { margin-top: 0; }
+.cvhead .dlcv { position: absolute; top: 0.4rem; right: 0; margin: 0; }
+@media (max-width: 600px) { .cvhead .dlcv { position: static; margin: 0.5rem 0 0.6rem; } }
+
+/* projects page: full-width cards */
+.cards.col1 { grid-template-columns: 1fr; }
+
+/* cv page */
+.cvtitle { font-family: "Source Sans 3", sans-serif; font-size: 0.82rem; font-weight: 600;
+           letter-spacing: 0.05em; text-transform: uppercase; color: #8a7d70; margin: 0.1rem 0 0.5rem; }
+.cvmeta { font-family: "Source Sans 3", sans-serif; font-size: 0.96rem; color: #6a6058; margin-bottom: 0.4rem; }
+.cvrole { margin: 0 0 1.25rem; }
+.cvrole .rh { font-weight: 600; color: #1f1b18; }
+.cvrole .rmeta { color: #8a7d70; font-size: 0.95rem; }
+.cvrole ul { margin: 0.35rem 0 0; padding-left: 1.1rem; }
+.cvrole li { margin: 0.2rem 0; font-size: 0.99rem; }
+.skills dl { display: grid; grid-template-columns: 150px 1fr; gap: 0.55rem 1.2rem; margin: 0.3rem 0 0;
+             font-size: 0.99rem; }
+.skills dt { font-weight: 600; color: #1f1b18; }
+.skills dd { margin: 0; color: #2b2724; }
+.eduitem { margin: 0 0 0.8rem; }
+.eduitem .eh { font-weight: 600; color: #1f1b18; }
+.eduitem .emeta { color: #8a7d70; font-size: 0.95rem; }
+.eduitem .edesc { display: block; color: #4a443d; font-size: 0.98rem; }
+
+@media (max-width: 600px){ .hero { grid-template-columns: 1fr; } .hero .avatar { width: 108px; height: 128px; } }

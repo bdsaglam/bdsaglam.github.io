@@ -1,0 +1,101 @@
+---
+pagetitle: "CV"
+---
+
+```{=html}
+<div class="cvhead">
+  <a class="dlcv" href="cv.pdf"><i class="bi bi-file-earmark-arrow-down"></i> Download CV (PDF)</a>
+  <h1>Barış Deniz Sağlam</h1>
+  <div class="cvtitle">Senior AI Engineer · AI Researcher</div>
+  <div class="cvmeta">Ankara, Turkey · <a href="mailto:bdsaglam@gmail.com">bdsaglam@gmail.com</a> · <a href="https://github.com/bdsaglam">GitHub</a> · <a href="https://linkedin.com/in/bdsaglam">LinkedIn</a> · <a href="https://scholar.google.com/citations?user=ItgIKcYAAAAJ">Scholar</a></div>
+</div>
+```
+
+::: {.pagelead}
+Senior engineer with 6+ years building and owning production AI systems end-to-end —
+architecture, system design, evaluation, and delivery — across health tech, insurance,
+legal tech, and aerospace. Now pursuing a PhD, with research interests in foundation models,
+continual learning, and neuro-symbolic AI.
+:::
+
+## Experience
+
+::: {.cvrole}
+[Senior AI Engineer — Independent Contractor]{.rh} · [2025–present · Genie AI, Novee AI, Bosch Legends Lab]{.rmeta}
+
+- Own architecture, system design, and tech-stack decisions for production AI — backend, infrastructure, and the evaluation pipelines behind RAG systems and agents.
+- **Novee AI** — architected LLM structured-extraction systems for insurance underwriting (energy-asset, war/terrorism perils, general risk); built the domain-specific evaluation frameworks, failure-mode loops, and human-in-the-loop labeling that anchor iteration.
+- **Bosch Legends Lab** — architecture owner of an AI expert-sourcing platform; introduced Temporal workflow orchestration to replace an event-driven design unfit for long-running, human-in-the-loop AI, and led a microservices → modular-monolith migration. Built CV parsing, profile generation, a web-exploration research agent, and a hybrid-search + re-rank + RAG expert matcher.
+- **Genie AI** — prototyped LLM agents for a legal-writing assistant.
+:::
+
+::: {.cvrole}
+[AI Software Engineer — Peppy Health]{.rh} · [2023–2025]{.rmeta}
+
+- Core contributor and senior engineer on the AI platform that became **Euphoric**, now a standalone company.
+- Designed and built RAG systems — a benefits navigator and health chatbot — with FastAPI, OpenAI, pgvector, and Weaviate.
+- Owned evaluation as the product's backbone: pipelines combining classical IR metrics, domain measures, and expert feedback; applied A/B testing and statistical significance to LLM features.
+- Ran internal knowledge-sharing on information retrieval (keyword → hybrid search → re-ranking).
+:::
+
+::: {.cvrole}
+[Senior Software Engineer — Tractable]{.rh} · [2021–2023]{.rmeta}
+
+- Delivered a production ML system for insurance claim-leakage assessment that directly enabled expansion into new European markets.
+:::
+
+::: {.cvrole}
+[Software Development Engineer — Amazon Web Services]{.rh} · [2020–2021]{.rmeta}
+
+- Highly available, low-latency web services for cloud infrastructure.
+:::
+
+::: {.cvrole}
+[Machine Learning Engineer — Mediate (MIT spin-off)]{.rh} · [2018–2020]{.rmeta}
+
+- Founding engineer on Supersense, an assistive-tech app for blind and visually impaired users; established the ML and mobile architecture end-to-end.
+- Built a deep-learning document edge-detection system that outperformed classical computer vision, a MobileNet intent classifier, and a Core ML 3D document-orientation system; deployed on-device with TensorFlow Lite and Core ML.
+:::
+
+::: {.cvrole}
+[R&D Engineer — Turkish Aerospace Industries]{.rh} · [2013–2017]{.rmeta}
+
+- Built in-house flight-test data analysis and validation software (Python, NumPy/SciPy/Pandas, MATLAB), replacing costly tooling and improving team productivity.
+:::
+
+## Education
+
+::: {.eduitem}
+[PhD, Information Systems — METU]{.eh} · [2025–present]{.emeta}
+[Deep learning, language models, reinforcement learning, information retrieval.]{.edesc}
+:::
+::: {.eduitem}
+[MSc, Data Informatics — METU]{.eh} · [2021–2024 · CGPA 3.93]{.emeta}
+[[Thesis](https://open.metu.edu.tr/handle/11511/111317): Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language Models.]{.edesc}
+:::
+::: {.eduitem}
+[BSc, Mechanical Engineering — METU]{.eh} · [2006–2012]{.emeta}
+:::
+
+## Skills
+
+::: {.skills}
+AI engineering
+:   Production AI products end-to-end — RAG systems, agents, and LLM fine-tuning, serving, and post-training.
+
+Evaluation
+:   Systematic evaluation of AI systems — evaluation pipelines, offline/online metrics, human/judge alignment, and statistical rigor.
+
+Architecture
+:   System design and architecture for AI products; backend, infrastructure, and observability.
+
+Research
+:   Rigorous experimental methodology — strong baselines, ablations, and honest measurement.
+
+Leadership
+:   Technical direction, tech-stack decisions, and cross-functional collaboration.
+:::
+
+## Awards
+
+- **DocVQA challenge** winner — ICDAR 2026.
