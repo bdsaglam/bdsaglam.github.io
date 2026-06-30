@@ -1,0 +1,11 @@
+<div class="postlist">
+<ul>
+<% for (const item of items) { %>
+  <li>
+    <a class="pt" href="<%- item.path %>"><%= item.title %></a>
+    <% if (item.date) { %><span class="pd"><%= item.date %></span><% } %>
+    <% if (item.categories && item.categories.length) { %><p class="pdesc pcats"><%= item.categories.join(' · ') %></p><% } %>
+  </li>
+<% } %>
+</ul>
+</div>

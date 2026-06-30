@@ -1,0 +1,44 @@
+---
+pagetitle: "Projects"
+---
+
+# Projects
+
+[More on GitHub →](https://github.com/bdsaglam){.more}
+
+::: {.cards .col1}
+
+::: {.card}
+[Feb 2026]{.cdate}
+
+### [Implicit Program Synthesis for Abstract Reasoning (epiq)](https://github.com/bdsaglam/epiq)
+An LLM agent that solves ARC-AGI puzzles inside a persistent Python REPL through
+observe–reason–act–verify loops. Rather than emitting one explicit `transform()` function,
+the execution trace *is* the program — implicit synthesis grounded in real computed state —
+with holdout verification (hide a training example to force genuine generalization). It
+solved several ARC-AGI-2 tasks that the verified state of the art missed.
+[[Code](https://github.com/bdsaglam/epiq)]{.links}
+:::
+
+::: {.card}
+[Jun 2025]{.cdate}
+
+### [Fine-tuning vs. Prompting for LLM Adaptation](https://github.com/bdsaglam/pipeline-llm-adaptation)
+A study on joint entity–relation extraction (WebNLG) showing that DSPy prompt optimization
+can match LoRA fine-tuning at far lower data and compute cost, evaluated with an LLM-as-judge
+(ELO).
+[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Post](posts/fine-tuning-vs-prompting/index.html)]{.links}
+:::
+
+::: {.card}
+[Apr 2025]{.cdate}
+
+### [Reinforcement Learning for Multi-Hop QA](https://github.com/bdsaglam/rlvr)
+Fine-tuned Llama-3.1-8B with GRPO to answer multi-hop questions as an agentic task —
+interleaving reasoning, planning, and retrieval tool calls. RL raised answer F1 from 0.30 to
+0.48 on MuSiQue (~60% relative) over the base model — evidence that small models can learn to
+use retrieval tools for multi-step reasoning.
+[[Code](https://github.com/bdsaglam/rlvr)]{.links}
+:::
+
+:::

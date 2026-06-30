@@ -1,0 +1,33 @@
+---
+pagetitle: "Writing"
+listing:
+  - id: posts
+    contents:
+      - "posts/*/index.qmd"
+      - "posts/*/index.ipynb"
+      - "tutorials/on-policy-distillation/index.qmd"
+      - "!posts/llm-providers-structured-output/index.ipynb"
+      - "!posts/py-cuda-kernel/index.ipynb"
+      - "!posts/tgi-litellm-openai/index.ipynb"
+      - "!posts/fastai-huggingface-datasets/index.ipynb"
+      - "!posts/fastai-custom-model/index.ipynb"
+    sort: "date desc"
+    type: custom
+    template: _postlist.ejs
+    date-format: "MMM YYYY"
+    fields: [title, date, categories, path]
+---
+
+## Publications
+
+::: {.pub}
+**MSc Thesis** — *Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language
+Models*. METU, 2024. [Open archive](https://open.metu.edu.tr/handle/11511/111317)
+:::
+
+## Posts
+
+::: {#posts}
+:::
+
+[Archive →](archive.html){.more}

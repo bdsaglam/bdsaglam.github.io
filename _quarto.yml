@@ -1,26 +1,36 @@
 project:
   type: website
+  output-dir: _site
   resources:
     - CNAME
     - slides/**
 
 website:
-  title: "Curiosity Trace"
+  title: "Barış Deniz Sağlam"
+  site-url: https://barisdeniz.is-a.dev
+  search: false
   navbar:
+    pinned: false
+    background: light
     right:
-      - about.qmd
-      - icon: github
-        href: https://github.com/bdsaglam
-      - icon: twitter
-        href: https://twitter.com/bdsaglam
+      - text: Home
+        href: index.html
+      - text: Writing
+        href: writing.html
+      - text: Projects
+        href: projects.html
+      - text: CV
+        href: cv.html
   google-analytics: "G-498T1C2SN2"
 
 format:
   html:
-    theme: cosmo
-    css: styles.css
+    theme: theme.scss
+    toc: false
+    grid:
+      body-width: 720px
+    anchor-sections: false
+    highlight-style: github
 
 execute:
   freeze: auto
-
-

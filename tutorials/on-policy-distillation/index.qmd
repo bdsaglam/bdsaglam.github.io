@@ -249,7 +249,7 @@ These are descriptions of the field's open frontier, not research-direction pitc
 
 ## §8 — Strategic landscape
 
-The reader should leave this section with a balanced read of the field's status. OPD is not a corner of the literature anymore; it is also no longer an open frontier. Both halves of that statement matter when deciding where research effort goes.
+OPD is not a corner of the literature anymore; it is also no longer an open frontier. Both halves of that statement matter when deciding where research effort goes.
 
 ### Signs of saturation
 
@@ -507,8 +507,6 @@ Some questions the mechanism-spectrum view raises:
 
 ---
 
----
-
 ### §10.3 — Beyond reward-engineering: agents motivated to learn
 
 A different question from §10.1 and §10.2 — same vision-level layer, but a distinct axis. §10.1 is about *what signal* drives learning (universal-signal substrate); §10.2 is about *what mechanism* converts signal into weight update (PI-conditioning vs alternatives). §10.3 is about *what objective the agent actually optimizes* — not the engineering choice of reward function, but the structural question of what it would mean for an agent to *want* to learn.
@@ -585,7 +583,7 @@ These compose. [OPSD](https://arxiv.org/abs/2601.18734) uses both **frozen-self 
 
 ### A.4 Full PI taxonomy
 
-The PI form determines what counts as "asymmetric context" — and so determines what kind of skill the student can absorb. The 13 forms catalogued by the primer:
+The PI form determines what counts as "asymmetric context" — and so determines what kind of skill the student can absorb. The 13 forms catalogued here:
 
 | PI form                            | What the teacher sees                                                | Example paper                                                                                                                                                                                                          |
 | ---------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

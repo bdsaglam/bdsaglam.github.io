@@ -1,0 +1,27 @@
+---
+pagetitle: "Archive"
+listing:
+  - id: archived
+    contents:
+      - "posts/llm-providers-structured-output/index.ipynb"
+      - "posts/py-cuda-kernel/index.ipynb"
+      - "posts/tgi-litellm-openai/index.ipynb"
+      - "posts/fastai-huggingface-datasets/index.ipynb"
+      - "posts/fastai-custom-model/index.ipynb"
+    sort: "date desc"
+    type: custom
+    template: _postlist.ejs
+    date-format: "MMM YYYY"
+    fields: [title, date, categories, path]
+---
+
+# Archive
+
+::: {.pagelead}
+Older posts, kept for posterity.
+:::
+
+::: {#archived}
+:::
+
+[← Back to writing](writing.html){.more}
