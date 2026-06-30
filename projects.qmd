@@ -17,7 +17,7 @@ observe–reason–act–verify loops. Rather than emitting one explicit `transf
 the execution trace *is* the program — implicit synthesis grounded in real computed state —
 with holdout verification (hide a training example to force genuine generalization). It
 solved several ARC-AGI-2 tasks that the verified state of the art missed.
-[[Code](https://github.com/bdsaglam/epiq) · [Details →](#)]{.links}
+[[Code](https://github.com/bdsaglam/epiq)]{.links}
 :::
 
 ::: {.card}
@@ -38,7 +38,7 @@ Fine-tuned Llama-3.1-8B with GRPO to answer multi-hop questions as an agentic ta
 interleaving reasoning, planning, and retrieval tool calls. RL raised answer F1 from 0.30 to
 0.48 on MuSiQue (~60% relative) over the base model — evidence that small models can learn to
 use retrieval tools for multi-step reasoning.
-[[Code](https://github.com/bdsaglam/rlvr) · [Details →](#)]{.links}
+[[Code](https://github.com/bdsaglam/rlvr)]{.links}
 :::
 
 :::
