@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2023-04-30">
 
-<title>How to use HuggingFace datasets with fastai? – Curiosity Trace</title>
+<title>How to use HuggingFace datasets with fastai? – Barış Deniz Sağlam</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -65,33 +65,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-94b323657c735dfe3b1bf6ebb2c33a55.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-97ea5928669519cc1115c0903563ba78.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
-  "copy-button": false,
-  "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
-  "limit": 50,
-  "keyboard-shortcut": [
-    "f",
-    "/",
-    "s"
-  ],
-  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -117,7 +100,6 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </script>
 
 
-<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed fullcontent quarto-light">
@@ -128,28 +110,29 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">Curiosity Trace</span>
+    <span class="navbar-title">Barış Deniz Sağlam</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="Search"></div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/bdsaglam"> <i class="bi bi-github" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../writing.html"> 
+<span class="menu-text">Writing</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/bdsaglam"> <i class="bi bi-twitter" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../cv.html"> 
+<span class="menu-text">CV</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -199,7 +182,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 
 <p>In this tutorial, we will show you how to use a HuggingFace dataset with fastai to train a model for image classification. We will use the <a href="https://huggingface.co/datasets/beans">Beans dataset</a>, which consists of images of beans with three different types of diseases.</p>
 <section id="step-1-install-the-required-libraries" class="level2">
-<h2 class="anchored" data-anchor-id="step-1-install-the-required-libraries">Step 1: Install the required libraries</h2>
+<h2 data-anchor-id="step-1-install-the-required-libraries">Step 1: Install the required libraries</h2>
 <p>Before starting, we need to install the required libraries. Run the following commands to install fastai and HuggingFace’s datasets:</p>
 <div id="cell-3" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install <span class="op">-</span>Uqq fastai</span>
@@ -211,7 +194,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </div>
 </section>
 <section id="step-2-import-the-required-modules" class="level2">
-<h2 class="anchored" data-anchor-id="step-2-import-the-required-modules">Step 2: Import the required modules</h2>
+<h2 data-anchor-id="step-2-import-the-required-modules">Step 2: Import the required modules</h2>
 <div id="cell-7" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastai.data.<span class="bu">all</span> <span class="im">import</span> <span class="op">*</span></span>
@@ -220,7 +203,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </div>
 </section>
 <section id="step-3-load-the-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="step-3-load-the-dataset">Step 3: Load the dataset</h2>
+<h2 data-anchor-id="step-3-load-the-dataset">Step 3: Load the dataset</h2>
 <p>Let’s load <a href="https://huggingface.co/datasets/beans">Beans dataset</a>, which is a dataset of images of beans taken in the field using smartphone cameras. It consists of 3 classes: 2 disease classes and the healthy class.</p>
 <div id="cell-11" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>raw_ds <span class="op">=</span> load_dataset(<span class="st">"beans"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -255,7 +238,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </div>
 </section>
 <section id="step-4-preprocess-the-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="step-4-preprocess-the-dataset">Step 4: Preprocess the dataset</h2>
+<h2 data-anchor-id="step-4-preprocess-the-dataset">Step 4: Preprocess the dataset</h2>
 <p>Often, we need preprocessing raw data before training a model with it. HuggingFace <code>datasets</code> library provides two methods for preprocessing:</p>
 <ol type="1">
 <li><p><code>map</code>: This method is used to apply a function to each example in the dataset, possibly in a batched manner. The function can be applied to one or more columns of the dataset, and the result can be stored in a new column or overwrite the existing one. The map function also allows you to remove some columns from the dataset, if needed. This method is useful for preprocessing the dataset, such as resizing images, tokenizing text, or encoding categorical features. It caches outputs so that they’re not computed again.</p></li>
@@ -286,7 +269,7 @@ Loading cached processed dataset at /Users/bdsaglam/.cache/huggingface/datasets/
 <p>We won’t use <code>set_transform</code> as fastai’s DataBlock can apply item-level and batch-level transforms, e.g.&nbsp;data augmentations, normalization. When we use a pretrained model, it already applies necessary transforms such as normalization.</p>
 </section>
 <section id="step-5-create-the-datablock" class="level2">
-<h2 class="anchored" data-anchor-id="step-5-create-the-datablock">Step 5: Create the DataBlock</h2>
+<h2 data-anchor-id="step-5-create-the-datablock">Step 5: Create the DataBlock</h2>
 <p>Now, we can create dataloaders for the dataset using DataBlock from fastai. As the dataset is already splitted into train, validation, and test sets, we don’t need to split it further. Hence, we will use <code>nosplit</code> function.</p>
 <div id="cell-24" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nosplit(items): </span>
@@ -321,7 +304,7 @@ Loading cached processed dataset at /Users/bdsaglam/.cache/huggingface/datasets/
 </div>
 </section>
 <section id="step-6-training" class="level2">
-<h2 class="anchored" data-anchor-id="step-6-training">Step 6: Training</h2>
+<h2 data-anchor-id="step-6-training">Step 6: Training</h2>
 <p>Let’s fine-tune a pretrained ResNet model on our dataset using <code>Learner.fine_tune</code> method.</p>
 <div id="cell-28" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>learn <span class="op">=</span> vision_learner(</span>
@@ -351,7 +334,7 @@ Loading cached processed dataset at /Users/bdsaglam/.cache/huggingface/datasets/
 </div>
 </section>
 <section id="step-7-evaluation" class="level2">
-<h2 class="anchored" data-anchor-id="step-7-evaluation">Step 7: Evaluation</h2>
+<h2 data-anchor-id="step-7-evaluation">Step 7: Evaluation</h2>
 <p>Only after 3 epochs, fine-tuned model achieves 90.6% accuracy on validation set, not too bad!</p>
 <div id="cell-33" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>loss, accuracy <span class="op">=</span> learn.validate(dl<span class="op">=</span>dls.valid)</span>
@@ -392,13 +375,6 @@ Accuracy: 89.06%</code></pre>
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
-    const icon = "";
-    const anchorJS = new window.AnchorJS();
-    anchorJS.options = {
-      placement: 'right',
-      icon: icon
-    };
-    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     

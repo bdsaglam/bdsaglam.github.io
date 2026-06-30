@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2025-02-18">
 
-<title>Fine-tuning vs Prompting – Curiosity Trace</title>
+<title>Fine-tuning vs Prompting – Barış Deniz Sağlam</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -30,33 +30,16 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-94b323657c735dfe3b1bf6ebb2c33a55.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-97ea5928669519cc1115c0903563ba78.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
-  "copy-button": false,
-  "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
-  "limit": 50,
-  "keyboard-shortcut": [
-    "f",
-    "/",
-    "s"
-  ],
-  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -82,7 +65,6 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </script>
 
 
-<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -93,28 +75,29 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">Curiosity Trace</span>
+    <span class="navbar-title">Barış Deniz Sağlam</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="Search"></div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/bdsaglam"> <i class="bi bi-github" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../writing.html"> 
+<span class="menu-text">Writing</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/bdsaglam"> <i class="bi bi-twitter" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../cv.html"> 
+<span class="menu-text">CV</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -182,7 +165,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 
 
 <section id="problem" class="level2">
-<h2 class="anchored" data-anchor-id="problem">Problem</h2>
+<h2 data-anchor-id="problem">Problem</h2>
 <p>Large Language Models (LLMs) have become incredibly powerful, but they often need adaptation to perform specific tasks effectively. While fine-tuning model weights was traditionally the default approach, the massive size of modern LLMs makes it less practical. With LLMs’ strong general capabilities, <strong>prompt engineering</strong> has become a preferred method for adaptation. But how do these approaches compare in practice?</p>
 <p>This post explores this question through a case study on <strong>joint entity-relation extraction</strong>, a fundamental NLP task used in constructing knowledge graphs. The task involves identifying both entities and their relationships from unstructured text.</p>
 <p>Consider the following input text:</p>
@@ -194,7 +177,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </ul>
 </section>
 <section id="method-and-experimental-setup" class="level2">
-<h2 class="anchored" data-anchor-id="method-and-experimental-setup">Method and Experimental Setup</h2>
+<h2 data-anchor-id="method-and-experimental-setup">Method and Experimental Setup</h2>
 <p>For the analysis, the <a href="https://huggingface.co/datasets/webnlg-challenge/web_nlg">WebNLG</a> dataset was used, where each example consists of a natural language text and its corresponding entity-relation triples. The dataset was preprocessed by converting relations to plain English (e.g., “birthPlace” to “birth place”) and randomly concatenated 1–7 samples to create texts of varying lengths. This approach was intended to simulate real-world documents where context and content vary in length and complexity. However, it is acknowledged that this method may not fully capture the natural coherence and structural characteristics of actual documents. A conversation format version with user-assistant message pairs was also created for fine-tuning. The preprocessed dataset is available on <a href="https://huggingface.co/datasets/bdsaglam/web_nlg-erx">Hugging Face</a>. The <code>train</code> split was used for model adaptation and the <code>dev</code> split for benchmarking.</p>
 <p>Experiments were conducted using <a href="https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct">Llama-3 8B</a>, comparing fine-tuning and prompting approaches.</p>
 <p>For fine-tuning, <strong>LoRA</strong> (Hu et al.&nbsp;2021) with rank 64 was used to efficiently adapt the model weights using varying amounts of training data (100 to 8,870 examples). The configuration included:</p>
@@ -220,7 +203,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <p>The judge was instructed to evaluate the triples based on key criteria including completeness of relationship extraction, factual accuracy, strict alignment with source text, precision without overgeneration, absence of redundancy, and informative representation. For each comparison, the judge provided a concise explanation of its reasoning before making a final decision of <code>A</code>, <code>B</code>, or <code>DRAW</code>. These decisions were then aggregated into <strong>ELO ratings</strong>, providing a more nuanced evaluation of output quality beyond string matching. This comparison was applied to 100 samples randomly chosen from the <code>dev</code> split.</p>
 </section>
 <section id="results" class="level2">
-<h2 class="anchored" data-anchor-id="results">Results</h2>
+<h2 data-anchor-id="results">Results</h2>
 <p>The evaluation used both traditional metrics (F1 scores) and pairwise comparisons judged by another LLM. Here are the key results:</p>
 <p><strong>Table 1:</strong> Comparison of fine-tuning and prompting approaches across different metrics.</p>
 <table class="caption-top table">
@@ -339,7 +322,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </ul></li>
 </ol>
 <section id="understanding-metric-discrepancy" class="level3">
-<h3 class="anchored" data-anchor-id="understanding-metric-discrepancy">Understanding Metric Discrepancy</h3>
+<h3 data-anchor-id="understanding-metric-discrepancy">Understanding Metric Discrepancy</h3>
 <p>The gap between classical metrics (F1 scores) and ELO ratings reveals important insights about evaluation:</p>
 <ol type="1">
 <li><strong>Classical metrics like F1 scores measure exact matching against ground truth, which may be overly strict:</strong>
@@ -363,7 +346,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <p>This explains why prompt optimization can achieve high ELO ratings despite lower F1 scores - it may produce high-quality outputs that differ slightly from the exact ground truth format.</p>
 </section>
 <section id="practical-implementation-considerations" class="level3">
-<h3 class="anchored" data-anchor-id="practical-implementation-considerations">Practical Implementation Considerations</h3>
+<h3 data-anchor-id="practical-implementation-considerations">Practical Implementation Considerations</h3>
 <p>The choice between fine-tuning and prompt optimization involves several trade-offs:</p>
 <ol type="1">
 <li><strong>Computational Resources:</strong>
@@ -405,7 +388,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </section>
 </section>
 <section id="limitations-and-future-work" class="level2">
-<h2 class="anchored" data-anchor-id="limitations-and-future-work">Limitations and Future Work</h2>
+<h2 data-anchor-id="limitations-and-future-work">Limitations and Future Work</h2>
 <p>The analysis has several limitations that point to interesting future directions:</p>
 <ol type="1">
 <li><strong>LLM-as-a-Judge Limitations:</strong>
@@ -434,7 +417,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </ol>
 </section>
 <section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<h2 data-anchor-id="conclusion">Conclusion</h2>
 <p>The experiments reveal important nuances in the performance comparison between fine-tuning and prompt optimization approaches. While fine-tuning demonstrated superior performance in string matching metrics, these automated evaluations may not comprehensively reflect real-world utility. The ELO ratings from pairwise comparisons using a 32B parameter judge model suggest that prompt optimization can achieve comparable effectiveness in practice.</p>
 <p>Based on this empirical analysis, we can draw several key conclusions about choosing between these approaches:</p>
 <ul>
@@ -448,7 +431,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <p>The code for the experiments is available at <a href="https://github.com/bdsaglam/pipeline-llm-adaptation">this repository</a>.</p>
 </section>
 <section id="references" class="level2">
-<h2 class="anchored" data-anchor-id="references">References</h2>
+<h2 data-anchor-id="references">References</h2>
 <ol type="1">
 <li><a href="https://arxiv.org/abs/2402.07747">DSPy: Compiling Declarative Language Model Calls into Self-Improving Pipelines. Khattab, Omar and Singhvi, Arnav and Maheshwari, Paridhi and Zhang, Zhiyuan and Santhanam, Keshav and Vardhamanan, Sri and Haq, Saiful and Sharma, Ashutosh and Joshi, Thomas T. and Moazam, Hanna and Miller, Heather and Zaharia, Matei and Potts, Christopher. (2024). In The Twelfth International Conference on Learning Representations.</a></li>
 <li><a href="https://huggingface.co/datasets/webnlg-challenge/web_nlg">WebNLG</a></li>
@@ -464,10 +447,10 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <strong>Appendix</strong>
 </summary>
 <section id="example-comparisons" class="level3">
-<h3 class="anchored" data-anchor-id="example-comparisons">Example Comparisons</h3>
+<h3 data-anchor-id="example-comparisons">Example Comparisons</h3>
 <p>To further illustrate the differences between fine-tuning and prompt optimization, I present a few selected examples from my model comparison, where <code>A</code> and <code>B</code> denote best performing fine-tuned and prompt optimized models respectively:</p>
 <section id="example-1-decision-was-a" class="level4">
-<h4 class="anchored" data-anchor-id="example-1-decision-was-a">Example 1: Decision was A</h4>
+<h4 data-anchor-id="example-1-decision-was-a">Example 1: Decision was A</h4>
 <pre><code>**Text:**  
 Cornell University is in Ithaca, New York and their nickname is Cornell Big Red. They are the publisher of Administrative Science Quarterly and are affiliated with the Association of American Universities.
 
@@ -488,7 +471,7 @@ Cornell University is in Ithaca, New York and their nickname is Cornell Big Red.
 Set A correctly identifies 'Cornell University' as the publisher of 'Administrative Science Quarterly', whereas Set B incorrectly reverses this relationship. Therefore, Set A is more correct and complete.</code></pre>
 </section>
 <section id="example-2-decision-was-b" class="level4">
-<h4 class="anchored" data-anchor-id="example-2-decision-was-b">Example 2: Decision was B</h4>
+<h4 data-anchor-id="example-2-decision-was-b">Example 2: Decision was B</h4>
 <pre><code>  **Text:**  
   Alpena County Regional Airport runway name is 1/19. Swords is a part of the Dublin European Parliamentary constituency. The United States (with a leader, John Roberts) boasts the Bacon Explosion. American Abraham A. Ribicoff was born in New Britain, Connecticut and is married to Ruth Ribicoff. One of the ethnic groups in the U.S. are Native Americans. Georgia is in the country of United States. Atlanta; has a total area of 347.1 square kilometres, a population density of 1299.0 inhabitants per square kilometre, and the area codes: 404, 678, and 470. The birthplace of Alfred Garth Jones is Manchester, (part of Greater Manchester), England. In Manchester the Labour Party is in the majority.
 
@@ -530,7 +513,7 @@ Set A correctly identifies 'Cornell University' as the publisher of 'Administrat
   Model B's triples are complete, correct, and consistent with the text. It correctly states the birth place of Alfred Garth Jones as 'Manchester, England' and avoids the duplication issue. Therefore, Model B's triples are better.</code></pre>
 </section>
 <section id="example-3-decision-was-draw" class="level4">
-<h4 class="anchored" data-anchor-id="example-3-decision-was-draw">Example 3: Decision was DRAW</h4>
+<h4 data-anchor-id="example-3-decision-was-draw">Example 3: Decision was DRAW</h4>
 <pre><code>  **Text:**  
   The ISBN number of A Long Long Way is 0-670-03380-4.
 
@@ -552,13 +535,6 @@ Set A correctly identifies 'Cornell University' as the publisher of 'Administrat
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
-    const icon = "";
-    const anchorJS = new window.AnchorJS();
-    anchorJS.options = {
-      placement: 'right',
-      icon: icon
-    };
-    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     

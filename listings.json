@@ -1,18 +1,24 @@
 [
   {
-    "listing": "/index.html",
+    "listing": "/writing.html",
     "items": [
+      "/tutorials/on-policy-distillation/index.html",
       "/posts/fine-tuning-vs-prompting/index.html",
-      "/posts/llm-providers-structured-output/index.html",
       "/posts/is-everything-an-abstraction/index.html",
-      "/posts/py-cuda-kernel/index.html",
-      "/posts/tgi-litellm-openai/index.html",
-      "/posts/fastai-huggingface-datasets/index.html",
-      "/posts/fastai-custom-model/index.html",
       "/posts/confidence-intervals/index.html",
       "/posts/initialization-in-nn/index.html",
       "/posts/fast-fourier-transform/index.html",
       "/posts/halting-problem/index.html"
+    ]
+  },
+  {
+    "listing": "/archive.html",
+    "items": [
+      "/posts/llm-providers-structured-output/index.html",
+      "/posts/py-cuda-kernel/index.html",
+      "/posts/tgi-litellm-openai/index.html",
+      "/posts/fastai-huggingface-datasets/index.html",
+      "/posts/fastai-custom-model/index.html"
     ]
   }
 ]

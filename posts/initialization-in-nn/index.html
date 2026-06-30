@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2020-06-25">
 
-<title>Why is initialization important in neural networks? – Curiosity Trace</title>
+<title>Why is initialization important in neural networks? – Barış Deniz Sağlam</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -65,33 +65,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-94b323657c735dfe3b1bf6ebb2c33a55.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-97ea5928669519cc1115c0903563ba78.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
-  "copy-button": false,
-  "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
-  "limit": 50,
-  "keyboard-shortcut": [
-    "f",
-    "/",
-    "s"
-  ],
-  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -146,7 +129,6 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed fullcontent quarto-light">
@@ -157,28 +139,29 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">Curiosity Trace</span>
+    <span class="navbar-title">Barış Deniz Sağlam</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="Search"></div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/bdsaglam"> <i class="bi bi-github" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../writing.html"> 
+<span class="menu-text">Writing</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/bdsaglam"> <i class="bi bi-twitter" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../cv.html"> 
+<span class="menu-text">CV</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -228,7 +211,7 @@ window.Quarto = {
 <p>We can consider a neural network as a collection learnable parameters that are initialized randomly and updated with gradient descent. In theory, this must find the optimal parameters, no matter the initial values. However, since the floating point representations used in computers have a finite range and precision, picking wrong initial values may cause out-of-range numerical values and cripple training process.</p>
 <p>OK, how about constraining all the initial values to a specific range, such as [-1, 1] or [-0.1, 0.1]? Would it solve the problem? Unfortunately, it may not. In modern deep neural networks, the input goes through many layers, each changing incoming data in a specific way. Therefore, the changes accumulate through the network and eventually may cause the values to grow too large or too small. To solve this problem for all networks with an arbitrary number of layers, we use proven initialization schemes that keep the variance of data and gradients unchanged through the neural network as much as possible.</p>
 <section id="how-does-the-properties-of-a-distribution-changes-through-various-transformations" class="level2">
-<h2 class="anchored" data-anchor-id="how-does-the-properties-of-a-distribution-changes-through-various-transformations">How does the properties of a distribution changes through various transformations?</h2>
+<h2 data-anchor-id="how-does-the-properties-of-a-distribution-changes-through-various-transformations">How does the properties of a distribution changes through various transformations?</h2>
 <div id="cell-3" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
@@ -282,7 +265,7 @@ window.Quarto = {
 </div>
 </div>
 <section id="summation" class="level3">
-<h3 class="anchored" data-anchor-id="summation">Summation</h3>
+<h3 data-anchor-id="summation">Summation</h3>
 <p>The sum of two independent uniform distribution is a distribution with</p>
 <p><span class="math inline">\(\quad \mu= \mu_1 + \mu_2 \quad \sigma^2=\sigma_1^2 + \sigma_2^2\)</span></p>
 <div id="cell-10" class="cell">
@@ -305,7 +288,7 @@ window.Quarto = {
 </div>
 </section>
 <section id="scale-and-shift" class="level3">
-<h3 class="anchored" data-anchor-id="scale-and-shift">Scale and shift</h3>
+<h3 data-anchor-id="scale-and-shift">Scale and shift</h3>
 <div id="cell-12" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> x <span class="op">+</span> <span class="dv">1</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -320,7 +303,7 @@ window.Quarto = {
 </div>
 </section>
 <section id="affine-transformation" class="level3">
-<h3 class="anchored" data-anchor-id="affine-transformation">Affine transformation</h3>
+<h3 data-anchor-id="affine-transformation">Affine transformation</h3>
 <p>A linear layer (or fully connected layer) with weights, <span class="math inline">\(W \sim U[-c, c]\)</span> , approximately transforms a uniform distribution <span class="math inline">\(x \sim U[-1, 1]\)</span> to a normal distribution <span class="math inline">\(y \sim \mathcal N(\mu, \sigma)\)</span></p>
 <p><span class="math display">\[ \mu = 0 \quad \sigma^2 = n_{in} ~ \sigma_{input}^2 ~ \sigma_{w}^2 \]</span></p>
 <p><span class="math inline">\(n_{in}\)</span>: size of input, also denoted as, <span class="math inline">\(\text{fan}_{in}\)</span></p>
@@ -410,7 +393,7 @@ Bias   μ: +0.002  σ: 0.057</code></pre>
 </section>
 </section>
 <section id="solution" class="level2">
-<h2 class="anchored" data-anchor-id="solution">Solution</h2>
+<h2 data-anchor-id="solution">Solution</h2>
 <p>We need to keep variance of data and gradients unchanged through the network as much as possible.</p>
 <p>In forward pass,</p>
 <p><span class="math display">\[ \sigma^2 = n_{in} ~ \sigma_{input}^2 ~ \sigma_{w}^2 \]</span></p>
@@ -473,7 +456,7 @@ Bias   μ: +0.002  σ: 0.057</code></pre>
 <p>As it’s seen, with Xaiver initialization, the variance does not vary much through the layers.</p>
 </section>
 <section id="references" class="level2">
-<h2 class="anchored" data-anchor-id="references">References</h2>
+<h2 data-anchor-id="references">References</h2>
 <ol type="1">
 <li>http://d2l.ai/chapter_multilayer-perceptrons/numerical-stability-and-init.html#xavier-initialization</li>
 </ol>
@@ -484,13 +467,6 @@ Bias   μ: +0.002  σ: 0.057</code></pre>
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
-    const icon = "";
-    const anchorJS = new window.AnchorJS();
-    anchorJS.options = {
-      placement: 'right',
-      icon: icon
-    };
-    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     

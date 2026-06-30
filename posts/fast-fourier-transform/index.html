@@ -9,7 +9,7 @@
 <meta name="dcterms.date" content="2020-06-23">
 <meta name="description" content="A minimal introduction">
 
-<title>Fourier Transform – Curiosity Trace</title>
+<title>Fourier Transform – Barış Deniz Sağlam</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -66,33 +66,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-94b323657c735dfe3b1bf6ebb2c33a55.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-97ea5928669519cc1115c0903563ba78.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "navbar",
-  "copy-button": false,
-  "collapse-after": 3,
-  "panel-placement": "end",
-  "type": "overlay",
-  "limit": 50,
-  "keyboard-shortcut": [
-    "f",
-    "/",
-    "s"
-  ],
-  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -147,7 +130,6 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed fullcontent quarto-light">
@@ -158,28 +140,29 @@ window.Quarto = {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../../index.html">
-    <span class="navbar-title">Curiosity Trace</span>
+    <span class="navbar-title">Barış Deniz Sağlam</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="Search"></div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
-<span class="menu-text">About</span></a>
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/bdsaglam"> <i class="bi bi-github" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../writing.html"> 
+<span class="menu-text">Writing</span></a>
   </li>  
-  <li class="nav-item compact">
-    <a class="nav-link" href="https://twitter.com/bdsaglam"> <i class="bi bi-twitter" role="img">
-</i> 
-<span class="menu-text"></span></a>
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../cv.html"> 
+<span class="menu-text">CV</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -235,7 +218,7 @@ window.Quarto = {
 <p><span class="math inline">\(e^{i~2\pi~k} = \cos (2\pi~k)+i\sin (2\pi~k)\)</span></p>
 <p>for k = -N/2 … N/2 where k=1 means 1 cycle per signal.</p>
 <section id="nyquists-sampling-theorem" class="level2">
-<h2 class="anchored" data-anchor-id="nyquists-sampling-theorem">Nyquist’s Sampling Theorem</h2>
+<h2 data-anchor-id="nyquists-sampling-theorem">Nyquist’s Sampling Theorem</h2>
 <p>To be able to measure a sinusoidal wave, we need to sample at least two points within its one full cycle, i.e., one point in half cycle. Therefore, we cannot measure the components that make more than N/2 cycles within N timesteps. This is known as Nyquist’s sampling theorem. In practice, because of the risk of sampling those two points near zero crossings, we are only confident about the components with frequencies lower than N/4.</p>
 <p>As an example, let’s see the measurements from 1 Hz sine wave with various sampling rates. Nyquist’s sampling theorem requires at least 2 Hz sampling rate for this signal. As you can see in the figure below, the sampling rate of 1 Hz (blue) measures a flat line. While sampling rate of 2 Hz (orange) is theoretically sufficent, its amplitude is far from the original’s. As the sampling rate increases, the measurement becomes more accurate.</p>
 <div id="cell-3" class="cell" data-execution_count="1">
@@ -286,7 +269,7 @@ window.Quarto = {
 </div>
 </section>
 <section id="discrete-fourier-transform" class="level2">
-<h2 class="anchored" data-anchor-id="discrete-fourier-transform">Discrete Fourier Transform</h2>
+<h2 data-anchor-id="discrete-fourier-transform">Discrete Fourier Transform</h2>
 <p>Discrete Fourier Transform</p>
 <p><span class="math display">\[
 X_k = \sum_{n=0}^{N-1} x_n \cdot e^{-i~2\pi~k~n~/~N}
@@ -397,7 +380,7 @@ x_n = \frac{1}{N}\sum_{k=0}^{N-1} X_k e^{i~2\pi~k~n~/~N}
 </div>
 </section>
 <section id="inverse-discrete-fourier-transform" class="level2">
-<h2 class="anchored" data-anchor-id="inverse-discrete-fourier-transform">Inverse Discrete Fourier Transform</h2>
+<h2 data-anchor-id="inverse-discrete-fourier-transform">Inverse Discrete Fourier Transform</h2>
 <p><span class="math display">\[
 x_n = \frac{1}{N}\sum_{k=0}^{N-1} X_k e^{i~2\pi~k~n~/~N}
 \]</span></p>
@@ -427,7 +410,7 @@ x_n = \frac{1}{N}\sum_{k=0}^{N-1} X_k e^{i~2\pi~k~n~/~N}
 </div>
 </section>
 <section id="components" class="level2">
-<h2 class="anchored" data-anchor-id="components">Components</h2>
+<h2 data-anchor-id="components">Components</h2>
 <p>Let’s see how FFT predicts the amplitude, frequency and phase parameters of the components.</p>
 <div id="cell-28" class="cell" data-execution_count="15">
 <details class="code-fold">
@@ -501,7 +484,7 @@ Calc. amplitude: 1.97 phase: 17.2 deg
 </div>
 </section>
 <section id="conclusion" class="level2">
-<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<h2 data-anchor-id="conclusion">Conclusion</h2>
 <p>FFT transforms a signal from time domain to frequency domain and for some problems, frequency domain is more feasible to work with. FFT has usages in many fields such as * Solving differential equations * Signal filtering algorithms * System identification</p>
 
 
@@ -510,13 +493,6 @@ Calc. amplitude: 1.97 phase: 17.2 deg
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
-    const icon = "";
-    const anchorJS = new window.AnchorJS();
-    anchorJS.options = {
-      placement: 'right',
-      icon: icon
-    };
-    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     
