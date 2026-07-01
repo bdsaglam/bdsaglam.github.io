@@ -36,9 +36,9 @@ pagetitle: "Barış Deniz Sağlam"
 [**MSc Thesis** — *Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language Models*. METU, 2024. [Open archive](https://open.metu.edu.tr/handle/11511/111317)]{.thesis}
 
 ::: {.postlist}
+- [Perceive-Reason-Code: which part of a document agent actually does the work?](posts/perceive-reason-code/index.html){.pt}[Jul 2026]{.pd}[Dissecting a document-QA agent — which of perceive, reason, or code actually drives performance.]{.pdesc}
 - [Fine-tuning vs. Prompting](posts/fine-tuning-vs-prompting/index.html){.pt}[Feb 2025]{.pd}[When adapting weights beats prompting, and what it costs.]{.pdesc}
 - [Is Everything an Abstraction?](posts/is-everything-an-abstraction/index.html){.pt}[Jan 2025]{.pd}[Physics, Kant, and the layers we build to grasp reality.]{.pdesc}
-- [Initialization in Neural Networks](posts/initialization-in-nn/index.html){.pt}[Jun 2020]{.pd}[Why it matters more than it looks, and the intuition behind the schemes.]{.pdesc}
 :::
 
 [All writing →](writing.html){.more}
