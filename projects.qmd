@@ -9,6 +9,19 @@ pagetitle: "Projects"
 ::: {.cards .col1}
 
 ::: {.card}
+[Jul 2026]{.cdate}
+
+### [Perceive-Reason-Code: Active Perception for Document VQA](https://github.com/bdsaglam/docvqa)
+A code-capable model (Qwen 3.5 27B) given a Python REPL and one on-demand VLM perception
+call — it crops, zooms, and computes over document pages instead of reading them whole.
+Joint winner of the ICDAR 2026 DocVQA challenge (8–35B tier), ahead of Gemini 3 Pro and
+GPT-5.2 on the held-out test set, with no fine-tuning and no OCR pipeline. Ablations isolate
+the REPL plus a single perception call as what carries the lift; the bottleneck is a
+perception budget, not reasoning.
+[[Code](https://github.com/bdsaglam/docvqa) · [Post](posts/perceive-reason-code/index.html)]{.links}
+:::
+
+::: {.card}
 [Feb 2026]{.cdate}
 
 ### [Implicit Program Synthesis for Abstract Reasoning (epiq)](https://github.com/bdsaglam/epiq)
