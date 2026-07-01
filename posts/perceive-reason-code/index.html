@@ -157,14 +157,15 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#where-this-comes-from" id="toc-where-this-comes-from" class="nav-link" data-scroll-target="#where-this-comes-from">Where this comes from</a></li>
   </ul></li>
-  <li><a href="#the-lift-generalizes-across-model-sizes-and-families" id="toc-the-lift-generalizes-across-model-sizes-and-families" class="nav-link" data-scroll-target="#the-lift-generalizes-across-model-sizes-and-families">The lift generalizes across model sizes and families</a></li>
-  <li><a href="#the-advantage-grows-with-document-length" id="toc-the-advantage-grows-with-document-length" class="nav-link" data-scroll-target="#the-advantage-grows-with-document-length">The advantage grows with document length</a></li>
   <li><a href="#ablations" id="toc-ablations" class="nav-link" data-scroll-target="#ablations">Ablations</a>
   <ul class="collapse">
   <li><a href="#three-things-that-turn-out-not-to-matter" id="toc-three-things-that-turn-out-not-to-matter" class="nav-link" data-scroll-target="#three-things-that-turn-out-not-to-matter">Three things that turn out <em>not</em> to matter</a></li>
+  <li><a href="#perception-is-load-bearing" id="toc-perception-is-load-bearing" class="nav-link" data-scroll-target="#perception-is-load-bearing">Perception is load-bearing</a></li>
   <li><a href="#better-eyes-or-a-better-director" id="toc-better-eyes-or-a-better-director" class="nav-link" data-scroll-target="#better-eyes-or-a-better-director">Better eyes, or a better director?</a></li>
   </ul></li>
-  <li><a href="#the-cost-of-generality-its-slow" id="toc-the-cost-of-generality-its-slow" class="nav-link" data-scroll-target="#the-cost-of-generality-its-slow">The cost of generality: it’s slow</a></li>
+  <li><a href="#the-lift-generalizes-across-model-sizes-and-families" id="toc-the-lift-generalizes-across-model-sizes-and-families" class="nav-link" data-scroll-target="#the-lift-generalizes-across-model-sizes-and-families">The lift generalizes across model sizes and families</a></li>
+  <li><a href="#the-advantage-grows-with-document-length" id="toc-the-advantage-grows-with-document-length" class="nav-link" data-scroll-target="#the-advantage-grows-with-document-length">The advantage grows with document length</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
   <li><a href="#code-as-a-substrate-for-learning" id="toc-code-as-a-substrate-for-learning" class="nav-link" data-scroll-target="#code-as-a-substrate-for-learning">Code as a substrate for learning</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   <li><a href="#citation" id="toc-citation" class="nav-link" data-scroll-target="#citation">Citation</a></li>
@@ -209,14 +210,13 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <summary>
 TL;DR
 </summary>
-<p>We jointly won the ICDAR 2026 DocVQA challenge in the 8–35B tier. An open Qwen 3.5 27B beat the challenge’s bare-model baselines, Gemini 3 Pro and GPT-5.2, on the held-out test set, with no fine-tuning. Our approach is a Python REPL plus a single perception tool: a vision model the reasoner points at any region of any page. So it decides where to look, instead of reading whole pages at a fixed resolution. Two parts carry the accuracy, and only together: the REPL and the perception call. The usual additions do nothing for accuracy. That includes a general sub-agent, clever trajectory management, and the OCR and search our competition entry used. The reason is simple. For a model this size, document VQA is bound by perception budget, not reasoning. The model answers fine once it can see the evidence; it just can’t resolve a dense page in one look. The approach builds on RLM, CodeAct, and the code-as-vision line. What this post adds is putting them together for documents and pinning down which parts carry the result.</p>
+<p>We jointly won the ICDAR 2026 DocVQA challenge in the 8–35B tier. An open Qwen 3.5 27B beat the challenge’s bare-model baselines, Gemini 3 Pro and GPT-5.2, on the held-out test set, with no fine-tuning. Our approach is a Python REPL plus a single perception tool: a vision model the reasoner points at any region of any page. So it decides where to look, instead of reading whole pages at a fixed resolution. Two parts carry the accuracy, and only together: the REPL and the perception call. The usual additions do nothing for accuracy. That includes a general sub-agent, clever trajectory management, and the OCR and search our competition entry used. Perception is the constraint: a dense page defeats a single fixed-resolution look, whoever is looking. But the reasoner is the lever. Scaling the reasoner moves accuracy about twice as much as scaling the VLM it looks through, and a strong coding reasoner driving a small VLM beats a small reasoner driving a strong one. The approach builds on RLM, CodeAct, and the code-as-vision line. What this post adds is putting them together for documents and pinning down which parts carry the result.</p>
 </details>
 <section id="a-27b-model-a-python-repl-and-one-question" class="level2">
 <h2 data-anchor-id="a-27b-model-a-python-repl-and-one-question">A 27B model, a Python REPL, and one question</h2>
 <p>We entered the ICDAR 2026 DocVQA challenge with an approach: let a code-capable model direct its own perception from inside a Python REPL. The model we plugged into it was an open Qwen 3.5 27B. At its core the system is two things: the REPL, and an on-demand call to a vision-language model (VLM), used as a perception tool the reasoner invokes region by region.</p>
-<p>The result is a nice anchor, but the sharper question is where the lift comes from. A code harness helps a model; what’s less clear is which of its pieces (the REPL, the VLM tool, the agent loop) is actually carrying the result. So this post takes the thing apart, one piece at a time: <strong>which components carry the lift, and which are just along for the ride?</strong></p>
-<p>The answer is useful in a specific way: the core that does the work is smaller than what most people build. Two parts matter; the rest (a general sub-agent, clever trajectory management, an OCR pipeline) barely move accuracy. And underneath sits a reframe worth keeping if you build multimodal agents: on documents the bottleneck is <strong>perception budget, not reasoning.</strong> The model usually isn’t too weak for the page; it just can’t afford to see all of it at once.</p>
-<p>But first, the result that makes the tear-down worth doing.</p>
+<p>The leaderboard result is a single number; the sharper question is where the lift comes from. A code harness helps a model; what’s less clear is which of its pieces (the REPL, the VLM tool, the agent loop) is actually carrying the result. So this post takes the thing apart, one piece at a time: <strong>which components carry the lift, and which are just along for the ride?</strong></p>
+<p>The core that does the work turns out to be small. Two parts matter; the rest (a general sub-agent, clever trajectory management, an OCR pipeline) barely move accuracy. And underneath sits a reframe for anyone building multimodal agents: on documents, perception is the constraint, but <strong>the reasoner is the lever</strong>. No model can afford to see a dense page all at once; what separates systems is how well the reasoner directing the looks spends its limited budget of them.</p>
 </section>
 <section id="the-result" class="level2">
 <h2 data-anchor-id="the-result">The result</h2>
@@ -257,12 +257,12 @@ TL;DR
 </tbody>
 </table>
 <p>The <strong>tuned entry</strong> scored higher because it was fitted to this benchmark: DocVQA-specific prompts, plus the OCR and search we spend the post stripping away. The <strong>general method</strong> drops all of that and still clears the frontier. Specializing buys a few points of peak score; generalizing gives them up. This post is about the general one.</p>
-<p>These test numbers sit below our validation numbers. We read most of that gap as overfitting. We developed and tuned against the validation set, so some fit to it is unavoidable, and we don’t claim the validation figures transfer untouched to test.</p>
-<p>Either way, the takeaway isn’t the leaderboard position. It’s <em>how</em> the score was reached. A lot of strong document-VQA systems get there by fine-tuning on tens of thousands of question-answer pairs, or by building a specialized OCR-and-encoder pipeline. The general method needs neither. The model is stock Qwen 3.5 27B, and the system is a REPL and one perception call. That’s the part worth keeping:</p>
+<p>These test numbers sit below our validation numbers. The gap could be a harder test split as much as any fit to the set we developed against; the general method strips most of the benchmark-specific prompting, so we don’t read it as mostly overfitting. We don’t claim the validation figures transfer untouched to test.</p>
+<p>Either way, the takeaway isn’t the leaderboard position. It’s <em>how</em> the score was reached. A lot of strong document-VQA systems get there by fine-tuning on tens of thousands of question-answer pairs, or by building a specialized OCR-and-encoder pipeline. The general method needs neither. The model is stock Qwen 3.5 27B, and the system is a REPL and one perception call.</p>
 <blockquote class="blockquote">
-<p><strong>On this task, harness design substituted for fine-tuning.</strong> Before you reach for training data or a specialized pipeline, it’s worth seeing how far a general model gets when you let it direct its own perception.</p>
+<p><strong>On this task, harness design substituted for fine-tuning.</strong> Before you reach for training data or a specialized pipeline, see how far a general model gets when you let it direct its own perception.</p>
 </blockquote>
-<p>But first: what makes this task hard enough to need a system like that?</p>
+<p>So what makes this task hard enough to need a system like that?</p>
 </section>
 <section id="the-task-and-why-its-hard" class="level2">
 <h2 data-anchor-id="the-task-and-why-its-hard">The task, and why it’s hard</h2>
@@ -277,25 +277,184 @@ TL;DR
 <h2 data-anchor-id="the-recipe">The recipe</h2>
 <p>Picture how a person answers a question from a hundred-page report. They do not read every page at a uniform squint. They flip to the section that matters, lean in on the one figure or table the question turns on, re-read a caption when a number looks wrong, and do the arithmetic on a notepad. It holds even on a single sheet: hand someone a large, dense map and they still work it region by region, finding the legend, then the area they need, then the labels there, never in one glance. Attention goes where the evidence is, a piece at a time. Active perception gives a model the same habit.</p>
 <p>The whole method fits in one sentence. Give a code-capable model a persistent Python REPL and a single perception primitive (an on-demand call to a VLM, pointed at any region of any page), and let it <em>direct</em> perception instead of swallowing the document whole. It can crop to the evidence, zoom for acuity, sweep pages in a loop, composite regions, and do in code the coordinate math and arithmetic a VLM is bad at. Perception becomes something the model spends deliberately, a region at a time, rather than a single fixed gulp of pixels. Three moves give the system its name, <strong>Perceive-Reason-Code</strong>: perceive through a VLM call, reason in language, act by writing code. Unless noted otherwise, every experiment below uses Qwen 3.5 27B as both the reasoner and the VLM, on the DocVQA-2026 validation set (25 documents, 80 questions), eight trials, scored by ANLS (the fuzzy string-match metric DocVQA uses), reported as mean ± std.</p>
-<p><img src="f2-architecture.png" class="img-fluid"></p>
-<p><strong>Figure 2.</strong> Left: the active-perception loop. The reasoner writes code, the code calls the VLM against a chosen crop, the text it returns flows back into the REPL as the next observation. Right: a ReAct agent (Yao et al., 2023): tool calls, no code environment, the same VLM but no REPL. It calls the tool and gets a text observation back, but only for whole pages, with no way to crop, compose, or compute.</p>
-<p>Concretely, the loop is the familiar agent shape: a <strong>state</strong> (a representation of the run so far), an <strong>action</strong> (a block of Python the model writes), and an <strong>observation</strong> (whatever that code prints, including the text a perception call returns). Hold onto that framing; how the state is represented turns out to matter later, in a way that doesn’t affect accuracy at all.</p>
+<p><img src="f2-architecture.png" class="img-fluid" alt="two agent architectures side by side: the active-perception loop where the reasoner writes code that calls a VLM on chosen crops, versus a ReAct agent with the same VLM but no code REPL"></p>
+<p><strong>Figure 2.</strong> Left: the active-perception loop. The reasoner writes code, the code calls the VLM on a chosen crop, and the returned text flows back into the REPL as the next observation. Right: a ReAct agent (Yao et al., 2023): the same VLM through plain tool calls, no code environment, so it reads only whole pages with no way to crop, compose, or compute.</p>
+<p>Concretely, the loop is the familiar agent shape: a <strong>state</strong> (a representation of the run so far), an <strong>action</strong> (a block of Python the model writes), and an <strong>observation</strong> (whatever that code prints, including the text a perception call returns). Hold onto that framing; how the state is represented matters later, in a way that doesn’t affect accuracy at all.</p>
 <p>Here is one run of the loop on a real question: the gap between two values on a chart buried in a 181-page report.</p>
 <p><img src="trajectory.png" class="img-fluid" alt="representative trajectory: reasoner-LM writes Python that calls a VLM on chosen regions"></p>
-<p><strong>Figure 3.</strong> One run of the loop (16 iterations, correct). It surveys ten candidate pages in one batched call, locates the table via a table-of-contents pointer, and reads page 76 whole, getting a wrong number ($978.42). It distrusts that, crops to the chart band and re-reads ($2,287.07), which disagrees; it adjudicates by reading the region in halves, then does the subtraction in Python, where it’s exact.</p>
+<p><strong>Figure 3.</strong> One run of the loop (16 iterations, correct). It surveys ten candidate pages in one batched call, locates the table via a table-of-contents pointer, reads a page whole and distrusts the number it gets, crops to the chart band and re-reads, then does the subtraction in Python, where it’s exact.</p>
 <p>The actions are Python the model writes, and the arithmetic happens where it’s exact rather than in the VLM’s head. The whole-page read returned $978.42, and it was wrong. The crop caught it.</p>
 <p>One setup detail: these runs disable the model’s native “thinking” channel.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> This relocates the reasoning into the visible body of each turn, where the code and the comments are. The reasoning is still there; thinking-off just moves it somewhere we can see it.</p>
 <section id="where-this-comes-from" class="level3">
 <h3 data-anchor-id="where-this-comes-from">Where this comes from</h3>
 <p>Perceive-Reason-Code stands on a few well-tested ideas. The REPL-with-a-sub-call shape comes from <strong>Recursive Language Models</strong> (RLM; Zhang et al., 2025): the model works inside a code environment where the document is just a variable it can slice and inspect with code, and it can fire off a sub-call to a model when it needs one. Writing actions <em>as code</em> rather than as JSON tool calls is <strong>CodeAct</strong> (Wang et al., 2024). Orchestrating vision modules with a program goes back to <strong>VisProg</strong> (Gupta &amp; Kembhavi, 2023) and <strong>ViperGPT</strong> (Surís et al., 2023). The move here is to put them together for documents, with the sub-call specialized as visual perception. (When the same model serves as both reasoner and VLM, that perception call is the model calling itself. But nothing here turns on that. It’s one perception primitive the reasoner invokes as often as it needs, and that’s how we’ll treat it.)</p>
-<p>RLM had already shown, for <em>text</em>, that the REPL alone lifts a baseline and a sub-call lifts it further. The question this post answers is whether that holds when the sub-call is a <em>VLM</em> over a stack of document images. Active perception itself is not new for a single image: DeepEyes (Zheng et al., 2025) trains a model to zoom into an image region to answer, and concurrent work, RVLM (Recursive Vision-Language Models with Adaptive Depth; Mayumu et al., 2026), applies the recursive idea to single-image medical scans. Our setting is the multi-page document, where finding evidence across and within pages is the whole game. More usefully for us: which piece is actually responsible. The rest of the post is the controlled answer.</p>
+<p>RLM had already shown, for <em>text</em>, that the REPL alone lifts a baseline and a sub-call lifts it further. The question this post answers is whether that holds when the sub-call is a <em>VLM</em> over a stack of document images. Active perception itself is not new for a single image: DeepEyes (Zheng et al., 2025) trains a model to zoom into an image region to answer, and concurrent work, RVLM (Recursive Vision-Language Models with Adaptive Depth; Mayumu et al., 2026), applies the recursive idea to single-image medical scans. Our setting is the multi-page document, where finding evidence across and within pages is the whole game. What none of this settles is which piece of the harness carries the result; the ablations do.</p>
+</section>
+</section>
+<section id="ablations" class="level2">
+<h2 data-anchor-id="ablations">Ablations</h2>
+<p>The harness has a few moving parts: a Python REPL, a VLM that the agent calls as a perception tool, and the loop that ties them together. Which of those is doing the work? The clean way to find out is to remove one part at a time and watch the score move. Every run keeps the same answer-formatting rules; only the structure changes.</p>
+<p>Two configurations run the full loop, and they need names. The one our entry ran, and the one every headline number in this post reports, is <strong>RLM</strong>: a direct instance of the Recursive Language Models scaffold, conditioning on a compacted state (a sliding window of recent REPL steps). Its twin, <strong>CodeAct</strong>, runs the same loop but conditions on the full transcript of every turn. Both do active perception; they differ only in how they represent the trajectory, a difference one ablation below treats on its own. <strong>ReAct</strong> keeps the same VLM perception tool but no REPL.</p>
+<p>Before the knockouts, here are the main configurations, one per row. <strong>avg@1</strong> is the headline single-trial accuracy (mean ± std over eight trials); the last two columns are two diagnostics behind it, <strong>pass@8</strong> (coverage, whether any of the eight trials is correct) and <strong>SC@8</strong> (the self-consistency vote we actually submit).</p>
+<table class="caption-top table">
+<caption><strong>Table 2.</strong> The main configurations by headline accuracy (avg@1), coverage (pass@8), and self-consistency (SC@8). Validation, eight trials.</caption>
+<thead>
+<tr class="header">
+<th>Configuration</th>
+<th>avg@1 (± std)</th>
+<th>pass@8</th>
+<th>SC@8</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>RLM (full method)</strong></td>
+<td><strong>41.9 ± 5.8</strong></td>
+<td><strong>68.8</strong></td>
+<td><strong>47.5</strong></td>
+</tr>
+<tr class="even">
+<td>&nbsp;&nbsp;+ general sub-agent</td>
+<td>36.7 ± 2.8</td>
+<td>66.3</td>
+<td>41.3</td>
+</tr>
+<tr class="odd">
+<td>&nbsp;&nbsp;+ OCR &amp; search</td>
+<td>36.6 ± 2.9</td>
+<td>67.5</td>
+<td>40.0</td>
+</tr>
+<tr class="even">
+<td>CodeAct</td>
+<td>39.5 ± 2.8</td>
+<td>63.8</td>
+<td>45.0</td>
+</tr>
+<tr class="odd">
+<td>ReAct (no REPL)</td>
+<td>27.2 ± 3.2</td>
+<td>53.8</td>
+<td>32.5</td>
+</tr>
+<tr class="even">
+<td>Raw multi-image (no scaffold)</td>
+<td>20.9 ± 1.6</td>
+<td>27.5</td>
+<td>20.0</td>
+</tr>
+<tr class="odd">
+<td>Competition prompt (no scaffold)</td>
+<td>18.9 ± 1.9</td>
+<td>33.8</td>
+<td>21.3</td>
+</tr>
+<tr class="even">
+<td>OCR-only (no vision)</td>
+<td>14.7 ± 2.2</td>
+<td>27.5</td>
+<td>15.0</td>
+</tr>
+</tbody>
+</table>
+<p>Those two diagnostic columns say more than the headline mean. Self-consistency (SC@8) buys a few points over a single trial, which is why our test submissions vote. And pass@8 sits far above single-trial accuracy on the strong scaffolds: 68.8 against an avg@1 of 41.9, and 63.8 against 39.5 for CodeAct. Coverage that high says the scaffold’s sampling explores a diverse enough solution space to reach the answer far more often than it reliably produces it. (pass@8 is also the upper bound for any way of picking among the eight; SC@8 is one realizable pick, and it recovers only part of the gap.) We return to that gap at the end.</p>
+<p>Now the mechanism, one part at a time. Start at the top and take away the REPL. What’s left is a <strong>ReAct agent</strong>: the same VLM perception tool, but called through plain tool-use instead of from inside a code environment. The score falls from <strong>41.9%</strong> to <strong>27.2%</strong>, about fifteen points. Without a REPL the agent can’t crop a region by arithmetic, can’t tile a page, can’t subtract two numbers it just read; it asks for whole pages and stops early (around five steps per question). The REPL isn’t a convenience. It’s the thing that lets reasoning turn into <em>targeted</em> perception.</p>
+<p>Now do the opposite: keep the REPL, take away the perception <em>call</em>. Give the agent a <code>display()</code> that loads the page pixels straight into its own context, so it looks at the document itself instead of asking a focused VLM call to look and report back. This collapses too, down to <strong>22.3%</strong>. The agent also thrashes: it runs 30+ steps per question and pins the iteration cap on most of them, grinding without converging.</p>
+<p>That second result is exactly what the RLM line would predict. Stuffing raw content into the reasoner’s own context degrades it (the familiar context-rot effect, where a model handles a long or noisy context worse than a clean one), whereas a focused sub-call that returns <em>compact text</em> keeps the context clean. RLM tells this story for long text; here it shows up for pixels, and it’s what pins down <em>which</em> half does the work. Having a REPL isn’t enough on its own; the perception has to go through <strong>a call that returns text</strong>, not be poured into the reasoner’s own window. (The RL-trained version of “let the model look at its own image crops” is DeepEyes; the point here is only that a <em>prompted</em> REPL agent is better off not.)</p>
+<p>Put the two knockouts together and you get a clean 2×2:</p>
+<table class="caption-top table">
+<caption><strong>Table 3.</strong> The two halves of the scaffold, ablated: the REPL crossed with the sub-VLM call (validation ANLS).</caption>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>with sub-VLM</strong></th>
+<th><strong>without sub-VLM (pixels in-context)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>with REPL</strong></td>
+<td><strong>41.9%</strong> (full method)</td>
+<td>22.3% (<code>display()</code> only)</td>
+</tr>
+<tr class="even">
+<td><strong>without REPL</strong></td>
+<td>27.2% (ReAct)</td>
+<td>20.9% (raw multi-image, no scaffold)</td>
+</tr>
+</tbody>
+</table>
+<p>You need both halves; neither alone gets you far. Drop either and you land in the low-to-mid 20s, near the no-scaffold baseline. The lift lives in the combination: a code REPL <strong>and</strong> an on-demand VLM perception call.</p>
+<p>Plotted together, the configurations fall into three tiers whose gaps dwarf the spread within each.</p>
+<p><img src="f3-tiers.png" class="img-fluid" alt="horizontal bar chart of configurations sorting into three accuracy tiers: REPL plus active perception on top, missing one half in the middle, and an OCR-only floor at the bottom"></p>
+<p><strong>Figure 4.</strong> Validation accuracy (avg@1 ± std, eight trials each) for every configuration, colored by tier: REPL + active perception, missing one half (no REPL or no perception call), and the no-scaffold / OCR-only floor.</p>
+<section id="three-things-that-turn-out-not-to-matter" class="level3">
+<h3 data-anchor-id="three-things-that-turn-out-not-to-matter">Three things that turn out <em>not</em> to matter</h3>
+<p>The core is small, and the obvious ways to enrich it don’t make it any bigger. This is what tells you what you <em>don’t</em> need to build.</p>
+<p><strong>Generalizing the call buys nothing.</strong> We replaced the focused “look at this region” call with a general sub-agent that could take on any subtask (image optional). Accuracy didn’t move: <strong>36.7%</strong>, inside the noise of the full method. And when we logged what the agent actually asked the sub-call to do, about <strong>99%</strong> of the calls were still plain perception. One focused perception primitive already captures the benefit; the extra generality just sits there. (We use one level of perception call throughout; we never tried stacking them deeper.)</p>
+<p><strong>The trajectory format doesn’t matter, for inference.</strong> RLM conditions on a compacted representation of the run: a sliding window of its recent REPL steps, not every turn in full. CodeAct keeps the <strong>full trajectory</strong> instead, never compacting, a fully-observable log of every turn. The two tie: <strong>39.5%</strong> vs 41.9%, within a couple of points, and CodeAct doesn’t even lose ground on longer documents (the per-document gap is uncorrelated with page count). For getting the answer, how you represent the trajectory is a wash.</p>
+<p>It does, though, matter for something else: <strong>training</strong>. If you ever want to <em>train</em> the agent (with reinforcement learning, or by distilling a stronger one), the methods assume the model’s output grows as a clean prefix. Turn <em>t</em> is just turn <em>t−1</em> with more appended. Compaction breaks that: it rewrites the history between turns, so the sequence is no longer a growing prefix. The full trajectory keeps it, which makes it the more <em>trainable</em> of the two. And, as we just saw, choosing it costs nothing in accuracy. (Making compacted trajectories trainable anyway is its own open problem; FoldAct (Shao et al., 2025) is an early attempt.) We’ll come back to this at the end.</p>
+<p><strong>Our OCR pipeline adds nothing on top here.</strong> The pipeline is docling for layout-aware page text, IBM granite-vision (a 2B vision-language model) for captioning the embedded figures and charts, and a BM25 index for lexical search. Wire all three into the full method and the score is <strong>36.6%</strong>, flat, within the noise. On these moderate-length documents, that text adds nothing the active-perception call isn’t already getting from the pixels. One caveat on scope: this is the pipeline we ran, not a verdict on OCR in general. A stronger OCR engine, better matched to these layouts, might surface detail ours missed and lift accuracy, not just efficiency. What we can say is that the one we used didn’t beat looking.</p>
+<p>So the core that matters is small: <strong>a REPL plus one active-perception call.</strong> Generality, trajectory format, and OCR-on-top are all dispensable.</p>
+<p>That leaves one more knockout, the one that says what kind of problem this is.</p>
+</section>
+<section id="perception-is-load-bearing" class="level3">
+<h3 data-anchor-id="perception-is-load-bearing">Perception is load-bearing</h3>
+<p><strong>Swap the eyes for a text channel.</strong> Give the same REPL agent our OCR text for every page plus a search tool, and no vision at all. It falls to <strong>14.7%</strong>, the lowest score in the study, below even the no-scaffold competition prompt. On layout-bound categories (engineering drawings, maps) it scores zero out of ten in all eight trials. For these questions, OCR text cannot stand in for looking. Perception is not optional; it is the thing the scaffold is buying.</p>
+</section>
+<section id="better-eyes-or-a-better-director" class="level3">
+<h3 data-anchor-id="better-eyes-or-a-better-director">Better eyes, or a better director?</h3>
+<p>The knockouts pin the scaffold’s contribution to perception: swap whole-page ReAct for RLM with the same 27B on both sides, and accuracy jumps from 27 to 42, with nothing changing but how perception is spent. To see where the remaining headroom lives, we vary each half in turn.</p>
+<p>Start by holding the reasoner fixed and upgrading only the eyes: feed its perception calls to a stronger VLM, up to the 27B. The reasoner never changes; only the quality of what it can see does. Accuracy climbs <strong>six to nine points</strong> at every reasoner size: +6.9 with a 4B reasoner, +6.4 with a 9B, +9.1 with the 27B, all well outside the noise.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Better eyes help. Perception is a real constraint, even with reasoning held fixed.</p>
+<p><img src="f5-vlm-swap.png" class="img-fluid" alt="grouped bar chart showing that holding a 4B, 9B, or 27B reasoner fixed and upgrading only the VLM to 27B lifts accuracy six to nine points"></p>
+<p><strong>Figure 5.</strong> Holding each reasoner fixed (4B, 9B, 27B) and upgrading only the VLM behind the perception call to the 27B. Bar labels give the smaller VLM’s size.</p>
+<p>Now do the opposite: hold the VLM at the 27B backend and vary the reasoner. The reasoner is the bigger lever, but only inside the loop.</p>
+<table class="caption-top table">
+<caption><strong>Table 4.</strong> Fixing the VLM at 27B and varying the reasoner (validation ANLS).</caption>
+<thead>
+<tr class="header">
+<th>Reasoner</th>
+<th>RLM</th>
+<th>ReAct</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>4B</td>
+<td>21.1</td>
+<td>18.1</td>
+</tr>
+<tr class="even">
+<td>9B</td>
+<td>25.3</td>
+<td>22.7</td>
+</tr>
+<tr class="odd">
+<td>27B</td>
+<td>41.9</td>
+<td>27.2</td>
+</tr>
+</tbody>
+</table>
+<p>Going from a 9B reasoner to a 27B one adds <strong>+16.6pp</strong> in RLM but only <strong>+4.5pp</strong> in ReAct: the same extra reasoning capacity is worth three to four times as much when the model has an actuator to spend it through. A whole-page reader can think harder about a page it still cannot resolve, but its ceiling is whatever one downsampled look yields, and a smarter reasoner cannot aim it. Give that reasoner a perception tool and its capacity turns into accuracy: it writes tighter crops, cleaner code, and decides where to look again.</p>
+<p>Now put the two mixed corners side by side. A 4B reasoner given the 27B VLM reaches <strong>21.1</strong>. A 27B reasoner peering through the 4B VLM reaches <strong>32.8</strong>.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> The strong director with weak eyes wins by almost twelve points, and it even clears the ReAct agent that has the full 27B as its eyes (27.2). Between a stronger VLM and a stronger director, buy the director.</p>
+<p>If perception is the bottleneck, the advantage should be largest where a page packs the most fine detail, and it broadly is.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> The per-category gap between the RLM agent and the ReAct baseline tracks visual density, though with few questions per category the ranking matters more than the exact points:</p>
+<p><img src="f-category.png" class="img-fluid" alt="bar chart of the active-perception advantage over ReAct by document category, largest on dense structured pages like engineering drawings and smallest on text-linear pages"></p>
+<p><strong>Figure 6.</strong> RLM’s advantage over ReAct (ANLS points), by document category: engineering drawings +36, business reports +30, infographics +19, science papers +4, slides +1. Maps are a hard case for every configuration.</p>
+<p>So is the bottleneck perception or reasoning? Perception is what binds in the moment: a dense page defeats any single look, whoever is looking, and the OCR-only collapse shows nothing substitutes for looking. But the leverage sits with the reasoner. At a fixed 27B VLM, scaling the reasoner buys +20.8 points; at a fixed 27B reasoner, scaling the VLM buys +9.1. And that leverage only exists inside the loop: the same capacity buys three to four times more when the reasoner can act on perception than when it reads whole pages. The practical corollary is the one the corners show. The VLM does not have to be great. A decent but limited one, driven by a capable coding reasoner that can crop, zoom, and re-read on demand, does far more than the same VLM read in a single pass, and more than a stronger VLM aimed by a weaker director.</p>
+<p>One caveat bounds the reasoning half of this. The data does not separate how much of a stronger reasoner’s lift comes from sharper aiming (better crops and code) versus sharper reasoning over what it then sees. That decomposition stays open.</p>
 </section>
 </section>
 <section id="the-lift-generalizes-across-model-sizes-and-families" class="level2">
 <h2 data-anchor-id="the-lift-generalizes-across-model-sizes-and-families">The lift generalizes across model sizes and families</h2>
 <p>Our entry used Qwen 3.5 27B, but nothing in the recipe is specific to it. To check, we run the harness homogeneously (the same model as both reasoner and VLM) across sizes and across a second family.</p>
 <table class="caption-top table">
-<caption><strong>Table 2.</strong> Homogeneous model axis: validation ANLS by harness, across model sizes and families.</caption>
+<caption><strong>Table 5.</strong> Homogeneous model axis: validation ANLS by harness, across model sizes and families.</caption>
 <thead>
 <tr class="header">
 <th>Model</th>
@@ -342,169 +501,15 @@ TL;DR
 </section>
 <section id="the-advantage-grows-with-document-length" class="level2">
 <h2 data-anchor-id="the-advantage-grows-with-document-length">The advantage grows with document length</h2>
-<p>Document length is an axis of its own, and it separates the methods cleanly once documents get long. To see it, run the main solvers (no ablations) on two benchmarks of very different length: MP-DocVQA (short, at most 20 pages, mean 5.3, scored by ANLS; Tito et al., 2023) and MMLongBench-Doc (long, around 47 pages, scored by a Qwen judge; Ma et al., 2024). Both on stratified-random subsets, n=3, Qwen 3.5 27B.</p>
+<p>Document length is an axis of its own, and across benchmarks it separates the methods cleanly once documents get long. To see it, run RLM and the raw multi-image baseline on two benchmarks of very different length: MP-DocVQA (short, at most 20 pages, mean 5.3, scored by ANLS; Tito et al., 2023) and MMLongBench-Doc (long, around 47 pages, scored by a Qwen judge; Ma et al., 2024). Both on stratified-random subsets, n=3, Qwen 3.5 27B.</p>
 <p><img src="f-lengthaxis.png" class="img-fluid" alt="the active-perception advantage grows with document length across benchmarks"></p>
-<p><strong>Figure 4.</strong> The active-perception advantage over a raw multi-image baseline, across two benchmarks of very different length. Qwen 3.5 27B, n=3, mean ± std.</p>
-<p>On MP-DocVQA the active-perception method scores 61.8 and the raw multi-image baseline 58.1 (the same no-scaffold baseline from the ablations, the 20.9% “raw multi-image” cell), a gap of about 4 points (roughly 2 to 6 across the runs). On MMLongBench-Doc the active-perception method scores 66.6 and the raw multi-image baseline 24.2, a gap of about 42 points (roughly 13 to 42).</p>
-<p>The mechanism is visible in how each method moves across the axis. The recursive methods stay flat (around 62 to 67%), because they navigate the document regardless of length. The raw multi-image baseline degrades. Its “Unknown” rate (the questions where it cannot find the evidence) climbs from about 22% on short documents to about 87% on long ones, as the evidence falls off the end of a fixed page budget.</p>
-<p>The point is about where the scaffold earns its keep. On the moderate DocVQA-2026 documents its edge over a strong baseline is modest, because most pages fit the budget. The edge is largest exactly where documents are long, which is where you would actually reach for it.</p>
+<p><strong>Figure 7.</strong> RLM’s advantage over the raw multi-image baseline, across two benchmarks of very different length. Qwen 3.5 27B, n=3, mean ± std.</p>
+<p>On the short benchmark the gap is about 4 points (61.8 against 58.1). On the long one it is about 42 (66.6 against 24.2). The baseline is the same raw multi-image configuration as in the ablations; nothing changed between the two benchmarks but the documents.</p>
+<p>The mechanism is visible in how each method moves across the axis. RLM stays flat (62 to 67%), because it navigates the document regardless of length. The raw multi-image baseline degrades. Its “Unknown” rate (the questions where it cannot find the evidence) climbs from about 22% on short documents to about 87% on long ones, as the evidence falls off the end of a fixed page budget.</p>
+<p>So length is one axis along which the advantage grows, and it dominates where documents are long, as evidence falls off a fixed page budget. On moderate collections like DocVQA-2026 the budget barely binds, because the pages fit; the large edge there comes from a different axis, within-page density.</p>
 </section>
-<section id="ablations" class="level2">
-<h2 data-anchor-id="ablations">Ablations</h2>
-<p>The harness has a few moving parts: a Python REPL, a VLM that the agent calls as a perception tool, and the loop that ties them together. Which of those is doing the work? The clean way to find out is to remove one part at a time and watch the score move. Every run keeps the same answer-formatting rules; only the structure changes.</p>
-<p>Before the knockouts, here is the whole landscape. Each row is one configuration. <strong>avg@1</strong> is the headline single-trial accuracy (mean ± std over eight trials); the last two columns are two diagnostics behind it, <strong>pass@8</strong> (coverage, whether any of the eight trials is correct) and <strong>SC@8</strong> (the self-consistency vote we actually submit).</p>
-<table class="caption-top table">
-<caption><strong>Table 3.</strong> Every configuration by headline accuracy (avg@1), coverage (pass@8), and self-consistency (SC@8). Validation, eight trials.</caption>
-<thead>
-<tr class="header">
-<th>Configuration</th>
-<th>avg@1 (± std)</th>
-<th>pass@8</th>
-<th>SC@8</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Active perception (full)</strong></td>
-<td><strong>41.9 ± 5.8</strong></td>
-<td><strong>68.8</strong></td>
-<td><strong>47.5</strong></td>
-</tr>
-<tr class="even">
-<td>&nbsp;&nbsp;+ general sub-agent</td>
-<td>36.7 ± 2.8</td>
-<td>66.3</td>
-<td>41.3</td>
-</tr>
-<tr class="odd">
-<td>&nbsp;&nbsp;+ OCR &amp; search</td>
-<td>36.6 ± 2.9</td>
-<td>67.5</td>
-<td>40.0</td>
-</tr>
-<tr class="even">
-<td>Append-only twin</td>
-<td>39.5 ± 2.8</td>
-<td>63.8</td>
-<td>45.0</td>
-</tr>
-<tr class="odd">
-<td>ReAct (no REPL)</td>
-<td>27.2 ± 3.2</td>
-<td>53.8</td>
-<td>32.5</td>
-</tr>
-<tr class="even">
-<td>Raw multi-image (no scaffold)</td>
-<td>20.9 ± 1.6</td>
-<td>27.5</td>
-<td>20.0</td>
-</tr>
-<tr class="odd">
-<td>Competition prompt (no scaffold)</td>
-<td>18.9 ± 1.9</td>
-<td>33.8</td>
-<td>21.3</td>
-</tr>
-<tr class="even">
-<td>OCR-only (no vision)</td>
-<td>14.7 ± 2.2</td>
-<td>27.5</td>
-<td>15.0</td>
-</tr>
-</tbody>
-</table>
-<p>Those two diagnostic columns say more than the headline mean. Self-consistency (SC@8) buys a few points over a single trial, which is why our test submissions vote. And pass@8 sits far above single-trial accuracy on the strong scaffolds: 68.8 against an avg@1 of 41.9, and 63.8 against 39.5 for the append-only twin. Coverage that high says the scaffold’s sampling explores a diverse enough solution space to reach the answer far more often than it reliably produces it. (pass@8 is also the upper bound for any way of picking among the eight; SC@8 is one realizable pick, and it recovers only part of the gap.) We return to that gap at the end.</p>
-<p>Now the mechanism, one part at a time. Start at the top and take away the REPL. What’s left is a <strong>ReAct agent</strong>: the same VLM perception tool, but called through plain tool-use instead of from inside a code environment. The score falls from <strong>41.9%</strong> to <strong>27.2%</strong>, about fifteen points. Without a REPL the agent can’t crop a region by arithmetic, can’t tile a page, can’t subtract two numbers it just read; it asks for whole pages and stops early (around five steps per question). The REPL isn’t a convenience. It’s the thing that lets reasoning turn into <em>targeted</em> perception.</p>
-<p>Now do the opposite: keep the REPL, take away the perception <em>call</em>. Give the agent a <code>display()</code> that loads the page pixels straight into its own context, so it looks at the document itself instead of asking a focused VLM call to look and report back. This collapses too, down to <strong>22.3%</strong>. The agent also thrashes: it runs 30+ steps per question and pins the iteration cap on most of them, grinding without converging.</p>
-<p>That second result is exactly what the RLM line would predict. Stuffing raw content into the reasoner’s own context degrades it (the familiar context-rot effect, where a model handles a long or noisy context worse than a clean one), whereas a focused sub-call that returns <em>compact text</em> keeps the context clean. RLM tells this story for long text; here it shows up for pixels, and it’s what pins down <em>which</em> half does the work. Having a REPL isn’t enough on its own; the perception has to go through <strong>a call that returns text</strong>, not be poured into the reasoner’s own window. (The RL-trained version of “let the model look at its own image crops” is DeepEyes; the point here is only that a <em>prompted</em> REPL agent is better off not.)</p>
-<p>Put the two knockouts together and you get a clean 2×2:</p>
-<table class="caption-top table">
-<caption><strong>Table 4.</strong> The two halves of the scaffold, ablated: the REPL crossed with the sub-VLM call (validation ANLS).</caption>
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th><strong>with sub-VLM</strong></th>
-<th><strong>without sub-VLM (pixels in-context)</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>with REPL</strong></td>
-<td><strong>41.9%</strong> (full method)</td>
-<td>22.3% (<code>display()</code> only)</td>
-</tr>
-<tr class="even">
-<td><strong>without REPL</strong></td>
-<td>27.2% (ReAct)</td>
-<td>20.9% (raw multi-image, no scaffold)</td>
-</tr>
-</tbody>
-</table>
-<p>You need both halves; neither alone gets you far. Drop either and you land in the low-to-mid 20s, near the no-scaffold baseline. The lift lives in the combination: a code REPL <strong>and</strong> an on-demand VLM perception call.</p>
-<p><img src="f3-tiers.png" class="img-fluid"></p>
-<p><strong>Figure 5.</strong> Every configuration sorts into three clean tiers (validation avg@1 ± std, eight trials each): REPL + active perception (~36–42%), missing one of the two (no REPL, or no perception call, 21–27%), and an OCR-only floor (the OCR knockout below). Every cross-tier gap is much larger than the per-cell spread.</p>
-<section id="three-things-that-turn-out-not-to-matter" class="level3">
-<h3 data-anchor-id="three-things-that-turn-out-not-to-matter">Three things that turn out <em>not</em> to matter</h3>
-<p>The core is small, and the obvious ways to enrich it don’t make it any bigger. That’s the more useful half of the story, because it’s what tells you what you <em>don’t</em> need to build.</p>
-<p><strong>Generalizing the call buys nothing.</strong> We replaced the focused “look at this region” call with a general sub-agent that could take on any subtask (image optional). Accuracy didn’t move: <strong>36.7%</strong>, inside the noise of the full method. And when we logged what the agent actually asked the sub-call to do, about <strong>99%</strong> of the calls were still plain perception. One focused perception primitive already captures the benefit; the extra generality just sits there. (We use one level of perception call throughout; we never tried stacking them deeper.)</p>
-<p><strong>The trajectory format doesn’t matter, for inference.</strong> Our agent conditions on a compacted representation of the run (the RLM style): a sliding window of its recent REPL steps, not every turn in full. Its twin keeps the <strong>full trajectory</strong> instead, never compacting, the CodeAct style, a fully-observable log of every turn. The two tie: <strong>39.5%</strong> vs 41.9%, within a couple of points, and the append-only version doesn’t even lose ground on longer documents (the per-document gap is uncorrelated with page count). For getting the answer, how you represent the trajectory is a wash.</p>
-<p>It does, though, matter for something else: <strong>training</strong>. If you ever want to <em>train</em> the agent (with reinforcement learning, or by distilling a stronger one), the methods assume the model’s output grows as a clean prefix. Turn <em>t</em> is just turn <em>t−1</em> with more appended. Compaction breaks that: it rewrites the history between turns, so the sequence is no longer a growing prefix. The full trajectory keeps it, which makes it the more <em>trainable</em> of the two. And, as we just saw, choosing it costs nothing in accuracy. (Making compacted trajectories trainable anyway is its own open problem; FoldAct (Shao et al., 2025) is an early attempt.) We’ll come back to this at the end.</p>
-<p><strong>Our OCR pipeline adds nothing on top here.</strong> The pipeline is docling for layout-aware page text, IBM granite-vision (a 2B vision-language model) for captioning the embedded figures and charts, and a BM25 index for lexical search. Wire all three into the full method and the score is <strong>36.6%</strong>, flat, within the noise. On these moderate-length documents, that text adds nothing the active-perception call isn’t already getting from the pixels. One caveat on scope: this is the pipeline we ran, not a verdict on OCR in general. A stronger OCR engine, better matched to these layouts, might surface detail ours missed and lift accuracy, not just efficiency. What we can say is that the one we used didn’t beat looking.</p>
-<p>So the core that matters is small: <strong>a REPL plus one active-perception call.</strong> Generality, trajectory format, and OCR-on-top are all dispensable. If you were going to build this, you’d build less than you think.</p>
-<p>That leaves one more knockout, the one that says what kind of problem this is.</p>
-<p><strong>Swap the eyes for a text channel.</strong> Give the same REPL agent our OCR text for every page plus a search tool, and no vision at all. It falls to <strong>14.7%</strong>, the lowest score in the study, below even the no-scaffold competition prompt. On layout-bound categories (engineering drawings, maps) it scores zero out of ten in all eight trials. For these questions, OCR text cannot stand in for looking. Perception is not optional; it is the thing the scaffold is buying.</p>
-</section>
-<section id="better-eyes-or-a-better-director" class="level3">
-<h3 data-anchor-id="better-eyes-or-a-better-director">Better eyes, or a better director?</h3>
-<p>The knockouts pin the scaffold’s contribution to perception: swap whole-page ReAct for active perception with the same 27B on both sides, and accuracy jumps from 27 to 42, with nothing changing but how perception is spent. To see where the remaining headroom lives, we vary each half in turn.</p>
-<p>Start by holding the reasoner fixed and upgrading only the eyes. Take a smaller model as the reasoner and feed its perception calls to progressively better VLMs, up to the 27B. The reasoner never changes; only the quality of what it can see does. Accuracy climbs about <strong>seven points</strong> at both sizes we tried: +6.4 with a 9B reasoner, +6.9 with a 4B one, both well outside the noise.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Better eyes help. Perception is a real constraint, even with reasoning held fixed.</p>
-<p><img src="f5-vlm-swap.png" class="img-fluid"></p>
-<p><strong>Figure 6.</strong> Holding the reasoner fixed (4B and 9B) and swapping in a stronger 27B perception backend.</p>
-<p>Now do the opposite: hold the VLM at the 27B backend and vary the reasoner. The reasoner is the bigger lever, but only inside the loop.</p>
-<table class="caption-top table">
-<caption><strong>Table 5.</strong> Fixing the VLM at 27B and varying the reasoner (validation ANLS).</caption>
-<thead>
-<tr class="header">
-<th>Reasoner</th>
-<th>Active perception</th>
-<th>ReAct</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>4B</td>
-<td>21.1</td>
-<td>18.1</td>
-</tr>
-<tr class="even">
-<td>9B</td>
-<td>25.3</td>
-<td>22.7</td>
-</tr>
-<tr class="odd">
-<td>27B</td>
-<td>41.9</td>
-<td>27.2</td>
-</tr>
-</tbody>
-</table>
-<p>Going from a 9B reasoner to a 27B one adds <strong>+16.6pp</strong> with active perception but only <strong>+4.5pp</strong> in ReAct: the same extra reasoning capacity is worth three to four times as much when the model has an actuator to spend it through. A whole-page reader can think harder about a page it still cannot resolve, but its ceiling is whatever one downsampled look yields, and a smarter reasoner cannot aim it. Give that reasoner a perception tool and its capacity turns into accuracy: it writes tighter crops, cleaner code, and decides where to look again.</p>
-<p>If perception is the real story, the advantage should be largest where a page packs the most fine detail, and it broadly is. The per-category gap between the active-perception agent and the ReAct baseline tracks visual density:</p>
-<p><img src="f-category.png" class="img-fluid"></p>
-<p><strong>Figure 7.</strong> The active-perception advantage over ReAct, by document category. Biggest on dense, structured pages where cropping recovers fine detail: engineering drawings (+36), business reports (+30), infographics (+19). Smallest on text-linear pages like science papers (+4) and slides (+1), where a single read already gets most of the page. (Maps are a hard case for every configuration, so the <em>advantage</em> there is modest even though the pages are busy.) The ranking is the point, not the exact values.</p>
-<p>The advantage concentrates where a page packs fine detail.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
-<p>So is the bottleneck perception or reasoning? Both bind, but the reasoner is where the leverage sits, and that leverage is unlocked by the loop: the same capacity buys far more when the reasoner can act on perception than when it reads whole-page. That is the case for the scaffold. The VLM does not have to be great. A decent but limited one, driven by a capable reasoner that can crop, zoom, and re-read on demand, does far more than the same VLM read in a single pass. These models can reason about the answer once they can see it; what they cannot do is resolve a dense page in one look. Given a loop, they can decide to look again.</p>
-<p>One caveat bounds the reasoning half of this. The data does not separate how much of a stronger reasoner’s lift comes from sharper aiming (better crops and code) versus sharper reasoning over what it then sees. That decomposition stays open.</p>
-</section>
-</section>
-<section id="the-cost-of-generality-its-slow" class="level2">
-<h2 data-anchor-id="the-cost-of-generality-its-slow">The cost of generality: it’s slow</h2>
+<section id="limitations" class="level2">
+<h2 data-anchor-id="limitations">Limitations</h2>
 <p>Everything good about this method (general model, no training, no domain pipeline) is bought with one currency: <strong>calls</strong>. Perception happens a region at a time, each region is a VLM call, and the calls are sequential because each one depends on what the last one returned. The full method averages around <strong>13 steps per question</strong>; the in-context-pixels variant, which never converges, runs more than twice that and pins the cap.</p>
 <table class="caption-top table">
 <caption><strong>Table 6.</strong> Model calls (steps) per question, by configuration.</caption>
@@ -520,7 +525,7 @@ TL;DR
 </thead>
 <tbody>
 <tr class="odd">
-<td>Active-perception agent (ours)</td>
+<td>RLM (ours)</td>
 <td>~13</td>
 </tr>
 <tr class="even">
@@ -532,29 +537,29 @@ TL;DR
 <td>~30 (caps out on most questions)</td>
 </tr>
 <tr class="even">
-<td>Raw single pass (no scaffold)</td>
+<td>Raw multi-image (no scaffold)</td>
 <td>1</td>
 </tr>
 </tbody>
 </table>
 <p>So the method trades latency and token cost for accuracy and generality. On the heaviest documents it can run up against the model’s context limit outright, and the self-consistency voting behind our test submission multiplies the cost several times over. This isn’t a small caveat. It’s the reason you’d hesitate to put this exact configuration in front of a latency-sensitive user.</p>
-<p>We’re not the first to hit this. MADQA (Borchmann et al., 2026) makes the point sharply: an unconstrained recursive agent can be flexible <em>and</em> ruinously expensive. In their setting one burned on the order of 270M input tokens and several hundred dollars on a task it then <em>lost</em> to a far cheaper retrieval agent. Flexibility has a bill attached.</p>
-<p>It helps to be clear about what the extra steps buy, though. More steps mark a <em>hard</em> document, not a path to a better answer. Across questions, trajectory length is mildly <em>negatively</em> correlated with correctness. The lever is the quality of the perception loop, not its length; grinding longer is a symptom, not a fix.</p>
-<p>The encouraging part is that we left the obvious efficiency levers untouched. There’s clear room, we just didn’t need it to make the point:</p>
+<p>MADQA (Borchmann et al., 2026) shows how far this can run: an unconstrained recursive agent can be flexible <em>and</em> ruinously expensive. In their setting, such an agent burned on the order of 270M input tokens and several hundred dollars on a task it then <em>lost</em> to a far cheaper retrieval agent. Flexibility has a bill attached.</p>
+<p>More steps mark a <em>hard</em> document, not a path to a better answer. Across questions, trajectory length is mildly <em>negatively</em> correlated with correctness. The lever is the quality of the perception loop, not its length; grinding longer is a symptom, not a fix.</p>
+<p>The encouraging part is that we left the efficiency levers untouched. There’s clear room, we just didn’t need it to make the point:</p>
 <ul>
 <li><strong>Cut calls with cheap retrieval.</strong> High-quality OCR run once as preprocessing, plus a searchable index, would let the agent jump to the right page instead of sweeping, fewer perception calls for the same evidence.</li>
-<li><strong>Make each call cheaper.</strong> The reasoner and the VLM don’t have to be the same model. A smaller, faster, or document-specialized VLM behind the perception call would cut per-call cost without touching the reasoning.</li>
+<li><strong>Make each call cheaper.</strong> The reasoner and the VLM don’t have to be the same model. The cross-model runs price this trade: a 4B VLM behind the 27B reasoner keeps 32.8 of the 41.9, about three-quarters of the accuracy at a fraction of the per-call cost, and a document-specialized small VLM could close more of the gap.</li>
 </ul>
-<p>And this reframes the OCR result from earlier. Our OCR pipeline bought ~0 <em>accuracy</em> on these documents, but that is one pipeline, not a ceiling. A stronger engine, better matched to these layouts, might surface detail ours missed and lift accuracy. And even if it only matched ours, OCR run once as preprocessing still buys <strong>efficiency</strong>: fewer and cheaper looks. Either way the extension earns its place, whether it answers better or just answers the same, faster.</p>
-<p>Two limits on the evidence: these ablations are validation-only, and the cross-benchmark length effect rests on only a few trials (n=3). Neither moves the central picture.</p>
-<p>Step back from the bill for a moment, because the REPL is really an instance of a more general idea.</p>
+<p>And this reframes the OCR result from earlier. Our OCR pipeline bought ~0 <em>accuracy</em> on these documents, but run once as preprocessing it still buys <strong>efficiency</strong>: fewer and cheaper looks. That is the extension to keep, whether a stronger engine eventually answers better or ours just answers the same, faster.</p>
+<p>Beyond cost, a few limits bound the claims. The test numbers sit below validation (a harder test split is at least as plausible a reason as fit to the development set). And the scaffold has a floor: it amplifies a capable coder but cannot rescue a model too weak to drive the loop, and it does not cleanly separate how much of a stronger reasoner’s lift is sharper aiming versus sharper reasoning. None of these moves the central picture.</p>
+<p>Set the caveats aside for a moment, because the REPL is really an instance of a more general idea.</p>
 </section>
 <section id="code-as-a-substrate-for-learning" class="level2">
 <h2 data-anchor-id="code-as-a-substrate-for-learning">Code as a substrate for learning</h2>
 <p>Strip away the document-specific framing and here’s what the REPL really is: a <strong>symbolic substrate</strong> for a neural model. Code is the medium the model explores in, composes in, and computes in: a place to hold and manipulate things its own context can’t. Active perception is just one instance of it: the model writes code to <em>aim its own eyes</em>, and the code does the cropping and the arithmetic that the network is bad at. The neural part proposes; the symbolic part executes and remembers.</p>
 <p>Using this substrate at <em>inference</em> is already common. Frontier models interleave code execution and tool calls with their reasoning, running Python or calling a tool between thinking steps; the results here add a document-domain instance, with the twist that the code aims a second model’s perception. The weights stay frozen, and the substrate wraps around them from the outside.</p>
-<p>The open question is about <em>learning</em>. Everything above uses the substrate at deployment, bolted on as an external harness. What if it were part of the model <em>itself</em>, woven into how the model is trained rather than added afterward? Not a scaffold you remove, but a native faculty the model learns to use: to compose, to compute, to aim its own perception. Could a model learn <em>in</em> this symbolic substrate, not just borrow it at answer time? That is a sharper and more uncertain claim than “code helps agents,” and it is the one I keep coming back to.</p>
-<p>Two things from this study make it feel concrete rather than idle. First, we already know which form is trainable: the append-only trajectory ties the compacted one on accuracy but keeps the clean, growing-prefix structure that learning methods assume. And making folded trajectories trainable is itself an active problem. Second, the coverage gap is just sitting there: for the append-only twin, pass@8 is about 24 points above what a single trial reliably produces. The answer is already in reach; the model just does not land on it by default. That is not noise. It is exactly the kind of signal a learning procedure exists to capture.</p>
+<p>The open question is about <em>learning</em>. Everything above uses the substrate at deployment, bolted on as an external harness. What if it were part of the model <em>itself</em>, woven into how the model is trained rather than added afterward? Not a scaffold you remove, but a native faculty the model learns to use: to compose, to compute, to aim its own perception. Could a model learn <em>in</em> this symbolic substrate, not just borrow it at answer time? That is a sharper and more uncertain claim than “code helps agents,” and it is the one we keep coming back to.</p>
+<p>Two things from this study make it feel concrete rather than idle. First, we already know which form is trainable: the append-only trajectory ties the compacted one on accuracy but keeps the clean, growing-prefix structure that learning methods assume. And making folded trajectories trainable is itself an active problem. Second, the coverage gap is just sitting there: for CodeAct, pass@8 is about 24 points above what a single trial reliably produces. The answer is already in reach; the model just does not land on it by default. That is not noise. It is exactly the kind of signal a learning procedure exists to capture.</p>
 <p>Whether the symbolic substrate can be made part of the model <em>during training</em> (so that neural and symbolic computation are learned together rather than stitched together at inference) is genuinely open. We got these results by letting a frozen model write code to look more carefully. The thread worth pulling next is whether a model that learns to use that substrate, as part of itself, outgrows one that only borrows it at inference.</p>
 </section>
 <section id="references" class="level2">
@@ -595,8 +600,9 @@ TL;DR
 
 <ol>
 <li id="fn1"><p>We run with <code>enable_thinking=false</code> for cost and reproducibility. Re-enabling it doesn’t change the picture (a separate ablation moves it less than the trial-to-trial noise).<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>+6.41pp at 9B (Welch <em>t</em> = 3.21, 95% CI [+2.1, +10.7]) and +6.88pp at 4B (<em>t</em> = 3.91, 95% CI [+3.1, +10.7]), eight trials per arm.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>Within-set, the “advantage grows with page count” hypothesis doesn’t hold: on the longest documents with a strong VLM the gap is flat. Across benchmarks of very different length, a budget effect does appear, which the document-length section takes up directly.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>+6.88pp at 4B (Welch <em>t</em> = 3.91, 95% CI [+3.1, +10.7]) and +6.41pp at 9B (<em>t</em> = 3.21, 95% CI [+2.1, +10.7]), eight trials per arm; +9.07pp at 27B (<em>t</em> = 3.52, 95% CI [+3.3, +14.8]), four trials against eight.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>32.81 ± 3.13 over four trials, against 21.09 ± 3.16 over eight. One asymmetry to note: the 4B- and 9B-reasoner cells run a minimally different prompt variant of the same solver (identical harness and tools); the 27B-reasoner cells run the exact configuration used everywhere else in the post.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Within-set, the “advantage grows with page count” hypothesis doesn’t hold: on the longest documents with a strong VLM the gap is flat. Across benchmarks of very different length, a budget effect does appear, which the document-length section takes up directly.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
