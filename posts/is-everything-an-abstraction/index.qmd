@@ -5,92 +5,68 @@ categories: ["Philosophy", "Science"]
 image: worlds-and-lines.png
 ---
 
-Imagine peering into the heart of reality, striving to grasp the universe’s most fundamental secrets. As physicists delve deeper—unveiling particles smaller than atoms and forces more elusive than gravity—a provocative thought emerges: **“Everything is an abstraction.”** This idea isn’t merely poetic. It challenges the way we conceive of the cosmos and our theories about it. Are electrons, quarks, and fields **actual** entities out there in the world, or are they sophisticated tools our minds develop to navigate an ultimately unknowable reality?
+A question got hold of me today and I couldn't shake it. When I try to picture what a table really is, I can't make it stop somewhere solid.
 
-## The Abstraction Conundrum
+A table is wood and grain. Wood is cells. Cells are molecules, and molecules are atoms. An atom used to be the end of the line. The name even means "uncuttable." But it isn't the end. It's electrons around a nucleus. The nucleus is protons and neutrons. Those are quarks, held together by gluons. And when I push on the electron, it stops acting like a small object at all. It becomes an excitation in a field, a bump in a mathematical structure spread through space. Push further and the field turns into equations I don't know how to picture.
 
-Our journey into the microscopic world reveals an ever-deepening hierarchy of particles. From **Democritus’s** early atomism to modern quantum field theory, science has consistently exposed smaller and more intricate components of matter. Yet, no matter how far we probe, our experience is mediated by **abstractions**. An atom, once considered indivisible, reveals itself as a complex interplay of electrons orbiting a nucleus of protons and neutrons. Zoom in further, and electrons turn out to be manifestations of quantum fields, with no definitive “thingness.” At the Planck scale, our current theories blur, hinting that perhaps the fundamental fabric of the universe lies beyond direct comprehension, accessible only through conceptual layers that we construct.
+Somewhere on the way down, the solid table became an idea. And I never reached a floor. There was no final layer that was obviously real, no thing that all the descriptions were describing. That absence is what tempted me toward a clean conclusion. Maybe everything is an abstraction. Maybe there's nothing down there but our models, all the way down.
 
-This perspective echoes the thoughts of philosophers like **Kant**, who argued that our understanding of the world is shaped by our cognitive structures, preventing us from ever grasping the “thing-in-itself” (*Kant, 1781*). Even so, we continue to glean regularities and construct theories—though these theories might reflect the structure of our own minds as much as any independent reality.
+I think that conclusion is too fast. But the honest alternative turned out to be stranger than the confident realism it was supposed to replace.
 
-## Instrumentalism: Models as Maps
+## Two ways to read the same success
 
-One compelling way to interpret our scientific theories is **instrumentalism**, championed by philosophers such as **van Fraassen** and **Duhem**. Instrumentalists see theories primarily as **tools**—models that predict and organize data (*Van Fraassen, 1980*; *Duhem, 1906*). In this view, concepts like electrons or the Higgs boson serve as labels for observed patterns, not necessarily literal building blocks of an external world.
+The thing I couldn't dismiss is that science works absurdly well. Quantum electrodynamics predicts the electron's magnetic moment, and experiment confirms it to more than ten digits. That is not the accuracy of a lucky guess.
 
-Historically, **Newton** described gravity as a universal force acting at a distance, offering a powerful “map” that predicted planetary orbits with impressive accuracy. Then, **Einstein** recast gravity as a curvature of spacetime (*Einstein, 1915*), providing a new lens through which to see the same phenomena. For instrumentalists, such radical shifts suggest that scientific progress isn’t about **unearthing** ultimate truths but about **refining** our models so they “work” better for prediction and coherence. 
+There is a realist way to read that success. Our best theories predict so well because they have caught hold of something real. Hilary Putnam called this the "no miracles" argument. It would be an absurd coincidence if a theory that gets the world this right were not, in some way, about the world. Electrons behave the same in a chemistry lab, a particle accelerator, and the phone in my pocket. It is hard to believe that kind of consistency is just bookkeeping.
 
-Moreover, **Nietzsche** questioned the notion of an absolute truth altogether, proposing in works like *Twilight of the Idols* (1889) that our “truths” reflect human perspectives and power dynamics. Though not formally an instrumentalist, his skepticism resonates with the anti-realist claim that we build frameworks to serve our purposes, rather than to capture an elusive, objective reality.
+There is also an instrumentalist way to read it. Bas van Fraassen and others treat a theory as a tool. It organizes what we observe and predicts what we haven't seen yet. "Electron" is a name for a pattern, a very well confirmed one, and I can use the equation down to the last decimal without believing in the little ball behind it. On this view, asking whether electrons are really real is a bit like asking whether the equator is really there. We can't do without it, and it isn't a thing.
 
-## Realism: Peering Beneath the Veil
+Here is what bothered me. The same track record supports both readings.
 
-In contrast, **realists** (notably **Putnam**, and in a nuanced way **Popper** with his critical rationalism) maintain that scientific theories aim to describe a **mind-independent** reality (*Putnam, 1981*; *Popper, 1959*). The remarkable success of scientific predictions—from quantum electrodynamics to astrophysical measurements—suggests, they argue, that we are latching onto genuine features of the universe.
+## The evidence doesn't decide
 
-Consider how electrons show up consistently in chemistry labs, particle accelerators, and electronic devices. Realists believe that such consistency implies electrons are more than conceptual placeholders; they are part of the deep structure of nature. The so-called “no miracles” argument (elaborated by philosophers like Putnam) underscores this stance: if scientific theories did not tap into something real, it would be an extraordinary coincidence that they yield such precise and wide-ranging predictive power.
+The realist leans on success. The instrumentalist has a sharp answer, which Larry Laudan called the pessimistic meta-induction. Look at the history. Phlogiston, caloric, the luminiferous ether. Each was the electron of its day. Central, predictive, sincerely believed. And each one is gone now. If our best past theories were wrong about what exists, even while they worked beautifully, what makes ours so different? Success has come apart from truth before.
 
-## Challenges: Pessimistic Meta-Induction and Paradigm Shifts
+Neither side wins, and it took me a while to see why. They are reading the same facts. The same history of theories that worked and were then thrown out. The realist sees continuity and reads it as a real target getting closer. The instrumentalist sees a graveyard of dead pictures and reads it as tools being swapped. No experiment tells them apart, because they don't disagree about any prediction. They disagree about what the success means. And the world doesn't settle that by running one more experiment.
 
-Yet realism faces formidable challenges. One is the **pessimistic meta-induction**, articulated by **Laudan** (*Laudan, 1981*). Since many once-successful theories—like the phlogiston theory of combustion or the luminiferous ether—were eventually discarded, one might infer that our current theories could face a similar fate. On a related note, **Kuhn** (*Kuhn, 1962*) argued that science undergoes **paradigm shifts**, where a prevailing framework is entirely superseded by another, suggesting that theoretical progress isn’t always a straightforward accumulation of truths.
+## What actually survives
 
-Realists commonly respond with **structural realism**, proposed by **Worrall** (*Worrall, 1989*). While the surface concepts of theories may change drastically—gravity as “force” vs. “curvature,” for instance—underlying mathematical structures often remain intact. Maxwell’s equations, for example, fit into the broader tapestry of quantum electrodynamics (QED). This continuity, structural realists contend, implies that even if our conceptual pictures shift, we preserve something that corresponds to real, stable features of the world.
+There is a stronger realist position that takes the graveyard seriously. It's the one I found hardest to argue with.
 
-## The Boundaries of Computation: Turing’s Uncomputable Problems
+When a theory falls, the picture dies but the math often lives. Newton's gravity was a force reaching instantly across empty space. Einstein replaced it with the curving of spacetime, a completely different story about what is going on. But Newton's equations did not disappear. They come back as the low-speed, weak-field limit of Einstein's. Fresnel had the wrong idea about light, ripples in an elastic ether, but the right equations for how it bends and reflects. Maxwell kept the equations and dropped the ether.
 
-Expanding on these challenges to any notion of a “final” or “complete” theory, **Alan Turing** demonstrated that certain problems are fundamentally **uncomputable**. In his 1936 paper, *On Computable Numbers, with an Application to the Entscheidungsproblem*, Turing proved that no algorithmic method could decide the **Halting Problem** for all possible programs (*Turing, 1936*). This result shows there are **intrinsic limits** to what can be solved or described by computational means.
+John Worrall calls this structural realism. What science keeps across its revolutions is structure. The relations, the symmetries, the equations. Not the intuitive stuff we drape over them. If anything is real, it is the structure.
 
-Such insights parallel our discussion on realism and instrumentalism:
+I keep noticing how much this gives away. The electron as a tiny ball is gone, and nobody defends it. What is left to be "real" is a web of mathematical relations. That is a long way from the solid table I started with. So the strongest honest thing I can say for realism is not "the things are real." It is "the pattern is real, and we keep the pattern even when the theory collapses." And that sits close to the instrumentalist's tool. Close enough that I can feel the two positions leaning toward each other. Almost everyone agrees that we track structure. The fight shrinks down to one question. Is structure all there is, or only all we can reach?
 
-1. **Limitations of Abstraction**: From an **instrumentalist** angle, Turing’s uncomputable problems reflect the idea that our models—like algorithms—may be extraordinarily useful but **inherently bounded**. No matter how powerful our theories become, some phenomena or questions remain beyond complete formalization or prediction.
+That question drags a second one behind it. Why is the part that survives always mathematical? Eugene Wigner called this the unreasonable effectiveness of mathematics. And again there are two readings. Reality is mathematical at bottom, says the realist. We keep only the math that fits and call the fit a discovery, says the instrumentalist. Same fact, two bets.
 
-2. **Depth of Reality**: For **realists**, Turing’s result underscores the complexity of the universe. The fact that certain aspects remain uncomputable does not imply that reality is purely mind-dependent. Instead, it highlights **how much** of reality lies outside our current (and perhaps any) theoretical framework, reinforcing the view that an objective world exists, but may exceed our conceptual or algorithmic grasp.
+## A ceiling on both
 
-Turing’s work thus reveals a fundamental tension between our drive to produce comprehensive theories and the **inherent constraints** of our cognitive and computational capacities. Much like Kuhn’s paradigm shifts or Laudan’s pessimistic meta-induction, Turing’s uncomputable problems remind us that **some** truths—or aspects of reality—may remain permanently off-limits to our most sophisticated methods.
+Then there is a limit that may not be one we can ever get past.
 
-## Beyond Realism and Instrumentalism
+In 1936 Alan Turing proved that some perfectly clear questions have no algorithmic answer. The famous one is the halting problem. No program can decide, for every program, whether it will stop or run forever. This is not a gap that a cleverer method will close later. It is a proved boundary on what step-by-step description can do.
 
-While realism and instrumentalism are pivotal stances in the philosophy of science, additional angles deepen and complicate the discussion:
+I was tempted to hand this straight to the metaphysics. See, reality itself escapes our descriptions. But that is an over-claim, and I want to be careful. Uncomputability is a fact about algorithms. It is not a proven fact about the universe. Going from "no algorithm decides this" to "reality is beyond us" is exactly the kind of leap this whole essay is circling. You cannot read it off Turing's theorem. What the theorem does give me is a clean, non-mystical proof that description has an inside and an outside. That rhymes with a much older idea, Kant's thing-in-itself. Our minds come with structure built in, and we only ever meet the world through it, never bare. Whether that structure is a window or a wall is, once again, not something we get to check from outside.
 
-1. **Mathematical Underdetermination**:  
-   Why is mathematics—seemingly a human invention—so adept at describing nature? Physicist Eugene Wigner famously called this the “unreasonable effectiveness of mathematics.” Is this a testament to an underlying mathematical reality (realism), or does it simply show we keep creating mathematical frameworks that match our observations (instrumentalism)?
+## The bet
 
-2. **Cultural and Linguistic Frameworks**:  
-   Thinkers like **Wittgenstein** highlight how **language** and cultural contexts shape our categories and interpretations, suggesting science is a product of our cognitive-linguistic environment rather than a pure mirror of nature. This viewpoint can reinforce the instrumentalist claim that theories are more about **use** than truth.
+So, is everything an abstraction?
 
-3. **Quantum Observer Effect**:  
-   Quantum interpretations like the **Copenhagen Interpretation** emphasize measurement’s role in bringing phenomena “into being,” suggesting a more **instrumentalist** reading. Meanwhile, **Many-Worlds** or **Objective Collapse** theories lean toward a **realist** perspective where the wavefunction (or some underlying state) exists independently of observation.
+Everything we can say is. Every layer I reached was a description. Atom, electron, field, equation. Under each one was another description, and never a bare thing sitting still to be named. That much I'm confident about.
 
-4. **Monism and Consciousness**:  
-   **Spinoza’s** monism (*Spinoza, 1677*) posited that all of reality is one substance, merely perceived in various modes. Contemporary explorations of consciousness raise similar questions about the unity of mind and world, sometimes hinting that **both** realism and instrumentalism capture partial truths about a single, indivisible reality.
+But "everything we can say is an abstraction" is not the same sentence as "everything is an abstraction." The second one reaches past anything a description could check. It is a claim about what is there when we stop describing, made with the only tool we have, which is describing. That is the move I don't think the evidence allows, in either direction. The realist who says the structure is really out there, and the instrumentalist who says there is only ever our models, are both standing past the edge of what any experiment could confirm. They are making bets about the limits of knowledge and reporting them as facts about the world.
 
-In each of these frontiers, we find fresh ways to push—and problematize—the boundaries of both realism and instrumentalism.
+Here is what I actually took from all this. It is not an answer. It is that the question has a shape, and one fact inside it won't go away. Structure persists. Theories fall, and the equations, or the exact points where they break, climb out of the wreckage and into whatever comes next. Something is being tracked. Whether that something is the world, or just the most stable thing our minds know how to build, I don't know. And I have come to think the not-knowing is the honest end of the road, not a sign that I need to read one more paper.
 
-## Convergent Realism and Epistemic Humility
-
-Despite their differences, many philosophers share a **humility** about how definitive our theories can be. **Convergent realism**, advanced by thinkers like **Psillos** (*Psillos, 1999*), contends that even if earlier theories were discarded, core elements survived and evolved, guiding us ever closer to a comprehensive account of reality. Instrumentalists caution, however, that no matter how refined our models, they remain **tools**—valuable, yes, but not necessarily revealing a final “truth.”
-
-Combining these insights, one might hold that our theories do, in some sense, **track** real patterns in the world, yet remain incomplete artifacts shaped by human reasoning, culture, and computational limits. Even Turing’s findings about uncomputable problems can be viewed through both lenses—bolstering the notion that some structures of reality elude total capture, while simultaneously affirming there is something robust and consistent “out there” that spawns these unsolvable challenges.
-
-## Final Reflections: Is Everything an Abstraction?
-
-So, **is everything an abstraction?** From an **instrumentalist** vantage, much of what we call “reality” is indeed a matrix of models and constructs devised to help us predict and navigate phenomena. From a **realist** perspective, those abstractions, while imperfect, are glimpses into a deeper, mind-independent world—glimpses refined by evidence and evolving theoretical frameworks.
-
-In **either** case, the dialogue between realism and instrumentalism underscores the provisional nature of our knowledge. Paradigm shifts, uncomputable problems, and cultural lenses all act as reminders that our intellectual reach has limits, even as we continue pressing forward. Whether those limits indicate a fundamental incompleteness of our concepts or merely the grandeur of a reality we’ve yet to fully chart is a question that remains open, fueling both philosophical inquiry and scientific exploration.
-
-Yet if what we call “reality” is fundamentally molded by our concepts and categories, then the theories, models, and laws we devise reveal more about how *we* interpret phenomena than about any mind-independent world. Rather than breeding mere caution, this stance provokes a deeper question: Is there a reality untouched by our abstractions, or do we forever inhabit the structures our minds create? On this view, the pursuit of knowledge becomes a matter of refining and revising these abstractions—seeing how far they can carry us, even as we accept they are never purely objective. For those who hold that the cosmos is ultimately a tapestry woven from our own frameworks, this is not a timid possibility but a bold rethinking of what it means to know anything at all.
+Everything we can reach is an abstraction. Whether that is a fact about us or a fact about the world is the one question our abstractions can't reach.
 
 ## References
 
-1. **Immanuel Kant**, *Critique of Pure Reason* (1781) – Distinguishes between phenomena and noumena, key to debates on the limits of cognition.  
-2. **Bas van Fraassen**, *The Scientific Image* (1980) – Foundational text for constructive empiricism, a form of instrumentalism.  
-3. **Pierre Duhem**, *The Aim and Structure of Physical Theory* (1906) – Early proponent of theories as frameworks for organizing observations.  
-4. **Albert Einstein**, “General Theory of Relativity” (1915) – Revolutionized the understanding of gravity as curvature of spacetime.  
-5. **Thomas Kuhn**, *The Structure of Scientific Revolutions* (1962) – Introduces the concept of paradigm shifts.  
-6. **Hilary Putnam**, *Reason, Truth, and History* (1981); *Mathematics, Matter and Method* (1963) – Explores scientific realism, including the “no miracles” argument.  
-7. **Karl Popper**, *The Logic of Scientific Discovery* (1959) – Emphasizes falsifiability and critical rationalism.  
-8. **Friedrich Nietzsche**, *Twilight of the Idols* (1889) – Critiques objective truth, highlighting the influence of perspective.  
-9. **Larry Laudan**, “A Confutation of Convergent Realism” (1981) – Presents the pessimistic meta-induction.  
-10. **John Worrall**, “Scientific Realism and the Plasticity of the Conceptual Structure of Theories” (1989) – Proposes structural realism.  
-11. **Stathis Psillos**, *Scientific Realism: How Science Tracks Truth* (1999) – Argues for convergent realism.  
-12. **Baruch Spinoza**, *Ethics* (1677) – Advocates a monistic view of reality as a single substance.  
-13. **Alan Turing**, *On Computable Numbers, with an Application to the Entscheidungsproblem* (1936) – Demonstrates the existence of uncomputable problems.  
-14. **Alan Turing**, *Computing Machinery and Intelligence* (1950) – Discusses the limits of computation and machine “thought.”  
-
+1. **Immanuel Kant**, *Critique of Pure Reason* (1781) — the distinction between phenomena and the thing-in-itself.
+2. **Bas van Fraassen**, *The Scientific Image* (1980) — constructive empiricism, a modern form of instrumentalism.
+3. **Hilary Putnam**, *Mathematics, Matter and Method* (1975) — the "no miracles" argument for scientific realism.
+4. **Larry Laudan**, "A Confutation of Convergent Realism" (1981) — the pessimistic meta-induction.
+5. **John Worrall**, "Structural Realism: The Best of Both Worlds?" (1989) — structure as what survives theory change.
+6. **Eugene Wigner**, "The Unreasonable Effectiveness of Mathematics in the Natural Sciences" (1960).
+7. **Alan Turing**, "On Computable Numbers, with an Application to the Entscheidungsproblem" (1936) — uncomputable problems and the halting problem.
