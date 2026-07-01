@@ -2,6 +2,7 @@
   {
     "listing": "/writing.html",
     "items": [
+      "/posts/perceive-reason-code/index.html",
       "/tutorials/on-policy-distillation/index.html",
       "/posts/fine-tuning-vs-prompting/index.html",
       "/posts/is-everything-an-abstraction/index.html",
