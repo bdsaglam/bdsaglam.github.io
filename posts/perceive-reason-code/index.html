@@ -295,7 +295,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <section id="where-this-comes-from" class="level3">
 <h3 data-anchor-id="where-this-comes-from">Where this comes from</h3>
 <p>Perceive-Reason-Code stands on a few well-tested ideas. The REPL-with-a-sub-call shape comes from <strong>Recursive Language Models</strong> (Zhang et al., 2025): the model works inside a code environment where the document is just a variable it can slice and inspect with code, and it can fire off a sub-call to a model when it needs one. Writing actions <em>as code</em> rather than as JSON tool calls is <strong>CodeAct</strong>. Orchestrating vision modules with a program goes back to <strong>VisProg</strong> and <strong>ViperGPT</strong>. The move here is to put them together for documents, with the sub-call specialized as visual perception. (When the same model serves as both reasoner and VLM, that perception call is the model calling itself. But nothing here turns on that. It’s one perception primitive the reasoner invokes as often as it needs, and that’s how we’ll treat it.)</p>
-<p>RLM had already shown, for <em>text</em>, that the REPL alone lifts a baseline and a sub-call lifts it further. The question this post answers is whether that holds when the sub-call is a <em>VLM</em> over a stack of document images. More usefully: which piece is actually responsible. The rest of the post is the controlled answer.</p>
+<p>RLM had already shown, for <em>text</em>, that the REPL alone lifts a baseline and a sub-call lifts it further. The question this post answers is whether that holds when the sub-call is a <em>VLM</em> over a stack of document images. Concurrent work takes the recursive idea multimodal from a different angle: RVLM (Recursive Vision-Language Models with Adaptive Depth, 2026) applies it to single-image medical scans, while our setting is the multi-page document, where finding evidence across and within pages is the whole game. More usefully for us: which piece is actually responsible. The rest of the post is the controlled answer.</p>
 </section>
 </section>
 <section id="the-model-axis-does-it-generalize" class="level2">
@@ -354,7 +354,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </section>
 <section id="the-dataset-axis-document-length" class="level2">
 <h2 data-anchor-id="the-dataset-axis-document-length">The dataset axis: document length</h2>
-<p>Document length is an axis of its own, and it separates the methods cleanly once documents get long. To see it, run the main solvers (no ablations) on two benchmarks of very different length: MP-DocVQA (short, at most 20 pages, mean 5.3, scored by ANLS, the fuzzy string-match metric DocVQA uses) and MMLongBench-Doc (long, around 47 pages, scored by a Qwen judge). Both on stratified-random subsets, n=3, Qwen 3.5 27B.</p>
+<p>Document length is an axis of its own, and it separates the methods cleanly once documents get long. To see it, run the main solvers (no ablations) on two benchmarks of very different length: MP-DocVQA (short, at most 20 pages, mean 5.3, scored by ANLS; Tito et al., 2023) and MMLongBench-Doc (long, around 47 pages, scored by a Qwen judge; Ma et al., 2024). Both on stratified-random subsets, n=3, Qwen 3.5 27B.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="f-lengthaxis.png" class="img-fluid figure-img"></p>
@@ -575,6 +575,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <h2 data-anchor-id="references">References</h2>
 <ul>
 <li>Zhang, A. L., Kraska, T., &amp; Khattab, O. (2025). Recursive Language Models. <a href="https://arxiv.org/abs/2512.24601">arXiv:2512.24601</a>.</li>
+<li><em>Recursive Vision-Language Models with Adaptive Depth (RVLM).</em> <a href="https://arxiv.org/abs/2603.24224">arXiv:2603.24224</a> (2026). Concurrent work applying the recursive idea to vision-language.</li>
 <li>Wang, X., et al.&nbsp;(2024). Executable Code Actions Elicit Better LLM Agents (CodeAct). ICML.</li>
 <li>Yao, S., et al.&nbsp;(2023). ReAct: Synergizing Reasoning and Acting in Language Models. ICLR.</li>
 <li>Gupta, T., &amp; Kembhavi, A. (2023). Visual Programming (VisProg). CVPR.</li>
@@ -583,6 +584,8 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 <li>Borchmann, Ł., et al.&nbsp;(2026). Strategic Navigation or Stochastic Search? (MADQA). <a href="https://arxiv.org/abs/2603.12180">arXiv:2603.12180</a>.</li>
 <li>Shao, J., et al.&nbsp;(2025). FoldAct: Efficient and Stable Context Folding for Long-Horizon Search Agents. <a href="https://arxiv.org/abs/2512.22733">arXiv:2512.22733</a>.</li>
 <li>Mathew, M., Karatzas, D., &amp; Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV.</li>
+<li>Tito, R., Karatzas, D., &amp; Valveny, E. (2023). Hierarchical Multimodal Transformers for Multi-Page DocVQA (MP-DocVQA). <a href="https://arxiv.org/abs/2212.05935">arXiv:2212.05935</a>.</li>
+<li>Ma, Y., et al.&nbsp;(2024). MMLongBench-Doc: Benchmarking Long-context Document Understanding with Visualizations. <a href="https://arxiv.org/abs/2407.01523">arXiv:2407.01523</a>.</li>
 </ul>
 </section>
 <section id="citation" class="level2">
