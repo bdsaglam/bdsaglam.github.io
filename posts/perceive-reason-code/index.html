@@ -155,7 +155,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   <li><a href="#the-task-and-why-its-hard" id="toc-the-task-and-why-its-hard" class="nav-link" data-scroll-target="#the-task-and-why-its-hard">The task, and why it’s hard</a></li>
   <li><a href="#the-recipe" id="toc-the-recipe" class="nav-link" data-scroll-target="#the-recipe">The recipe</a>
   <ul class="collapse">
-  <li><a href="#where-this-comes-from" id="toc-where-this-comes-from" class="nav-link" data-scroll-target="#where-this-comes-from">Where this comes from</a></li>
+  <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">Related work</a></li>
   </ul></li>
   <li><a href="#ablations" id="toc-ablations" class="nav-link" data-scroll-target="#ablations">Ablations</a>
   <ul class="collapse">
@@ -285,8 +285,8 @@ TL;DR
 <p><strong>Figure 3.</strong> One run of the loop (16 iterations, correct). It surveys ten candidate pages in one batched call, locates the table via a table-of-contents pointer, reads a page whole and distrusts the number it gets, crops to the chart band and re-reads, then does the subtraction in Python, where it’s exact.</p>
 <p>The actions are Python the model writes, and the arithmetic happens where it’s exact rather than in the VLM’s head. The whole-page read returned $978.42, and it was wrong. The crop caught it.</p>
 <p>One setup detail: these runs disable the model’s native “thinking” channel.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> This relocates the reasoning into the visible body of each turn, where the code and the comments are. The reasoning is still there; thinking-off just moves it somewhere we can see it.</p>
-<section id="where-this-comes-from" class="level3">
-<h3 data-anchor-id="where-this-comes-from">Where this comes from</h3>
+<section id="related-work" class="level3">
+<h3 data-anchor-id="related-work">Related work</h3>
 <p>Perceive-Reason-Code stands on a few well-tested ideas. The REPL-with-a-sub-call shape comes from <strong>Recursive Language Models</strong> (RLM; Zhang et al., 2025): the model works inside a code environment where the document is just a variable it can slice and inspect with code, and it can fire off a sub-call to a model when it needs one. Writing actions <em>as code</em> rather than as JSON tool calls is <strong>CodeAct</strong> (Wang et al., 2024). Orchestrating vision modules with a program goes back to <strong>VisProg</strong> (Gupta &amp; Kembhavi, 2023) and <strong>ViperGPT</strong> (Surís et al., 2023). The move here is to put them together for documents, with the sub-call specialized as visual perception. (When the same model serves as both reasoner and VLM, that perception call is the model calling itself. But nothing here turns on that. It’s one perception primitive the reasoner invokes as often as it needs, and that’s how we’ll treat it.)</p>
 <p>RLM had already shown, for <em>text</em>, that the REPL alone lifts a baseline and a sub-call lifts it further. The question this post answers is whether that holds when the sub-call is a <em>VLM</em> over a stack of document images. Active perception itself is not new for a single image: DeepEyes (Zheng et al., 2025) trains a model to zoom into an image region to answer, and concurrent work, RVLM (Recursive Vision-Language Models with Adaptive Depth; Mayumu et al., 2026), applies the same REPL-plus-sub-call shape to single-image medical scans. Our setting is the multi-page document, where finding evidence across and within pages is the whole game. What none of this settles is which piece of the harness carries the result; the ablations do.</p>
 </section>
