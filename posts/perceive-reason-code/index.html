@@ -152,7 +152,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   <ul>
   <li><a href="#a-27b-model-a-python-repl-and-one-question" id="toc-a-27b-model-a-python-repl-and-one-question" class="nav-link active" data-scroll-target="#a-27b-model-a-python-repl-and-one-question">A 27B model, a Python REPL, and one question</a></li>
   <li><a href="#the-result" id="toc-the-result" class="nav-link" data-scroll-target="#the-result">The result</a></li>
-  <li><a href="#the-task-and-why-its-hard" id="toc-the-task-and-why-its-hard" class="nav-link" data-scroll-target="#the-task-and-why-its-hard">The task, and why it’s hard</a></li>
+  <li><a href="#the-challenge" id="toc-the-challenge" class="nav-link" data-scroll-target="#the-challenge">The challenge</a></li>
   <li><a href="#the-method" id="toc-the-method" class="nav-link" data-scroll-target="#the-method">The method</a>
   <ul class="collapse">
   <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">Related work</a></li>
@@ -264,8 +264,8 @@ TL;DR
 </blockquote>
 <p>So what makes this task hard enough to need a system like that?</p>
 </section>
-<section id="the-task-and-why-its-hard" class="level2">
-<h2 data-anchor-id="the-task-and-why-its-hard">The task, and why it’s hard</h2>
+<section id="the-challenge" class="level2">
+<h2 data-anchor-id="the-challenge">The challenge</h2>
 <p>Document visual question answering (Mathew et al., 2021) is what it sounds like: you’re handed a document and a question in plain language, and you have to answer it. The catch is what counts as a “document.” In the ICDAR 2026 DocVQA challenge a single item might be a one-page infographic or a 281-page annual report, and the answer might be a value in a merged table cell, a label on an engineering drawing, a figure on a crowded chart, a date in a form, or something you only get by reading two pages and doing arithmetic.</p>
 <p>So before any reasoning happens, there’s a <em>finding</em> problem, and it runs along two axes at once. <strong>Across pages:</strong> the evidence lives on one of up to 281, so you have to find the right page first. <strong>Within a page:</strong> the page itself can be <em>large</em> (thousands of pixels on a side) and <em>dense</em> (a crowd of labels, cells, and lines), so the answer occupies a tiny fraction of it, well below what a single fixed-resolution read can resolve. Locate the page, then the region on it, <em>then</em> read, often compositing or computing over what you found. That’s the part general-purpose VLMs struggle with: hand one all the pages at once and it reads each at a fixed resolution with a fixed slice of attention. On a sparse page that’s fine. On a large, dense one it isn’t.</p>
 <p>The scale of the finding problem is easy to miss. Across the challenge, documents run from a single page to 281, with a median of 8. Most are short. A long tail is not.</p>
