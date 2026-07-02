@@ -153,7 +153,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   <li><a href="#a-27b-model-a-python-repl-and-one-question" id="toc-a-27b-model-a-python-repl-and-one-question" class="nav-link active" data-scroll-target="#a-27b-model-a-python-repl-and-one-question">A 27B model, a Python REPL, and one question</a></li>
   <li><a href="#the-result" id="toc-the-result" class="nav-link" data-scroll-target="#the-result">The result</a></li>
   <li><a href="#the-task-and-why-its-hard" id="toc-the-task-and-why-its-hard" class="nav-link" data-scroll-target="#the-task-and-why-its-hard">The task, and why it’s hard</a></li>
-  <li><a href="#the-recipe" id="toc-the-recipe" class="nav-link" data-scroll-target="#the-recipe">The recipe</a>
+  <li><a href="#the-method" id="toc-the-method" class="nav-link" data-scroll-target="#the-method">The method</a>
   <ul class="collapse">
   <li><a href="#related-work" id="toc-related-work" class="nav-link" data-scroll-target="#related-work">Related work</a></li>
   </ul></li>
@@ -273,8 +273,8 @@ TL;DR
 <p><strong>Figure 1.</strong> Document length across the DocVQA-2026 validation and test sets.</p>
 <p>That gap, between what’s on the page and what a single read can resolve, is the whole game. The question is what to do about it. The obvious moves are to use a bigger model or to stuff more pages into the context window. The move that actually worked was to let the model decide <em>where to look</em>.</p>
 </section>
-<section id="the-recipe" class="level2">
-<h2 data-anchor-id="the-recipe">The recipe</h2>
+<section id="the-method" class="level2">
+<h2 data-anchor-id="the-method">The method</h2>
 <p>Picture how a person answers a question from a hundred-page report. They do not read every page at a uniform squint. They flip to the section that matters, lean in on the one figure or table the question turns on, re-read a caption when a number looks wrong, and do the arithmetic on a notepad. It holds even on a single sheet: hand someone a large, dense map and they still work it region by region, finding the legend, then the area they need, then the labels there, never in one glance. Attention goes where the evidence is, a piece at a time. Active perception gives a model the same habit.</p>
 <p>The whole method fits in one sentence. Give a code-capable model a persistent Python REPL and a single perception primitive (an on-demand call to a VLM, pointed at any region of any page), and let it <em>direct</em> perception instead of swallowing the document whole. It can crop to the evidence, zoom for acuity, sweep pages in a loop, composite regions, and do in code the coordinate math and arithmetic a VLM is bad at. Perception becomes something the model spends deliberately, a region at a time, rather than a single fixed gulp of pixels. Three moves give the system its name, <strong>Perceive-Reason-Code</strong>: perceive through a VLM call, reason in language, act by writing code.</p>
 <p>Unless noted otherwise, every experiment below uses Qwen 3.5 27B as both the reasoner and the VLM, on the DocVQA-2026 validation set (25 documents, 80 questions), eight trials, scored by ANLS (the fuzzy string-match metric DocVQA uses), reported as mean ± std.</p>
@@ -449,7 +449,7 @@ TL;DR
 </section>
 <section id="the-lift-generalizes-across-model-sizes-and-families" class="level2">
 <h2 data-anchor-id="the-lift-generalizes-across-model-sizes-and-families">The lift generalizes across model sizes and families</h2>
-<p>Our entry used Qwen 3.5 27B, but nothing in the recipe is specific to it. To check, we run the harness homogeneously (the same model as both reasoner and VLM) across sizes and across a second family.</p>
+<p>Our entry used Qwen 3.5 27B, but nothing in the method is specific to it. To check, we run the harness homogeneously (the same model as both reasoner and VLM) across sizes and across a second family.</p>
 <table class="caption-top table">
 <caption><strong>Table 5.</strong> Homogeneous model axis: validation ANLS by harness, across model sizes and families.</caption>
 <thead>
@@ -494,7 +494,7 @@ TL;DR
 </tbody>
 </table>
 <p>The code-REPL harnesses (RLM and its CodeAct twin) beat the no-REPL ReAct agent at every capable size, and the margin scales with model capability: a point or two at 4B, about fifteen points at Qwen 27B and Gemma 31B. But the lift is gated by capacity. Gemma 4 E4B falls below the gate: no harness clears the no-scaffold baseline (around 6), because the model cannot write the code to drive the loop. The harness amplifies a capable model; it cannot rescue one that cannot code.</p>
-<p>The gate is about capability, not family or checkpoint: any model that is a strong enough multimodal coder gets the lift. Qwen 3.5 27B is simply the one we entered in the challenge. The recipe is about the harness, not the model.</p>
+<p>The gate is about capability, not family or checkpoint: any model that is a strong enough multimodal coder gets the lift. Qwen 3.5 27B is simply the one we entered in the challenge. The method is about the harness, not the model.</p>
 </section>
 <section id="the-advantage-grows-with-document-length" class="level2">
 <h2 data-anchor-id="the-advantage-grows-with-document-length">The advantage grows with document length</h2>
