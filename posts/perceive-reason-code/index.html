@@ -160,7 +160,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   <li><a href="#ablations" id="toc-ablations" class="nav-link" data-scroll-target="#ablations">Ablations</a>
   <ul class="collapse">
   <li><a href="#three-things-that-dont-help" id="toc-three-things-that-dont-help" class="nav-link" data-scroll-target="#three-things-that-dont-help">Three things that don’t help</a></li>
-  <li><a href="#perception-is-not-optional" id="toc-perception-is-not-optional" class="nav-link" data-scroll-target="#perception-is-not-optional">Perception is not optional</a></li>
+  <li><a href="#text-cannot-stand-in-for-looking" id="toc-text-cannot-stand-in-for-looking" class="nav-link" data-scroll-target="#text-cannot-stand-in-for-looking">Text cannot stand in for looking</a></li>
   <li><a href="#better-eyes-or-a-better-director" id="toc-better-eyes-or-a-better-director" class="nav-link" data-scroll-target="#better-eyes-or-a-better-director">Better eyes, or a better director?</a></li>
   </ul></li>
   <li><a href="#the-lift-generalizes-across-model-sizes-and-families" id="toc-the-lift-generalizes-across-model-sizes-and-families" class="nav-link" data-scroll-target="#the-lift-generalizes-across-model-sizes-and-families">The lift generalizes across model sizes and families</a></li>
@@ -404,17 +404,17 @@ TL;DR
 <p>So the core that matters is small: <strong>a REPL plus one active-perception call.</strong> The trajectory format is a free choice; generality and our OCR-on-top were net negatives.</p>
 <p>That leaves one more knockout, the one that says what kind of problem this is.</p>
 </section>
-<section id="perception-is-not-optional" class="level3">
-<h3 data-anchor-id="perception-is-not-optional">Perception is not optional</h3>
-<p><strong>Swap the eyes for a text channel.</strong> Give the same REPL agent our OCR text for every page plus a search tool, and no vision at all. It falls to <strong>14.7%</strong>, the lowest score in the study, below even the no-scaffold competition prompt. On layout-bound categories (engineering drawings, maps) it scores zero out of ten in all eight trials. For these questions, OCR text cannot stand in for looking. Perception is not optional; it is the thing the scaffold is buying.</p>
+<section id="text-cannot-stand-in-for-looking" class="level3">
+<h3 data-anchor-id="text-cannot-stand-in-for-looking">Text cannot stand in for looking</h3>
+<p><strong>Swap the eyes for a text channel.</strong> Give the same REPL agent our OCR text for every page plus a search tool, and no vision at all. It falls to <strong>14.7%</strong>, the lowest score in the study, below even the no-scaffold competition prompt. On layout-bound categories (engineering drawings, maps) it scores zero out of ten in all eight trials. A text rendering of the document, however searchable, loses exactly what these answers live in: layout, marks, fine visual detail. That sharpens the earlier knockouts: what the scaffold buys is <em>actively controlled looking</em>, and the looking itself has no substitute.</p>
 </section>
 <section id="better-eyes-or-a-better-director" class="level3">
 <h3 data-anchor-id="better-eyes-or-a-better-director">Better eyes, or a better director?</h3>
 <p>The knockouts pin the scaffold’s contribution to perception: swap whole-page ReAct for RLM with the same 27B on both sides, and accuracy jumps from 27 to 42, with nothing changing but how perception is spent. To see where the remaining headroom lives, we scale each half separately: 4B, 9B, and 27B Qwen as the reasoner, crossed with the same three sizes as the VLM behind the perception call.</p>
 <p><img src="f5-matrix.png" class="img-fluid" alt="heatmap of the reasoner-by-VLM matrix: accuracy rises modestly left to right with a stronger VLM and sharply bottom to top with a stronger reasoner"></p>
 <p><strong>Figure 5.</strong> Validation accuracy (ANLS %, mean ± std over 4–8 trials per cell) for each reasoner × VLM pairing of Qwen 3.5 4B/9B/27B, all under the same RLM harness. Grey cells were not run. The 4B- and 9B-reasoner rows use a minimally different prompt variant of the same solver (identical harness and tools); the 27B row uses the exact configuration reported everywhere else in the post.</p>
-<p>Read the matrix <strong>across a row</strong>: the reasoner stays fixed and only the eyes improve. Accuracy climbs at every reasoner size, +6.9 with the 4B reasoner, +6.4 with the 9B, and +9.1 end to end on the 27B row (32.8 with 4B eyes, 37.2 with 9B, 41.9 with 27B), all well outside the noise.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Better eyes help. Perception is a real constraint, even with reasoning held fixed.</p>
-<p>Now read <strong>down the rightmost column</strong>: the VLM stays at 27B and the reasoner scales, and accuracy nearly doubles. The reasoner is the bigger lever, but only inside the loop.</p>
+<p>Read the matrix <strong>across a row</strong>: the reasoner stays fixed and only the eyes improve. Accuracy climbs at every reasoner size, +6.9 with the 4B reasoner, +6.4 with the 9B, and +9.1 end to end on the 27B row (32.8 with 4B eyes, 37.2 with 9B, 41.9 with 27B), all well outside the noise.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Better eyes help; they are also the smaller axis.</p>
+<p>Now read <strong>down the rightmost column</strong>: the VLM stays at 27B and the reasoner scales, and accuracy nearly doubles. Does that leverage need the loop? Put the same ladder of reasoners behind ReAct:</p>
 <table class="caption-top table">
 <caption><strong>Table 4.</strong> Fixing the VLM at 27B and varying the reasoner (validation ANLS).</caption>
 <thead>
@@ -447,7 +447,7 @@ TL;DR
 <p>If perception is the bottleneck, the advantage should be largest where a page packs the most fine detail, and it broadly is.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> The per-category gap between the RLM agent and the ReAct baseline tracks visual density, though with few questions per category the ranking matters more than the exact points:</p>
 <p><img src="f-category.png" class="img-fluid" alt="bar chart of the active-perception advantage over ReAct by document category, largest on dense structured pages like engineering drawings and smallest on text-linear pages"></p>
 <p><strong>Figure 6.</strong> RLM’s advantage over ReAct (ANLS points), by document category: engineering drawings +36, business reports +30, infographics +19, science papers +4, slides +1. Maps are a hard case for every configuration.</p>
-<p>So is the bottleneck perception or reasoning? Perception is what binds in the moment: a dense page defeats any single look, whoever is looking, and the OCR-only collapse shows nothing substitutes for looking. But the leverage sits with the reasoner: at a fixed 27B VLM, scaling the reasoner adds +20.8 points; at a fixed 27B reasoner, scaling the VLM adds +9.1. And that leverage exists only inside the loop; ReAct’s much shallower column in Table 4 shows what the same capacity yields without it. The practical corollary is the one the corners show: the VLM does not have to be great, so long as the director aiming it is.</p>
+<p>So is the bottleneck perception or reasoning? Perception is what binds in the moment: no single look resolves a dense page, and no text channel replaces looking. But the leverage sits with the reasoner: at a fixed 27B VLM, scaling the reasoner adds +20.8 points; at a fixed 27B reasoner, scaling the VLM adds +9.1. And that leverage exists only inside the loop; ReAct’s much shallower column in Table 4 shows what the same capacity yields without it. The practical corollary is the one the corners show: the VLM does not have to be great, so long as the director aiming it is.</p>
 <p>One caveat bounds the reasoning half of this. The data does not separate how much of a stronger reasoner’s lift comes from sharper aiming (better crops and code) versus sharper reasoning over what it then sees. That decomposition stays open.</p>
 </section>
 </section>
