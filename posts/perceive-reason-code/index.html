@@ -160,7 +160,7 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
   <li><a href="#ablations" id="toc-ablations" class="nav-link" data-scroll-target="#ablations">Ablations</a>
   <ul class="collapse">
   <li><a href="#three-things-that-dont-help" id="toc-three-things-that-dont-help" class="nav-link" data-scroll-target="#three-things-that-dont-help">Three things that don’t help</a></li>
-  <li><a href="#text-cannot-stand-in-for-looking" id="toc-text-cannot-stand-in-for-looking" class="nav-link" data-scroll-target="#text-cannot-stand-in-for-looking">Text cannot stand in for looking</a></li>
+  <li><a href="#passive-perception-is-the-floor" id="toc-passive-perception-is-the-floor" class="nav-link" data-scroll-target="#passive-perception-is-the-floor">Passive perception is the floor</a></li>
   <li><a href="#better-eyes-or-a-better-director" id="toc-better-eyes-or-a-better-director" class="nav-link" data-scroll-target="#better-eyes-or-a-better-director">Better eyes, or a better director?</a></li>
   </ul></li>
   <li><a href="#the-lift-generalizes-across-model-sizes-and-families" id="toc-the-lift-generalizes-across-model-sizes-and-families" class="nav-link" data-scroll-target="#the-lift-generalizes-across-model-sizes-and-families">The lift generalizes across model sizes and families</a></li>
@@ -404,9 +404,10 @@ TL;DR
 <p>So the core that matters is small: <strong>a REPL plus one active-perception call.</strong> The trajectory format is a free choice; generality and our OCR-on-top were net negatives.</p>
 <p>That leaves one more knockout, the one that says what kind of problem this is.</p>
 </section>
-<section id="text-cannot-stand-in-for-looking" class="level3">
-<h3 data-anchor-id="text-cannot-stand-in-for-looking">Text cannot stand in for looking</h3>
-<p><strong>Swap the eyes for a text channel.</strong> Give the same REPL agent our OCR text for every page plus a search tool, and no vision at all. It falls to <strong>14.7%</strong>, the lowest score in the study, below even the no-scaffold competition prompt. On layout-bound categories (engineering drawings, maps) it scores zero out of ten in all eight trials. A text rendering of the document, however searchable, loses exactly what these answers live in: layout, marks, fine visual detail. That sharpens the earlier knockouts: what the scaffold buys is <em>actively controlled looking</em>, and the looking itself has no substitute.</p>
+<section id="passive-perception-is-the-floor" class="level3">
+<h3 data-anchor-id="passive-perception-is-the-floor">Passive perception is the floor</h3>
+<p><strong>Swap active looking for a precomputed text channel.</strong> Give the same REPL agent our OCR text for every page plus a search tool, and no way to look at the pixels itself. The channel is not perception-free; it even includes some vision, since a small VLM captions the figures and charts during preprocessing. But all of that perception is passive and upfront: every page read once, whole, before the question is even asked, with no way to crop, zoom, or re-read. It scores <strong>14.7%</strong>, the floor of the study, below even the no-scaffold competition prompt, with zero out of ten on layout-bound categories (engineering drawings, maps) in all eight trials.</p>
+<p>Lined up this way, the perception ablations form a ladder of control. Full control over where to look: 41.9. Whole pages on demand (ReAct): 27.2. One fixed serving of pages (raw multi-image): 20.9. That serving rendered to text: 14.7. Each rung gives the reasoner less say over how the document is perceived, and the score falls with it. What the scaffold buys is <em>actively controlled looking</em>; a text rendering, however searchable, is the far end of giving that up.</p>
 </section>
 <section id="better-eyes-or-a-better-director" class="level3">
 <h3 data-anchor-id="better-eyes-or-a-better-director">Better eyes, or a better director?</h3>
