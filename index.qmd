@@ -6,7 +6,7 @@ pagetitle: "Barış Deniz Sağlam"
 <header class="hero">
   <img class="avatar" src="profile.jpg" alt="Barış Deniz Sağlam">
   <div class="hero-text">
-    <p>I'm a senior AI engineer and PhD researcher. For six-plus years I've designed and
+    <p>I'm a senior AI engineer and PhD researcher. For eight-plus years I've designed and
     shipped production AI systems — owning architecture, system design, and tech-stack
     decisions across health tech, insurance, legal tech, and aerospace. Now I'm focused on
     research — foundation models, continual learning, and neuro-symbolic AI.</p>
