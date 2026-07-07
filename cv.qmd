@@ -12,7 +12,7 @@ pagetitle: "CV"
 ```
 
 ::: {.pagelead}
-Senior engineer with 6+ years building and owning production AI systems end-to-end —
+Senior engineer with 8+ years building and owning production AI systems end-to-end —
 architecture, system design, evaluation, and delivery — across health tech, insurance,
 legal tech, and aerospace. Now pursuing a PhD, with research interests in foundation models,
 continual learning, and neuro-symbolic AI.
