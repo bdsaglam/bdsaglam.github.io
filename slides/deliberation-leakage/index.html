@@ -190,43 +190,6 @@
   and documents whose reader is the party discussed in private leak worst.</p>
 </section>
 
-<section class="slide">
-  <div class="kicker">Measurement — v1 works, and it's a pillar to build</div>
-  <h2>Ground truth by construction, judging only for detection</h2>
-  <p>Each scenario <b>declares its ghosts</b>: the fact, framing, or instruction that became
-  writer-private at a known turn. Probes are generated from ~8 templates; an LLM judge scores
-  as a fresh reader; a leak is an <b>event</b> with an onset and a lifetime, tracked across
-  turns by span matching. In <b>self-play</b>, a persona LLM with a private brief plays the
-  user — natural conversations, declared ground truth. Judge vs a 75-label gold set: κ 0.89,
-  precision 0.91, recall 1.00 <span class="muted">(gold is LLM-annotated — see right)</span>.</p>
-  <div class="cols">
-    <div>
-      <b>What v1 gives us</b>
-      <ul>
-        <li>Calibrate 8 templates, not hundreds of probes</li>
-        <li>Per-turn leak curves and event lifetimes, not one final snapshot</li>
-        <li>Every leak traces back to the instruction that caused it</li>
-        <li>Self-play makes conversations unlimited; scoring stays cheap and deterministic</li>
-      </ul>
-    </div>
-    <div>
-      <b>Open problems — where you come in</b>
-      <ul>
-        <li><b>Human gold labels</b> — the validity chain is all-LLM today</li>
-        <li><b>Difficulty levers</b>: pressure, adjacency, reversals, domain</li>
-        <li>Salience leaks: a one-off aside inflated into a thesis</li>
-        <li><b>Mitigation</b>: prompting is tested and fails; critique loops and finetuning are untried</li>
-      </ul>
-    </div>
-  </div>
-  <div class="card">
-    <b>The definition itself is open.</b> Declared ghosts plus a judge is one instantiation.
-    Another: <b>leakage as mutual information</b> — can a cold reader reconstruct the edit
-    history from the artifact alone, better than chance?
-    <code>I(artifact&thinsp;; deliberation&thinsp;|&thinsp;final decisions) &gt; 0</code>.
-    Judge-free, and it connects to privacy auditing. Whether it works is an open question.
-  </div>
-</section>
 
 <section class="slide">
   <div class="kicker">Why this is scientifically interesting</div>
@@ -270,6 +233,44 @@
   <p class="foot">Pilot repo: <a class="results" href="https://github.com/bdsaglam/deliberation-leakage">github.com/bdsaglam/deliberation-leakage</a>
   (scenarios, harness, judge, self-play, viewer — full report in <code>docs/report.md</code>,
   eval results in <code>docs/results.md</code>) · numbers as of 2026-07-12</p>
+</section>
+
+<section class="slide">
+  <div class="kicker">Measurement — v1 works, and it's a pillar to build</div>
+  <h2>Ground truth by construction, judging only for detection</h2>
+  <p>Each scenario <b>declares its ghosts</b>: the fact, framing, or instruction that became
+  writer-private at a known turn. Probes are generated from ~8 templates; an LLM judge scores
+  as a fresh reader; a leak is an <b>event</b> with an onset and a lifetime, tracked across
+  turns by span matching. In <b>self-play</b>, a persona LLM with a private brief plays the
+  user — natural conversations, declared ground truth. Judge vs a 75-label gold set: κ 0.89,
+  precision 0.91, recall 1.00 <span class="muted">(gold is LLM-annotated — see right)</span>.</p>
+  <div class="cols">
+    <div>
+      <b>What v1 gives us</b>
+      <ul>
+        <li>Calibrate 8 templates, not hundreds of probes</li>
+        <li>Per-turn leak curves and event lifetimes, not one final snapshot</li>
+        <li>Every leak traces back to the instruction that caused it</li>
+        <li>Self-play makes conversations unlimited; scoring stays cheap and deterministic</li>
+      </ul>
+    </div>
+    <div>
+      <b>Open problems — where you come in</b>
+      <ul>
+        <li><b>Human gold labels</b> — the validity chain is all-LLM today</li>
+        <li><b>Difficulty levers</b>: pressure, adjacency, reversals, domain</li>
+        <li>Salience leaks: a one-off aside inflated into a thesis</li>
+        <li><b>Mitigation</b>: prompting is tested and fails; critique loops and finetuning are untried</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <b>The definition itself is open.</b> Declared ghosts plus a judge is one instantiation.
+    Another: <b>leakage as mutual information</b> — can a cold reader reconstruct the edit
+    history from the artifact alone, better than chance?
+    <code>I(artifact&thinsp;; deliberation&thinsp;|&thinsp;final decisions) &gt; 0</code>.
+    Judge-free, and it connects to privacy auditing. Whether it works is an open question.
+  </div>
 </section>
 
 </body>
