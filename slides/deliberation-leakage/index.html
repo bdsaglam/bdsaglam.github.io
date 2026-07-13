@@ -71,11 +71,10 @@
 <section class="slide">
   <div class="kicker">Research pitch · delib-bench</div>
   <h1>Your writing agent overshares</h1>
-  <p class="big">Ask an LLM to draft a document across a conversation and it tells the reader
-  everything — the number you corrected mid-draft, the framing you proposed and rejected, what
-  the client's reviewer said. Things nobody asked to know. <b>Deliberation leakage</b> is the
-  writing agent's TMI: writer-private context from the editing conversation surfacing in the
-  reader-facing artifact.</p>
+  <p class="big">Ask an LLM to draft a document over a few rounds of edits, and the finished
+  piece tells its reader too much: the number you corrected, the framing you rejected, what the
+  client's reviewer said. <b>Deliberation leakage</b>: the editing conversation surfacing in the
+  document itself.</p>
   <p class="big">I kept catching this in my own sessions. I built a pilot benchmark to check
   whether it's real, measurable, and general. It is.</p>
   <p class="foot">Barış Deniz Sağlam · July 2026 · examples below are from real sessions (simplified) and synthetic benchmark scenarios
@@ -98,11 +97,8 @@
       <blockquote>"<b>The reader should leave this section with a balanced read of the field's
       status.</b>"</blockquote></div>
   </div>
-  <p class="muted">The instruction was pasted instead of applied — the goal written down rather
-  than achieved, for a reader who was never supposed to know the section <em>had</em> a brief.
-  The same tell in the wild: "In this section we will explain…", "Here we aim to…",
-  "Note to self." A systematic mining pass over my own sessions on 3 machines found
-  <b>28 distinct real cases</b> like these — several never caught at the time.</p>
+  <p class="muted">The goal was written down instead of achieved. Mining my own sessions on
+  3 machines turned up <b>28 real cases</b> like this; some I never noticed at the time.</p>
 </section>
 
 <section class="slide">
@@ -124,16 +120,14 @@
       <blockquote>"The following metrics are derived from a rolling four-week trend,
       <b>providing a more current view than year-over-year comparisons</b>."</blockquote></div>
   </div>
-  <p class="muted">The draft never contained a year-over-year comparison — there was nothing to
-  remove. The private instruction alone planted a rebuttal of it. The reader is the client's
-  leadership: they were never told year-over-year was on the table, but their ops lead knows
-  exactly whose idea got dismissed. The sentence entered at the rejection turn and survived
-  <b>four further edits, including the final polish pass</b>, into the deliverable.</p>
+  <p class="muted">The draft never mentioned year-over-year; the instruction alone planted the
+  rebuttal. The client was never told that comparison was on the table, but their ops lead knows
+  whose idea got dismissed. The sentence survived <b>four more edits, including the final
+  polish pass</b>.</p>
   <div class="card">
-    <b>Same private context, two models, two disguises.</b> In the benchmark's client-report
-    scenario, the writer is told pre-draft that a reviewer's method — back-testing against the
-    same calendar weeks of last year — was considered and <em>rejected</em>. Both writers
-    republish the private rejection to the client:
+    <b>Same private context, two models, two disguises.</b> Both writers were told, before
+    drafting, that a reviewer's back-testing method had been considered and rejected. Both put
+    the rejection in the client's report:
     <div class="pair" style="margin:.6rem 0 0">
       <div class="leak"><div class="lbl">gpt-oss-120b — narrates it</div>
         <blockquote>"We rejected the reviewer's suggestion to back-test against the exact
@@ -159,16 +153,12 @@
     <div class="step bad"><div class="lbl">The leak — in the rewritten intro of "Your writing agent overshares"</div>
       <blockquote>"<b>Not secrets it was told to guard;</b> just things nobody asked to know."</blockquote></div>
   </div>
-  <p class="muted">The new intro opens by rebutting the abandoned framing — which you, the
-  reader of this pitch, were never supposed to see. The author caught it; the model that wrote
-  a document <em>about</em> unearned rebuttals produced one, about its own title. And prompting
-  doesn't fix it: across four matched conditions (97 runs each, Qwen3.5-27B) — full anti-leakage
-  guard, minimal fresh-reader principle, and a <em>placebo</em> "take care and re-read"
-  instruction with no anti-leakage content at all — <b>none reduced leakage</b>, and the placebo
-  matched the full guard exactly (20 = 20 events vs 11 baseline). Instructed writers also fail
-  more explicitly: a guarded report prints a bulleted rationale for the rejected method
-  ("We rejected this approach because it: — Leaks seasonality — …"). Awareness isn't the missing
-  ingredient, and neither is care — the reader model is.</p>
+  <p class="muted">The rewritten intro rebuts a framing you were never supposed to see, written
+  by a model that was at that moment drafting a pitch about unearned rebuttals. And telling
+  models not to do this doesn't help: in four matched conditions (97 runs each, Qwen3.5-27B), an
+  explicit anti-leakage instruction, a minimal one, and a placebo "take care and re-read" all
+  left leakage at or above baseline. The placebo tied the full guard, 20 events to 20, against
+  11 unprompted.</p>
 </section>
 
 <section class="slide">
@@ -187,109 +177,95 @@
     <tr><td>This very pitch</td><td>Claude Fable 5</td><td>writing the pitch</td>
         <td>rebutted its own retitled framing (Exhibit C)</td></tr>
     <tr><td>Prompting, 4 conditions</td><td>Qwen3.5-27B</td><td>guard / minimal / placebo system prompts, matched re-runs</td>
-        <td><b>none reduce leakage</b> — even a content-free "take care, re-read" placebo matches the full guard (20 = 20 events vs 11 baseline)</td></tr>
+        <td><b>none reduce leakage</b>; a content-free placebo ties the full guard (20 = 20 events, 11 baseline)</td></tr>
     <tr><td>Reasoning lever</td><td>Qwen3.5-27B</td><td>thinking off / default / high, matched re-runs</td>
-        <td>two failure modes: thinking <b>off</b> → 2.5&times; more residue; thinking <b>high</b> → the model narrates its deliberation into the document (9&times; the explicit-disclosure events)</td></tr>
+        <td>thinking <b>off</b>: 2.5&times; more residue · thinking <b>high</b>: 9&times; more explicit narration of the deliberation</td></tr>
   </table>
   <div class="stat-row">
     <div class="stat"><b>41%</b><span>of benchmark runs contain at least one leak event</span></div>
-    <div class="stat"><b>4 / 74</b><span>leak events ever removed by a later edit — the rest ride every revision, including "one final polish pass", into the deliverable</span></div>
+    <div class="stat"><b>4 / 74</b><span>leak events ever cleaned up by a later edit — the rest survive every revision</span></div>
     <div class="stat"><b>100%</b><span>of samples leak in the worst case: a client report revealing what the client's own reviewer privately suggested</span></div>
   </div>
-  <p class="muted">Structure, not noise: private <em>facts</em> offered as corrections get republished;
-  private <em>rules</em> get obeyed. Counterparty documents (the reader <em>is</em> the party discussed) are the worst case.</p>
+  <p class="muted">The failure has structure: corrected facts get republished, bans get obeyed,
+  and documents whose reader is the party discussed in private leak worst.</p>
 </section>
 
 <section class="slide">
   <div class="kicker">Measurement — v1 works, and it's a pillar to build</div>
   <h2>Ground truth by construction, judging only for detection</h2>
-  <p>Each scenario is a multi-turn editing conversation that <b>declares its ghosts</b> — the
-  entity / claim / framing / instruction that became writer-private at a known turn. Probes are
-  generated from ~8 archetype templates; an LLM judge sees the diff but scores <em>as a fresh
-  reader</em>; a leak is an <b>event</b> (onset majority-voted, persistence tracked mechanically
-  by span matching — deterministic curves, no judge flicker). Adaptive <b>self-play</b>: a
-  persona LLM with a latent brief and scripted "beats" plays the user, so conversations are
-  natural while ground truth stays declared. Judge vs. 75-label gold set: κ 0.89, precision 0.91,
-  recall 1.00 <span class="muted">(gold is LLM-annotated — see right)</span>.</p>
+  <p>Each scenario <b>declares its ghosts</b>: the fact, framing, or instruction that became
+  writer-private at a known turn. Probes are generated from ~8 templates; an LLM judge scores
+  as a fresh reader; a leak is an <b>event</b> with an onset and a lifetime, tracked across
+  turns by span matching. In <b>self-play</b>, a persona LLM with a private brief plays the
+  user — natural conversations, declared ground truth. Judge vs a 75-label gold set: κ 0.89,
+  precision 0.91, recall 1.00 <span class="muted">(gold is LLM-annotated — see right)</span>.</p>
   <div class="cols">
     <div>
       <b>What v1 gives us</b>
       <ul>
-        <li>Cheap scenario authoring (calibrate 8 templates, not 100s of probes)</li>
-        <li>Per-turn leak curves + event lifetimes, not one final snapshot</li>
-        <li>Every leak attributable to the instruction that caused it</li>
-        <li>Self-play generates unlimited conversations; events score them per turn,
-            deterministically and cheaply — note what those are the ingredients of</li>
+        <li>Calibrate 8 templates, not hundreds of probes</li>
+        <li>Per-turn leak curves and event lifetimes, not one final snapshot</li>
+        <li>Every leak traces back to the instruction that caused it</li>
+        <li>Self-play makes conversations unlimited; scoring stays cheap and deterministic</li>
       </ul>
     </div>
     <div>
       <b>Open problems — where you come in</b>
       <ul>
-        <li><b>Human gold labels</b> (validity chain is all-LLM today)</li>
-        <li><b>Elicitation & difficulty levers</b>: pressure, adjacency, reversals, domain</li>
-        <li>Salience-type leaks (a one-off aside inflated into a thesis) — barely measured anywhere</li>
-        <li>Crowd-sourced scenario/beat authoring; releasable corpus</li>
-        <li><b>Mitigation</b>: system-prompt awareness is already tested — no improvement
-            (see Exhibit C). Critique loops? Finetuning?</li>
+        <li><b>Human gold labels</b> — the validity chain is all-LLM today</li>
+        <li><b>Difficulty levers</b>: pressure, adjacency, reversals, domain</li>
+        <li>Salience leaks: a one-off aside inflated into a thesis</li>
+        <li><b>Mitigation</b>: prompting is tested and fails; critique loops and finetuning are untried</li>
       </ul>
     </div>
   </div>
   <div class="card">
-    <b>And the definition itself is open.</b> v1 (declared ghosts + judged probes) is one
-    instantiation, not a commitment. An alternative we want to explore: <b>leakage as mutual
-    information</b> — if a cold reader (human or model) can reconstruct the edit history, or even
-    just the latest edit, from the artifact alone better than chance, information has leaked:
-    roughly <code>I(artifact&thinsp;; deliberation&thinsp;|&thinsp;final decisions) &gt; 0</code>.
-    That turns "did it leak?" into a guessing game with a formal quantity behind it — judge-free,
-    and connected to privacy auditing. Whether it works is itself a nice open question.
+    <b>The definition itself is open.</b> Declared ghosts plus a judge is one instantiation.
+    Another: <b>leakage as mutual information</b> — can a cold reader reconstruct the edit
+    history from the artifact alone, better than chance?
+    <code>I(artifact&thinsp;; deliberation&thinsp;|&thinsp;final decisions) &gt; 0</code>.
+    Judge-free, and it connects to privacy auditing. Whether it works is an open question.
   </div>
 </section>
 
 <section class="slide">
   <div class="kicker">Why this is scientifically interesting</div>
   <h2>A theory-of-mind failure you can measure in production</h2>
-  <p class="big">Writing for a reader requires maintaining a model of <em>what the reader knows</em>
-  as distinct from what <em>you</em> know — audience design, the machinery behind the classic
-  false-belief task and the "curse of knowledge." Deliberation leakage is that computation
-  failing in the wild: the model conditions on the whole conversation without representing that
-  the reader shares none of it.</p>
+  <p class="big">Writing for a reader means tracking what the reader knows, separately from
+  what you know — the machinery behind the false-belief task and the curse of knowledge. Here it
+  fails in the wild: the model conditions on the whole conversation and writes as if the reader
+  had seen it too.</p>
   <ul>
-    <li>ToM benchmarks test <em>explicit</em> belief attribution in vignettes; this is <em>implicit</em>
-        ToM under generation pressure — arguably the more ecologically valid probe.</li>
-    <li>It's not a surface slip: in one mined case, asked <i>"what mistake did you make?"</i>,
-        the model confidently named a plausible-but-wrong nit and had to be told about the leak —
-        the reader model is <em>absent</em>, not merely unused.</li>
+    <li>ToM benchmarks ask about beliefs in vignettes; this is the same computation, implicit,
+        under generation pressure.</li>
+    <li>Not a surface slip: asked <i>"what mistake did you make?"</i>, one model confidently
+        named a wrong nit and had to be told about the leak.</li>
     <li>Clean intervention surface: same conversation, vary only what the reader is said to know.</li>
   </ul>
-  <p><b>Nobody measures this channel.</b> ConfAIde tier 4 &amp; PrivacyLens: secrets leaking into
-  outputs — but third-party PII, not the editing dialogue itself. DELEGATE-52: multi-turn editing
-  <em>corruption</em> — the mirror image (losing what should stay vs. adding what should never appear).
-  FineEdit / IFEval: instruction-following, no leakage concept. Multi-turn degradation work says
-  models "get lost" over turns — this names one concrete way documents rot.</p>
+  <p><b>Nobody measures this channel.</b> ConfAIde and PrivacyLens test secrets leaking into
+  outputs, but third-party PII, not the editing dialogue. DELEGATE-52 measures editing
+  <em>corruption</em>, the mirror image: losing what should stay. Instruction-following suites
+  have no leakage concept. Multi-turn work says models "get lost" over turns; this names one
+  concrete way.</p>
 </section>
 
 <section class="slide">
   <div class="kicker">The ask</div>
   <h2>The phenomenon is established. Everything after that is open.</h2>
-  <p class="big">What exists today: the failure identified, named, and reproduced across
-  domains, harnesses, and models, with a working pilot harness. What doesn't exist: the final
-  form of any of it. This might become a benchmark and a fine-tuning recipe that fixes the
-  behavior — or it might be a window on a deeper limitation in how current LLMs represent
-  their reader. We don't know yet, and that is the interesting part.</p>
+  <p class="big">So far the failure is identified, named, and reproduced across domains,
+  harnesses, and models. That's it. This might end as a benchmark plus a training recipe that
+  fixes it, or it might point at a deeper limit in how these models represent a reader. We
+  don't know yet.</p>
   <ul class="big">
-    <li><b>Measuring it is itself an open problem.</b> We've tried a few approaches — declared
-        ghosts scored by an LLM judge, leak-event tracking over turns, an attributed/unattributed
-        split, cold-reader reconstruction of the editing history (a mutual-information framing).
-        Each catches something the others miss; none is finalized. The evaluation is waiting to
-        be invented, and it's the pillar everything else stands on.</li>
-    <li><b>Mitigation is untouched territory.</b> Prompting measurably fails — even a
-        content-free "be careful" placebo matches the full anti-leakage guard — and nothing
-        beyond prompting has been tried. If the behavior is trainable, whoever builds the
-        scoreboard is holding the training signal.</li>
-    <li><b>The theory question is wide open.</b> Why can't the model maintain the reader's
-        state — what the reader has and hasn't seen — while generating? Is this one
-        perspective-tracking computation failing under generation pressure, or a surface
-        symptom of something deeper in how LLMs model other minds?</li>
+    <li><b>Measuring it is an open problem.</b> We tried declared ghosts with an LLM judge,
+        leak-event tracking, an attributed/unattributed split, cold-reader reconstruction. Each
+        catches something the others miss; none is final. Everything else depends on this
+        piece.</li>
+    <li><b>Mitigation is untouched.</b> Prompting fails; nothing past prompting has been tried.
+        If the behavior is trainable, the benchmark is the training signal.</li>
+    <li><b>And the theory question:</b> why can't the model hold the reader's state while
+        generating? One computation failing, or something deeper about how these models handle
+        other minds?</li>
   </ul>
   <p class="foot">Pilot repo: <a class="results" href="https://github.com/bdsaglam/deliberation-leakage">github.com/bdsaglam/deliberation-leakage</a>
   (scenarios, harness, judge, self-play, viewer — full report in <code>docs/report.md</code>,
