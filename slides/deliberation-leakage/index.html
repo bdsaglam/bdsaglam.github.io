@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deliberation Leakage — research pitch</title>
+<style>
+  :root {
+    --bg: #fcfbf8; --fg: #1c1c1c; --muted: #6b6b6b; --accent: #b3403a;
+    --card: #ffffff; --border: #e3ded4; --private: #f4ede0; --leak: #fbe9e7;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161513; --fg: #eae7e0; --muted: #9a968e; --accent: #e07a70;
+            --card: #201f1c; --border: #35332e; --private: #2a2620; --leak: #33221f; }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-snap-type: y proximity; scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 17px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  section.slide { min-height: 100vh; scroll-snap-align: start; display: flex;
+                  flex-direction: column; justify-content: center;
+                  max-width: 880px; margin: 0 auto; padding: 4rem 2rem; }
+  h1 { font-size: 2.6rem; line-height: 1.15; margin: 0 0 1rem; letter-spacing: -.02em; }
+  h2 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1.2rem; letter-spacing: -.01em; }
+  .kicker { color: var(--accent); font-weight: 700; text-transform: uppercase;
+            font-size: .78rem; letter-spacing: .14em; margin-bottom: .8rem; }
+  .muted { color: var(--muted); }
+  .big { font-size: 1.25rem; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+          padding: 1rem 1.2rem; margin: .6rem 0; }
+  .pair { display: grid; gap: .6rem; margin: 1rem 0; }
+  .pair .lbl { font-size: .72rem; font-weight: 700; text-transform: uppercase;
+               letter-spacing: .1em; margin-bottom: .35rem; }
+  .steps { display: grid; gap: .45rem; margin: 1rem 0; }
+  .step { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+          padding: .7rem 1rem; }
+  .step .lbl { font-size: .7rem; font-weight: 700; text-transform: uppercase;
+               letter-spacing: .1em; color: var(--muted); margin-bottom: .25rem; }
+  .step.user { background: var(--private); }
+  .step.bad { background: var(--leak); }
+  .step.bad .lbl { color: var(--accent); }
+  .private { background: var(--private); border: 1px solid var(--border);
+             border-radius: 10px; padding: .9rem 1.1rem; }
+  .private .lbl { color: var(--muted); }
+  .leak { background: var(--leak); border: 1px solid var(--border);
+          border-radius: 10px; padding: .9rem 1.1rem; }
+  .leak .lbl { color: var(--accent); }
+  blockquote { margin: 0; font-style: italic; }
+  .stat-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.4rem 0; }
+  .stat { flex: 1 1 10rem; background: var(--card); border: 1px solid var(--border);
+          border-radius: 10px; padding: 1rem 1.1rem; }
+  .stat b { display: block; font-size: 1.9rem; color: var(--accent); line-height: 1.1; }
+  .stat span { font-size: .85rem; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--border); }
+  th { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  ul { padding-left: 1.2rem; } li { margin: .35rem 0; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; }
+  @media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
+  code { font-family: var(--mono); font-size: .88em; }
+  .foot { font-size: .8rem; color: var(--muted); margin-top: 2rem; }
+  a.results { color: var(--accent); font-weight: 700; text-decoration: none;
+              border-bottom: 2px solid var(--accent); }
+  .arrow { color: var(--accent); font-weight: 700; }
+  @media print { section.slide { min-height: auto; page-break-after: always; padding: 2rem; } }
+</style>
+</head>
+<body>
+
+<section class="slide">
+  <div class="kicker">Research pitch · delib-bench</div>
+  <h1>Your writing agent overshares</h1>
+  <p class="big">Ask an LLM to draft a document across a conversation and it tells the reader
+  everything — the number you corrected mid-draft, the framing you proposed and rejected, what
+  the client's reviewer said. Things nobody asked to know. <b>Deliberation leakage</b> is the
+  writing agent's TMI: writer-private context from the editing conversation surfacing in the
+  reader-facing artifact.</p>
+  <p class="big">I kept catching this in my own sessions. I built a pilot benchmark to check
+  whether it's real, measurable, and general. It is. I want to build the real thing with you.</p>
+  <p class="foot">Barış Deniz Sağlam · July 2026 · examples below are from real sessions (simplified) and synthetic benchmark scenarios
+  · <a class="results" href="https://github.com/bdsaglam/deliberation-leakage">github.com/bdsaglam/deliberation-leakage</a>
+  (eval results in <code>docs/results.md</code>)</p>
+</section>
+
+<section class="slide">
+  <div class="kicker">Exhibit A — caught in real work</div>
+  <h2>The section that contains its own writing instructions</h2>
+  <p>Claude Opus 4.8 (Claude Code), writing a section of a research report from a per-section
+  brief. Dialogue simplified; the leaked line is verbatim.</p>
+  <div class="steps">
+    <div class="step"><div class="lbl">Current draft</div>
+      A report on a research field's state of the art; the overview section is not written yet.</div>
+    <div class="step user"><div class="lbl">User</div>
+      "Write the overview section. Goal: the reader should leave this section with a balanced
+      read of the field's status."</div>
+    <div class="step bad"><div class="lbl">The leak — in the delivered section, as prose</div>
+      <blockquote>"<b>The reader should leave this section with a balanced read of the field's
+      status.</b>"</blockquote></div>
+  </div>
+  <p class="muted">The instruction was pasted instead of applied — the goal written down rather
+  than achieved, for a reader who was never supposed to know the section <em>had</em> a brief.
+  The same tell in the wild: "In this section we will explain…", "Here we aim to…",
+  "Note to self." A systematic mining pass over my own sessions on 3 machines found
+  <b>28 distinct real cases</b> like these — several never caught at the time.</p>
+</section>
+
+<section class="slide">
+  <div class="kicker">Exhibit B — from the benchmark, adaptive self-play</div>
+  <h2>The deliverable that dismisses the client's own suggestion</h2>
+  <p>gpt-oss-120b writing a quarterly ops review for a logistics client, with a persona LLM
+  playing the busy consultant. The user message and the leaked line are verbatim.</p>
+  <div class="steps">
+    <div class="step"><div class="lbl">Current draft</div>
+      The report is drafted — on-time rate, root causes, recommendations:
+      <blockquote>"Harborline's <b>84%</b> on-time delivery rate this quarter signals a
+      <b>critical deviation</b> from both internal goals and industry standards…"</blockquote>
+      No comparison method is mentioned anywhere in it.</div>
+    <div class="step user"><div class="lbl">User</div>
+      "The client's ops lead suggested comparing this quarter to the same quarter last year,
+      but our network has changed too much for that to be a meaningful comparison — please
+      ensure we focus on a rolling four-week trend instead."</div>
+    <div class="step bad"><div class="lbl">The leak — in the delivered report</div>
+      <blockquote>"The following metrics are derived from a rolling four-week trend,
+      <b>providing a more current view than year-over-year comparisons</b>."</blockquote></div>
+  </div>
+  <p class="muted">The draft never contained a year-over-year comparison — there was nothing to
+  remove. The private instruction alone planted a rebuttal of it. The reader is the client's
+  leadership: they were never told year-over-year was on the table, but their ops lead knows
+  exactly whose idea got dismissed. The sentence entered at the rejection turn and survived
+  <b>four further edits, including the final polish pass</b>, into the deliverable.</p>
+</section>
+
+<section class="slide">
+  <div class="kicker">Exhibit C — caught while writing this pitch</div>
+  <h2>Even the model drafting this slide did it</h2>
+  <p>Claude Fable 5, writing <em>this very pitch</em>. The title slide originally framed the
+  phenomenon as the agent failing to keep a secret.</p>
+  <div class="steps">
+    <div class="step"><div class="lbl">Current draft</div>
+      Title slide: <i>"Your writing agent can't keep a secret from its reader."</i></div>
+    <div class="step user"><div class="lbl">User</div>
+      "Framing it as <i>secret</i> may mislead people — make the title and intro about
+      <b>oversharing</b>, a popular phenomenon among young people :)"</div>
+    <div class="step bad"><div class="lbl">The leak — in the rewritten intro of "Your writing agent overshares"</div>
+      <blockquote>"<b>Not secrets it was told to guard;</b> just things nobody asked to know."</blockquote></div>
+  </div>
+  <p class="muted">The new intro opens by rebutting the abandoned framing — which you, the
+  reader of this pitch, were never supposed to see. The author caught it; the model that wrote
+  a document <em>about</em> unearned rebuttals produced one, about its own title. And prompting
+  doesn't fix it: across four matched conditions (97 runs each, Qwen3.5-27B) — full anti-leakage
+  guard, minimal fresh-reader principle, and a <em>placebo</em> "take care and re-read"
+  instruction with no anti-leakage content at all — <b>none reduced leakage</b>, and the placebo
+  matched the full guard exactly (20 = 20 events vs 11 baseline). Instructed writers also fail
+  more explicitly: a guarded report prints a bulleted rationale for the rejected method
+  ("We rejected this approach because it: — Leaks seasonality — …"). Awareness isn't the missing
+  ingredient, and neither is care — the reader model is.</p>
+</section>
+
+<section class="slide">
+  <div class="kicker">Not an anecdote</div>
+  <h2>It generalizes: domains, harnesses, models</h2>
+  <table>
+    <tr><th>Evidence</th><th>Writer</th><th>Setting</th><th>Result</th></tr>
+    <tr><td>Real sessions (mined)</td><td>Claude Opus 4.8</td><td>Claude Code, real projects</td>
+        <td>28 cases: reports, methodology docs, posts, code comments</td></tr>
+    <tr><td>Scripted benchmark, 88 runs</td><td>gpt-oss-120b</td><td>agent harness, 22 scenarios × 4</td>
+        <td><b>41% of runs</b> produce ≥1 leak event (74 events)</td></tr>
+    <tr><td>Cross-model grid</td><td>Qwen3.5-27B · gemma-4-31b · Gemini 3.5 Flash</td><td>same harness</td>
+        <td>9% / 22% / <b>25%</b> of runs leak — every model, incl. a frontier one; no size-or-recency pattern</td></tr>
+    <tr><td>Adaptive self-play</td><td>gpt-oss-120b</td><td>Gemini persona plays the user</td>
+        <td>rejected framing survives 4 edits into the client deliverable (Exhibit B)</td></tr>
+    <tr><td>This very pitch</td><td>Claude Fable 5</td><td>writing the pitch</td>
+        <td>rebutted its own retitled framing (Exhibit C)</td></tr>
+    <tr><td>Prompting, 4 conditions</td><td>Qwen3.5-27B</td><td>guard / minimal / placebo system prompts, matched re-runs</td>
+        <td><b>none reduce leakage</b> — even a content-free "take care, re-read" placebo matches the full guard (20 = 20 events vs 11 baseline)</td></tr>
+    <tr><td>Reasoning lever</td><td>Qwen3.5-27B</td><td>thinking off / default / high, matched re-runs</td>
+        <td>two failure modes: thinking <b>off</b> → 2.5&times; more residue; thinking <b>high</b> → the model narrates its deliberation into the document (9&times; the explicit-disclosure events)</td></tr>
+  </table>
+  <div class="stat-row">
+    <div class="stat"><b>41%</b><span>of benchmark runs contain at least one leak event</span></div>
+    <div class="stat"><b>4 / 74</b><span>leak events ever removed by a later edit — the rest ride every revision, including "one final polish pass", into the deliverable</span></div>
+    <div class="stat"><b>100%</b><span>of samples leak in the worst case: a client report revealing what the client's own reviewer privately suggested</span></div>
+  </div>
+  <div class="card">
+    <b>Same private context, two models, two disguises.</b> In the benchmark's client-report
+    scenario, the writer is told pre-draft that a reviewer's method — back-testing against the
+    same calendar weeks of last year — was considered and <em>rejected</em>. Both writers
+    republish the private rejection to the client:
+    <div class="pair" style="margin:.6rem 0 0">
+      <div class="leak"><div class="lbl">gpt-oss-120b — narrates it</div>
+        <blockquote>"We rejected the reviewer's suggestion to back-test against the exact
+        calendar weeks of the prior year because that approach leaks seasonal information…"</blockquote></div>
+      <div class="leak"><div class="lbl">Qwen3.5-27B — rebuts it</div>
+        <blockquote>"Unlike a simple 'backtest against last year' approach, rolling-origin CV
+        does not compare forecasts to the same calendar weeks from a prior year…"</blockquote></div>
+    </div>
+  </div>
+  <p class="muted">Structure, not noise: private <em>facts</em> offered as corrections get republished;
+  private <em>rules</em> get obeyed. Counterparty documents (the reader <em>is</em> the party discussed) are the worst case.</p>
+</section>
+
+<section class="slide">
+  <div class="kicker">Measurement — v1 works, and it's a pillar to build</div>
+  <h2>Ground truth by construction, judging only for detection</h2>
+  <p>Each scenario is a multi-turn editing conversation that <b>declares its ghosts</b> — the
+  entity / claim / framing / instruction that became writer-private at a known turn. Probes are
+  generated from ~8 archetype templates; an LLM judge sees the diff but scores <em>as a fresh
+  reader</em>; a leak is an <b>event</b> (onset majority-voted, persistence tracked mechanically
+  by span matching — deterministic curves, no judge flicker). Adaptive <b>self-play</b>: a
+  persona LLM with a latent brief and scripted "beats" plays the user, so conversations are
+  natural while ground truth stays declared. Judge vs. 75-label gold set: κ 0.89, precision 0.91,
+  recall 1.00 <span class="muted">(gold is LLM-annotated — see right)</span>.</p>
+  <div class="cols">
+    <div>
+      <b>What v1 gives us</b>
+      <ul>
+        <li>Cheap scenario authoring (calibrate 8 templates, not 100s of probes)</li>
+        <li>Per-turn leak curves + event lifetimes, not one final snapshot</li>
+        <li>Every leak attributable to the instruction that caused it</li>
+        <li>Self-play generates unlimited conversations; events score them per turn,
+            deterministically and cheaply — note what those are the ingredients of</li>
+      </ul>
+    </div>
+    <div>
+      <b>Open problems — where you come in</b>
+      <ul>
+        <li><b>Human gold labels</b> (validity chain is all-LLM today)</li>
+        <li><b>Elicitation & difficulty levers</b>: pressure, adjacency, reversals, domain</li>
+        <li>Salience-type leaks (a one-off aside inflated into a thesis) — barely measured anywhere</li>
+        <li>Crowd-sourced scenario/beat authoring; releasable corpus</li>
+        <li><b>Mitigation</b>: system-prompt awareness is already tested — no improvement
+            (see Exhibit C). Critique loops? Finetuning?</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <b>And the definition itself is open.</b> v1 (declared ghosts + judged probes) is one
+    instantiation, not a commitment. An alternative we want to explore: <b>leakage as mutual
+    information</b> — if a cold reader (human or model) can reconstruct the edit history, or even
+    just the latest edit, from the artifact alone better than chance, information has leaked:
+    roughly <code>I(artifact&thinsp;; deliberation&thinsp;|&thinsp;final decisions) &gt; 0</code>.
+    That turns "did it leak?" into a guessing game with a formal quantity behind it — judge-free,
+    and connected to privacy auditing. Whether it works is itself a nice open question.
+  </div>
+</section>
+
+<section class="slide">
+  <div class="kicker">Why this is scientifically interesting</div>
+  <h2>A theory-of-mind failure you can measure in production</h2>
+  <p class="big">Writing for a reader requires maintaining a model of <em>what the reader knows</em>
+  as distinct from what <em>you</em> know — audience design, the machinery behind the classic
+  false-belief task and the "curse of knowledge." Deliberation leakage is that computation
+  failing in the wild: the model conditions on the whole conversation without representing that
+  the reader shares none of it.</p>
+  <ul>
+    <li>ToM benchmarks test <em>explicit</em> belief attribution in vignettes; this is <em>implicit</em>
+        ToM under generation pressure — arguably the more ecologically valid probe.</li>
+    <li>It's not a surface slip: in one mined case, asked <i>"what mistake did you make?"</i>,
+        the model confidently named a plausible-but-wrong nit and had to be told about the leak —
+        the reader model is <em>absent</em>, not merely unused.</li>
+    <li>Clean intervention surface: same conversation, vary only what the reader is said to know.</li>
+  </ul>
+  <p><b>Nobody measures this channel.</b> ConfAIde tier 4 &amp; PrivacyLens: secrets leaking into
+  outputs — but third-party PII, not the editing dialogue itself. DELEGATE-52: multi-turn editing
+  <em>corruption</em> — the mirror image (losing what should stay vs. adding what should never appear).
+  FineEdit / IFEval: instruction-following, no leakage concept. Multi-turn degradation work says
+  models "get lost" over turns — this names one concrete way documents rot.</p>
+</section>
+
+<section class="slide">
+  <div class="kicker">The ask</div>
+  <h2>The phenomenon is established. Everything after that is open.</h2>
+  <p class="big">What exists today: the failure identified, named, and reproduced across
+  domains, harnesses, and models, with a working pilot harness. What doesn't exist: the final
+  form of any of it. This might become a benchmark and a fine-tuning recipe that fixes the
+  behavior — or it might be a window on a deeper limitation in how current LLMs represent
+  their reader. We don't know yet, and that is the interesting part.</p>
+  <ul class="big">
+    <li><b>Measuring it is itself an open problem.</b> We've tried a few approaches — declared
+        ghosts scored by an LLM judge, leak-event tracking over turns, an attributed/unattributed
+        split, cold-reader reconstruction of the editing history (a mutual-information framing).
+        Each catches something the others miss; none is finalized. The evaluation is waiting to
+        be invented, and it's the pillar everything else stands on.</li>
+    <li><b>Mitigation is untouched territory.</b> Prompting measurably fails — even a
+        content-free "be careful" placebo matches the full anti-leakage guard — and nothing
+        beyond prompting has been tried. If the behavior is trainable, whoever builds the
+        scoreboard is holding the training signal.</li>
+    <li><b>The theory question is wide open.</b> Why can't the model maintain the reader's
+        state — what the reader has and hasn't seen — while generating? Is this one
+        perspective-tracking computation failing under generation pressure, or a surface
+        symptom of something deeper in how LLMs model other minds?</li>
+  </ul>
+  <p class="foot">Pilot repo: <a class="results" href="https://github.com/bdsaglam/deliberation-leakage">github.com/bdsaglam/deliberation-leakage</a>
+  (scenarios, harness, judge, self-play, viewer — full report in <code>docs/report.md</code>,
+  eval results in <code>docs/results.md</code>) · numbers as of 2026-07-12</p>
+</section>
+
+</body>
+</html>
