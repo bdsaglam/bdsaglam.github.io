@@ -155,7 +155,7 @@
   </div>
   <p class="muted">The rewritten intro rebuts a framing you were never supposed to see, written
   by a model that was at that moment drafting a pitch about unearned rebuttals. And telling
-  models not to do this doesn't help: in four matched conditions (97 runs each, Qwen3.5-27B), an
+  the model not to do this didn't help here: in four matched conditions (97 runs each, Qwen3.5-27B), an
   explicit anti-leakage instruction, a minimal one, and a placebo "take care and re-read" all
   left leakage at or above baseline. The placebo tied the full guard, 20 events to 20, against
   11 unprompted.</p>
@@ -224,8 +224,9 @@
         leak-event tracking, an attributed/unattributed split, cold-reader reconstruction. Each
         catches something the others miss; none is final. Everything else depends on this
         piece.</li>
-    <li><b>Mitigation is untouched.</b> Prompting fails; nothing past prompting has been tried.
-        If the behavior is trainable, the benchmark is the training signal.</li>
+    <li><b>Mitigation is barely explored.</b> The prompts we tried didn't help — better ones
+        might — and nothing past prompting has been tried at all. If the behavior is trainable,
+        the benchmark is the training signal.</li>
     <li><b>And the theory question:</b> why can't the model hold the reader's state while
         generating? One computation failing, or something deeper about how these models handle
         other minds?</li>
@@ -260,7 +261,7 @@
         <li><b>Human gold labels</b> — the validity chain is all-LLM today</li>
         <li><b>Difficulty levers</b>: pressure, adjacency, reversals, domain</li>
         <li>Salience leaks: a one-off aside inflated into a thesis</li>
-        <li><b>Mitigation</b>: prompting is tested and fails; critique loops and finetuning are untried</li>
+        <li><b>Mitigation</b>: our prompt attempts didn't help; better prompts, critique loops, finetuning all open</li>
       </ul>
     </div>
   </div>
