@@ -91,7 +91,7 @@ $$\text{DGD (§4.5, Eq. 57): }\ \boxed{\,W_{t+1}=W_t(\mathbf I-\eta'_t\hat{\math
 
 **Payoff:** the optimizer is an AM over a second stream (gradients, keyed by layer inputs, valued by surprises) — same problems (interference, finite capacity), same fixes (delta, forget gate, depth). Every write rule from M1–M5 is now available to it.
 
-## NL-1 — Test-time learning (TTT · Titans · Atlas · Miras)
+## NL-1 — Test-time learning (TTT · Titans · Miras · Atlas)
 
 **TTT** — the hidden state *is* a model $f_W$; the write = a GD step on a self-supervised loss:
 
@@ -105,13 +105,13 @@ $$\boxed{\,M_t=(1-\alpha_t)M_{t-1}+S_t,\quad S_t=\eta_t S_{t-1}-\theta_t\nabla\e
 
 - $\nabla\ell$ = momentary surprise · $\eta_t S_{t-1}$ = momentum / past surprise · $(1-\alpha_t)$ = adaptive forgetting (bounds $\lVert M\rVert$, recency).
 
-**Atlas** — the Omega rule (memorize a window, §3.2 Eq. 9) + a Muon-style step (§5, Eqs. 32–33):
+**Miras** — the design space, four axes: **memory architecture · attentional bias (the inner objective) · retention gate · optimizer**. Every model above, plus linear attention / DeltaNet / softmax, is a point in it. The bias need not be $\ell_2$ (Huber / $\ell_p$ → robust to outliers). *The write rule is an optimizer at test time* — M7's three dials with the write pulled apart into architecture and objective.
+
+**Atlas** — takes Miras' axes and moves two at once: the Omega rule (memorize a window, §3.2 Eq. 9) + a Muon-style step (§5, Eqs. 32–33):
 
 $$\min_{\mathcal M}\!\!\sum_{i=t-c+1}^{t}\!\!\gamma_i^{(t)}\lVert \mathcal M(\mathbf{k}_i)-\mathbf{v}_i\rVert_2^2,\qquad \mathcal M_t=\alpha_t \mathcal M_{t-1}-\eta_t\,\mathrm{NS}_k(\mathcal S_t)$$
 
 - $c{=}1$ ⇒ the delta rule; larger $c$ ⇒ context memorization. $\mathrm{NS}_k$ = Newton–Schulz orthogonalization (whitens the update → *approximate* second-order information, not a second-order method). Atlas' own model **OmegaNet** adds polynomial $\phi$ on keys/queries (§3.1) — at the update rule (Eq. 10), not in the objective above.
-
-**Miras** — the design space, four axes: **memory architecture · attentional bias (the inner objective) · retention gate · optimizer**. Every model above, plus linear attention / DeltaNet / softmax, is a point in it. The bias need not be $\ell_2$ (Huber / $\ell_p$ → robust to outliers). *The write rule is an optimizer at test time* — M7's three dials with the write pulled apart into architecture and objective.
 
 ## NL-2 — Levels & the Continuum Memory System
 
