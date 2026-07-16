@@ -19,7 +19,17 @@ Turning the write dial into a learner makes the memory a nested pair: an inner l
 
 **Prerequisites.** Foundations [M1](../../foundations/m1-associative-memory.ipynb)–[M7](../../foundations/m7-three-dials.ipynb). No other track — tracks are siblings, never a sequence.
 
-**The papers.** [Nested Learning](https://arxiv.org/abs/2512.24695) is the destination; [TTT](https://arxiv.org/abs/2407.04620), [Titans](https://arxiv.org/abs/2501.00663), [Atlas](https://arxiv.org/abs/2505.23735), and [Miras](https://arxiv.org/abs/2504.13173) are the lineage that gets you there.
+**The papers.** The lineage, in the order it was written — each one the repair of the gap the last left open:
+
+| | paper | who | what it added |
+|---|---|---|---|
+| Jul 2024 | [TTT](https://arxiv.org/abs/2407.04620) | Sun et al. | the hidden state becomes a model; the write, a gradient step |
+| Dec 2024 | [Titans](https://arxiv.org/abs/2501.00663) | Behrouz, Zhong & Mirrokni | the write becomes an optimizer — momentum, plus a gate that forgets |
+| Apr 2025 | [Miras](https://arxiv.org/abs/2504.13173) | Behrouz, Razaviyayn, Zhong & Mirrokni | the inner *objective* becomes a dial rather than a default |
+| May 2025 | [Atlas](https://arxiv.org/abs/2505.23735) | Behrouz et al. | the write widens from one token to a window |
+| Dec 2025 | [Nested Learning](https://arxiv.org/abs/2512.24695) | Behrouz, Razaviyayn, Zhong & Mirrokni | every memory becomes a level — the destination |
+
+Behrouz, Zhong and Mirrokni are authors on all four papers after TTT: this is one team's twelve months, not four bolts from the blue. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) teaches Atlas *before* Miras — the one place the course departs from chronology, and it says so where it does it.
 
 ## The modules
 
