@@ -59,13 +59,13 @@ This is worth doing for the whole course; nothing here is big enough to benefit 
 A track is a self-contained spoke off [M7 — the three dials](foundations/m7-three-dials.ipynb). Tracks never depend on each other.
 
 1. Create `tracks/<slug>/`.
-2. Write `tracks/<slug>/index.qmd`. It **must** open by stating the track's **dial setting** — which of the three dials (write rule, gate, optimizer) this line of work turns, relative to M7's table. This is the only required coupling to the rest of the course.
+2. Write `tracks/<slug>/index.qmd`. It **must** open by stating the track's **dial setting** — which of the three dials (write rule, gate, optimizer) this line of work turns, relative to [M7 §3](foundations/m7-three-dials.ipynb)'s table of foundations modules as dial settings. This is the only required coupling to the rest of the course.
 3. Number modules inside the track's own namespace: `<abbr>1-…`, `<abbr>2-…`. Nothing outside the track renumbers, ever.
-4. Add a row to the write-rule zoo table in M7 (the **"Covered in"** column) and a line to the track list in `index.qmd`.
+4. Put the track in **M7 §5's write-rule zoo**. Usually the row already exists and its **"Covered in"** cell is a dash — a dash means the write rule is named there and covered nowhere else, so filling it in is the normal move. Add a new row only if no existing row describes the track's write rule. Then add a row to `index.qmd`'s **Tracks** table — track, the dial it turns, the question it answers.
 5. Prerequisites may name foundations modules only — never another track.
-6. Ship notebooks pre-executed with outputs committed. CI has no Python; `execute: enabled: false` is set for the whole course subtree.
+6. Ship notebooks pre-executed with outputs committed. CI has no Python; `execute: enabled: false` is set for the whole course subtree. Give every notebook's first cell an *Open in Colab* badge pointing at its own path on `main`, as the existing modules do.
 
-**Worked example.** A Mamba track would state: *the gate $\alpha_t$ becomes input-dependent — the $\Delta$ discretization step is the timescale, chosen per token.* That is the whole coupling. It needs no Nested Learning material, and the NL track needs none of its.
+**Worked example.** A Mamba track would state: *the gate $\alpha_t$ becomes input-dependent — the $\Delta$ discretization step is the timescale, chosen per token.* That is the whole coupling. Concretely, that is M7 §5's **gated Hebbian** row, which already names Mamba-2 and carries a dash — so the track fills that dash rather than adding a row. It needs no Nested Learning material, and the NL track needs none of its.
 
 ## Licence
 
