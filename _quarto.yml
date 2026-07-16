@@ -17,6 +17,8 @@ website:
         href: index.html
       - text: Writing
         href: writing.html
+      - text: Course
+        href: courses/continual-learning/index.html
       - text: Projects
         href: projects.html
       - text: CV

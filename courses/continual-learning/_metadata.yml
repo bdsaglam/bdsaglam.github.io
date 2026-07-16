@@ -1,0 +1,11 @@
+# Notebooks here ship pre-executed; Quarto renders their stored outputs without
+# running them. This setting is the guard for .qmd files with code cells, which
+# Quarto WOULD try to execute — CI has no Python.
+execute:
+  enabled: false
+
+toc: true
+toc-depth: 3
+toc-location: right
+toc-title: "Contents"
+title-block-banner: false

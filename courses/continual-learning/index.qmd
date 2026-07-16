@@ -1,0 +1,6 @@
+---
+title: "Continual Learning"
+subtitle: "Memory, fast weights, and learning at many timescales — the mechanisms, rebuilt by hand."
+---
+
+Course front page. Written in Task 9.
