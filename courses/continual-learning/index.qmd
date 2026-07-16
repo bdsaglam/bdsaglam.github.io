@@ -3,4 +3,83 @@ title: "Continual Learning"
 subtitle: "Memory, fast weights, and learning at many timescales — the mechanisms, rebuilt by hand."
 ---
 
-Course front page. Written in Task 9.
+**Scope, before anything else.** This course teaches the *mechanism family* behind continual learning — associative memory, fast weights, test-time learning, and updates at many timescales. It is **not** a survey of the continual-learning literature: there is no EWC, no replay, no class-incremental benchmark here. What you get instead is the small set of mechanisms that let a model keep changing after training, built from scratch, one at a time.
+
+## The pitch
+
+The frontier papers in this area read as dense. They are not — they compress a decade of ideas into a notation, and reading them top to bottom asks you to absorb the decade in one pass.
+
+So don't. Rebuild the ideas in the order they were actually discovered. Each module of the spine opens with a concrete limitation of the module before it, introduces exactly one idea as the fix, grounds that idea in the paper that first published it, and ties it to code you can run and break. The starting primitive is a single matrix; the endpoint is an architecture that keeps learning while it runs. Nothing along the way arrives without a reason.
+
+By the end the papers read as **inevitable** rather than dense — each idea the obvious repair of the one before. That is the whole design.
+
+## How to use this
+
+- **Zero install.** Every notebook carries an *Open in Colab* badge. Click it and it runs; torch, numpy, and matplotlib are already there. Nothing in the course needs a GPU.
+- **Or run it locally.** Clone the [repo](https://github.com/bdsaglam/bdsaglam.github.io) and `uv sync` in `courses/continual-learning/`.
+- **Primers are optional.** Read one when a module points you at it, not before.
+- **Foundations go in order**, M1 → M7. Each of M2–M6 repairs a failure of the one before it, so the order *is* the argument; M7 then collapses all six into one object.
+- **Then pick a track.** Tracks hang off M7 and are independent of each other. Read one, all, or none.
+
+## The modules
+
+### Primers — optional, off the spine
+
+| Primer | What it covers |
+|---|---|
+| [Linear algebra](primers/linear-algebra.ipynb) | Orthogonality, eigen/SVD/condition number, effective rank — the recurring math, each with a runnable demo. |
+| [Backpropagation](primers/backpropagation.ipynb) | How a gradient is actually computed: the chain rule, a scalar autograd engine from scratch, `torch.autograd`, and higher-order/meta-gradients. |
+
+### Foundations — the spine
+
+| # | Module | The question it answers |
+|---|---|---|
+| M1 | [Associative memory & the Hebbian write](foundations/m1-associative-memory.ipynb) | What is the single primitive everything else is built from? |
+| M2 | [Fast Weight Programmers](foundations/m2-fast-weight-programmers.ipynb) | Where do the keys, values, and queries come from? |
+| M3 | [Linear attention *is* fast weights](foundations/m3-linear-attention.ipynb) | What happens to attention if you delete the softmax? |
+| M4 | [The delta rule / DeltaNet](foundations/m4-delta-rule.ipynb) | How does a memory *edit* an association instead of piling onto it? |
+| M5 | [Meta-learning & self-reference](foundations/m5-meta-learning-self-reference.ipynb) | Can a network learn a good place to *start* its learning steps — or run them on itself? |
+| M6 | [Optimizers as associative memories](foundations/m6-optimizers-as-memory.ipynb) | Why are momentum, Adam, and Muon *also* memories? |
+| M7 | [The three dials](foundations/m7-three-dials.ipynb) | M1 through M6 built six mechanisms. How many ideas is that, really? |
+
+### Tracks — self-contained spokes off M7
+
+| Track | The dial it turns | The question it answers |
+|---|---|---|
+| [Nested Learning](tracks/nested-learning/index.qmd) | All three — the write rule until it stops being a formula and becomes a learner | What if every memory in the model is a learner, and the only thing that separates them is how often they update? |
+
+Tracks never depend on each other. Adding one renumbers nothing — the contract is in [M7](foundations/m7-three-dials.ipynb) §6 and spelled out in the [README](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/README.md).
+
+## The spine in one breath
+
+Start with one primitive: a memory you write with an outer product and read with a matrix–vector product (**M1**). Make the writes programmable and you get fast-weight programmers (**M2**), which *are* linear attention (**M3**). Swap the additive write for an error-correcting one and you get the delta rule / DeltaNet (**M4**). Let the memory supply its own keys, values and write rate — ask who writes the writer — and you get meta-learning and self-referential weights (**M5**). Then notice the *optimizer* was an associative memory over the gradient stream all along, and that M4's fix applies to it too (**M6**). Collapse all six into one recurrence with three dials (**M7**) — and the tracks take it from there.
+
+Every formula in the course, one line each, is on the [cheatsheet](cheatsheet.qmd).
+
+## On the Q&A callouts
+
+Scattered through the modules are collapsible **Q:** callouts. They are real questions asked while rebuilding this material — the ones where the answer turned out to be the interesting part, so they were kept rather than smoothed away. Click to expand; skip them freely on a first pass. If you have one they don't answer, [open an issue](https://github.com/bdsaglam/bdsaglam.github.io/issues).
+
+## Sources
+
+Every paper the course builds on, by public URL.
+
+| Shorthand | URL | Where it lands |
+|---|---|---|
+| Nested Learning | <https://arxiv.org/abs/2512.24695> | M1, M2, M6, M7, and the whole Nested Learning track |
+| FWP | <https://arxiv.org/abs/2102.11174> | M2; DeltaNet in M4 |
+| Linear Transformers | <https://arxiv.org/abs/2006.16236> | M3 |
+| MAML | <https://arxiv.org/abs/1703.03400> | M5 |
+| SRWM | <https://arxiv.org/abs/2202.05780> | M5 |
+| TTT | <https://arxiv.org/abs/2407.04620> | NL-1 |
+| Titans | <https://arxiv.org/abs/2501.00663> | NL-1 |
+| Atlas | <https://arxiv.org/abs/2505.23735> | NL-1 |
+| Miras | <https://arxiv.org/abs/2504.13173> | NL-1 |
+| RL² | <https://arxiv.org/abs/1611.02779> | M5 |
+| L2RL | <https://arxiv.org/abs/1611.05763> | M5 |
+
+M7's write-rule zoo names several more — RetNet, Mamba-2, Gated DeltaNet, OjaNet — as dial settings the course does not otherwise cover; each links its own paper there.
+
+## Licence
+
+Prose, figures, and course text: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Code — every code cell in every notebook: [MIT](https://opensource.org/licenses/MIT). Full text in [LICENSE](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/LICENSE).

@@ -1,0 +1,170 @@
+---
+title: "Cheatsheet"
+subtitle: "Every formula in the course, one line each."
+---
+
+Compact reference for the [course](index.qmd). One line per formula, in module order, then the unifying view.
+
+**Symbols.** $\mathbf{x}_t$ input token · $\mathbf{k},\mathbf{v},\mathbf{q}$ key/value/query · $\mathcal{M},\mathbf{S}$ memory (fast weights) · $\phi$ feature map · $\beta$ write strength · $\alpha$ forget gate · $\bar{\mathbf{v}}$ value currently stored at a key. Slow weights $W_\bullet$ (trained, frozen in the forward pass); fast weights $\mathcal{M}$ (rewritten per token, reset per sequence).
+
+---
+
+## M1 — Associative memory & the Hebbian write
+
+$$\text{write (Hebbian): } \mathcal{M}\mathrel{+}=\mathbf{v}\mathbf{k}^\top \qquad \text{read: } \mathbf{y}=\mathcal{M}\mathbf{q}$$
+
+- One Hebbian write = one gradient step on the dot-product objective $-\langle\mathcal{M}\mathbf{k},\mathbf{v}\rangle$ (since $\nabla_{\mathcal{M}}\langle\mathcal{M}\mathbf{k},\mathbf{v}\rangle=\mathbf{v}\mathbf{k}^\top$) — ascent on the similarity.
+- Recall a stored key: $\mathcal{M}\mathbf{q}=\sum_i\mathbf{v}_i(\mathbf{k}_i^\top\mathbf{q})$ → clean iff keys orthonormal; else **crosstalk**.
+- Capacity $\approx$ #near-orthogonal keys $\approx$ **effective rank** of $\{\mathbf{k}_i\}$.
+- **Backprop is the same write:** a linear layer's gradient is $\partial\mathcal{L}/\partial W=\boldsymbol{\delta}\mathbf{x}^\top$ — key = input $\mathbf{x}$, value = $-\eta\boldsymbol{\delta}$ (negative output surprise, $\boldsymbol{\delta}=\partial\mathcal{L}/\partial\mathbf{y}$). NL §3.1, Eq. 8 names $\boldsymbol\delta$ the *Local Surprise Signal* → the M6 thread.
+
+## M2 — Fast Weight Programmers (FWP)
+
+$$\mathbf{k}_t,\mathbf{v}_t,\mathbf{q}_t=W_k\mathbf{x}_t,\,W_v\mathbf{x}_t,\,W_q\mathbf{x}_t \qquad \mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}_t\mathbf{k}_t^\top \qquad \mathbf{y}_t=\mathcal{M}_t\mathbf{q}_t$$
+
+- Slow net **programs** fast weights via outer products of self-invented $\mathbf{k},\mathbf{v}$. Nesting: one net's outputs = another's weights.
+- **Capacity law:** $\text{capacity}\approx d_{\text{key}}$ (refined: effective rank of the key set).
+- Loss reaches slow weights *through* $\mathcal{M}$ (inner loop = autograd through the memory; outer loop = GD on $W_\bullet$).
+
+## M3 — Linear attention *is* fast weights
+
+$$\text{softmax: } \mathbf{o}_t=\sum_{j\le t}\frac{\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)}{\sum_{l\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_l/\sqrt d)}\,\mathbf{v}_j \qquad\xrightarrow[\text{drop softmax}]{\text{general kernel}}\qquad \mathbf{o}_t=\frac{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)\,\mathbf{v}_j}{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)}$$
+
+Factorize $\mathrm{sim}(\mathbf{q},\mathbf{k})=\phi(\mathbf{q})^\top\phi(\mathbf{k})$ → pull $\phi(\mathbf{q}_t)$ out of the sum → **collapse**:
+
+$$\mathbf{S}_t=\sum_{j\le t}\mathbf{v}_j\phi(\mathbf{k}_j)^\top,\quad \mathbf{z}_t=\sum_{j\le t}\phi(\mathbf{k}_j) \qquad\Rightarrow\qquad \mathbf{o}_t=\frac{\mathbf{S}_t\,\phi(\mathbf{q}_t)}{\mathbf{z}_t^\top\phi(\mathbf{q}_t)}$$
+
+$$\boxed{\ \mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\,\phi(\mathbf{k}_t)^\top\ }\quad\text{(= M2's write with }\mathbf{k}\mapsto\phi(\mathbf{k})\text{)}$$
+
+| | form | cost | use |
+|---|---|---|---|
+| **parallel** | $\mathbf{O}=\mathrm{tril}(\Phi_Q\Phi_K^\top)\,V$ | $O(N^2)$ | train |
+| **recurrent** | carry $\mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\phi(\mathbf{k}_t)^\top$ | $O(1)$/token | infer |
+
+- Identical because reassociation + state-Jacobian $\partial\mathbf{S}_t/\partial\mathbf{S}_{t-1}=I$ (Mamba-2 SSD duality).
+- $\phi=\mathrm{elu}+1>0$: (1) keeps the normalizer positive, (2) raises $\dim\phi$ → capacity.
+- Cost of linearizing: **lossy superposition**. Softmax = $\exp$ kernel = infinite-dim feature map → exact recall, uncollapsible. Finite $\phi$ = finite-rank approx → collapsible, blurry.
+
+## M4 — Delta rule / DeltaNet
+
+$$\bar{\mathbf{v}}_t=\mathcal{M}_{t-1}\phi(\mathbf{k}_t)\quad(\text{read first})\qquad \boxed{\ \mathcal{M}_t=\mathcal{M}_{t-1}+\beta_t(\mathbf{v}_t-\bar{\mathbf{v}}_t)\,\phi(\mathbf{k}_t)^\top\ }\qquad \beta_t=\sigma(W_\beta\mathbf{x}_t)$$
+
+- **Write new − remove old** (FWP Eq. 23): $\mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}^{\text{new}}_t\phi(\mathbf{k}_t)^\top-\bar{\mathbf{v}}_t\phi(\mathbf{k}_t)^\top$, with $\mathbf{v}^{\text{new}}_t=\beta_t\mathbf{v}_t+(1-\beta_t)\bar{\mathbf{v}}_t$.
+- **= one SGD step** on $\tfrac12\lVert\mathcal{M}\phi(\mathbf{k})-\mathbf{v}\rVert^2$, since $\nabla_{\mathcal{M}}=(\bar{\mathbf{v}}-\mathbf{v})\phi(\mathbf{k})^\top$; step size $=\beta_t$.
+- **Erase-then-write (matrix form):** $\mathcal{M}_t=\mathcal{M}_{t-1}\big(I-\beta_t\phi(\mathbf{k}_t)\phi(\mathbf{k}_t)^\top\big)+\beta_t\mathbf{v}_t\phi(\mathbf{k}_t)^\top$ — a targeted erase along $\mathbf{k}_t$, vs. the **global** decay gate $\mathcal{M}_t=(1-\beta)\mathcal{M}_{t-1}+\beta\mathbf{v}_t\mathbf{k}_t^\top$.
+- DeltaNet = linear Transformer with this write; wins in overcapacity / revisited-key regimes.
+
+## M5 — Meta-learning & self-reference
+
+$$\text{MAML inner: } \theta'_i=\theta-\alpha\nabla_\theta\mathcal{L}^{\text{sup}}_{T_i}(\theta) \qquad \text{outer: } \min_\theta\sum_i\mathcal{L}^{\text{qry}}_{T_i}(\theta'_i),\quad \theta\leftarrow\theta-\eta\nabla_\theta\textstyle\sum_i\mathcal{L}^{\text{qry}}_{T_i}(\theta'_i)$$
+
+- Outer step differentiates **through** the inner step → second-order (Hessian) term; first-order MAML drops it. $\theta$ = launchpad, not a task solution.
+- **SRWM** (one matrix modifies itself): $[\mathbf{y}_t,\mathbf{k}_t,\mathbf{q}_t,\beta_t]=W_{t-1}\varphi(\mathbf{x}_t)$, $\ \bar{\mathbf{v}}_t=W_{t-1}\varphi(\mathbf{k}_t)$, $\ \mathbf{v}_t=W_{t-1}\varphi(\mathbf{q}_t)$,
+
+$$\boxed{\ W_t=W_{t-1}+\sigma(\beta_t)(\mathbf{v}_t-\bar{\mathbf{v}}_t)\otimes\varphi(\mathbf{k}_t)\ }$$
+
+- = M4's delta write with the producer **tied to $W$ itself** (programmer = program). Untie it → DeltaNet.
+- **Levels = update frequency.** Two routes to learning-to-learn: adapt **weights** (MAML/SRWM) vs adapt **activations** (RL²/L2RL, in-context, no inner gradient).
+
+## M6 — Optimizers as associative memories
+
+**Backprop = a Hebbian write** (NL Eq. 29): for $\mathbf y=W\hat{\mathbf x}$,
+
+$$\frac{\partial\mathcal L}{\partial W}=\boldsymbol\delta\,\hat{\mathbf x}^\top \quad\Rightarrow\quad W_{t+1}=W_t-\eta\,\boldsymbol\delta_t\hat{\mathbf x}_t^\top=W_t+\eta\,\mathbf u_t\hat{\mathbf x}_t^\top,\qquad \mathbf u_t=-\boldsymbol\delta_t=-\tfrac{\partial\mathcal L}{\partial\mathbf y_t}$$
+
+- **key $=\hat{\mathbf x}$** (layer input), **value $=-\boldsymbol\delta$** (output surprise; zero at a perfect prediction). Training = the matrix accumulating (input → surprise) outer products.
+- **Self-referential** (≠ linear attention): the value $\mathbf u_t$ is a function of the current $W_t$ — the memory generates its own write targets. This is what licenses a delta-rule optimizer (§4.5).
+
+**Momentum = a memory over the gradient stream** (Eq. 32–34): $\ \mathbf m_{t+1}=\alpha_t\mathbf m_t-\eta_t\nabla_{W_t}\mathcal L,\quad W_{t+1}=W_t+\mathbf m_{t+1}$.
+
+- $\alpha{=}1$ ⇒ GD on $\langle\mathbf m\hat{\mathbf x},\boldsymbol\delta\rangle$ (a value-less AM compressing past gradients); $\alpha{\neq}1$ ⇒ + an $\ell_2$ forget term. Two-level: inner learns $\mathbf m$, outer steps $W$.
+- **Capacity limit (§4.3):** the EMA is a low-pass filter — the $i$-th-back gradient carries weight $\beta^i(1-\beta)$, so the $n$ most recent carry $1-\beta^n$. At $\beta{=}0.9$ the last **7** carry 50%, the last **44** carry 99% → optimizer-level catastrophic forgetting on orthogonal tasks. (§4.3 prints *6 and 43*; its cumulative sum runs over $t+1$ terms, so it quotes the index, not the count — M6 Q1 derives it.)
+
+**The delta-rule fix, one level up:**
+
+$$\text{DGD (§4.5, Eq. 57): }\ \boxed{\,W_{t+1}=W_t(\mathbf I-\eta'_t\hat{\mathbf x}_t\hat{\mathbf x}_t^\top)-\eta'_t\nabla_{W_t}\mathcal L\,}\quad \eta'_t=\tfrac{\eta_t}{1+\eta_t}$$
+
+- = DeltaNet's matrix form (M4) applied to **weights**: erase what $\hat{\mathbf x}$ predicts, then write. Bounded/interference-resistant under correlated inputs (SGD diverges at aggressive lr, DGD stays bounded).
+- **Delta Momentum (§4.4, Eq. 48–49):** the delta rule on the *buffer* — $\mathbf m_{i+1}=\mathbf m_i(\alpha_{i+1}-\nabla\mathcal L^\top\nabla\mathcal L)-\eta_t\nabla\mathcal L$ — M4's erase factor with $\mathbf k=\nabla\mathcal L$, collapsed to a scalar; actively forgets stale gradients (wins on time-varying curvature).
+
+**Preconditioning & deeper buffers:** $\ W_{t+1}=W_t-\eta P^{-1}\mathbf g$ (Eq. 38) = an AM mapping gradients into a better coordinate system (Eq. 39–40). **Adam** = the optimal element-wise $\ell_2$ memory of the gradient *variance*; **Muon** = momentum buffer + a Newton–Schulz non-linearity on its output ($\sigma=\mathrm{NS}_k$, Eq. 52); **DMGD** = MLP-valued buffer.
+
+**Payoff:** the optimizer is an AM over a second stream (gradients, keyed by layer inputs, valued by surprises) — same problems (interference, finite capacity), same fixes (delta, forget gate, depth). Every write rule from M1–M5 is now available to it.
+
+## NL-1 — Test-time learning (TTT · Titans · Atlas · Miras)
+
+**TTT** — the hidden state *is* a model $f_W$; the write = a GD step on a self-supervised loss:
+
+$$\ell(W;x_t)=\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2,\qquad W_t=W_{t-1}-\eta\nabla_W\ell(W_{t-1};x_t),\qquad \mathbf{y}_t=f_{W_t}(\mathbf{q}_t)$$
+
+- Linear $f_W$, one step, $\eta=\tfrac12$ ⇒ M4's delta rule. MLP $f_W$ ⇒ deep memory (more capacity, nonlinear maps).
+
+**Titans** — the write becomes GD + momentum + weight decay:
+
+$$\boxed{\,M_t=(1-\alpha_t)M_{t-1}+S_t,\quad S_t=\eta_t S_{t-1}-\theta_t\nabla\ell(M_{t-1};x_t)\,}$$
+
+- $\nabla\ell$ = momentary surprise · $\eta_t S_{t-1}$ = momentum / past surprise · $(1-\alpha_t)$ = adaptive forgetting (bounds $\lVert M\rVert$, recency).
+
+**Atlas** — the Omega rule (memorize a window, §3.2 Eq. 9) + a Muon-style step (§5, Eqs. 32–33):
+
+$$\min_{\mathcal M}\!\!\sum_{i=t-c+1}^{t}\!\!\gamma_i^{(t)}\lVert \mathcal M(\mathbf{k}_i)-\mathbf{v}_i\rVert_2^2,\qquad \mathcal M_t=\alpha_t \mathcal M_{t-1}-\eta_t\,\mathrm{NS}_k(\mathcal S_t)$$
+
+- $c{=}1$ ⇒ the delta rule; larger $c$ ⇒ context memorization. $\mathrm{NS}_k$ = Newton–Schulz orthogonalization (whitens the update → *approximate* second-order information, not a second-order method). Atlas' own model **OmegaNet** adds polynomial $\phi$ on keys/queries (§3.1) — at the update rule (Eq. 10), not in the objective above.
+
+**Miras** — the design space, four axes: **memory architecture · attentional bias (the inner objective) · retention gate · optimizer**. Every model above, plus linear attention / DeltaNet / softmax, is a point in it. The bias need not be $\ell_2$ (Huber / $\ell_p$ → robust to outliers). *The write rule is an optimizer at test time* — M7's three dials with the write pulled apart into architecture and objective.
+
+## NL-2 — Levels & the Continuum Memory System
+
+**Level = update frequency** (NL Def. 2): the unit of time is one update over one data point; $f_A$ = updates per unit. Ordering:
+
+$$A\succ B\iff f_A>f_B\ \ \textbf{or}\ \ (f_A=f_B\ \text{and}\ B\ \text{is computed from}\ A)\quad(\text{dependency tiebreak}).$$
+
+- Same $f$ ⇒ same level; higher level ⇒ lower $f$. Equal $f$ + independent ⇒ **same level, parallel**.
+- **Level counts:** MLP+SGD = 1 · +momentum = 2 (the optimizer adds a level) · linear attention = 2 · linear attention + momentum = 3.
+- **Transformer = the two frequency extremes:** attention re-solved every token ⇒ $f=\infty$; the MLP frozen in-sequence ⇒ $f=0$; the middle empty.
+
+**Stability–plasticity tradeoff:** a single update period $C$ is either plastic (small $C$ → learns new, forgets old) or stable (large $C$ → retains, can't adapt) — never both ⇒ motivates a spectrum.
+
+**Continuum Memory System (CMS, Eq. 70–71):** a chain of MLP memories at $k$ frequencies $f_1,\dots,f_k$,
+
+$$\mathbf y_t=\text{MLP}^{(f_k)}\!\big(\dots\text{MLP}^{(f_1)}(\mathbf x_t)\big),\qquad \theta^{(f_\ell)}\ \text{updates every}\ C^{(\ell)}:=\tfrac{\max_i C^{(i)}}{f_\ell}\ \text{steps (chunked grad)}.$$
+
+- Fast levels = plastic / short-term; slow levels = persistent. Resists forgetting: knowledge forgotten by a fast block survives in slower blocks and circles back via backprop (§7.1). A Transformer is the degenerate $k{=}1,\ f{=}0$ case.
+- Written $f_1,\dots,f_k$ without an asserted order: §3.2 makes level 1 the fastest, but §7.1's own $C^{(\ell)}$ and Eq. 73 make $f_1$ the slowest. The paper never reconciles them, and nothing here turns on it (NL-2 §4).
+- **Computational depth** = add *levels*, not layers (latent within-pass depth; distinct from token-space CoT, which NL does not discuss).
+
+## NL-3 — HOPE (assembling it all)
+
+**HOPE = self-modifying Titans → CMS** (NL §8.3). Two complementary halves: self-modifying Titans = *small capacity, expressive learned rule*; CMS = *large capacity, simple rule, persistent*.
+
+**Self-modifying memory** (vs merely adaptive) — §8.1's three rungs:
+
+- **plain** (Eq. 76): $\mathbf k,\mathbf v,\mathbf q,\eta_t,\alpha_t$ from static projections.
+- **adaptive** (Eq. 79): each produced by *its own in-context memory* — the paper is explicit that this "*still lacks self-modification*".
+- **self-modifying** (Eq. 83–85): each memory **generates its own target** $\hat{\mathbf v}_{\square,t}=\mathcal M_{\square,t-1}(\mathbf v_t)$ for $\square\in\{\mathbf k,\mathbf v,\eta,\alpha,\text{memory}\}$ → it learns *how* to update. Self-referential in **state and rule**; backprop is self-referential in state only.
+- Inner objective $\lVert\mathcal M(\mathbf k)-\hat{\mathbf v}\rVert^2$; inner optimizer = **DGD + weight decay** (M6 — tokens are correlated); the memory is a residual MLP. $\mathbf q_t=\mathbf x_tW_q$ is the only non-adaptive projection (§8.1).
+
+**No collapse** — the inner self-target is wrapped in an outer loss with ground truth. Four anchors: (1) the output predicts real tokens via the LM head; (2) the value-generators and initial states are **meta-learned**; (3) the inputs are real data; (4) the update is a bounded gated step from the init. Same MAML/TTT trick (M5, NL-1): a label-free inner procedure validated by a labeled outer loop. Only (2) is the paper's own argument — it never raises collapse as a failure mode (NL-3 §3).
+
+**Each piece ↔ module:** store (M1) · projections/FWP (M2) · linear-attention write (M3) · delta correction (M4) · self-reference/meta-init (M5) · DGD inside (M6) · test-time write + gate (NL-1) · CMS continuum (NL-2). HOPE = NL's existence proof that "add nested levels" yields one uniform feed-forward memory stack that continually learns.
+
+---
+
+## The unifying view
+
+Master recurrence — the load-bearing equation across the modern literature:
+
+$$\mathbf{S}_t=\alpha_t\,\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathbf{k}_t)^\top,\qquad \mathbf{o}_t\propto\mathbf{S}_t\,\phi(\mathbf{q}_t)$$
+
+Three dials — **write rule** (what goes in) · **gate $\alpha_t$** (what stays) · **optimizer** (how the write is applied). Almost every named model is a setting of them.
+
+**Write-rule zoo** ($\text{write}_t$ in the master recurrence):
+
+| rule | update | effect |
+|---|---|---|
+| sum (linear attention) | $\mathbf{S}\mathrel{+}=\mathbf{v}\phi(\mathbf{k})^\top$ | append only |
+| gated | $\mathbf{S}=\alpha\mathbf{S}+\beta\,\mathbf{v}\phi(\mathbf{k})^\top$ | append + global forget |
+| delta (DeltaNet) | $\mathbf{S}\mathrel{+}=\beta(\mathbf{v}-\mathbf{S}\phi(\mathbf{k}))\phi(\mathbf{k})^\top$ | targeted edit |
+| gated delta (GDN) | $\mathbf{S}=\alpha\mathbf{S}+\beta(\mathbf{v}-\mathbf{S}\phi(\mathbf{k}))\phi(\mathbf{k})^\top$ | edit + forget |
+
+[M7](foundations/m7-three-dials.ipynb) is the module: it derives the recurrence from M3, states every foundations module as a dial setting, runs the dial board, extends the zoo to the named models the course does not cover, and defines the contract tracks attach by. This section is the reminder; M7 is the argument.
