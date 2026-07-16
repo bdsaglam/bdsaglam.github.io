@@ -113,10 +113,6 @@ Every formula in the course, one line each, is on the [cheatsheet](cheatsheet.qm
 OMP_NUM_THREADS=1 uv run jupyter lab
 ```
 
-## On the Q&A callouts
-
-Scattered through the modules are collapsible **Q:** callouts. They are real questions asked while rebuilding this material — the ones where the answer turned out to be the interesting part, so they were kept rather than smoothed away. Click to expand; skip them freely on a first pass. If you have one they don't answer, [open an issue](https://github.com/bdsaglam/bdsaglam.github.io/issues).
-
 ## Sources
 
 Every paper the course builds on, by public URL.
