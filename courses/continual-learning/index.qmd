@@ -8,9 +8,9 @@ The frontier papers in this area read as dense. They are not — they compress a
 into a notation, and reading them top to bottom asks you to absorb the decade in one pass.
 :::
 
-So don't. Rebuild the ideas in the order they were actually discovered, in notebooks you can run and break. Each module of the spine opens with a concrete limitation of the module before it, introduces exactly one idea as the fix, and grounds that idea in the paper that first published it. The starting primitive is a single matrix; the endpoint is an architecture that keeps learning while it runs. Nothing along the way arrives without a reason.
+So don't. Rebuild the ideas in the order they repair one another, in notebooks you can run and break. Each module of the spine opens with a concrete limitation of an earlier module, introduces exactly one idea as the fix, and grounds that idea in the paper that first published it. That order is conceptual, not chronological — the delta rule lands fourth and dates from 1960 — because what makes a mechanism legible is the failure it answers, not the year it was published. The starting primitive is a single matrix; the endpoint is an architecture that keeps learning while it runs. Nothing along the way arrives without a reason.
 
-By the end the papers read as **inevitable** rather than dense — each idea the obvious repair of the one before. That is the whole design.
+By the end the papers read as **inevitable** rather than dense — each idea the obvious repair of one that came before. That is the whole design.
 
 ::: {.callout-note}
 ## What this course covers — and what it doesn't
@@ -48,7 +48,7 @@ The recurring math, each with a runnable demo. Read one when a module points you
 [7 notebooks · in order · the spine]{.cdate}
 
 ### [Foundations](foundations/m1-associative-memory.ipynb)
-M1 → M7. Each of M2–M6 repairs a failure of the one before it, so the order *is* the argument;
+M1 → M7. Each of M2–M6 repairs a failure of an earlier module, so the order *is* the argument;
 M7 then collapses all six into one object.
 [[Begin at M1](foundations/m1-associative-memory.ipynb) · [The three dials](foundations/m7-three-dials.ipynb)]{.links}
 :::
@@ -95,7 +95,7 @@ Tracks never depend on each other. Adding one renumbers nothing — the contract
 
 ## The spine in one breath
 
-Start with one primitive: a memory you write with an outer product and read with a matrix–vector product (**M1**). Make the writes programmable and you get fast-weight programmers (**M2**), which *are* linear attention (**M3**). Swap the additive write for an error-correcting one and you get the delta rule / DeltaNet (**M4**). Let the memory supply its own keys, values and write rate — ask who writes the writer — and you get meta-learning and self-referential weights (**M5**). Then notice the *optimizer* was an associative memory over the gradient stream all along, and that M4's fix applies to it too (**M6**). Collapse all six into one recurrence with three dials (**M7**) — and the tracks take it from there.
+Start with one primitive: a memory you write with an outer product and read with a matrix–vector product (**M1**). Make the writes programmable and you get fast-weight programmers (**M2**), which *are* linear attention (**M3**). Swap the additive write for an error-correcting one and you get the delta rule / DeltaNet (**M4**). Let the memory supply its own keys, values and write rate — ask who writes the writer — and you get meta-learning and self-referential weights (**M5**). Then notice the *optimizer* was an associative memory over the gradient stream all along, and that M4's fix applies to it too (**M6**). Collapse all six into one recurrence with three dials (**M7**) — and the tracks take it from there, where the argument and the calendar finally coincide: the Nested Learning track follows TTT → Titans → Miras → Atlas in the order they were published, one team's twelve months, each paper repairing the gap the last left open.
 
 Every formula in the course, one line each, is on the [cheatsheet](cheatsheet.qmd).
 

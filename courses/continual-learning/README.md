@@ -2,7 +2,7 @@
 
 *Memory, fast weights, and learning at many timescales — the mechanisms, rebuilt by hand.*
 
-A course of runnable Jupyter notebooks. It teaches the **mechanism family** behind continual learning — associative memory, fast weights, test-time learning, updates at many timescales — by rebuilding each idea in the order it was discovered, as the fix to a concrete limitation of the one before. It is **not** a survey of the continual-learning literature: no EWC, no replay, no class-incremental benchmarks.
+A course of runnable Jupyter notebooks. It teaches the **mechanism family** behind continual learning — associative memory, fast weights, test-time learning, updates at many timescales — by rebuilding each idea as the fix to a concrete limitation of an earlier one, in an order that is conceptual rather than chronological. It is **not** a survey of the continual-learning literature: no EWC, no replay, no class-incremental benchmarks.
 
 **Published at:** <https://barisdeniz.is-a.dev/courses/continual-learning/>
 
