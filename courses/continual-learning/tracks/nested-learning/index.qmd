@@ -29,13 +29,13 @@ Turning the write dial into a learner makes the memory a nested pair: an inner l
 | May 2025 | [Atlas](https://arxiv.org/abs/2505.23735) | Behrouz et al. | the write widens from one token to a window |
 | Dec 2025 | [Nested Learning](https://arxiv.org/abs/2512.24695) | Behrouz, Razaviyayn, Zhong & Mirrokni | every memory becomes a level — the destination |
 
-Behrouz, Zhong and Mirrokni are authors on all four papers after TTT: this is one team's twelve months, not four bolts from the blue. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) teaches Atlas *before* Miras — the one place the course departs from chronology, and it says so where it does it.
+Behrouz, Zhong and Mirrokni are authors on all four papers after TTT: this is one team's twelve months, not four bolts from the blue. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) walks the lineage in exactly this order.
 
 ## The modules
 
 | # | Module | The question it answers |
 |---|---|---|
-| NL-1 | [Test-time learning: TTT → Titans → Atlas → Miras](nl1-test-time-learning.ipynb) | What if the hidden state is itself a model, trained at inference? |
+| NL-1 | [Test-time learning: TTT → Titans → Miras → Atlas](nl1-test-time-learning.ipynb) | What if the hidden state is itself a model, trained at inference? |
 | NL-2 | [Levels & the Continuum Memory System](nl2-levels-continuum-memory.ipynb) | What do you get when you order every memory by update frequency? |
 | NL-3 | [HOPE — assembling it all](nl3-hope.ipynb) | How do the pieces combine into one continual-learning architecture? |
 
