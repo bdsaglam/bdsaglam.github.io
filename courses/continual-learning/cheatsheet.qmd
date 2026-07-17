@@ -85,7 +85,7 @@ $$\frac{\partial\mathcal L}{\partial W}=\boldsymbol\delta\,\hat{\mathbf x}^\top 
 $$\text{DGD (§4.5, Eq. 57): }\ \boxed{\,W_{t+1}=W_t(\mathbf I-\eta'_t\hat{\mathbf x}_t\hat{\mathbf x}_t^\top)-\eta'_t\nabla_{W_t}\mathcal L\,}\quad \eta'_t=\tfrac{\eta_t}{1+\eta_t}$$
 
 - = DeltaNet's matrix form (M4) applied to **weights**: erase what $\hat{\mathbf x}$ predicts, then write. Bounded/interference-resistant under correlated inputs (SGD diverges at aggressive lr, DGD stays bounded).
-- **Delta Momentum (§4.4, Eq. 48–49):** the delta rule on the *buffer* — $\mathbf m_{i+1}=\mathbf m_i(\alpha_{i+1}-\nabla\mathcal L^\top\nabla\mathcal L)-\eta_t\nabla\mathcal L$ — M4's erase factor with $\mathbf k=\nabla\mathcal L$, collapsed to a scalar; actively forgets stale gradients (wins on time-varying curvature).
+- **Delta Momentum (§4.4, Eq. 48–49):** the delta rule on the *buffer* — $\mathbf m_{i+1}=\mathbf m_i(\alpha_{i+1}-\nabla\mathcal L^\top\nabla\mathcal L)-\eta_t\mathbf P_i\nabla\mathcal L$ — M4's erase factor with $\mathbf k=\nabla\mathcal L$, collapsed to a scalar; the buffer compresses the gradient→preconditioner mapping (internal objective $\lVert\mathbf m\nabla\mathcal L^\top-\mathbf P_i\rVert_2^2$), so the write is preconditioned by $\mathbf P_i$ (next bullet; $\mathbf P=\mathbf I$ ⇒ the plain buffer). Actively forgets stale gradients (wins on time-varying curvature).
 
 **Preconditioning & deeper buffers:** $\ W_{t+1}=W_t-\eta P^{-1}\mathbf g$ (Eq. 38) = an AM mapping gradients into a better coordinate system (Eq. 39–40). **Adam** = the optimal element-wise $\ell_2$ memory of the gradient *variance*; **Muon** = momentum buffer + a Newton–Schulz non-linearity on its output ($\sigma=\mathrm{NS}_k$, Eq. 52); **DMGD** = MLP-valued buffer.
 
@@ -142,7 +142,7 @@ $$\mathbf y_t=\text{MLP}^{(f_k)}\!\big(\dots\text{MLP}^{(f_1)}(\mathbf x_t)\big)
 - **plain** (Eq. 76): $\mathbf k,\mathbf v,\mathbf q,\eta_t,\alpha_t$ from static projections.
 - **adaptive** (Eq. 79): each produced by *its own in-context memory* — the paper is explicit that this "*still lacks self-modification*".
 - **self-modifying** (Eq. 83–85): each memory **generates its own target** $\hat{\mathbf v}_{\square,t}=\mathcal M_{\square,t-1}(\mathbf v_t)$ for $\square\in\{\mathbf k,\mathbf v,\eta,\alpha,\text{memory}\}$ → it learns *how* to update. Self-referential in **state and rule**; backprop is self-referential in state only.
-- Inner objective $\lVert\mathcal M(\mathbf k)-\hat{\mathbf v}\rVert^2$; inner optimizer = **DGD + weight decay** (M6 — tokens are correlated); the memory is a residual MLP. $\mathbf q_t=\mathbf x_tW_q$ is the only non-adaptive projection (§8.1).
+- Inner objective $\lVert\mathcal M(\mathbf k)-\hat{\mathbf v}\rVert^2$; inner optimizer = **DGD + weight decay** (M6 — tokens are correlated); every memory is a 2-layer **residual MLP** (Eq. 89): $\mathcal M_\square(\cdot)=(\cdot)+W_{\square,1}\sigma(W_{\square,2}(\cdot))$. $\mathbf q_t=\mathbf x_tW_q$ is the only non-adaptive projection (§8.1).
 
 **No collapse** — the inner self-target is wrapped in an outer loss with ground truth. Four anchors: (1) the output predicts real tokens via the LM head; (2) the value-generators and initial states are **meta-learned**; (3) the inputs are real data; (4) the update is a bounded gated step from the init. Same MAML/TTT trick (M5, NL-1): a label-free inner procedure validated by a labeled outer loop. Only (2) is the paper's own argument — it never raises collapse as a failure mode (NL-3 §3).
 
