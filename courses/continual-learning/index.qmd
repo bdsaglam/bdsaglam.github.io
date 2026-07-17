@@ -4,13 +4,11 @@ subtitle: "Memory, fast weights, and learning at many timescales — the mechani
 ---
 
 ::: {.pagelead}
-The frontier papers in this area read as dense. They are not — they compress a decade of ideas
-into a notation, and reading them top to bottom asks you to absorb the decade in one pass.
+Recent papers on memory and test-time learning are short, and assume a decade of prior work.
+Read straight through, they ask you to reconstruct that decade from the notation.
 :::
 
-So don't. Rebuild the ideas in the order they repair one another, in notebooks you can run and break. Each module of the spine opens with a concrete limitation of an earlier module, introduces exactly one idea as the fix, and grounds that idea in the paper that first published it. That order is conceptual, not chronological — the delta rule lands fourth and dates from 1960 — because what makes a mechanism legible is the failure it answers, not the year it was published. The starting primitive is a single matrix; the endpoint is an architecture that keeps learning while it runs. Nothing along the way arrives without a reason.
-
-By the end the papers read as **inevitable** rather than dense — each idea the obvious repair of one that came before. That is the whole design.
+This course rebuilds the mechanisms one at a time, in notebooks you can run and change. Each module starts from a limitation of an earlier one, introduces a single idea in response, and cites the paper that first published it. The order is conceptual, not chronological — the delta rule comes fourth but dates from 1960 — since a mechanism is easier to follow from the problem it answers. It begins with a single matrix and ends at an architecture that keeps learning while it runs.
 
 ::: {.callout-note}
 ## What this course covers — and what it doesn't
@@ -24,11 +22,11 @@ It is **not** a survey of the continual-learning literature. There is no EWC, no
 
 Anyone who has read — or bounced off — a paper like DeltaNet, Titans, or Nested Learning and wants the machinery underneath rather than a summary of it. You should be able to read PyTorch and follow linear algebra and backprop; where a module needs more, it points you at a primer that builds the piece from scratch.
 
-By the end you can:
+By the end, you should be able to:
 
-- **state a model as a dial setting** — linear attention, DeltaNet, SRWM, Titans, HOPE are all one recurrence with three dials turned differently, and you can say which three;
-- **read a new paper in this area without drowning**, because you have already built its parts by hand and can see which dial it turns;
-- **tell a real mechanism from notation**, having watched each one fail in the way that motivated the next.
+- **state a model as a dial setting** — linear attention, DeltaNet, SRWM, Titans and HOPE are one recurrence with three dials set differently, and you can say which;
+- **come to a new paper in this area with its parts already built**, and see which dial it turns;
+- **read the notation back to a mechanism**, and to the failure that motivated it.
 
 ## Start here
 
