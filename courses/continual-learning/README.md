@@ -91,8 +91,9 @@ The observed skeleton of a foundations or track module, in order. Marked parts a
 
 ```
 # M4 — The delta rule / DeltaNet
+[Open in Colab badge]                                 <- required; its own line, directly under the title
 **The question:** one line                            <- required
-position in the spine · runtime · Colab badge         <- required
+position in the spine · runtime                       <- required
 the limitation this module answers, in a paragraph
 > **Prerequisite math** — … (only if it needs a primer)
 
@@ -173,7 +174,7 @@ Always `collapse="true"` — the module must read straight through without them.
 
 - **Notebooks ship pre-executed.** CI has no Python and `execute: enabled: false` is set for the subtree, so Quarto renders the stored outputs. **Never strip outputs.** If you touch a code cell, re-run the notebook top to bottom before committing.
 - **Never use `NotebookEdit`.** It writes a cell's `source` as a JSON string instead of nbformat's list of lines, which silently breaks `::: {.callout-note}` parsing. Edit the notebook JSON directly.
-- **Colab badge** in the first cell, pointing at the notebook's own path on `main`:
+- **Colab badge** on its own line in the first cell, directly under the `# Title` and above everything else, pointing at the notebook's own path on `main`. Quarto lifts the `# Title` into the page's title block, so the badge becomes the first thing in the body — the same launch button in the same place on every page. Keep it there; do not fold it into the runtime line.
   `[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/<path>)`
 - **Dependencies are exactly torch, numpy, matplotlib.** Adding one changes the course, not just your module.
 - **Course status lives in exactly one place** — M7 §5's zoo, in the **Covered in** column. Never in prose.
