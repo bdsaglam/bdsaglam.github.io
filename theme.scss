@@ -70,6 +70,15 @@ details.tldr > p { margin: 0; color: #4a443d; font-size: 0.9rem; line-height: 1.
    Manual "**Figure N.**" caption paragraphs sit right after the image
    (a <figure>, or a <p><img></p> for empty-alt images) — target both. */
 table.table { font-size: 0.92rem; }
+/* Quarto ships `.table a { word-break: break-word }` so long raw URLs don't
+   overflow. That also drops a link's min-content width to ~0, letting the
+   browser squeeze a column below its longest word and hyphenate mid-word
+   ("Backprop / agation"). `overflow-wrap` breaks a word only when it cannot
+   fit on a line of its own, and leaves column sizing alone. */
+.table a { word-break: normal; overflow-wrap: break-word; }
+/* A long command line must scroll inside its own block, not push the page
+   sideways on a phone. */
+pre, div.sourceCode { overflow-x: auto; }
 figure figcaption, table.table > caption,
 figure + p, p:has(> img.img-fluid) + p {
   font-size: 0.88rem; color: #6a6058; line-height: 1.55; }

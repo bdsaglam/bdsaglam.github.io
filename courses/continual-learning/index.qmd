@@ -4,7 +4,7 @@ subtitle: "Memory, fast weights, and learning at many timescales — the mechani
 ---
 
 ::: {.pagelead}
-Recent papers on memory and test-time learning are short, and assume a decade of prior work.
+Recent papers on memory and test-time learning are dense, and assume a decade of prior work.
 Read straight through, they ask you to reconstruct that decade from the notation.
 :::
 
@@ -28,50 +28,22 @@ By the end, you should be able to:
 - **come to a new paper in this area with its parts already built**, and see which dial it turns;
 - **read the notation back to a mechanism**, and to the failure that motivated it.
 
-## Start here
-
-Open [**M1 — Associative memory & the Hebbian write**](foundations/m1-associative-memory.ipynb) and run it. Every notebook carries an *Open in Colab* badge, so there is nothing to install, and nothing in the course needs a GPU.
-
-::: {.cards .col1}
-
-::: {.card}
-[2 notebooks · optional · off the spine]{.cdate}
-
-### Primers
-The recurring math, each with a runnable demo. Read one when a module points you at it, not before.
-[[Linear algebra](primers/linear-algebra.ipynb) · [Backpropagation](primers/backpropagation.ipynb)]{.links}
-:::
-
-::: {.card}
-[7 notebooks · in order · the spine]{.cdate}
-
-### [Foundations](foundations/m1-associative-memory.ipynb)
-M1 → M7. Each of M2–M6 repairs a failure of an earlier module, so the order *is* the argument;
-M7 then collapses all six into one object.
-[[Begin at M1](foundations/m1-associative-memory.ipynb) · [The three dials](foundations/m7-three-dials.ipynb)]{.links}
-:::
-
-::: {.card}
-[1 track · 3 modules + 4 asides]{.cdate}
-
-### [Tracks](tracks/nested-learning/index.qmd)
-Self-contained spokes off M7. Each names the dial it turns and follows one line of work as far as
-it goes. Tracks are independent of each other — read one, all, or none.
-[[Nested Learning](tracks/nested-learning/index.qmd)]{.links}
-:::
-
-:::
-
 ## The modules
 
-### Primers — optional, off the spine
+Start at [**M1 — Associative memory & the Hebbian write**](foundations/m1-associative-memory.ipynb) and run it. Every notebook carries an *Open in Colab* badge, so there is nothing to install, and nothing in the course needs a GPU.
+
+### Primers — 2 notebooks, optional, off the spine
+
+Read one when a module points you at it, not before.
 
 | Primer | What it covers |
 |---|---|
 | [Linear algebra](primers/linear-algebra.ipynb) | Orthogonality, eigen/SVD/condition number, effective rank — the recurring math, each with a runnable demo. |
 | [Backpropagation](primers/backpropagation.ipynb) | How a gradient is actually computed: the chain rule, a scalar autograd engine from scratch, `torch.autograd`, and higher-order/meta-gradients. |
 
-### Foundations — the spine
+### Foundations — 7 notebooks, in order
+
+Each of M2–M6 repairs a failure of an earlier module, so the order *is* the argument; M7 collapses all six into one object.
 
 | # | Module | The question it answers |
 |---|---|---|
@@ -85,11 +57,13 @@ it goes. Tracks are independent of each other — read one, all, or none.
 
 ### Tracks — self-contained spokes off M7
 
+Each track names the dial it turns and follows one line of work as far as it goes. Tracks are independent of each other — read one, all, or none.
+
 | Track | The dial it turns | The question it answers |
 |---|---|---|
-| [Nested Learning](tracks/nested-learning/index.qmd) | All three — the write rule until it stops being a formula and becomes a learner | What if every memory in the model is a learner, and the only thing that separates them is how often they update? |
+| [Nested Learning](tracks/nested-learning/index.qmd)<br>3 modules + 4 asides | All three — the write rule until it stops being a formula and becomes a learner | What if every memory in the model is a learner, and the only thing that separates them is how often they update? |
 
-Tracks never depend on each other. Adding one renumbers nothing — the contract is in [M7](foundations/m7-three-dials.ipynb) §6 and spelled out in the [README](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/README.md).
+Adding a track renumbers nothing — the contract is in [M7](foundations/m7-three-dials.ipynb) §6 and spelled out in the [README](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/README.md).
 
 ## The spine in one breath
 
@@ -115,19 +89,19 @@ OMP_NUM_THREADS=1 uv run jupyter lab
 
 The papers the modules are built around, by public URL.
 
-| Shorthand | URL | Where it lands |
-|---|---|---|
-| Nested Learning | <https://arxiv.org/abs/2512.24695> | M1, M2, M6, M7, and the whole Nested Learning track |
-| FWP | <https://arxiv.org/abs/2102.11174> | M2; DeltaNet in M4 |
-| Linear Transformers | <https://arxiv.org/abs/2006.16236> | M1, M3, M7 |
-| MAML | <https://arxiv.org/abs/1703.03400> | M5; the backpropagation primer |
-| SRWM | <https://arxiv.org/abs/2202.05780> | M5 |
-| RL² | <https://arxiv.org/abs/1611.02779> | M5 |
-| L2RL | <https://arxiv.org/abs/1611.05763> | M5 |
-| TTT | <https://arxiv.org/abs/2407.04620> | NL-1 |
-| Titans | <https://arxiv.org/abs/2501.00663> | NL-1 |
-| Miras | <https://arxiv.org/abs/2504.13173> | NL-1 |
-| Atlas | <https://arxiv.org/abs/2505.23735> | NL-1 |
+| Paper | Where it lands |
+|---|---|
+| [Nested Learning](https://arxiv.org/abs/2512.24695) | M1, M2, M6, M7, and the whole Nested Learning track |
+| [FWP](https://arxiv.org/abs/2102.11174) | M2; DeltaNet in M4 |
+| [Linear Transformers](https://arxiv.org/abs/2006.16236) | M1, M3, M7 |
+| [MAML](https://arxiv.org/abs/1703.03400) | M5; the backpropagation primer |
+| [SRWM](https://arxiv.org/abs/2202.05780) | M5 |
+| [RL²](https://arxiv.org/abs/1611.02779) | M5 |
+| [L2RL](https://arxiv.org/abs/1611.05763) | M5 |
+| [TTT](https://arxiv.org/abs/2407.04620) | NL-1 |
+| [Titans](https://arxiv.org/abs/2501.00663) | NL-1 |
+| [Miras](https://arxiv.org/abs/2504.13173) | NL-1 |
+| [Atlas](https://arxiv.org/abs/2505.23735) | NL-1 |
 
 **Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, Mamba-2, Gated DeltaNet and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested — and in this lineage it often is — the module says so rather than picking a winner.
 
