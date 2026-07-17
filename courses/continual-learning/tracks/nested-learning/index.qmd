@@ -1,0 +1,42 @@
+---
+title: "Track — Nested Learning"
+subtitle: "What if every memory in the model is a learner, and the only thing that separates them is how often they update?"
+---
+
+## The dial setting
+
+[M7](../../foundations/m7-three-dials.ipynb) §3 puts every foundations module on one recurrence,
+
+$$\mathbf{S}_t=\alpha_t\,\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathbf{k}_t)^\top,$$
+
+and asks each track to say which of the three dials it turns, from what to what. This track turns **all three** — and the write dial so far that the recurrence stops being a formula:
+
+- **Write rule:** from $\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)$, a closed-form correction, to *whatever an optimizer produces*. The memory stops being the matrix $\mathbf{S}$ and becomes a **model** $f_W$ — an MLP, not just a map — and the write becomes gradient descent on $\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2$ run **inside the forward pass**. This is M7 §5's *optimizer-shaped* row, and the frame's own warning applies: once $\text{write}_t$ is "run an optimizer," the content of the design moves into the optimizer dial.
+- **Optimizer:** from one plain step at a learned rate to **momentum**, then to momentum passed through a Newton–Schulz orthogonalization. [M6](../../foundations/m6-optimizers-as-memory.ipynb) turned this dial in the *training script*; here the same dial is turned **inside the architecture**.
+- **Gate:** from $1$ to input-dependent $(1-\alpha_t)$. Every sequence memory in M7 §3's table reads $1$ here — *"nothing in the foundations ever forgets on purpose."* M6's row is the exception that fixes the rule: it does decay, but on its *momentum buffer*, not on a token store. Titans is where the dial turns on the sequence memory itself.
+
+Turning the write dial into a learner makes the memory a nested pair: an inner loop that trains $f_W$ on the sequence, an outer loop that trains everything else. **Nested Learning** is what you get from taking that seriously and refusing to stop at two — order *every* memory in the stack, weights and buffers and states alike, by how often it updates, and the model becomes a ladder of learners rather than a model plus an optimizer. [HOPE](nl3-hope.ipynb) is the architecture at the end of that ladder.
+
+**Prerequisites.** Foundations [M1](../../foundations/m1-associative-memory.ipynb)–[M7](../../foundations/m7-three-dials.ipynb). No other track — tracks are siblings, never a sequence.
+
+**The papers.** The lineage, in the order it was written — each one the repair of the gap the last left open:
+
+| | paper | who | what it added |
+|---|---|---|---|
+| Jul 2024 | [TTT](https://arxiv.org/abs/2407.04620) | Sun et al. | the hidden state becomes a model; the write, a gradient step |
+| Dec 2024 | [Titans](https://arxiv.org/abs/2501.00663) | Behrouz, Zhong & Mirrokni | the write becomes an optimizer — momentum, plus a gate that forgets |
+| Apr 2025 | [Miras](https://arxiv.org/abs/2504.13173) | Behrouz, Razaviyayn, Zhong & Mirrokni | the inner *objective* becomes a dial rather than a default |
+| May 2025 | [Atlas](https://arxiv.org/abs/2505.23735) | Behrouz et al. | the write widens from one token to a window |
+| Dec 2025 | [Nested Learning](https://arxiv.org/abs/2512.24695) | Behrouz, Razaviyayn, Zhong & Mirrokni | every memory becomes a level — the destination |
+
+Behrouz, Zhong and Mirrokni are authors on all four papers after TTT: this is one team's twelve months, not four bolts from the blue. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) walks the lineage in exactly this order.
+
+## The modules
+
+| # | Module | The question it answers |
+|---|---|---|
+| NL-1 | [Test-time learning: TTT → Titans → Miras → Atlas](nl1-test-time-learning.ipynb) | What if the hidden state is itself a model, trained at inference? |
+| NL-2 | [Levels & the Continuum Memory System](nl2-levels-continuum-memory.ipynb) | What do you get when you order every memory by update frequency? |
+| NL-3 | [HOPE — assembling it all](nl3-hope.ipynb) | How do the pieces combine into one continual-learning architecture? |
+
+**Asides** — optional, tangible: [where the self-supervised error comes from](nl1-aside-self-supervision.ipynb) · [test-time training you can see](nl1-aside-image-ttt.ipynb) · [training a HOPE block](nl3-aside-training-hope.ipynb) · [a genuine multi-frequency CMS](nl3-aside-continuum-memory.ipynb)

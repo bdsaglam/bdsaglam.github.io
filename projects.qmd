@@ -22,6 +22,18 @@ perception budget, not reasoning.
 :::
 
 ::: {.card}
+[Jul 2026]{.cdate}
+
+### [Continual Learning — a course](courses/continual-learning/index.html)
+Memory, fast weights, and learning at many timescales, rebuilt by hand in runnable notebooks —
+associative memory to HOPE, each idea introduced as the fix to a concrete limitation of the one
+before. The foundations collapse into a single recurrence with three dials, and every paper
+family after that attaches as a self-contained track stating which dial it turns. Hub-and-spoke,
+so a new track renumbers nothing. Runs on a laptop CPU, or in Colab with zero install.
+[[Course](courses/continual-learning/index.html) · [Cheatsheet](courses/continual-learning/cheatsheet.html)]{.links}
+:::
+
+::: {.card}
 [Feb 2026]{.cdate}
 
 ### [Implicit Program Synthesis for Abstract Reasoning (epiq)](https://github.com/bdsaglam/epiq)

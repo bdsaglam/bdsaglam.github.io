@@ -1,0 +1,138 @@
+---
+title: "Continual Learning"
+subtitle: "Memory, fast weights, and learning at many timescales — the mechanisms, rebuilt by hand."
+---
+
+::: {.pagelead}
+The frontier papers in this area read as dense. They are not — they compress a decade of ideas
+into a notation, and reading them top to bottom asks you to absorb the decade in one pass.
+:::
+
+So don't. Rebuild the ideas in the order they repair one another, in notebooks you can run and break. Each module of the spine opens with a concrete limitation of an earlier module, introduces exactly one idea as the fix, and grounds that idea in the paper that first published it. That order is conceptual, not chronological — the delta rule lands fourth and dates from 1960 — because what makes a mechanism legible is the failure it answers, not the year it was published. The starting primitive is a single matrix; the endpoint is an architecture that keeps learning while it runs. Nothing along the way arrives without a reason.
+
+By the end the papers read as **inevitable** rather than dense — each idea the obvious repair of one that came before. That is the whole design.
+
+::: {.callout-note}
+## What this course covers — and what it doesn't
+
+It teaches the **mechanism family** behind continual learning: associative memory, fast weights, test-time learning, and updates at many timescales, each built from scratch, one at a time.
+
+It is **not** a survey of the continual-learning literature. There is no EWC, no replay, no class-incremental benchmark here. What you get instead is the small set of mechanisms that let a model keep changing after training.
+:::
+
+## Who it's for
+
+Anyone who has read — or bounced off — a paper like DeltaNet, Titans, or Nested Learning and wants the machinery underneath rather than a summary of it. You should be able to read PyTorch and follow linear algebra and backprop; where a module needs more, it points you at a primer that builds the piece from scratch.
+
+By the end you can:
+
+- **state a model as a dial setting** — linear attention, DeltaNet, SRWM, Titans, HOPE are all one recurrence with three dials turned differently, and you can say which three;
+- **read a new paper in this area without drowning**, because you have already built its parts by hand and can see which dial it turns;
+- **tell a real mechanism from notation**, having watched each one fail in the way that motivated the next.
+
+## Start here
+
+Open [**M1 — Associative memory & the Hebbian write**](foundations/m1-associative-memory.ipynb) and run it. Every notebook carries an *Open in Colab* badge, so there is nothing to install, and nothing in the course needs a GPU.
+
+::: {.cards .col1}
+
+::: {.card}
+[2 notebooks · optional · off the spine]{.cdate}
+
+### Primers
+The recurring math, each with a runnable demo. Read one when a module points you at it, not before.
+[[Linear algebra](primers/linear-algebra.ipynb) · [Backpropagation](primers/backpropagation.ipynb)]{.links}
+:::
+
+::: {.card}
+[7 notebooks · in order · the spine]{.cdate}
+
+### [Foundations](foundations/m1-associative-memory.ipynb)
+M1 → M7. Each of M2–M6 repairs a failure of an earlier module, so the order *is* the argument;
+M7 then collapses all six into one object.
+[[Begin at M1](foundations/m1-associative-memory.ipynb) · [The three dials](foundations/m7-three-dials.ipynb)]{.links}
+:::
+
+::: {.card}
+[1 track · 3 modules + 4 asides]{.cdate}
+
+### [Tracks](tracks/nested-learning/index.qmd)
+Self-contained spokes off M7. Each names the dial it turns and follows one line of work as far as
+it goes. Tracks are independent of each other — read one, all, or none.
+[[Nested Learning](tracks/nested-learning/index.qmd)]{.links}
+:::
+
+:::
+
+## The modules
+
+### Primers — optional, off the spine
+
+| Primer | What it covers |
+|---|---|
+| [Linear algebra](primers/linear-algebra.ipynb) | Orthogonality, eigen/SVD/condition number, effective rank — the recurring math, each with a runnable demo. |
+| [Backpropagation](primers/backpropagation.ipynb) | How a gradient is actually computed: the chain rule, a scalar autograd engine from scratch, `torch.autograd`, and higher-order/meta-gradients. |
+
+### Foundations — the spine
+
+| # | Module | The question it answers |
+|---|---|---|
+| M1 | [Associative memory & the Hebbian write](foundations/m1-associative-memory.ipynb) | What is the single primitive everything else is built from? |
+| M2 | [Fast Weight Programmers](foundations/m2-fast-weight-programmers.ipynb) | Where do the keys, values, and queries come from? |
+| M3 | [Linear attention *is* fast weights](foundations/m3-linear-attention.ipynb) | What happens to attention if you delete the softmax? |
+| M4 | [The delta rule / DeltaNet](foundations/m4-delta-rule.ipynb) | How does a memory *edit* an association instead of piling onto it? |
+| M5 | [Meta-learning & self-reference](foundations/m5-meta-learning-self-reference.ipynb) | Can a network learn a good place to *start* its learning steps — or run them on itself? |
+| M6 | [Optimizers as associative memories](foundations/m6-optimizers-as-memory.ipynb) | Why are momentum, Adam, and Muon *also* memories? |
+| M7 | [The three dials](foundations/m7-three-dials.ipynb) | M1 through M6 built six mechanisms. How many ideas is that, really? |
+
+### Tracks — self-contained spokes off M7
+
+| Track | The dial it turns | The question it answers |
+|---|---|---|
+| [Nested Learning](tracks/nested-learning/index.qmd) | All three — the write rule until it stops being a formula and becomes a learner | What if every memory in the model is a learner, and the only thing that separates them is how often they update? |
+
+Tracks never depend on each other. Adding one renumbers nothing — the contract is in [M7](foundations/m7-three-dials.ipynb) §6 and spelled out in the [README](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/README.md).
+
+## The spine in one breath
+
+Start with one primitive: a memory you write with an outer product and read with a matrix–vector product (**M1**). Make the writes programmable and you get fast-weight programmers (**M2**), which *are* linear attention (**M3**). Swap the additive write for an error-correcting one and you get the delta rule / DeltaNet (**M4**). Let the memory supply its own keys, values and write rate — ask who writes the writer — and you get meta-learning and self-referential weights (**M5**). Then notice the *optimizer* was an associative memory over the gradient stream all along, and that M4's fix applies to it too (**M6**). Collapse all six into one recurrence with three dials (**M7**) — and the tracks take it from there, where the argument and the calendar finally coincide: the Nested Learning track follows TTT → Titans → Miras → Atlas in the order they were published, one team's twelve months, each paper repairing the gap the last left open.
+
+Every formula in the course, one line each, is on the [cheatsheet](cheatsheet.qmd).
+
+## Running it
+
+**Zero install.** Click any notebook's *Open in Colab* badge and it runs; torch, numpy, and matplotlib are already there. Nothing in the course needs a GPU.
+
+**Or run it locally.** Clone the [repo](https://github.com/bdsaglam/bdsaglam.github.io) and `uv sync` in `courses/continual-learning/`. The dependencies are exactly torch, numpy, matplotlib, and jupyter.
+
+**Runtimes.** Most notebooks finish in seconds. Three take minutes: [M5](foundations/m5-meta-learning-self-reference.ipynb) and the Nested Learning track's [image-TTT](tracks/nested-learning/nl1-aside-image-ttt.ipynb) and [HOPE-training](tracks/nested-learning/nl3-aside-training-hope.ipynb) asides. M5 and image-TTT each fetch a ~10 MB dataset once (Omniglot, MNIST) and cache it locally; everything else is self-contained.
+
+**If a notebook feels absurdly slow, cap the thread count.** Several demos use tensors small enough that torch's intra-op parallelism costs far more than it saves, and the penalty grows with core count. On a 14-core machine the HOPE-training aside took 9 minutes with default threads and 23 seconds under `OMP_NUM_THREADS=1` — same output, 24× apart. Worth doing for the whole course:
+
+```bash
+OMP_NUM_THREADS=1 uv run jupyter lab
+```
+
+## Sources
+
+The papers the modules are built around, by public URL.
+
+| Shorthand | URL | Where it lands |
+|---|---|---|
+| Nested Learning | <https://arxiv.org/abs/2512.24695> | M1, M2, M6, M7, and the whole Nested Learning track |
+| FWP | <https://arxiv.org/abs/2102.11174> | M2; DeltaNet in M4 |
+| Linear Transformers | <https://arxiv.org/abs/2006.16236> | M1, M3, M7 |
+| MAML | <https://arxiv.org/abs/1703.03400> | M5; the backpropagation primer |
+| SRWM | <https://arxiv.org/abs/2202.05780> | M5 |
+| RL² | <https://arxiv.org/abs/1611.02779> | M5 |
+| L2RL | <https://arxiv.org/abs/1611.05763> | M5 |
+| TTT | <https://arxiv.org/abs/2407.04620> | NL-1 |
+| Titans | <https://arxiv.org/abs/2501.00663> | NL-1 |
+| Miras | <https://arxiv.org/abs/2504.13173> | NL-1 |
+| Atlas | <https://arxiv.org/abs/2505.23735> | NL-1 |
+
+**Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, Mamba-2, Gated DeltaNet and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested — and in this lineage it often is — the module says so rather than picking a winner.
+
+## Licence
+
+Prose, figures, and course text: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Code — every code cell in every notebook: [MIT](https://opensource.org/licenses/MIT). Full text in [LICENSE](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/LICENSE).
