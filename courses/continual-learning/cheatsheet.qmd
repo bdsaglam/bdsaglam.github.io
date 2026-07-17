@@ -31,7 +31,7 @@ $$\mathbf{k}_t,\mathbf{v}_t,\mathbf{q}_t=W_k\mathbf{x}_t,\,W_v\mathbf{x}_t,\,W_q
 
 $$\text{softmax: } \mathbf{o}_t=\frac{\sum_{j\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)\,\mathbf{v}_j}{\sum_{j\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)} \qquad\xrightarrow[\text{drop softmax}]{\text{general kernel}}\qquad \mathbf{o}_t=\frac{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)\,\mathbf{v}_j}{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)}$$
 
-- Same shape both sides — the only edit is $\exp(\cdot)\to\mathrm{sim}(\cdot)$. The normalizer is one scalar per query, so it sits in the denominator rather than inside each weight.
+- Same shape both sides — the only change is $\exp(\cdot)\to\mathrm{sim}(\cdot)$.
 
 Factorize $\mathrm{sim}(\mathbf{q},\mathbf{k})=\phi(\mathbf{q})^\top\phi(\mathbf{k})$ → pull $\phi(\mathbf{q}_t)$ out of the sum → **collapse**:
 
