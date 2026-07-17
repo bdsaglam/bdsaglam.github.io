@@ -214,8 +214,14 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><em>A companion to <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a>, built to answer one question: §5 assembled a HOPE block but only ran it</em> forward <em>— does the thing actually <strong>learn</strong>? This trains one end to end on a real task, small enough for a laptop CPU. Optional: read it when NL-3 §5 points here.</em></p>
-<p>Runs on CPU in seconds under <code>OMP_NUM_THREADS=1</code>, minutes without it — the tensors here are small enough that torch’s intra-op parallelism costs far more than it saves; see the <a href="../../../../courses/continual-learning/index.html">course front page</a>’s runtime note. Pure PyTorch, no GPU. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>Runs on CPU in seconds under <code>OMP_NUM_THREADS=1</code>, minutes without it — the tensors here are small enough that torch’s intra-op parallelism costs far more than it saves; see the <a href="../../../../courses/continual-learning/index.html">course front page</a>’s runtime note. Pure PyTorch, no GPU.</p>
 <p><strong>The task: associative recall.</strong> The model sees a list of key→value pairs, then a query key, and must output the matching value:</p>
 <pre><code>k₃ v₇  k₁ v₂  k₅ v₉  k₂ v₄   k₅     →     v₉
 └────── pairs to store ──────┘  query    recall</code></pre>

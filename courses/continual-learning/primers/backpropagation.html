@@ -217,8 +217,14 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/primers/backpropagation.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><em>The chain rule by hand, a scalar autograd engine built from scratch, the matrix view (<span class="math inline">\(\partial\mathcal L/\partial W=\boldsymbol\delta\hat{\mathbf x}^\top\)</span>), PyTorch’s autograd, and higher-order/meta-gradients — each with a runnable demo. Optional: read it when a foundations module points here.</em></p>
-<p>Runs on CPU in seconds. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/primers/backpropagation.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a> — or clone the repo and <code>uv sync</code> in <code>courses/continual-learning/</code>.</p>
+<p>Runs on CPU in seconds — or clone the repo and <code>uv sync</code> in <code>courses/continual-learning/</code>.</p>
 <p><strong>Why build it from scratch here?</strong> M6 makes a claim that only lands if backprop is <em>concrete</em> to you: one gradient step on a layer is an <strong>associative-memory write</strong> — for <span class="math inline">\(\mathbf y=W\hat{\mathbf x}\)</span>,</p>
 <p><span class="math display">\[\frac{\partial\mathcal L}{\partial W}=\boldsymbol\delta\,\hat{\mathbf x}^\top,\qquad \boldsymbol\delta=\frac{\partial\mathcal L}{\partial\mathbf y},\]</span></p>
 <p>an outer product with <strong>key = input <span class="math inline">\(\hat{\mathbf x}\)</span></strong> and <strong>value = <span class="math inline">\(-\boldsymbol\delta\)</span> (negative surprise)</strong>. You cannot feel that reframing while backprop is a black box. So we open the box.</p>

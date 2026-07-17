@@ -223,8 +223,14 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><strong>The question:</strong> what if the hidden state is itself a model, trained at inference?</p>
-<p>First module of the Nested Learning track. Prerequisites: foundations M1–M7. Runs on CPU in seconds; PyTorch throughout. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>First module of the Nested Learning track. Prerequisites: foundations M1–M7. Runs on CPU in seconds; PyTorch throughout.</p>
 <p><a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> left the write rule as a <strong>formula</strong>: hand it a key and a value, and it produces the vector that goes into the memory. Four papers break the formula open by making the write <em>gradient descent on a loss</em> — and once it is, the memory can be a whole model and the write can be a whole optimizer:</p>
 <ul>
 <li><strong>TTT</strong> (Sun et al., July 2024) — the hidden state <em>is</em> a model <span class="math inline">\(f_W\)</span>; the write is a GD step on a self-supervised loss.</li>

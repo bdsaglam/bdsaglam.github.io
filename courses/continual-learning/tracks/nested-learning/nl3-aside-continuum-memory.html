@@ -210,8 +210,14 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl3-aside-continuum-memory.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><em>A companion to <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a>, built to answer one question: the <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.html">HOPE-training aside</a> used a block it called “CMS” — but that was a single <code>Linear→GELU→Linear</code> MLP updated once per training step, i.e.&nbsp;the <strong>degenerate <span class="math inline">\(k\)</span>=1, single-frequency case</strong> (which is just a Transformer MLP, <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a> §4). It had no continuum of frequencies. So what does the real thing look like? Optional.</em></p>
-<p>Runs on CPU in seconds; pure PyTorch, no GPU. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl3-aside-continuum-memory.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>Runs on CPU in seconds; pure PyTorch, no GPU.</p>
 <p>This notebook builds it: <strong>a chain of memories that update <em>in-context</em> at genuinely different frequencies</strong> (<a href="https://arxiv.org/abs/2512.24695">NL</a> Eq. 70–71, and the head-wise variant of Eq. 74), instrumented so you can <em>see</em> the levels.</p>
 <p>The point to demonstrate concretely:</p>
 <ul>

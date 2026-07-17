@@ -183,8 +183,14 @@ gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><em>A second companion to <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>, for when the random key/value toy (<a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-aside-self-supervision.html">where the self-supervised error comes from</a>) feels abstract. This is the <strong>original Test-Time Training</strong> (<a href="https://arxiv.org/abs/1909.13231">Sun, Wang, Liu, Miller, Efros &amp; Hardt, ICML 2020</a>) — the image-classification ancestor of NL-1’s sequence TTT, and an ancestor by descent, not just by analogy: Yu Sun is first author on both, five years apart — and it makes “where does the self-supervised error come from?” something you can watch on real digits.</em></p>
-<p>Runs on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~11 MB MNIST download (cached locally). <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>Runs on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~11 MB MNIST download (cached locally).</p>
 <p>The trick, in one breath: take a digit image, <strong>rotate it by 0°/90°/180°/270° yourself</strong>, and train the network to predict <em>which rotation you applied</em>. The rotation is a <strong>free label you manufactured from the image</strong> — no human annotation. At test time, on weird/corrupted images, the network adapts its features by getting better at that rotation task — using <strong>no class labels at all</strong> — and its digit-recognition accuracy recovers.</p>
 <p>Two heads on a shared trunk: <strong>classification</strong> (outer loss, real labels, training only) and <strong>rotation</strong> (inner loss, self-supervised, runs at test time).</p>
 <section id="the-data-and-the-self-supervised-task" class="level2">

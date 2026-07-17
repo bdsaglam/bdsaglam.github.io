@@ -67,7 +67,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl3-hope.html",
     "title": "NL-3 — HOPE: assembling it all",
     "section": "",
-    "text": "The question: how do the pieces combine into one continual-learning architecture?\nFinal module of the Nested Learning track, and the last of the course. Prerequisites: foundations M1–M7, NL-1, NL-2. Runs on CPU in seconds; PyTorch throughout.\nThis is the capstone. Everything before it was a part; HOPE is the machine you get when you snap them together. By the end you should be able to:"
+    "text": "Open In Colab\nThe question: how do the pieces combine into one continual-learning architecture?\nThird module of the Nested Learning track — the Nested Learning paper’s own architecture. Prerequisites: foundations M1–M7, NL-1, NL-2. Runs on CPU in seconds; PyTorch throughout.\nThis is the capstone. Everything before it was a part; HOPE is the machine you get when you snap them together. By the end you should be able to:"
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl3-hope.html#why-this-module-exists-what-hope-is-built-to-fix",
@@ -144,7 +144,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl3-aside-continuum-memory.html",
     "title": "NL-3 aside — a genuine multi-frequency Continuum Memory System",
     "section": "",
-    "text": "A companion to NL-3, built to answer one question: the HOPE-training aside used a block it called “CMS” — but that was a single Linear→GELU→Linear MLP updated once per training step, i.e. the degenerate \\(k\\)=1, single-frequency case (which is just a Transformer MLP, NL-2 §4). It had no continuum of frequencies. So what does the real thing look like? Optional.\nRuns on CPU in seconds; pure PyTorch, no GPU.\nThis notebook builds it: a chain of memories that update in-context at genuinely different frequencies (NL Eq. 70–71, and the head-wise variant of Eq. 74), instrumented so you can see the levels.\nThe point to demonstrate concretely:"
+    "text": "Open In Colab\nA companion to NL-3, built to answer one question: the HOPE-training aside used a block it called “CMS” — but that was a single Linear→GELU→Linear MLP updated once per training step, i.e. the degenerate \\(k\\)=1, single-frequency case (which is just a Transformer MLP, NL-2 §4). It had no continuum of frequencies. So what does the real thing look like? Optional.\nRuns on CPU in seconds; pure PyTorch, no GPU.\nThis notebook builds it: a chain of memories that update in-context at genuinely different frequencies (NL Eq. 70–71, and the head-wise variant of Eq. 74), instrumented so you can see the levels.\nThe point to demonstrate concretely:"
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl3-aside-continuum-memory.html#what-multi-frequency-means-here",
@@ -172,7 +172,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html",
     "title": "NL-1 — Test-time learning: TTT → Titans → Miras → Atlas",
     "section": "",
-    "text": "The question: what if the hidden state is itself a model, trained at inference?\nFirst module of the Nested Learning track. Prerequisites: foundations M1–M7. Runs on CPU in seconds; PyTorch throughout.\nM7 left the write rule as a formula: hand it a key and a value, and it produces the vector that goes into the memory. Four papers break the formula open by making the write gradient descent on a loss — and once it is, the memory can be a whole model and the write can be a whole optimizer:\nThat is the order they were written, and each is the repair of a gap the one before left open — Atlas cites Miras throughout and borrows its vocabulary to say what it is fixing. The last three are one group iterating in public: Behrouz, Zhong and Mirrokni are authors on all of them, and on NL-2’s Nested Learning a year after Titans."
+    "text": "Open In Colab\nThe question: what if the hidden state is itself a model, trained at inference?\nFirst module of the Nested Learning track. Prerequisites: foundations M1–M7. Runs on CPU in seconds; PyTorch throughout.\nM7 left the write rule as a formula: hand it a key and a value, and it produces the vector that goes into the memory. Four papers break the formula open by making the write gradient descent on a loss — and once it is, the memory can be a whole model and the write can be a whole optimizer:\nThat is the order they were written, and each is the repair of a gap the one before left open — Atlas cites Miras throughout and borrows its vocabulary to say what it is fixing. The last three are one group iterating in public: Behrouz, Zhong and Mirrokni are authors on all of them, and on NL-2’s Nested Learning a year after Titans."
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html#objective",
@@ -249,7 +249,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.html",
     "title": "NL-1 aside — test-time training you can see",
     "section": "",
-    "text": "A second companion to NL-1, for when the random key/value toy (where the self-supervised error comes from) feels abstract. This is the original Test-Time Training (Sun, Wang, Liu, Miller, Efros & Hardt, ICML 2020) — the image-classification ancestor of NL-1’s sequence TTT, and an ancestor by descent, not just by analogy: Yu Sun is first author on both, five years apart — and it makes “where does the self-supervised error come from?” something you can watch on real digits.\nRuns on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~11 MB MNIST download (cached locally).\nThe trick, in one breath: take a digit image, rotate it by 0°/90°/180°/270° yourself, and train the network to predict which rotation you applied. The rotation is a free label you manufactured from the image — no human annotation. At test time, on weird/corrupted images, the network adapts its features by getting better at that rotation task — using no class labels at all — and its digit-recognition accuracy recovers.\nTwo heads on a shared trunk: classification (outer loss, real labels, training only) and rotation (inner loss, self-supervised, runs at test time)."
+    "text": "Open In Colab\nA second companion to NL-1, for when the random key/value toy (where the self-supervised error comes from) feels abstract. This is the original Test-Time Training (Sun, Wang, Liu, Miller, Efros & Hardt, ICML 2020) — the image-classification ancestor of NL-1’s sequence TTT, and an ancestor by descent, not just by analogy: Yu Sun is first author on both, five years apart — and it makes “where does the self-supervised error come from?” something you can watch on real digits.\nRuns on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~11 MB MNIST download (cached locally).\nThe trick, in one breath: take a digit image, rotate it by 0°/90°/180°/270° yourself, and train the network to predict which rotation you applied. The rotation is a free label you manufactured from the image — no human annotation. At test time, on weird/corrupted images, the network adapts its features by getting better at that rotation task — using no class labels at all — and its digit-recognition accuracy recovers.\nTwo heads on a shared trunk: classification (outer loss, real labels, training only) and rotation (inner loss, self-supervised, runs at test time)."
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.html#the-data-and-the-self-supervised-task",
@@ -291,7 +291,7 @@
     "href": "courses/continual-learning/primers/backpropagation.html",
     "title": "Primer — backpropagation, from the chain rule to torch.autograd",
     "section": "",
-    "text": "The chain rule by hand, a scalar autograd engine built from scratch, the matrix view (\\(\\partial\\mathcal L/\\partial W=\\boldsymbol\\delta\\hat{\\mathbf x}^\\top\\)), PyTorch’s autograd, and higher-order/meta-gradients — each with a runnable demo. Optional: read it when a foundations module points here.\nRuns on CPU in seconds.  — or clone the repo and uv sync in courses/continual-learning/.\nWhy build it from scratch here? M6 makes a claim that only lands if backprop is concrete to you: one gradient step on a layer is an associative-memory write — for \\(\\mathbf y=W\\hat{\\mathbf x}\\),\n\\[\\frac{\\partial\\mathcal L}{\\partial W}=\\boldsymbol\\delta\\,\\hat{\\mathbf x}^\\top,\\qquad \\boldsymbol\\delta=\\frac{\\partial\\mathcal L}{\\partial\\mathbf y},\\]\nan outer product with key = input \\(\\hat{\\mathbf x}\\) and value = \\(-\\boldsymbol\\delta\\) (negative surprise). You cannot feel that reframing while backprop is a black box. So we open the box."
+    "text": "Open In Colab\nThe chain rule by hand, a scalar autograd engine built from scratch, the matrix view (\\(\\partial\\mathcal L/\\partial W=\\boldsymbol\\delta\\hat{\\mathbf x}^\\top\\)), PyTorch’s autograd, and higher-order/meta-gradients — each with a runnable demo. Optional: read it when a foundations module points here.\nRuns on CPU in seconds — or clone the repo and uv sync in courses/continual-learning/.\nWhy build it from scratch here? M6 makes a claim that only lands if backprop is concrete to you: one gradient step on a layer is an associative-memory write — for \\(\\mathbf y=W\\hat{\\mathbf x}\\),\n\\[\\frac{\\partial\\mathcal L}{\\partial W}=\\boldsymbol\\delta\\,\\hat{\\mathbf x}^\\top,\\qquad \\boldsymbol\\delta=\\frac{\\partial\\mathcal L}{\\partial\\mathbf y},\\]\nan outer product with key = input \\(\\hat{\\mathbf x}\\) and value = \\(-\\boldsymbol\\delta\\) (negative surprise). You cannot feel that reframing while backprop is a black box. So we open the box."
   },
   {
     "objectID": "courses/continual-learning/primers/backpropagation.html#the-chain-rule-concretely",
@@ -368,7 +368,7 @@
     "href": "courses/continual-learning/foundations/m6-optimizers-as-memory.html",
     "title": "M6 — Optimizers as associative memories",
     "section": "",
-    "text": "The question: why are momentum, Adam, and Muon also memories?\nSixth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.\nM4 fixed the additive write inside the sequence memory: read what the memory already returns for this key, then write only the correction. M5 followed that write inward, asking who supplies its arguments and what happens when the memory supplies its own. M6 turns back to the write itself — because the fix has a second home. There is another additive write in every model you have ever trained: the optimizer, piling gradients onto a memory of the gradient stream. M6 applies M4’s fix one level up."
+    "text": "Open In Colab\nThe question: why are momentum, Adam, and Muon also memories?\nSixth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.\nM4 fixed the additive write inside the sequence memory: read what the memory already returns for this key, then write only the correction. M5 followed that write inward, asking who supplies its arguments and what happens when the memory supplies its own. M6 turns back to the write itself — because the fix has a second home. There is another additive write in every model you have ever trained: the optimizer, piling gradients onto a memory of the gradient stream. M6 applies M4’s fix one level up."
   },
   {
     "objectID": "courses/continual-learning/foundations/m6-optimizers-as-memory.html#objective",
@@ -445,7 +445,7 @@
     "href": "courses/continual-learning/foundations/m4-delta-rule.html",
     "title": "M4 — The delta rule / DeltaNet",
     "section": "",
-    "text": "The question: how does a memory edit an association instead of piling onto it?\nFourth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.\nM3 ended on a wall: linear attention’s memory only ever adds (\\(\\mathbf{S}_t=\\mathbf{S}_{t-1}+\\mathbf{v}_t\\phi(\\mathbf{k}_t)^\\top\\)), so writing twice to the same key returns the sum of both values, and recall is lossy under load (M3 §6). M4 fixes the write rule: before storing, read what’s already there for this key and write only the difference. That single change turns a pile-on memory into one that can edit associations.\nThe fix is not new. It is the delta rule, which Bernard Widrow and Marcian Hoff published in 1960 (Adaptive Switching Circuits, IRE WESCON Convention Record, pp. 96–104) as the learning rule for Adaline — adjust the weights by the error between what you wanted and what you got. It predates backpropagation, deep learning, and Transformers by decades; what M4 does is recognize that a sequence model’s memory has exactly the problem Widrow and Hoff’s adaptive circuit had, and reach for the same answer. A linear Transformer with this write is a DeltaNet."
+    "text": "Open In Colab\nThe question: how does a memory edit an association instead of piling onto it?\nFourth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.\nM3 ended on a wall: linear attention’s memory only ever adds (\\(\\mathbf{S}_t=\\mathbf{S}_{t-1}+\\mathbf{v}_t\\phi(\\mathbf{k}_t)^\\top\\)), so writing twice to the same key returns the sum of both values, and recall is lossy under load (M3 §6). M4 fixes the write rule: before storing, read what’s already there for this key and write only the difference. That single change turns a pile-on memory into one that can edit associations.\nThe fix is not new. It is the delta rule, which Bernard Widrow and Marcian Hoff published in 1960 (Adaptive Switching Circuits, IRE WESCON Convention Record, pp. 96–104) as the learning rule for Adaline — adjust the weights by the error between what you wanted and what you got. It predates backpropagation, deep learning, and Transformers by decades; what M4 does is recognize that a sequence model’s memory has exactly the problem Widrow and Hoff’s adaptive circuit had, and reach for the same answer. A linear Transformer with this write is a DeltaNet."
   },
   {
     "objectID": "courses/continual-learning/foundations/m4-delta-rule.html#objective",
@@ -522,7 +522,7 @@
     "href": "courses/continual-learning/foundations/m2-fast-weight-programmers.html",
     "title": "M2 — Fast Weight Programmers",
     "section": "",
-    "text": "The question: where do the keys, values, and queries come from?\nSecond module of the foundations spine. Runs on CPU in seconds; PyTorch from here on.\nM1 gave us a memory matrix and the Hebbian write — but it handed us the keys, values, and queries. M2 asks where \\(\\mathbf{k},\\mathbf{v},\\mathbf{q}\\) come from, and the answer — a “slow” network writes a “fast” network’s weight-memory — is the first real taste of nesting."
+    "text": "Open In Colab\nThe question: where do the keys, values, and queries come from?\nSecond module of the foundations spine. Runs on CPU in seconds; PyTorch from here on.\nM1 gave us a memory matrix and the Hebbian write — but it handed us the keys, values, and queries. M2 asks where \\(\\mathbf{k},\\mathbf{v},\\mathbf{q}\\) come from, and the answer — a “slow” network writes a “fast” network’s weight-memory — is the first real taste of nesting."
   },
   {
     "objectID": "courses/continual-learning/foundations/m2-fast-weight-programmers.html#objective",
@@ -1159,7 +1159,7 @@
     "href": "courses/continual-learning/foundations/m1-associative-memory.html",
     "title": "M1 — Associative memory & the Hebbian write",
     "section": "",
-    "text": "The question: what is the single primitive everything else is built from?\nFirst module of the foundations spine. Runs on CPU in seconds; numpy only.\nRun it top to bottom, then start changing things (d, the number of pairs, seed, beta)."
+    "text": "Open In Colab\nThe question: what is the single primitive everything else is built from?\nFirst module of the foundations spine. Runs on CPU in seconds; numpy only.\nRun it top to bottom, then start changing things (d, the number of pairs, seed, beta)."
   },
   {
     "objectID": "courses/continual-learning/foundations/m1-associative-memory.html#objective",
@@ -1236,7 +1236,7 @@
     "href": "courses/continual-learning/foundations/m3-linear-attention.html",
     "title": "M3 — Linear attention is fast weights",
     "section": "",
-    "text": "The question: what happens to attention if you delete the softmax?\nThird module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.\nM2 built a fast-weight programmer from the Schmidhuber side: a slow net writes an outer-product memory \\(\\mathcal{M}_t=\\mathcal{M}_{t-1}+\\mathbf{v}_t\\mathbf{k}_t^\\top\\). M3 reaches the same object from the Transformer side — take ordinary attention, delete the softmax, and the whole “attend to every past token” sum collapses into exactly that matrix. So a linear Transformer is secretly an RNN with a matrix memory, and that memory is M2’s fast weights."
+    "text": "Open In Colab\nThe question: what happens to attention if you delete the softmax?\nThird module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.\nM2 built a fast-weight programmer from the Schmidhuber side: a slow net writes an outer-product memory \\(\\mathcal{M}_t=\\mathcal{M}_{t-1}+\\mathbf{v}_t\\mathbf{k}_t^\\top\\). M3 reaches the same object from the Transformer side — take ordinary attention, delete the softmax, and the whole “attend to every past token” sum collapses into exactly that matrix. So a linear Transformer is secretly an RNN with a matrix memory, and that memory is M2’s fast weights."
   },
   {
     "objectID": "courses/continual-learning/foundations/m3-linear-attention.html#objective",
@@ -1320,7 +1320,7 @@
     "href": "courses/continual-learning/foundations/m5-meta-learning-self-reference.html",
     "title": "M5 — Meta-learning & self-reference",
     "section": "",
-    "text": "The question: if a write is a learning step, can a network learn a good place to start those steps — or run them on itself?\nFifth module of the foundations spine. Runs on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~10 MB Omniglot download (cached locally).\nM4 gave the memory a built-in learning rule — the delta write is one SGD step per token (M4 §3). That opens two questions, and M5 answers both:\nSelf-reference is the deepest root of Nested Learning’s “levels”: a single object that is at once program and data, optimizer and optimizee."
+    "text": "Open In Colab\nThe question: if a write is a learning step, can a network learn a good place to start those steps — or run them on itself?\nFifth module of the foundations spine. Runs on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~10 MB Omniglot download (cached locally).\nM4 gave the memory a built-in learning rule — the delta write is one SGD step per token (M4 §3). That opens two questions, and M5 answers both:\nSelf-reference is the deepest root of Nested Learning’s “levels”: a single object that is at once program and data, optimizer and optimizee."
   },
   {
     "objectID": "courses/continual-learning/foundations/m5-meta-learning-self-reference.html#objective",
@@ -1397,7 +1397,7 @@
     "href": "courses/continual-learning/foundations/m7-three-dials.html",
     "title": "M7 — The three dials",
     "section": "",
-    "text": "The question: M1 through M6 built six mechanisms. How many ideas is that, really?\nAnswer: one, with three dials. This module collapses the spine into a single recurrence, then shows every module you have read as a setting of it. It is also the hub the rest of the course attaches to — each track states its dial setting and departs from here.\nRuns on CPU in seconds."
+    "text": "Open In Colab\nThe question: M1 through M6 built six mechanisms. How many ideas is that, really?\nAnswer: one, with three dials. This module collapses the spine into a single recurrence, then shows every module you have read as a setting of it. It is also the hub the rest of the course attaches to — each track states its dial setting and departs from here.\nRuns on CPU in seconds."
   },
   {
     "objectID": "courses/continual-learning/foundations/m7-three-dials.html#objective",
@@ -1467,7 +1467,7 @@
     "href": "courses/continual-learning/primers/linear-algebra.html",
     "title": "Primer — the linear algebra this course leans on",
     "section": "",
-    "text": "Orthogonality, eigen/SVD/condition number, effective rank — each with a runnable demo. Optional: read it when a foundations module points here.\nRuns on CPU in seconds.  — or clone the repo and uv sync in courses/continual-learning/."
+    "text": "Open In Colab\nOrthogonality, eigen/SVD/condition number, effective rank — each with a runnable demo. Optional: read it when a foundations module points here.\nRuns on CPU in seconds — or clone the repo and uv sync in courses/continual-learning/."
   },
   {
     "objectID": "courses/continual-learning/primers/linear-algebra.html#orthogonality-orthonormality",
@@ -1502,7 +1502,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl1-aside-self-supervision.html",
     "title": "NL-1 aside — where does the self-supervised error come from?",
     "section": "",
-    "text": "A companion to NL-1, built to answer one question: test-time learning updates the memory by gradient descent on a “self-supervised” loss — but at test time we have no ground-truth labels. So where does the error signal come from? Optional: read it when NL-1 §1 points here.\nRuns on CPU in seconds; pure PyTorch, no GPU.\nThe answer has two levels, and the whole point is to see them side by side in a tiny, CPU-only toy:"
+    "text": "Open In Colab\nA companion to NL-1, built to answer one question: test-time learning updates the memory by gradient descent on a “self-supervised” loss — but at test time we have no ground-truth labels. So where does the error signal come from? Optional: read it when NL-1 §1 points here.\nRuns on CPU in seconds; pure PyTorch, no GPU.\nThe answer has two levels, and the whole point is to see them side by side in a tiny, CPU-only toy:"
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl1-aside-self-supervision.html#the-resolution-in-one-paragraph",
@@ -1558,7 +1558,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html",
     "title": "NL-2 — Levels & the Continuum Memory System",
     "section": "",
-    "text": "The question: what do you get when you order every memory in a model by how often it updates?\nSecond module of the Nested Learning track. Prerequisites: foundations M1–M7, and NL-1. Runs on CPU in seconds; PyTorch throughout.\nBy the end of this module you should be able to:"
+    "text": "Open In Colab\nThe question: what do you get when you order every memory in a model by how often it updates?\nSecond module of the Nested Learning track. Prerequisites: foundations M1–M7, and NL-1. Runs on CPU in seconds; PyTorch throughout.\nBy the end of this module you should be able to:"
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html#why-this-module-exists-we-have-a-pile-of-memories-now-order-them",
@@ -1628,7 +1628,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.html",
     "title": "NL-3 aside — training a HOPE block",
     "section": "",
-    "text": "A companion to NL-3, built to answer one question: §5 assembled a HOPE block but only ran it forward — does the thing actually learn? This trains one end to end on a real task, small enough for a laptop CPU. Optional: read it when NL-3 §5 points here.\nRuns on CPU in seconds under OMP_NUM_THREADS=1, minutes without it — the tensors here are small enough that torch’s intra-op parallelism costs far more than it saves; see the course front page’s runtime note. Pure PyTorch, no GPU.\nThe task: associative recall. The model sees a list of key→value pairs, then a query key, and must output the matching value:\nThis isolates exactly what HOPE is built for: write associations into an in-context memory, then read one back. A model with no memory cannot do it; HOPE should learn it to ~100% and even generalize to longer lists than it trained on.\nIt is the synthetic probe (MQAR) behind the in-context recall suite the paper reports in §9.4 — and a laptop-scale cousin of the needle-in-a-haystack tasks of §9.2, which are a different benchmark family (RULER) built on the same instinct."
+    "text": "Open In Colab\nA companion to NL-3, built to answer one question: §5 assembled a HOPE block but only ran it forward — does the thing actually learn? This trains one end to end on a real task, small enough for a laptop CPU. Optional: read it when NL-3 §5 points here.\nRuns on CPU in seconds under OMP_NUM_THREADS=1, minutes without it — the tensors here are small enough that torch’s intra-op parallelism costs far more than it saves; see the course front page’s runtime note. Pure PyTorch, no GPU.\nThe task: associative recall. The model sees a list of key→value pairs, then a query key, and must output the matching value:\nThis isolates exactly what HOPE is built for: write associations into an in-context memory, then read one back. A model with no memory cannot do it; HOPE should learn it to ~100% and even generalize to longer lists than it trained on.\nIt is the synthetic probe (MQAR) behind the in-context recall suite the paper reports in §9.4 — and a laptop-scale cousin of the needle-in-a-haystack tasks of §9.2, which are a different benchmark family (RULER) built on the same instinct."
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.html#the-task-associative-recall",
@@ -1684,7 +1684,7 @@
     "href": "courses/continual-learning/tracks/nested-learning/nl4-end-to-end-ttt.html",
     "title": "NL-4 — End-to-end TTT: was the proxy ever necessary?",
     "section": "",
-    "text": "The question: every memory in this track learns to predict a value from a key. What if it trained on the real task instead?\nFourth module of the Nested Learning track. Prerequisites: foundations M1–M7 and NL-1. Runs on CPU in seconds; PyTorch throughout.\nNL-1 through NL-3 turned the write dial until the memory became a learner: TTT trains \\(f_W\\) at inference, Titans gives that training an optimizer, Miras makes its objective an explicit axis, HOPE stacks the result on a continuum of timescales.\nThey also share something none of them argues for, because from inside the lineage it is not a choice — it is the air. Every memory you have built in this track learns the same thing: predict this token’s value from its key, \\(\\lVert f_W(\\mathbf{k}_t)-\\mathbf{v}_t\\rVert^2\\). The keys and values are minted by projections the outer loop trains, the loss is local to a layer, and it looks inevitable because it was reverse-engineered from self-attention — which stores exactly those pairs.\nTTT-E2E (Tandon et al., Dec 2025) names that assumption from outside, calls it KV Binding, files this whole track under it, and then argues the binding was never the point. Its inner loop trains on the loss the model is actually graded on: the next token. This module is that argument, run."
+    "text": "Open In Colab\nThe question: every memory in this track learns to predict a value from a key. What if it trained on the real task instead?\nFourth module of the Nested Learning track. Prerequisites: foundations M1–M7 and NL-1. Runs on CPU in seconds; PyTorch throughout.\nNL-1 through NL-3 turned the write dial until the memory became a learner: TTT trains \\(f_W\\) at inference, Titans gives that training an optimizer, Miras makes its objective an explicit axis, HOPE stacks the result on a continuum of timescales.\nThey also share something none of them argues for, because from inside the lineage it is not a choice — it is the air. Every memory you have built in this track learns the same thing: predict this token’s value from its key, \\(\\lVert f_W(\\mathbf{k}_t)-\\mathbf{v}_t\\rVert^2\\). The keys and values are minted by projections the outer loop trains, the loss is local to a layer, and it looks inevitable because it was reverse-engineered from self-attention — which stores exactly those pairs.\nTTT-E2E (Tandon et al., Dec 2025) names that assumption from outside, calls it KV Binding, files this whole track under it, and then argues the binding was never the point. Its inner loop trains on the loss the model is actually graded on: the next token. This module is that argument, run."
   },
   {
     "objectID": "courses/continual-learning/tracks/nested-learning/nl4-end-to-end-ttt.html#objective",

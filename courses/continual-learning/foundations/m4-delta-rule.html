@@ -223,8 +223,14 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m4-delta-rule.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><strong>The question:</strong> how does a memory <em>edit</em> an association instead of piling onto it?</p>
-<p>Fourth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m4-delta-rule.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>Fourth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.</p>
 <p>M3 ended on a wall: linear attention’s memory only ever <em>adds</em> (<span class="math inline">\(\mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span>), so writing twice to the same key returns the <strong>sum</strong> of both values, and recall is lossy under load (M3 §6). M4 fixes the <em>write rule</em>: before storing, <strong>read what’s already there for this key and write only the difference</strong>. That single change turns a pile-on memory into one that can <em>edit</em> associations.</p>
 <p>The fix is not new. It is the <strong>delta rule</strong>, which Bernard Widrow and Marcian Hoff published in <a href="https://isl.stanford.edu/~widrow/papers/c1960adaptiveswitching.pdf">1960</a> (<em>Adaptive Switching Circuits</em>, IRE WESCON Convention Record, pp.&nbsp;96–104) as the learning rule for Adaline — adjust the weights by the <em>error</em> between what you wanted and what you got. It predates backpropagation, deep learning, and Transformers by decades; what M4 does is recognize that a sequence model’s memory has exactly the problem Widrow and Hoff’s adaptive circuit had, and reach for the same answer. A linear Transformer with this write is a <strong>DeltaNet</strong>.</p>
 <section id="objective" class="level2">

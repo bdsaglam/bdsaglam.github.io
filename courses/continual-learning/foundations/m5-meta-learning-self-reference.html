@@ -220,8 +220,14 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m5-meta-learning-self-reference.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><strong>The question:</strong> if a write is a learning step, can a network learn a good place to <em>start</em> those steps — or run them on itself?</p>
-<p>Fifth module of the foundations spine. Runs on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~10 MB Omniglot download (cached locally). <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m5-meta-learning-self-reference.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>Fifth module of the foundations spine. Runs on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~10 MB Omniglot download (cached locally).</p>
 <p>M4 gave the memory a built-in <em>learning rule</em> — the delta write is one SGD step per token (M4 §3). That opens two questions, and M5 answers both:</p>
 <ol type="1">
 <li>If a write is a learning step, can a network learn a <strong>good starting point</strong> so a <em>few</em> such steps adapt it to a brand-new task? → <strong>meta-learning / MAML</strong>.</li>

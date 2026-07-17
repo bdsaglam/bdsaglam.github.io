@@ -229,8 +229,14 @@ window.Quarto = {
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m6-optimizers-as-memory.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
 <p><strong>The question:</strong> why are momentum, Adam, and Muon <em>also</em> memories?</p>
-<p>Sixth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m6-optimizers-as-memory.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>Sixth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout.</p>
 <p>M4 fixed the additive write inside the sequence memory: read what the memory already returns for this key, then write only the correction. M5 followed that write <em>inward</em>, asking who supplies its arguments and what happens when the memory supplies its own. M6 turns back to the write itself — because the fix has a second home. There is another additive write in every model you have ever trained: the <strong>optimizer</strong>, piling gradients onto a memory of the gradient stream. M6 applies M4’s fix one level up.</p>
 <blockquote class="blockquote">
 <p><strong>Prerequisite math</strong> — <em>condition number</em> (the zig-zag), <em>orthogonality</em> (orthogonal tasks), and <em>effective rank</em> are collected in the <a href="../../../courses/continual-learning/primers/linear-algebra.html">linear-algebra primer</a>.</p>
