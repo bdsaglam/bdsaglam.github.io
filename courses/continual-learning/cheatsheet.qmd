@@ -151,6 +151,29 @@ $$\mathbf y_t=\text{MLP}^{(f_k)}\!\big(\dots\text{MLP}^{(f_1)}(\mathbf x_t)\big)
 
 **Each piece ↔ module:** store (M1) · projections/FWP (M2) · linear-attention write (M3) · delta correction (M4) · self-reference/meta-init (M5) · DGD inside (M6) · test-time write + gate (NL-1) · CMS continuum (NL-2). HOPE = NL's existence proof that "add nested levels" yields one uniform feed-forward memory stack that continually learns.
 
+## NL-4 — End-to-end TTT (TTT-E2E)
+
+**The objective every memory above shares** — *KV Binding*, layer-local (TTT-E2E Eq. 7):
+
+$$\ell_t^{(l)}\big(W_{t-1}^{(l)}\big)=\big\lVert g\big(\theta_K^{(l)}\mathbf{x}_t^{(l)};W_{t-1}^{(l)}\big)-\theta_V^{(l)}\mathbf{x}_t^{(l)}\big\rVert^2$$
+
+- **§2.4.1 fn. 1** (crediting [TTT](https://arxiv.org/abs/2407.04620)): linear $g$ ⇒ **DeltaNet** (M4); gradient taken at $W_0^{(l)}$ instead of $W_{t-1}^{(l)}$ ⇒ **linear attention** (M3); $\ell_t^{(l)}$ by non-parametric kernel estimator ⇒ **self-attention**. One construction, three knobs — M7's thesis reached from outside the course.
+
+**E2E at test time** — delete the proxy, descend on the real loss (Eqs. 1–2, generalized to mini-batches in Eq. 5):
+
+$$\ell_t(W)=\texttt{CE}\big(f(x_{t-1};W),x_t\big),\qquad W_i=W_{i-1}-\eta\,\frac1b\!\!\sum_{t=(i-1)b+1}^{ib}\!\!\nabla\ell_t(W_{i-1})$$
+
+- No $\theta_K$, no $\theta_V$, no key, no value, no per-layer target — one loss at the **end of the network**. Memory = the MLP weights of the last $\tfrac14$ of blocks; reading it = the forward pass. Gate $\alpha_t=1$ (Eq. 5 has no decay term); inner optimizer = **plain SGD**, one step per mini-batch.
+- The KVB write is *blind to $x_t$* (Eq. 7 is built from $\mathbf{x}_t^{(l)}$ alone); the E2E write is not. That is the whole of "E2E at test time".
+
+**E2E at training time** — meta-learn $W_0$ **through** the inner steps (M5's MAML), not around them:
+
+$$\mathcal{L}(W_0;X)=\frac1T\sum_{i=1}^{T/b}\ \sum_{t=(i-1)b+1}^{ib}\ell_t(W_{i-1})\qquad\text{vs.}\qquad \mathcal{L}_{\texttt{naive}}(W_0;X)=\frac1T\sum_{t=1}^{T}\ell_t(W_0)$$
+
+- $W_{i-1}$ vs $W_0$ is the entire difference: Eq. 6 scores the model *after* TTT ⇒ **gradients of gradients**; Eq. 4 pretends the inner steps won't happen (= dynamic evaluation, [Krause et al.](https://arxiv.org/abs/1709.07432)). Cost: **3.4× slower** training at 8K (FlashAttention has no grad-of-grad), 1.2× *faster* at 128K.
+- **Division of labour** (§5): updated weights = **long-term** memory (lossy, compressed); **sliding window** $k$ = **short-term** memory (exact). $k\ge b$ required, else the model is "a bigram again within each batch" (§2.3). Forgetting lives in the *architecture*, not the gate.
+- Defaults $k{=}8$K, $b{=}1$K, last $1/4$ of blocks (§2.3, §3.2). Scales with context like full attention at 3B/164B tokens, 2.7× faster at 128K — but **loses badly on NIAH** (§3.5): compression ≠ recall. Both halves predate it in [Clark et al., 2022](https://arxiv.org/abs/2212.02475); what is new is linear complexity and the scaling evidence (§4.3).
+
 ---
 
 ## The unifying view

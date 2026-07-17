@@ -17,6 +17,8 @@ and asks each track to say which of the three dials it turns, from what to what.
 
 Turning the write dial into a learner makes the memory a nested pair: an inner loop that trains $f_W$ on the sequence, an outer loop that trains everything else. **Nested Learning** is what you get from taking that seriously and refusing to stop at two — order *every* memory in the stack, weights and buffers and states alike, by how often it updates, and the model becomes a ladder of learners rather than a model plus an optimizer. [HOPE](nl3-hope.ipynb) is the architecture at the end of that ladder.
 
+There is a fourth thing to turn, and it is inside the first. Once the write is a gradient step, it is a gradient step *on something* — and every memory named above descends on the same objective: predict this token's value from its key. Miras drew that as an axis and varied the loss's shape along it; [NL-4](nl4-end-to-end-ttt.ipynb) is where the axis gets read to its end, and the key–value binding turns out to be a dial rather than a fact.
+
 **Prerequisites.** Foundations [M1](../../foundations/m1-associative-memory.ipynb)–[M7](../../foundations/m7-three-dials.ipynb). No other track — tracks are siblings, never a sequence.
 
 **The papers.** The lineage, in the order it was written — each one the repair of the gap the last left open:
@@ -28,8 +30,9 @@ Turning the write dial into a learner makes the memory a nested pair: an inner l
 | Apr 2025 | [Miras](https://arxiv.org/abs/2504.13173) | Behrouz, Razaviyayn, Zhong & Mirrokni | the inner *objective* becomes a dial rather than a default |
 | May 2025 | [Atlas](https://arxiv.org/abs/2505.23735) | Behrouz et al. | the write widens from one token to a window |
 | Dec 2025 | [Nested Learning](https://arxiv.org/abs/2512.24695) | Behrouz, Razaviyayn, Zhong & Mirrokni | every memory becomes a level — the destination |
+| Dec 2025 | [TTT-E2E](https://arxiv.org/abs/2512.23675) | Tandon et al. | the shared objective drops; the inner loop trains on the real next token |
 
-Behrouz, Zhong and Mirrokni are authors on all four papers after TTT: this is one team's twelve months, not four bolts from the blue. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) walks the lineage in exactly this order.
+Behrouz, Zhong and Mirrokni are authors on the four from Titans to Nested Learning: that stretch is one team's twelve months, not four bolts from the blue. The last row is a different group — TTT's own, Sun and Dalal and Li among them — which is why [NL-4](nl4-end-to-end-ttt.ipynb) reads as a family argument rather than an outside attack: the people who built the key–value construction are the ones asking whether it was needed. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) walks the first four in exactly this order; NL-4 takes up the last.
 
 ## The modules
 
@@ -38,5 +41,6 @@ Behrouz, Zhong and Mirrokni are authors on all four papers after TTT: this is on
 | NL-1 | [Test-time learning: TTT → Titans → Miras → Atlas](nl1-test-time-learning.ipynb) | What if the hidden state is itself a model, trained at inference? |
 | NL-2 | [Levels & the Continuum Memory System](nl2-levels-continuum-memory.ipynb) | What do you get when you order every memory by update frequency? |
 | NL-3 | [HOPE — assembling it all](nl3-hope.ipynb) | How do the pieces combine into one continual-learning architecture? |
+| NL-4 | [End-to-end TTT](nl4-end-to-end-ttt.ipynb) | Was the objective all of them share ever necessary? |
 
 **Asides** — optional, tangible: [where the self-supervised error comes from](nl1-aside-self-supervision.ipynb) · [test-time training you can see](nl1-aside-image-ttt.ipynb) · [training a HOPE block](nl3-aside-training-hope.ipynb) · [a genuine multi-frequency CMS](nl3-aside-continuum-memory.ipynb)
