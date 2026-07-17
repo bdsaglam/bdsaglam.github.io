@@ -84,6 +84,9 @@ pre, div.sourceCode { overflow-x: auto; }
    box — otherwise it reaches into the right-hand TOC on desktop, and off the
    screen on a phone. */
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+/* Inline math has the same problem and cannot break: a long formula in a
+   sentence is one unbreakable box. Let it scroll rather than push the page. */
+mjx-container:not([display="true"]) { max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
 
 /* A many-column table cannot shrink below its min-content width, so on a
    phone it must scroll inside its own box rather than push the page. */

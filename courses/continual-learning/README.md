@@ -67,6 +67,16 @@ A track is a self-contained spoke off [M7 — the three dials](foundations/m7-th
 
 **Worked example.** A Mamba track would state: *the gate $\alpha_t$ becomes input-dependent — the $\Delta$ discretization step is the timescale, chosen per token.* That is the whole coupling. Concretely, that is M7 §5's **gated Hebbian** row, which already names Mamba-2 and carries a dash — so the track fills that dash rather than adding a row. It needs no Nested Learning material, and the NL track needs none of its.
 
+## Adding a module to an existing track
+
+The commoner move: a paper belongs to a line of work the course already follows. Put it in that track rather than starting a new one — [NL-4](tracks/nested-learning/nl4-end-to-end-ttt.ipynb) is the worked example. It reads NL-1's whole lineage back to itself and rejects the objective they share, so it is that track's coda, not a line of its own. The test is the line of work, not the citation graph: a paper that merely cites a track's papers is not thereby part of it.
+
+1. Number it next in the track's namespace. Write it to the same standard as any module — see *Writing a module* below.
+2. Add it to the track's `index.qmd` module table, and check whether it changes the **dial setting** that page opens with. NL-4 turned the write dial's *objective*, which the track's statement had not distinguished from the write rule itself.
+3. **Check the module it now follows.** A terminal module says so in prose — NL-3 ended on "Course complete" — and nothing enforces that claim. If yours lands after it, that module's ending is now wrong and is yours to fix.
+4. Update anything that counts or orders the track: `index.qmd`'s **Tracks** table (its module count, and the question the track answers if the coda changes it), M7 §5's zoo, and `cheatsheet.qmd` if the module carries formulas.
+5. M7 §5's zoo has a third case the track rules don't cover: an existing row **half**-describes your rule and its **Covered in** is already claimed by another module. Add a row; do not overwrite a claim or stretch a row to cover two things.
+
 ## Writing a module
 
 *Adding a track* is the structural contract. This is what a module should **be**. It applies to foundations modules, track modules, asides, and primers alike; a track module also binds to the contract above.
@@ -167,6 +177,8 @@ Always `collapse="true"` — the module must read straight through without them.
   `[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/<path>)`
 - **Dependencies are exactly torch, numpy, matplotlib.** Adding one changes the course, not just your module.
 - **Course status lives in exactly one place** — M7 §5's zoo, in the **Covered in** column. Never in prose.
+- **No `\tag{}` in display math.** MathJax renders a tagged equation with `display:flex`, which defeats the responsive rule that makes wide math scroll inside its own box; the equation then pushes the whole page sideways on a phone. Number equations in prose instead.
+- **A clean render is not a clean page.** `quarto render` exits 0 with no warnings on both of the faults above — the `\tag{}` overflow and a dead link — because unresolved links are warnings and layout is not checked at all. Before committing, grep the render log for `Unable to resolve` and require zero, and open the page at 375px wide: nothing should scroll sideways.
 
 ## Licence
 
