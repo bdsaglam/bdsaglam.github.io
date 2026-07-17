@@ -2,150 +2,154 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/tgi-litellm-openai/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.925Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.095Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/llm-providers-structured-output/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.913Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.083Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/halting-problem/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.909Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.078Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/fastai-custom-model/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.898Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.066Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/confidence-intervals/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.892Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.html</loc>
-    <lastmod>2026-07-17T12:53:15.887Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html</loc>
-    <lastmod>2026-07-17T12:53:15.887Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl1-aside-self-supervision.html</loc>
-    <lastmod>2026-07-17T12:53:15.886Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/primers/linear-algebra.html</loc>
-    <lastmod>2026-07-17T12:53:15.884Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m7-three-dials.html</loc>
-    <lastmod>2026-07-17T12:53:15.883Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m5-meta-learning-self-reference.html</loc>
-    <lastmod>2026-07-17T12:53:15.883Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m3-linear-attention.html</loc>
-    <lastmod>2026-07-17T12:53:15.881Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m1-associative-memory.html</loc>
-    <lastmod>2026-07-17T12:53:15.879Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/tutorials/on-policy-distillation/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.991Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/perceive-reason-code/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.917Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/fine-tuning-vs-prompting/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.908Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/cv.html</loc>
-    <lastmod>2026-07-17T12:53:15.889Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.885Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/cheatsheet.html</loc>
-    <lastmod>2026-07-17T12:53:15.879Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/archive.html</loc>
-    <lastmod>2026-07-17T12:53:15.879Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.883Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.889Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/posts/is-everything-an-abstraction/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.912Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/projects.html</loc>
-    <lastmod>2026-07-17T12:53:15.925Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/writing.html</loc>
-    <lastmod>2026-07-17T12:53:15.992Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m2-fast-weight-programmers.html</loc>
-    <lastmod>2026-07-17T12:53:15.880Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m4-delta-rule.html</loc>
-    <lastmod>2026-07-17T12:53:15.882Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m6-optimizers-as-memory.html</loc>
-    <lastmod>2026-07-17T12:53:15.883Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/primers/backpropagation.html</loc>
-    <lastmod>2026-07-17T12:53:15.884Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.html</loc>
-    <lastmod>2026-07-17T12:53:15.886Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html</loc>
-    <lastmod>2026-07-17T12:53:15.886Z</lastmod>
-  </url>
-  <url>
-    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl3-aside-continuum-memory.html</loc>
-    <lastmod>2026-07-17T12:53:15.887Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.059Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl3-hope.html</loc>
-    <lastmod>2026-07-17T12:53:15.887Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.054Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl3-aside-continuum-memory.html</loc>
+    <lastmod>2026-07-17T14:08:18.054Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html</loc>
+    <lastmod>2026-07-17T14:08:18.053Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.html</loc>
+    <lastmod>2026-07-17T14:08:18.051Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/primers/backpropagation.html</loc>
+    <lastmod>2026-07-17T14:08:18.050Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m6-optimizers-as-memory.html</loc>
+    <lastmod>2026-07-17T14:08:18.049Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m4-delta-rule.html</loc>
+    <lastmod>2026-07-17T14:08:18.048Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m2-fast-weight-programmers.html</loc>
+    <lastmod>2026-07-17T14:08:18.046Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/writing.html</loc>
+    <lastmod>2026-07-17T14:08:18.167Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/projects.html</loc>
+    <lastmod>2026-07-17T14:08:18.096Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/is-everything-an-abstraction/index.html</loc>
+    <lastmod>2026-07-17T14:08:18.081Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/index.html</loc>
+    <lastmod>2026-07-17T14:08:18.056Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/index.html</loc>
+    <lastmod>2026-07-17T14:08:18.050Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/archive.html</loc>
+    <lastmod>2026-07-17T14:08:18.044Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/cheatsheet.html</loc>
+    <lastmod>2026-07-17T14:08:18.044Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/index.html</loc>
+    <lastmod>2026-07-17T14:08:18.051Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/cv.html</loc>
+    <lastmod>2026-07-17T14:08:18.056Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/fine-tuning-vs-prompting/index.html</loc>
+    <lastmod>2026-07-17T14:08:18.078Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/posts/perceive-reason-code/index.html</loc>
+    <lastmod>2026-07-17T14:08:18.086Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/tutorials/on-policy-distillation/index.html</loc>
+    <lastmod>2026-07-17T14:08:18.166Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m1-associative-memory.html</loc>
+    <lastmod>2026-07-17T14:08:18.045Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m3-linear-attention.html</loc>
+    <lastmod>2026-07-17T14:08:18.047Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m5-meta-learning-self-reference.html</loc>
+    <lastmod>2026-07-17T14:08:18.049Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/foundations/m7-three-dials.html</loc>
+    <lastmod>2026-07-17T14:08:18.050Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/primers/linear-algebra.html</loc>
+    <lastmod>2026-07-17T14:08:18.051Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl1-aside-self-supervision.html</loc>
+    <lastmod>2026-07-17T14:08:18.052Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html</loc>
+    <lastmod>2026-07-17T14:08:18.053Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.html</loc>
+    <lastmod>2026-07-17T14:08:18.054Z</lastmod>
+  </url>
+  <url>
+    <loc>https://barisdeniz.is-a.dev/courses/continual-learning/tracks/nested-learning/nl4-end-to-end-ttt.html</loc>
+    <lastmod>2026-07-17T14:08:18.054Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/fast-fourier-transform/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.894Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.061Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/fastai-huggingface-datasets/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.908Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.077Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/initialization-in-nn/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.911Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.081Z</lastmod>
   </url>
   <url>
     <loc>https://barisdeniz.is-a.dev/posts/py-cuda-kernel/index.html</loc>
-    <lastmod>2026-07-17T12:53:15.922Z</lastmod>
+    <lastmod>2026-07-17T14:08:18.092Z</lastmod>
   </url>
 </urlset>

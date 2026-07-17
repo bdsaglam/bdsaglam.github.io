@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-38470e72f69268b06b7d51cd6ff5da05.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-8541d7c17458fe1e695d12f9c7209d07.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -454,7 +454,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 </section>
 <section id="the-write-rule-zoo" class="level2">
 <h2 data-anchor-id="the-write-rule-zoo">5. The write-rule zoo</h2>
-<p>Most rows are the master recurrence with a different <span class="math inline">\(\text{write}_t\)</span>; the last three bend its shape, each in a way worth knowing — a frame is only useful if you know where it strains. The last column is where the course covers it — a dash means it is named here and nowhere else, which makes this table the course’s roadmap as well as its map.</p>
+<p>Most rows are the master recurrence with a different <span class="math inline">\(\text{write}_t\)</span>; the last four bend its shape, each in a way worth knowing — a frame is only useful if you know where it strains. The last column is where the course covers it — a dash means it is named here and nowhere else, which makes this table the course’s roadmap as well as its map.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -531,6 +531,14 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td><a href="https://arxiv.org/abs/2407.04620">TTT</a> (Sun et al., 2024), <a href="https://arxiv.org/abs/2501.00663">Titans</a> (Behrouz et al., 2024), <a href="https://arxiv.org/abs/2504.13173">Miras</a> (Behrouz et al., 2025)</td>
 <td><a href="../../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning track</a></td>
 </tr>
+<tr class="odd">
+<td><strong>end-to-end</strong></td>
+<td>one step on the network’s <strong>own</strong> next-token loss <span class="math inline">\(\ell_t=\texttt{CE}(f(x_{t-1});x_t)\)</span> — no key, no value, no per-layer target</td>
+<td><span class="math inline">\(1\)</span></td>
+<td>compress the context into the weights</td>
+<td><a href="https://arxiv.org/abs/2512.23675">TTT-E2E</a> (Tandon et al., 2025); <a href="https://arxiv.org/abs/2212.02475">Clark et al., 2022</a></td>
+<td><a href="../../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning track</a></td>
+</tr>
 </tbody>
 </table>
 <p>The first five rows are the master recurrence exactly. Here is how each of the last three departs from it, because each departure says something:</p>
@@ -538,6 +546,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <li><strong>Oja’s rule</strong> (<a href="https://arxiv.org/abs/2512.24695">NL</a> §5, Eq. 66) subtracts its correction from <span class="math inline">\(\phi(\mathbf{k}_t)\)</span>, not from <span class="math inline">\(\mathbf{v}_t\)</span>. The outer product is still there, but the corrected factor is the <em>key</em> — so it is not a setting of <span class="math inline">\(\text{write}_t\)</span> at all. NL derives it as one gradient step on a Hebbian objective plus a <span class="math inline">\(\lVert\mathcal{M}^\top\mathbf{v}_t\rVert^2\)</span> term (Eq. 67), which is where the norm control comes from; the same source reports it underperforming delta-rule models in practice.</li>
 <li><strong>The Omega rule</strong> (<a href="https://arxiv.org/abs/2505.23735">Atlas</a> §3; <a href="https://arxiv.org/abs/2512.24695">NL</a> §5, Eq. 68) writes a <em>sum</em> of outer products per step, one per token in a window — so one token is no longer one rank-one write. At <span class="math inline">\(c=1\)</span> it collapses back to the delta row.</li>
 <li><strong>Optimizer-shaped</strong> writes are the row that stops being a formula. Once <span class="math inline">\(\text{write}_t\)</span> is “run an optimizer on an inner objective,” the memory can be a whole network and the write can take many steps — the frame survives, but its content moves into the optimizer dial. That is the Nested Learning track’s departure point.</li>
+<li><strong>The end-to-end write</strong> (<a href="https://arxiv.org/abs/2512.23675">TTT-E2E</a> §2.4) leaves the recurrence altogether, and by deletion rather than addition. There is no <span class="math inline">\(\phi(\mathbf{k}_t)\)</span> because there is no key: the inner objective is the network’s <em>own</em> next-token loss, so the write is the gradient of one scalar at the end of the stack w.r.t. an MLP already sitting in the block, and reading the memory is just the forward pass. Every other row here — optimizer-shaped included — keeps self-attention’s key–value interface even after the memory has become a model. This row is what remains once that interface goes. The same paper argues the interface was generating most of this table: its Eq. 7 construction recovers the <strong>delta</strong> row with a linear <span class="math inline">\(g\)</span>, the <strong>Hebbian</strong> row when the gradient is taken at <span class="math inline">\(W_0\)</span>, and softmax attention with a non-parametric estimator (§2.4.1 fn. 1, crediting <a href="https://arxiv.org/abs/2407.04620">TTT</a>) — a three-dial reading of the literature arrived at from outside this course.</li>
 </ul>
 <p>The three dashes are the roadmap: the gate dial is where this course has the most left to say.</p>
 <p>The names and dates carry a second reading of the same table. Nothing in it arrives from nowhere: the delta row is Widrow and Hoff’s 1960 rule carried into a fast-weight memory sixty years later; the gated-delta row is that row plus the gate the RetNet/Mamba-2 line had already built, by authors who could name both parents; Oja’s 1982 rule waited forty years for a sequence model to want it. Every row is earlier rows composed — the three-dial claim told through people instead of dials.</p>

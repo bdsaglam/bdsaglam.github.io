@@ -37,7 +37,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-38470e72f69268b06b7d51cd6ff5da05.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-8541d7c17458fe1e695d12f9c7209d07.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -156,6 +156,7 @@ window.Quarto = {
   <li><a href="#nl-1-test-time-learning-ttt-titans-miras-atlas" id="toc-nl-1-test-time-learning-ttt-titans-miras-atlas" class="nav-link" data-scroll-target="#nl-1-test-time-learning-ttt-titans-miras-atlas">NL-1 — Test-time learning (TTT · Titans · Miras · Atlas)</a></li>
   <li><a href="#nl-2-levels-the-continuum-memory-system" id="toc-nl-2-levels-the-continuum-memory-system" class="nav-link" data-scroll-target="#nl-2-levels-the-continuum-memory-system">NL-2 — Levels &amp; the Continuum Memory System</a></li>
   <li><a href="#nl-3-hope-assembling-it-all" id="toc-nl-3-hope-assembling-it-all" class="nav-link" data-scroll-target="#nl-3-hope-assembling-it-all">NL-3 — HOPE (assembling it all)</a></li>
+  <li><a href="#nl-4-end-to-end-ttt-ttt-e2e" id="toc-nl-4-end-to-end-ttt-ttt-e2e" class="nav-link" data-scroll-target="#nl-4-end-to-end-ttt-ttt-e2e">NL-4 — End-to-end TTT (TTT-E2E)</a></li>
   <li><a href="#the-unifying-view" id="toc-the-unifying-view" class="nav-link" data-scroll-target="#the-unifying-view">The unifying view</a></li>
   </ul>
 </nav>
@@ -344,6 +345,27 @@ window.Quarto = {
 </ul>
 <p><strong>No collapse</strong> — the inner self-target is wrapped in an outer loss with ground truth. Four anchors: (1) the output predicts real tokens via the LM head; (2) the value-generators and initial states are <strong>meta-learned</strong>; (3) the inputs are real data; (4) the update is a bounded gated step from the init. Same MAML/TTT trick (M5, NL-1): a label-free inner procedure validated by a labeled outer loop. Only (2) is the paper’s own argument — it never raises collapse as a failure mode (NL-3 §3).</p>
 <p><strong>Each piece ↔︎ module:</strong> store (M1) · projections/FWP (M2) · linear-attention write (M3) · delta correction (M4) · self-reference/meta-init (M5) · DGD inside (M6) · test-time write + gate (NL-1) · CMS continuum (NL-2). HOPE = NL’s existence proof that “add nested levels” yields one uniform feed-forward memory stack that continually learns.</p>
+</section>
+<section id="nl-4-end-to-end-ttt-ttt-e2e" class="level2">
+<h2 data-anchor-id="nl-4-end-to-end-ttt-ttt-e2e">NL-4 — End-to-end TTT (TTT-E2E)</h2>
+<p><strong>The objective every memory above shares</strong> — <em>KV Binding</em>, layer-local (TTT-E2E Eq. 7):</p>
+<p><span class="math display">\[\ell_t^{(l)}\big(W_{t-1}^{(l)}\big)=\big\lVert g\big(\theta_K^{(l)}\mathbf{x}_t^{(l)};W_{t-1}^{(l)}\big)-\theta_V^{(l)}\mathbf{x}_t^{(l)}\big\rVert^2\]</span></p>
+<ul>
+<li><strong>§2.4.1 fn. 1</strong> (crediting <a href="https://arxiv.org/abs/2407.04620">TTT</a>): linear <span class="math inline">\(g\)</span> ⇒ <strong>DeltaNet</strong> (M4); gradient taken at <span class="math inline">\(W_0^{(l)}\)</span> instead of <span class="math inline">\(W_{t-1}^{(l)}\)</span> ⇒ <strong>linear attention</strong> (M3); <span class="math inline">\(\ell_t^{(l)}\)</span> by non-parametric kernel estimator ⇒ <strong>self-attention</strong>. One construction, three knobs — M7’s thesis reached from outside the course.</li>
+</ul>
+<p><strong>E2E at test time</strong> — delete the proxy, descend on the real loss (Eqs. 1–2, generalized to mini-batches in Eq. 5):</p>
+<p><span class="math display">\[\ell_t(W)=\texttt{CE}\big(f(x_{t-1};W),x_t\big),\qquad W_i=W_{i-1}-\eta\,\frac1b\!\!\sum_{t=(i-1)b+1}^{ib}\!\!\nabla\ell_t(W_{i-1})\]</span></p>
+<ul>
+<li>No <span class="math inline">\(\theta_K\)</span>, no <span class="math inline">\(\theta_V\)</span>, no key, no value, no per-layer target — one loss at the <strong>end of the network</strong>. Memory = the MLP weights of the last <span class="math inline">\(\tfrac14\)</span> of blocks; reading it = the forward pass. Gate <span class="math inline">\(\alpha_t=1\)</span> (Eq. 5 has no decay term); inner optimizer = <strong>plain SGD</strong>, one step per mini-batch.</li>
+<li>The KVB write is <em>blind to <span class="math inline">\(x_t\)</span></em> (Eq. 7 is built from <span class="math inline">\(\mathbf{x}_t^{(l)}\)</span> alone); the E2E write is not. That is the whole of “E2E at test time”.</li>
+</ul>
+<p><strong>E2E at training time</strong> — meta-learn <span class="math inline">\(W_0\)</span> <strong>through</strong> the inner steps (M5’s MAML), not around them:</p>
+<p><span class="math display">\[\mathcal{L}(W_0;X)=\frac1T\sum_{i=1}^{T/b}\ \sum_{t=(i-1)b+1}^{ib}\ell_t(W_{i-1})\qquad\text{vs.}\qquad \mathcal{L}_{\texttt{naive}}(W_0;X)=\frac1T\sum_{t=1}^{T}\ell_t(W_0)\]</span></p>
+<ul>
+<li><span class="math inline">\(W_{i-1}\)</span> vs <span class="math inline">\(W_0\)</span> is the entire difference: Eq. 6 scores the model <em>after</em> TTT ⇒ <strong>gradients of gradients</strong>; Eq. 4 pretends the inner steps won’t happen (= dynamic evaluation, <a href="https://arxiv.org/abs/1709.07432">Krause et al.</a>). Cost: <strong>3.4× slower</strong> training at 8K (FlashAttention has no grad-of-grad), 1.2× <em>faster</em> at 128K.</li>
+<li><strong>Division of labour</strong> (§5): updated weights = <strong>long-term</strong> memory (lossy, compressed); <strong>sliding window</strong> <span class="math inline">\(k\)</span> = <strong>short-term</strong> memory (exact). <span class="math inline">\(k\ge b\)</span> required, else the model is “a bigram again within each batch” (§2.3). Forgetting lives in the <em>architecture</em>, not the gate.</li>
+<li>Defaults <span class="math inline">\(k{=}8\)</span>K, <span class="math inline">\(b{=}1\)</span>K, last <span class="math inline">\(1/4\)</span> of blocks (§2.3, §3.2). Scales with context like full attention at 3B/164B tokens, 2.7× faster at 128K — but <strong>loses badly on NIAH</strong> (§3.5): compression ≠ recall. Both halves predate it in <a href="https://arxiv.org/abs/2212.02475">Clark et al., 2022</a>; what is new is linear complexity and the scaling evidence (§4.3).</li>
+</ul>
 <hr>
 </section>
 <section id="the-unifying-view" class="level2">

@@ -1,15 +1,5 @@
 [
   {
-    "listing": "/archive.html",
-    "items": [
-      "/posts/llm-providers-structured-output/index.html",
-      "/posts/py-cuda-kernel/index.html",
-      "/posts/tgi-litellm-openai/index.html",
-      "/posts/fastai-huggingface-datasets/index.html",
-      "/posts/fastai-custom-model/index.html"
-    ]
-  },
-  {
     "listing": "/writing.html",
     "items": [
       "/posts/perceive-reason-code/index.html",
@@ -20,6 +10,16 @@
       "/posts/initialization-in-nn/index.html",
       "/posts/fast-fourier-transform/index.html",
       "/posts/halting-problem/index.html"
+    ]
+  },
+  {
+    "listing": "/archive.html",
+    "items": [
+      "/posts/llm-providers-structured-output/index.html",
+      "/posts/py-cuda-kernel/index.html",
+      "/posts/tgi-litellm-openai/index.html",
+      "/posts/fastai-huggingface-datasets/index.html",
+      "/posts/fastai-custom-model/index.html"
     ]
   }
 ]

@@ -37,7 +37,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../../site_libs/bootstrap/bootstrap-38470e72f69268b06b7d51cd6ff5da05.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../../site_libs/bootstrap/bootstrap-8541d7c17458fe1e695d12f9c7209d07.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -186,6 +186,7 @@ window.Quarto = {
 <li><strong>Gate:</strong> from <span class="math inline">\(1\)</span> to input-dependent <span class="math inline">\((1-\alpha_t)\)</span>. Every sequence memory in M7 §3’s table reads <span class="math inline">\(1\)</span> here — <em>“nothing in the foundations ever forgets on purpose.”</em> M6’s row is the exception that fixes the rule: it does decay, but on its <em>momentum buffer</em>, not on a token store. Titans is where the dial turns on the sequence memory itself.</li>
 </ul>
 <p>Turning the write dial into a learner makes the memory a nested pair: an inner loop that trains <span class="math inline">\(f_W\)</span> on the sequence, an outer loop that trains everything else. <strong>Nested Learning</strong> is what you get from taking that seriously and refusing to stop at two — order <em>every</em> memory in the stack, weights and buffers and states alike, by how often it updates, and the model becomes a ladder of learners rather than a model plus an optimizer. <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">HOPE</a> is the architecture at the end of that ladder.</p>
+<p>There is a fourth thing to turn, and it is inside the first. Once the write is a gradient step, it is a gradient step <em>on something</em> — and every memory named above descends on the same objective: predict this token’s value from its key. Miras drew that as an axis and varied the loss’s shape along it; <a href="../../../../courses/continual-learning/tracks/nested-learning/nl4-end-to-end-ttt.html">NL-4</a> is where the axis gets read to its end, and the key–value binding turns out to be a dial rather than a fact.</p>
 <p><strong>Prerequisites.</strong> Foundations <a href="../../../../courses/continual-learning/foundations/m1-associative-memory.html">M1</a>–<a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>. No other track — tracks are siblings, never a sequence.</p>
 <p><strong>The papers.</strong> The lineage, in the order it was written — each one the repair of the gap the last left open:</p>
 <table class="caption-top table">
@@ -228,9 +229,15 @@ window.Quarto = {
 <td>Behrouz, Razaviyayn, Zhong &amp; Mirrokni</td>
 <td>every memory becomes a level — the destination</td>
 </tr>
+<tr class="even">
+<td>Dec 2025</td>
+<td><a href="https://arxiv.org/abs/2512.23675">TTT-E2E</a></td>
+<td>Tandon et al.</td>
+<td>the shared objective drops; the inner loop trains on the real next token</td>
+</tr>
 </tbody>
 </table>
-<p>Behrouz, Zhong and Mirrokni are authors on all four papers after TTT: this is one team’s twelve months, not four bolts from the blue. Dates are arXiv v1. <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> walks the lineage in exactly this order.</p>
+<p>Behrouz, Zhong and Mirrokni are authors on the four from Titans to Nested Learning: that stretch is one team’s twelve months, not four bolts from the blue. The last row is a different group — TTT’s own, Sun and Dalal and Li among them — which is why <a href="../../../../courses/continual-learning/tracks/nested-learning/nl4-end-to-end-ttt.html">NL-4</a> reads as a family argument rather than an outside attack: the people who built the key–value construction are the ones asking whether it was needed. Dates are arXiv v1. <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> walks the first four in exactly this order; NL-4 takes up the last.</p>
 </section>
 <section id="the-modules" class="level2">
 <h2 data-anchor-id="the-modules">The modules</h2>
@@ -257,6 +264,11 @@ window.Quarto = {
 <td>NL-3</td>
 <td><a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">HOPE — assembling it all</a></td>
 <td>How do the pieces combine into one continual-learning architecture?</td>
+</tr>
+<tr class="even">
+<td>NL-4</td>
+<td><a href="../../../../courses/continual-learning/tracks/nested-learning/nl4-end-to-end-ttt.html">End-to-end TTT</a></td>
+<td>Was the objective all of them share ever necessary?</td>
 </tr>
 </tbody>
 </table>
