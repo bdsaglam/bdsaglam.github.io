@@ -80,6 +80,16 @@ table.table { font-size: 0.92rem; }
    sideways on a phone. */
 pre, div.sourceCode { overflow-x: auto; }
 
+/* Quarto turns the lone Open-in-Colab badge into a captioned figure: it lifts
+   the image's alt text ("Open In Colab") into a <figcaption> under the badge —
+   a caption that reads as a duplicate label, and a GitHub/Colab-only badge does
+   not want. Hide that caption, and park the badge at the right, out of the
+   reading column — a launch button, not a centered banner. The alt text stays
+   in the markup for GitHub and screen readers; only Quarto's caption is hidden. */
+.quarto-figure:has(a[href*="colab.research.google.com"]) { margin: 0 0 0.5rem; }
+.quarto-figure:has(a[href*="colab.research.google.com"]) > figure > p { text-align: right; }
+figure.figure:has(a[href*="colab.research.google.com"]) > figcaption { display: none; }
+
 /* A display equation wider than the text column must scroll inside its own
    box — otherwise it reaches into the right-hand TOC on desktop, and off the
    screen on a phone. */
