@@ -4,11 +4,13 @@ subtitle: "Memory, fast weights, and learning at many timescales — the mechani
 ---
 
 ::: {.pagelead}
-Recent papers on memory and test-time learning are dense, and assume a decade of prior work.
-Read straight through, they ask you to reconstruct that decade from the notation.
+I made this course because I could not follow the [Nested Learning](https://arxiv.org/abs/2512.24695)
+paper as fully as I wanted to.
 :::
 
-This course rebuilds the mechanisms one at a time, in notebooks you can run and change. Each module starts from a limitation of an earlier one, introduces a single idea in response, and cites the paper that first published it. The order is conceptual, not chronological — the delta rule comes fourth but dates from 1960 — since a mechanism is easier to follow from the problem it answers. It begins with a single matrix and ends at an architecture that keeps learning while it runs.
+It is a good paper and a dense one — a unifying theory of memory, and a new architecture built from it — resting on decades of work it can only compress into notation. Reading it straight through means reconstructing that work as you go.
+
+So I rebuilt the pieces, one at a time, in notebooks you can run and change. They proved worth separating from the paper that sent me looking for them: the foundations stand on their own, and Nested Learning is one track on top. Each module starts from a limitation of an earlier one, introduces a single idea in response, and cites the paper that first published it. The order is conceptual, not chronological — the delta rule comes fourth but dates from 1960.
 
 ::: {.callout-note}
 ## What this course covers — and what it doesn't
