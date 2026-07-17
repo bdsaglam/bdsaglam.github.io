@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Continual Learning – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-6d841f876cbd7f9db2ca110eea6af95d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../../courses/continual-learning/index.html" aria-current="page"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#who-its-for" id="toc-who-its-for" class="nav-link active" data-scroll-target="#who-its-for">Who it’s for</a></li>
+  <li><a href="#start-here" id="toc-start-here" class="nav-link" data-scroll-target="#start-here">Start here</a></li>
+  <li><a href="#the-modules" id="toc-the-modules" class="nav-link" data-scroll-target="#the-modules">The modules</a>
+  <ul class="collapse">
+  <li><a href="#primers-optional-off-the-spine" id="toc-primers-optional-off-the-spine" class="nav-link" data-scroll-target="#primers-optional-off-the-spine">Primers — optional, off the spine</a></li>
+  <li><a href="#foundations-the-spine" id="toc-foundations-the-spine" class="nav-link" data-scroll-target="#foundations-the-spine">Foundations — the spine</a></li>
+  <li><a href="#tracks-self-contained-spokes-off-m7" id="toc-tracks-self-contained-spokes-off-m7" class="nav-link" data-scroll-target="#tracks-self-contained-spokes-off-m7">Tracks — self-contained spokes off M7</a></li>
+  </ul></li>
+  <li><a href="#the-spine-in-one-breath" id="toc-the-spine-in-one-breath" class="nav-link" data-scroll-target="#the-spine-in-one-breath">The spine in one breath</a></li>
+  <li><a href="#running-it" id="toc-running-it" class="nav-link" data-scroll-target="#running-it">Running it</a></li>
+  <li><a href="#sources" id="toc-sources" class="nav-link" data-scroll-target="#sources">Sources</a></li>
+  <li><a href="#licence" id="toc-licence" class="nav-link" data-scroll-target="#licence">Licence</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Continual Learning</h1>
+<p class="subtitle lead">Memory, fast weights, and learning at many timescales — the mechanisms, rebuilt by hand.</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="pagelead">
+<p>The frontier papers in this area read as dense. They are not — they compress a decade of ideas into a notation, and reading them top to bottom asks you to absorb the decade in one pass.</p>
+</div>
+<p>So don’t. Rebuild the ideas in the order they repair one another, in notebooks you can run and break. Each module of the spine opens with a concrete limitation of an earlier module, introduces exactly one idea as the fix, and grounds that idea in the paper that first published it. That order is conceptual, not chronological — the delta rule lands fourth and dates from 1960 — because what makes a mechanism legible is the failure it answers, not the year it was published. The starting primitive is a single matrix; the endpoint is an architecture that keeps learning while it runs. Nothing along the way arrives without a reason.</p>
+<p>By the end the papers read as <strong>inevitable</strong> rather than dense — each idea the obvious repair of one that came before. That is the whole design.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>What this course covers — and what it doesn’t
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It teaches the <strong>mechanism family</strong> behind continual learning: associative memory, fast weights, test-time learning, and updates at many timescales, each built from scratch, one at a time.</p>
+<p>It is <strong>not</strong> a survey of the continual-learning literature. There is no EWC, no replay, no class-incremental benchmark here. What you get instead is the small set of mechanisms that let a model keep changing after training.</p>
+</div>
+</div>
+<section id="who-its-for" class="level2">
+<h2 data-anchor-id="who-its-for">Who it’s for</h2>
+<p>Anyone who has read — or bounced off — a paper like DeltaNet, Titans, or Nested Learning and wants the machinery underneath rather than a summary of it. You should be able to read PyTorch and follow linear algebra and backprop; where a module needs more, it points you at a primer that builds the piece from scratch.</p>
+<p>By the end you can:</p>
+<ul>
+<li><strong>state a model as a dial setting</strong> — linear attention, DeltaNet, SRWM, Titans, HOPE are all one recurrence with three dials turned differently, and you can say which three;</li>
+<li><strong>read a new paper in this area without drowning</strong>, because you have already built its parts by hand and can see which dial it turns;</li>
+<li><strong>tell a real mechanism from notation</strong>, having watched each one fail in the way that motivated the next.</li>
+</ul>
+</section>
+<section id="start-here" class="level2">
+<h2 data-anchor-id="start-here">Start here</h2>
+<p>Open <a href="../../courses/continual-learning/foundations/m1-associative-memory.html"><strong>M1 — Associative memory &amp; the Hebbian write</strong></a> and run it. Every notebook carries an <em>Open in Colab</em> badge, so there is nothing to install, and nothing in the course needs a GPU.</p>
+<div class="cards col1">
+<div class="card">
+<p><span class="cdate">2 notebooks · optional · off the spine</span></p>
+<section id="primers" class="level3">
+<h3 data-anchor-id="primers">Primers</h3>
+<p>The recurring math, each with a runnable demo. Read one when a module points you at it, not before. <span class="links"><a href="../../courses/continual-learning/primers/linear-algebra.html">Linear algebra</a> · <a href="../../courses/continual-learning/primers/backpropagation.html">Backpropagation</a></span></p>
+</section>
+</div>
+<div class="card">
+<p><span class="cdate">7 notebooks · in order · the spine</span></p>
+<section id="foundations" class="level3">
+<h3 data-anchor-id="foundations"><a href="../../courses/continual-learning/foundations/m1-associative-memory.html">Foundations</a></h3>
+<p>M1 → M7. Each of M2–M6 repairs a failure of an earlier module, so the order <em>is</em> the argument; M7 then collapses all six into one object. <span class="links"><a href="../../courses/continual-learning/foundations/m1-associative-memory.html">Begin at M1</a> · <a href="../../courses/continual-learning/foundations/m7-three-dials.html">The three dials</a></span></p>
+</section>
+</div>
+<div class="card">
+<p><span class="cdate">1 track · 3 modules + 4 asides</span></p>
+<section id="tracks" class="level3">
+<h3 data-anchor-id="tracks"><a href="../../courses/continual-learning/tracks/nested-learning/index.html">Tracks</a></h3>
+<p>Self-contained spokes off M7. Each names the dial it turns and follows one line of work as far as it goes. Tracks are independent of each other — read one, all, or none. <span class="links"><a href="../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning</a></span></p>
+</section>
+</div>
+</div>
+</section>
+<section id="the-modules" class="level2">
+<h2 data-anchor-id="the-modules">The modules</h2>
+<section id="primers-optional-off-the-spine" class="level3">
+<h3 data-anchor-id="primers-optional-off-the-spine">Primers — optional, off the spine</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Primer</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../../courses/continual-learning/primers/linear-algebra.html">Linear algebra</a></td>
+<td>Orthogonality, eigen/SVD/condition number, effective rank — the recurring math, each with a runnable demo.</td>
+</tr>
+<tr class="even">
+<td><a href="../../courses/continual-learning/primers/backpropagation.html">Backpropagation</a></td>
+<td>How a gradient is actually computed: the chain rule, a scalar autograd engine from scratch, <code>torch.autograd</code>, and higher-order/meta-gradients.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="foundations-the-spine" class="level3">
+<h3 data-anchor-id="foundations-the-spine">Foundations — the spine</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Module</th>
+<th>The question it answers</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>M1</td>
+<td><a href="../../courses/continual-learning/foundations/m1-associative-memory.html">Associative memory &amp; the Hebbian write</a></td>
+<td>What is the single primitive everything else is built from?</td>
+</tr>
+<tr class="even">
+<td>M2</td>
+<td><a href="../../courses/continual-learning/foundations/m2-fast-weight-programmers.html">Fast Weight Programmers</a></td>
+<td>Where do the keys, values, and queries come from?</td>
+</tr>
+<tr class="odd">
+<td>M3</td>
+<td><a href="../../courses/continual-learning/foundations/m3-linear-attention.html">Linear attention <em>is</em> fast weights</a></td>
+<td>What happens to attention if you delete the softmax?</td>
+</tr>
+<tr class="even">
+<td>M4</td>
+<td><a href="../../courses/continual-learning/foundations/m4-delta-rule.html">The delta rule / DeltaNet</a></td>
+<td>How does a memory <em>edit</em> an association instead of piling onto it?</td>
+</tr>
+<tr class="odd">
+<td>M5</td>
+<td><a href="../../courses/continual-learning/foundations/m5-meta-learning-self-reference.html">Meta-learning &amp; self-reference</a></td>
+<td>Can a network learn a good place to <em>start</em> its learning steps — or run them on itself?</td>
+</tr>
+<tr class="even">
+<td>M6</td>
+<td><a href="../../courses/continual-learning/foundations/m6-optimizers-as-memory.html">Optimizers as associative memories</a></td>
+<td>Why are momentum, Adam, and Muon <em>also</em> memories?</td>
+</tr>
+<tr class="odd">
+<td>M7</td>
+<td><a href="../../courses/continual-learning/foundations/m7-three-dials.html">The three dials</a></td>
+<td>M1 through M6 built six mechanisms. How many ideas is that, really?</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="tracks-self-contained-spokes-off-m7" class="level3">
+<h3 data-anchor-id="tracks-self-contained-spokes-off-m7">Tracks — self-contained spokes off M7</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Track</th>
+<th>The dial it turns</th>
+<th>The question it answers</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning</a></td>
+<td>All three — the write rule until it stops being a formula and becomes a learner</td>
+<td>What if every memory in the model is a learner, and the only thing that separates them is how often they update?</td>
+</tr>
+</tbody>
+</table>
+<p>Tracks never depend on each other. Adding one renumbers nothing — the contract is in <a href="../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> §6 and spelled out in the <a href="https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/README.md">README</a>.</p>
+</section>
+</section>
+<section id="the-spine-in-one-breath" class="level2">
+<h2 data-anchor-id="the-spine-in-one-breath">The spine in one breath</h2>
+<p>Start with one primitive: a memory you write with an outer product and read with a matrix–vector product (<strong>M1</strong>). Make the writes programmable and you get fast-weight programmers (<strong>M2</strong>), which <em>are</em> linear attention (<strong>M3</strong>). Swap the additive write for an error-correcting one and you get the delta rule / DeltaNet (<strong>M4</strong>). Let the memory supply its own keys, values and write rate — ask who writes the writer — and you get meta-learning and self-referential weights (<strong>M5</strong>). Then notice the <em>optimizer</em> was an associative memory over the gradient stream all along, and that M4’s fix applies to it too (<strong>M6</strong>). Collapse all six into one recurrence with three dials (<strong>M7</strong>) — and the tracks take it from there, where the argument and the calendar finally coincide: the Nested Learning track follows TTT → Titans → Miras → Atlas in the order they were published, one team’s twelve months, each paper repairing the gap the last left open.</p>
+<p>Every formula in the course, one line each, is on the <a href="../../courses/continual-learning/cheatsheet.html">cheatsheet</a>.</p>
+</section>
+<section id="running-it" class="level2">
+<h2 data-anchor-id="running-it">Running it</h2>
+<p><strong>Zero install.</strong> Click any notebook’s <em>Open in Colab</em> badge and it runs; torch, numpy, and matplotlib are already there. Nothing in the course needs a GPU.</p>
+<p><strong>Or run it locally.</strong> Clone the <a href="https://github.com/bdsaglam/bdsaglam.github.io">repo</a> and <code>uv sync</code> in <code>courses/continual-learning/</code>. The dependencies are exactly torch, numpy, matplotlib, and jupyter.</p>
+<p><strong>Runtimes.</strong> Most notebooks finish in seconds. Three take minutes: <a href="../../courses/continual-learning/foundations/m5-meta-learning-self-reference.html">M5</a> and the Nested Learning track’s <a href="../../courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.html">image-TTT</a> and <a href="../../courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.html">HOPE-training</a> asides. M5 and image-TTT each fetch a ~10 MB dataset once (Omniglot, MNIST) and cache it locally; everything else is self-contained.</p>
+<p><strong>If a notebook feels absurdly slow, cap the thread count.</strong> Several demos use tensors small enough that torch’s intra-op parallelism costs far more than it saves, and the penalty grows with core count. On a 14-core machine the HOPE-training aside took 9 minutes with default threads and 23 seconds under <code>OMP_NUM_THREADS=1</code> — same output, 24× apart. Worth doing for the whole course:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">OMP_NUM_THREADS</span><span class="op">=</span>1 <span class="ex">uv</span> run jupyter lab</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="sources" class="level2">
+<h2 data-anchor-id="sources">Sources</h2>
+<p>The papers the modules are built around, by public URL.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Shorthand</th>
+<th>URL</th>
+<th>Where it lands</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Nested Learning</td>
+<td><a href="https://arxiv.org/abs/2512.24695" class="uri">https://arxiv.org/abs/2512.24695</a></td>
+<td>M1, M2, M6, M7, and the whole Nested Learning track</td>
+</tr>
+<tr class="even">
+<td>FWP</td>
+<td><a href="https://arxiv.org/abs/2102.11174" class="uri">https://arxiv.org/abs/2102.11174</a></td>
+<td>M2; DeltaNet in M4</td>
+</tr>
+<tr class="odd">
+<td>Linear Transformers</td>
+<td><a href="https://arxiv.org/abs/2006.16236" class="uri">https://arxiv.org/abs/2006.16236</a></td>
+<td>M1, M3, M7</td>
+</tr>
+<tr class="even">
+<td>MAML</td>
+<td><a href="https://arxiv.org/abs/1703.03400" class="uri">https://arxiv.org/abs/1703.03400</a></td>
+<td>M5; the backpropagation primer</td>
+</tr>
+<tr class="odd">
+<td>SRWM</td>
+<td><a href="https://arxiv.org/abs/2202.05780" class="uri">https://arxiv.org/abs/2202.05780</a></td>
+<td>M5</td>
+</tr>
+<tr class="even">
+<td>RL²</td>
+<td><a href="https://arxiv.org/abs/1611.02779" class="uri">https://arxiv.org/abs/1611.02779</a></td>
+<td>M5</td>
+</tr>
+<tr class="odd">
+<td>L2RL</td>
+<td><a href="https://arxiv.org/abs/1611.05763" class="uri">https://arxiv.org/abs/1611.05763</a></td>
+<td>M5</td>
+</tr>
+<tr class="even">
+<td>TTT</td>
+<td><a href="https://arxiv.org/abs/2407.04620" class="uri">https://arxiv.org/abs/2407.04620</a></td>
+<td>NL-1</td>
+</tr>
+<tr class="odd">
+<td>Titans</td>
+<td><a href="https://arxiv.org/abs/2501.00663" class="uri">https://arxiv.org/abs/2501.00663</a></td>
+<td>NL-1</td>
+</tr>
+<tr class="even">
+<td>Miras</td>
+<td><a href="https://arxiv.org/abs/2504.13173" class="uri">https://arxiv.org/abs/2504.13173</a></td>
+<td>NL-1</td>
+</tr>
+<tr class="odd">
+<td>Atlas</td>
+<td><a href="https://arxiv.org/abs/2505.23735" class="uri">https://arxiv.org/abs/2505.23735</a></td>
+<td>NL-1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Where each mechanism came from.</strong> These are the papers the course <em>rebuilds</em>; they are not the papers that <em>invented</em> the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber’s fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al.&nbsp;for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in <a href="../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>, where RetNet, Mamba-2, Gated DeltaNet and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested — and in this lineage it often is — the module says so rather than picking a winner.</p>
+</section>
+<section id="licence" class="level2">
+<h2 data-anchor-id="licence">Licence</h2>
+<p>Prose, figures, and course text: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Code — every code cell in every notebook: <a href="https://opensource.org/licenses/MIT">MIT</a>. Full text in <a href="https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/LICENSE">LICENSE</a>.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

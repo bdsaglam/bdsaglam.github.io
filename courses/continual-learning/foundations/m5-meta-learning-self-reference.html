@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>M5 — Meta-learning &amp; self-reference – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-6d841f876cbd7f9db2ca110eea6af95d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-opens-up" id="toc-why-it-exists-the-limitation-it-opens-up" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-opens-up">Why it exists (the limitation it opens up)</a></li>
+  <li><a href="#core-idea-learning-to-learn-at-two-depths" id="toc-core-idea-learning-to-learn-at-two-depths" class="nav-link" data-scroll-target="#core-idea-learning-to-learn-at-two-depths">Core idea — learning to learn, at two depths</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#the-bilevel-loop-and-why-the-meta-gradient-is-second-order" id="toc-the-bilevel-loop-and-why-the-meta-gradient-is-second-order" class="nav-link" data-scroll-target="#the-bilevel-loop-and-why-the-meta-gradient-is-second-order">1. The bilevel loop and why the meta-gradient is second-order</a></li>
+  <li><a href="#maml-a-learned-initialization-that-adapts-in-a-few-steps" id="toc-maml-a-learned-initialization-that-adapts-in-a-few-steps" class="nav-link" data-scroll-target="#maml-a-learned-initialization-that-adapts-in-a-few-steps">2. MAML: a learned initialization that adapts in a few steps</a></li>
+  <li><a href="#maml-for-real-few-shot-image-classification-omniglot" id="toc-maml-for-real-few-shot-image-classification-omniglot" class="nav-link" data-scroll-target="#maml-for-real-few-shot-image-classification-omniglot">MAML for real — few-shot image classification (Omniglot)</a></li>
+  <li><a href="#self-reference-a-matrix-that-modifies-itself" id="toc-self-reference-a-matrix-that-modifies-itself" class="nav-link" data-scroll-target="#self-reference-a-matrix-that-modifies-itself">3. Self-reference: a matrix that modifies itself</a></li>
+  <li><a href="#two-timescales-two-routes-and-why-this-is-levels" id="toc-two-timescales-two-routes-and-why-this-is-levels" class="nav-link" data-scroll-target="#two-timescales-two-routes-and-why-this-is-levels">4. Two timescales, two routes — and why this is “levels”</a></li>
+  <li><a href="#code-walkthrough-meta-learning-srwm-in-real-code" id="toc-code-walkthrough-meta-learning-srwm-in-real-code" class="nav-link" data-scroll-target="#code-walkthrough-meta-learning-srwm-in-real-code">Code walkthrough — meta-learning &amp; SRWM in real code</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">M5 — Meta-learning &amp; self-reference</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>The question:</strong> if a write is a learning step, can a network learn a good place to <em>start</em> those steps — or run them on itself?</p>
+<p>Fifth module of the foundations spine. Runs on CPU in a couple of minutes; PyTorch throughout, plus a one-time ~10 MB Omniglot download (cached locally). <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m5-meta-learning-self-reference.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>M4 gave the memory a built-in <em>learning rule</em> — the delta write is one SGD step per token (M4 §3). That opens two questions, and M5 answers both:</p>
+<ol type="1">
+<li>If a write is a learning step, can a network learn a <strong>good starting point</strong> so a <em>few</em> such steps adapt it to a brand-new task? → <strong>meta-learning / MAML</strong>.</li>
+<li>The wild one: what if the matrix runs its delta rule on <strong>its own weights</strong> — generating the very keys, values and learning rates that modify itself? → the <strong>self-referential weight matrix (SRWM)</strong>.</li>
+</ol>
+<p>Self-reference is the deepest root of Nested Learning’s “levels”: a single object that is at once program and data, optimizer and optimizee.</p>
+<blockquote class="blockquote">
+<p><strong>Prerequisite math</strong> — <em>higher-order gradients</em> (<code>create_graph=True</code>; differentiating <strong>through</strong> a gradient step, which is the move that makes MAML’s meta-gradient second-order) are built from scratch, with runnable demos, in the <a href="../../../courses/continual-learning/primers/backpropagation.html">backpropagation primer</a> §6, §8.</p>
+</blockquote>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>State meta-learning as a <strong>bilevel</strong> problem: an <strong>inner loop</strong> that adapts to a task and an <strong>outer loop</strong> that learns <em>across</em> tasks — two timescales, the same nesting as M2’s slow/fast split.</li>
+<li>Write <strong>MAML</strong>: inner <span class="math inline">\(\theta'_i=\theta-\alpha\nabla_\theta\mathcal{L}_{T_i}(\theta)\)</span>, outer <span class="math inline">\(\min_\theta\sum_i\mathcal{L}_{T_i}(\theta'_i)\)</span> — <em>learn an initialization</em> from which a few gradient steps generalize.</li>
+<li>See why the meta-gradient is <strong>second-order</strong> (it differentiates <em>through</em> the inner gradient step) and what the first-order approximation drops.</li>
+<li>Write the <strong>SRWM</strong> update <span class="math inline">\(W_t=W_{t-1}+\sigma(\beta_t)(\mathbf{v}_t-\bar{\mathbf{v}}_t)\otimes\varphi(\mathbf{k}_t)\)</span> and explain how it <strong>collapses the programmer/program split</strong>: the same <span class="math inline">\(W\)</span> produces its own <span class="math inline">\(\mathbf{k},\mathbf{q},\beta\)</span> and reads its own <span class="math inline">\(\bar{\mathbf{v}},\mathbf{v}\)</span>.</li>
+<li>Recognize SRWM as a strict generalization of M4’s DeltaNet (untie the projections → recover the delta rule), and locate both on the road to <a href="../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">HOPE’s self-modifying block</a>.</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-opens-up" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-opens-up">Why it exists (the limitation it opens up)</h2>
+<p>M4’s delta rule quietly changed what a “memory” is: each write is a <strong>gradient-descent step</strong> on a per-key regression loss. So the forward pass already runs an <em>inner optimization</em>. Two things were left implicit.</p>
+<ul>
+<li><strong>The starting point is arbitrary.</strong> The memory begins at <span class="math inline">\(\mathcal{M}_0=0\)</span> and the slow weights begin random. If a write is a learning step, then <em>where you start</em> determines how many steps adaptation needs. Nothing so far <em>learns a good initialization</em> for fast adaptation. That’s the gap MAML fills.</li>
+<li><strong>The programmer is frozen.</strong> In M2–M4 a <em>slow</em> net (fixed within the forward pass) writes a <em>fast</em> memory. The slow net never adapts on the fly; the hierarchy programmer→program is rigid. What if the fast matrix could rewrite <strong>its own</strong> update rule? That’s the gap SRWM fills.</li>
+</ul>
+<p>Both are the same move — <em>make the learning process itself learnable</em> — applied at two depths: learn the <strong>initial weights</strong> (MAML), or learn a matrix that <strong>modifies itself</strong> (SRWM). Neither depth is new: “learning to learn” goes back to Schmidhuber’s <a href="https://people.idsia.ch/~juergen/diploma.html">1987 diploma thesis</a>, and both papers below name it as their ancestor. What M4 changed is that you no longer have to <em>posit</em> an inner learner — the write already was one. This “learning to learn” is exactly the nesting that Nested Learning elevates to a first-class principle.</p>
+</section>
+<section id="core-idea-learning-to-learn-at-two-depths" class="level2">
+<h2 data-anchor-id="core-idea-learning-to-learn-at-two-depths">Core idea — learning to learn, at two depths</h2>
+<p><strong>Meta-learning = two nested loops.</strong> Sample a task <span class="math inline">\(T_i\)</span>; the <strong>inner loop</strong> adapts parameters to it; the <strong>outer loop</strong> updates whatever the inner loop started from, so that adaptation works well <em>on average</em> over tasks:</p>
+<p><span class="math display">\[\underbrace{\theta'_i=\theta-\alpha\nabla_\theta\mathcal{L}^{\text{support}}_{T_i}(\theta)}_{\text{inner: adapt to the task}}\qquad \underbrace{\min_\theta\ \textstyle\sum_i \mathcal{L}^{\text{query}}_{T_i}(\theta'_i)}_{\text{outer: learn the init across tasks}}\]</span></p>
+<p>This is <strong>MAML</strong> (<a href="https://arxiv.org/abs/1703.03400">Finn, Abbeel &amp; Levine, 2017</a>): <span class="math inline">\(\theta\)</span> is not a solution to any task — it is a <em>launchpad</em> from which one or a few gradient steps reach a good task-specific <span class="math inline">\(\theta'_i\)</span>. The outer update <span class="math inline">\(\theta\leftarrow\theta-\eta\nabla_\theta\sum_i\mathcal{L}_{T_i}(\theta'_i)\)</span> differentiates <strong>through</strong> the inner step, so it carries a second-order (Hessian) term — the “gradient through a gradient.”</p>
+<p>What MAML repaired is worth naming, because it is a <em>subtraction</em>. The meta-learners before it <strong>learned the update rule itself</strong> — a second network, with its own parameters, emitting the step. MAML keeps ordinary gradient descent and learns only <em>where it starts</em>, so it “does not expand the number of learned parameters nor place constraints on the model architecture” (§1). That is the whole of its model-agnosticism: the inner loop is already there in anything trained by gradient descent, and MAML only aims it.</p>
+<p><strong>Self-reference = collapse the loops into one matrix.</strong> M4’s delta rule had a <em>separate</em> slow net invent <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q},\beta\)</span>. The <strong>SRWM</strong> (<a href="https://arxiv.org/abs/2202.05780">Irie, Schlag, Csordás &amp; Schmidhuber, 2022</a>) lets one matrix <span class="math inline">\(W\)</span> do everything: it processes the input to emit its own modifier-key <span class="math inline">\(\mathbf{k}_t\)</span>, analyzer-query <span class="math inline">\(\mathbf{q}_t\)</span>, and learning rate <span class="math inline">\(\beta_t\)</span>, queries <em>itself</em> for the current and target values, then <strong>delta-updates itself</strong>:</p>
+<p><span class="math display">\[[\mathbf{y}_t,\mathbf{k}_t,\mathbf{q}_t,\beta_t]=W_{t-1}\varphi(\mathbf{x}_t),\quad \bar{\mathbf{v}}_t=W_{t-1}\varphi(\mathbf{k}_t),\quad \mathbf{v}_t=W_{t-1}\varphi(\mathbf{q}_t),\quad \boxed{\,W_t=W_{t-1}+\sigma(\beta_t)(\mathbf{v}_t-\bar{\mathbf{v}}_t)\otimes\varphi(\mathbf{k}_t)\,}\]</span></p>
+<p>The programmer <strong>is</strong> the program. Set the producing-projections to a <em>separate, fixed</em> matrix and you are back at M4’s DeltaNet; tie them to <span class="math inline">\(W\)</span> and the matrix learns to modify itself.</p>
+<p>The design is a rebuild, not a debut. The paper “revisit[s] the self-referential WM … from the ’90s in the light of modern techniques” (§1) — Schmidhuber’s 1992–93 self-referential matrix, which addressed its own weights one at a time through a binary index. What the modern version swaps in is machinery you already have: the outer products and the delta rule of M4. The idea waited thirty years for its write rule.</p>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><strong>MAML</strong> — <a href="https://arxiv.org/abs/1703.03400">Finn et al.&nbsp;2017, <em>Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks</em></a>: the inner/outer loops (§2.2), the second-order meta-gradient and what its first-order approximation drops (§5.2), and the sine-regression few-shot demo (§5.1, Figs. 2–3). Primary for the meta-learning half.</li>
+<li><strong>SRWM</strong> — <a href="https://arxiv.org/abs/2202.05780">Irie et al.&nbsp;2022, <em>A Modern Self-Referential Weight Matrix That Learns to Modify Itself</em></a>: the self-referential update (§3, Eqs. 5–8 — the boxed eq. above), the programmer/program collapse (§6, <em>Related Work</em>), and sequential task-switching (§4.2). Primary for the self-reference half.</li>
+<li>The <em>other</em> route to learning-to-learn (adapt <strong>activations</strong>, not weights): <a href="https://arxiv.org/abs/1611.02779">RL²</a> (Duan et al., 2016) and <a href="https://arxiv.org/abs/1611.05763">L2RL</a> (Wang et al., 2016) — meta-learning that lives in an RNN’s hidden state (in-context), no inner gradient. The two were posted eight days apart in November 2016 by different groups, which is the honest way to read them: one idea whose time had come, not one paper answering the other. §4 puts the two routes side by side.</li>
+</ul>
+</section>
+</section>
+<section id="the-bilevel-loop-and-why-the-meta-gradient-is-second-order" class="level2">
+<h2 data-anchor-id="the-bilevel-loop-and-why-the-meta-gradient-is-second-order">1. The bilevel loop and why the meta-gradient is second-order</h2>
+<p>The one subtlety that makes MAML <em>MAML</em> (and not just pretraining): the outer loss is a function of <span class="math inline">\(\theta'_i\)</span>, which is itself a function of <span class="math inline">\(\theta\)</span> <em>through a gradient</em>. So <span class="math inline">\(\nabla_\theta\mathcal{L}(\theta'_i)\)</span> must differentiate through <span class="math inline">\(\nabla_\theta\mathcal{L}^{\text{support}}(\theta)\)</span> — a <strong>Hessian</strong> term. A minimal scalar task makes it concrete: task = “move <span class="math inline">\(\theta\)</span> toward <span class="math inline">\(c\)</span>,” loss <span class="math inline">\((\theta-c)^2\)</span>. The full meta-gradient keeps the <span class="math inline">\(\tfrac{\partial\theta'}{\partial\theta}=1-2\alpha\)</span> factor; the <strong>first-order</strong> approximation pretends that factor is 1.</p>
+<div id="0e185b3a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T17:32:17.365471Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T17:32:17.365249Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T17:32:24.382954Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T17:32:24.382010Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>theta <span class="op">=</span> torch.tensor(<span class="fl">1.5</span>, requires_grad<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>c_support, c_query <span class="op">=</span> <span class="fl">2.0</span>, <span class="fl">2.0</span>           <span class="co"># task: pull theta toward c (support adapts, query scores)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>alpha <span class="op">=</span> <span class="fl">0.3</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># inner step, keeping the graph so we can backprop THROUGH it</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>inner_loss <span class="op">=</span> (theta <span class="op">-</span> c_support)<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>g_inner    <span class="op">=</span> torch.autograd.grad(inner_loss, theta, create_graph<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>theta_prime <span class="op">=</span> theta <span class="op">-</span> alpha <span class="op">*</span> g_inner</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>meta_loss  <span class="op">=</span> (theta_prime <span class="op">-</span> c_query)<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>g_full <span class="op">=</span> torch.autograd.grad(meta_loss, theta)[<span class="dv">0</span>].item()        <span class="co"># second-order (through g_inner)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># first-order: treat theta' as if it didn't depend on theta via the inner gradient</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>tp_fo  <span class="op">=</span> (theta <span class="op">-</span> alpha<span class="op">*</span>torch.autograd.grad((theta<span class="op">-</span>c_support)<span class="op">**</span><span class="dv">2</span>, theta)[<span class="dv">0</span>]).detach().requires_grad_(<span class="va">True</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>g_fo   <span class="op">=</span> torch.autograd.grad((tp_fo <span class="op">-</span> c_query)<span class="op">**</span><span class="dv">2</span>, tp_fo)[<span class="dv">0</span>].item()</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"theta'        = </span><span class="sc">{</span>theta_prime<span class="sc">.</span>item()<span class="sc">:.3f}</span><span class="ss">   (one inner step from theta=1.5)"</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"meta-grad  second-order = </span><span class="sc">{</span>g_full<span class="sc">:.3f}</span><span class="ss">   (keeps d theta'/d theta = 1 - 2*alpha = </span><span class="sc">{</span><span class="dv">1</span><span class="op">-</span><span class="dv">2</span><span class="op">*</span>alpha<span class="sc">:.1f}</span><span class="ss">)"</span>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"meta-grad  first-order  = </span><span class="sc">{</span>g_fo<span class="sc">:.3f}</span><span class="ss">   (pretends d theta'/d theta = 1)"</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the gap IS the Hessian term: the outer loop differentiates through the inner gradient step."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>theta'        = 1.800   (one inner step from theta=1.5)
+meta-grad  second-order = -0.160   (keeps d theta'/d theta = 1 - 2*alpha = 0.4)
+meta-grad  first-order  = -0.400   (pretends d theta'/d theta = 1)
+the gap IS the Hessian term: the outer loop differentiates through the inner gradient step.</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Why did the inner loop use <code>torch.autograd.grad(...)</code> instead of <code>loss.backward()</code>?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Because MAML’s inner step needs the gradient as a <strong>value it can compute with</strong> and keep <strong>differentiable</strong> — and <code>.backward()</code> gives neither. The two APIs do different jobs:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><code>loss.backward()</code></th>
+<th><code>torch.autograd.grad(loss, params, create_graph=True)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>returns</td>
+<td><code>None</code></td>
+<td>the gradients, as a tuple of tensors</td>
+</tr>
+<tr class="even">
+<td>effect</td>
+<td>accumulates into each leaf’s <code>.grad</code> (a side-effect)</td>
+<td>no side-effect; pure function</td>
+</tr>
+<tr class="odd">
+<td>graph</td>
+<td>grads stored as plain <code>.grad</code> slots</td>
+<td>returned grads carry a <code>grad_fn</code> → differentiable again</td>
+</tr>
+</tbody>
+</table>
+<p>The inner loop is <code>θ' = θ - α·g</code>. That needs three things, all of which point to <code>autograd.grad</code>:</p>
+<ol type="1">
+<li><strong>A returned value.</strong> We must <em>use</em> the gradient in an expression to build <code>θ'</code>. <code>autograd.grad</code> hands it back; <code>.backward()</code> returns <code>None</code> and you’d have to fish it out of <code>θ.grad</code>.</li>
+<li><strong>Second-order differentiability.</strong> The outer loss is evaluated at <code>θ'</code>, and we backprop through it <em>all the way to <code>θ</code></em> — which means differentiating through <code>g</code> itself (the Hessian term this section is about). <code>create_graph=True</code> makes the returned <code>g</code> part of the graph, so that works.</li>
+<li><strong>Functional, no global state.</strong> MAML builds a chain of <em>new</em> parameter tensors <code>θ → θ' → θ'' …</code> that must stay graph-connected. <code>autograd.grad</code> composes cleanly; <code>.backward()</code> is built around mutating a <em>fixed</em> set of leaves in place (and accumulates, so you’d also have to zero <code>.grad</code> between inner steps). Wrong tool for a functional update.</li>
+</ol>
+<p><strong>But notice the notebook uses both</strong> — each where it fits. §2’s meta-training cell shows the pair:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>grads <span class="op">=</span> torch.autograd.grad(loss, p, create_graph<span class="op">=</span><span class="va">True</span>)   <span class="co"># INNER: grad as a differentiable value</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> [pi <span class="op">-</span> alpha<span class="op">*</span>gi <span class="cf">for</span> pi, gi <span class="kw">in</span> <span class="bu">zip</span>(p, grads)]            <span class="co">#        build theta'</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>...</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>(ml <span class="op">/</span> <span class="dv">4</span>).backward()<span class="op">;</span> opt.step()                            <span class="co"># OUTER: accumulate into meta-params' .grad,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                                                           <span class="co">#        then let Adam update them in place</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The <strong>outer</strong> loop is an ordinary training step on the leaf meta-parameters, so <code>.backward()</code> + <code>optimizer.step()</code> is exactly right there. The <strong>inner</strong> loop is a functional, higher-order computation, so <code>autograd.grad</code> is the right tool. (You <em>can</em> force MAML through <code>.backward(create_graph=True)</code> by reading <code>θ.grad</code>, but you’d be managing accumulation and zeroing by hand — which is why <code>autograd.grad</code> is what <code>higher</code> / <code>learn2learn</code> / <code>torch.func</code> use under the hood.)</p>
+</div>
+</div>
+</div>
+</section>
+<section id="maml-a-learned-initialization-that-adapts-in-a-few-steps" class="level2">
+<h2 data-anchor-id="maml-a-learned-initialization-that-adapts-in-a-few-steps">2. MAML: a learned initialization that adapts in a few steps</h2>
+<p>Now the real thing, on the canonical task: <strong>sine regression</strong>. Each task is <span class="math inline">\(f(x)=A\sin(x+\varphi)\)</span> with random amplitude <span class="math inline">\(A\)</span> and phase <span class="math inline">\(\varphi\)</span>; the model sees <span class="math inline">\(K=10\)</span> points and must fit the whole curve. We meta-train an MLP’s initial weights so that <strong>one</strong> inner gradient step on the 10 support points generalizes. Then we test on a <em>new</em> sine: from the meta-init a few steps snap to the curve, while the same architecture from a random init barely moves.</p>
+<p>(This is exactly MAML’s Figs. 2–3: rapid adaptation within 1–10 gradient steps vs.&nbsp;a baseline init fine-tuned on the same task distribution.)</p>
+<div id="e775396f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T17:32:24.387298Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T17:32:24.386859Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T17:32:33.226945Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T17:32:33.225093Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- a small functional MLP so we can take gradients w.r.t. params and step them manually ---</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> init_params(sizes<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">40</span>, <span class="dv">40</span>, <span class="dv">1</span>)):</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">0</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    ps <span class="op">=</span> []</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> a, b <span class="kw">in</span> <span class="bu">zip</span>(sizes[:<span class="op">-</span><span class="dv">1</span>], sizes[<span class="dv">1</span>:]):</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> (torch.randn(b, a, generator<span class="op">=</span>g) <span class="op">*</span> math.sqrt(<span class="dv">2</span> <span class="op">/</span> a)).requires_grad_(<span class="va">True</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        ps <span class="op">+=</span> [w, torch.zeros(b, requires_grad<span class="op">=</span><span class="va">True</span>)]</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ps</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fwd(params, x):</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    h, n <span class="op">=</span> x, <span class="bu">len</span>(params) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n):</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> h <span class="op">@</span> params[<span class="dv">2</span> <span class="op">*</span> i].t() <span class="op">+</span> params[<span class="dv">2</span> <span class="op">*</span> i <span class="op">+</span> <span class="dv">1</span>]</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">&lt;</span> n <span class="op">-</span> <span class="dv">1</span>:</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            h <span class="op">=</span> torch.tanh(h)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> h</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> adapt(params, x, y, alpha<span class="op">=</span><span class="fl">0.01</span>, steps<span class="op">=</span><span class="dv">1</span>, create_graph<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> params</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> F.mse_loss(fwd(p, x), y)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        grads <span class="op">=</span> torch.autograd.grad(loss, p, create_graph<span class="op">=</span>create_graph)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        p <span class="op">=</span> [pi <span class="op">-</span> alpha <span class="op">*</span> gi <span class="cf">for</span> pi, gi <span class="kw">in</span> <span class="bu">zip</span>(p, grads)]</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample_task(g):</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> torch.rand(<span class="dv">1</span>, generator<span class="op">=</span>g) <span class="op">*</span> <span class="fl">4.9</span> <span class="op">+</span> <span class="fl">0.1</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    phase <span class="op">=</span> torch.rand(<span class="dv">1</span>, generator<span class="op">=</span>g) <span class="op">*</span> math.pi</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">lambda</span> x: A <span class="op">*</span> torch.sin(x <span class="op">+</span> phase)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> shots(f, K, g):</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> torch.rand(K, <span class="dv">1</span>, generator<span class="op">=</span>g) <span class="op">*</span> <span class="dv">10</span> <span class="op">-</span> <span class="dv">5</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x, f(x)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="co"># --- meta-train: learn theta so 1 inner step fits a task (second-order MAML) ---</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>meta <span class="op">=</span> init_params()</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> torch.optim.Adam(meta, lr<span class="op">=</span><span class="fl">1e-3</span>)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">1</span>)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> it <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3000</span>):</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    opt.zero_grad()</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    ml <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">4</span>):  <span class="co"># meta-batch of 4 tasks</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>        f <span class="op">=</span> sample_task(g)</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>        xs, ys <span class="op">=</span> shots(f, <span class="dv">10</span>, g)  <span class="co"># support (adapt)</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>        xq, yq <span class="op">=</span> shots(f, <span class="dv">10</span>, g)  <span class="co"># query  (score)</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>        fast <span class="op">=</span> adapt(meta, xs, ys, alpha<span class="op">=</span><span class="fl">0.01</span>, steps<span class="op">=</span><span class="dv">1</span>, create_graph<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>        ml <span class="op">=</span> ml <span class="op">+</span> F.mse_loss(fwd(fast, xq), yq)</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    (ml <span class="op">/</span> <span class="dv">4</span>).backward()</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    opt.step()</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"meta-training done. final meta-loss = </span><span class="sc">{</span>(ml <span class="op">/</span> <span class="dv">4</span>)<span class="sc">.</span>item()<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>meta-training done. final meta-loss = 1.237</code></pre>
+</div>
+</div>
+<div id="41420dd0" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T17:32:33.234177Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T17:32:33.233465Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T17:32:33.774477Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T17:32:33.773125Z&quot;}}" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- evaluate on a NEW task: meta-init vs random-init, as inner steps accumulate ---</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">123</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>f  <span class="op">=</span> sample_task(gt)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>xs, ys <span class="op">=</span> shots(f, <span class="dv">10</span>, gt)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>xx <span class="op">=</span> torch.linspace(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>, <span class="dv">100</span>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>yy <span class="op">=</span> f(xx)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eval_after(base, steps):</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> [pi.detach().clone().requires_grad_(<span class="va">True</span>) <span class="cf">for</span> pi <span class="kw">in</span> base]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> adapt(p, xs, ys, alpha<span class="op">=</span><span class="fl">0.01</span>, steps<span class="op">=</span>steps, create_graph<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>fig, (axL, axR) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">4</span>))</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> steps <span class="kw">in</span> (<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">5</span>):</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    axL.plot(xx, fwd(eval_after(meta, steps), xx).detach(), label<span class="op">=</span><span class="ss">f"meta-init + </span><span class="sc">{</span>steps<span class="sc">}</span><span class="ss"> steps"</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>axL.plot(xx, yy, <span class="st">'k--'</span>, label<span class="op">=</span><span class="st">"true task"</span>)<span class="op">;</span> axL.scatter(xs, ys, c<span class="op">=</span><span class="st">'r'</span>, zorder<span class="op">=</span><span class="dv">5</span>, s<span class="op">=</span><span class="dv">20</span>, label<span class="op">=</span><span class="st">"10-shot"</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>axL.set_title(<span class="st">"a few steps from the meta-init fit a new sine"</span>)<span class="op">;</span> axL.legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>rand <span class="op">=</span> init_params_rand <span class="op">=</span> [ (torch.randn_like(p)<span class="op">*</span><span class="fl">0.3</span>).requires_grad_(<span class="va">True</span>) <span class="cf">for</span> p <span class="kw">in</span> meta ]</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, base <span class="kw">in</span> [(<span class="st">"meta-init"</span>, meta), (<span class="st">"random-init"</span>, rand)]:</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    errs <span class="op">=</span> [F.mse_loss(fwd(eval_after(base, s), xx), yy).item() <span class="cf">for</span> s <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">11</span>)]</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    axR.plot(<span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">11</span>), errs, marker<span class="op">=</span><span class="st">'o'</span>, label<span class="op">=</span>name)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>axR.set_yscale(<span class="st">'log'</span>)<span class="op">;</span> axR.set_xlabel(<span class="st">"inner GD steps"</span>)<span class="op">;</span> axR.set_ylabel(<span class="st">"MSE on new task"</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>axR.set_title(<span class="st">"learned init adapts in 1-3 steps; random crawls"</span>)<span class="op">;</span> axR.legend()</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"MAML learns WHERE to start so that gradient descent is fast -- a launchpad, not a solution."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m5-meta-learning-self-reference_files/figure-html/cell-4-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>MAML learns WHERE to start so that gradient descent is fast -- a launchpad, not a solution.</code></pre>
+</div>
+</div>
+</section>
+<section id="maml-for-real-few-shot-image-classification-omniglot" class="level2">
+<h2 data-anchor-id="maml-for-real-few-shot-image-classification-omniglot">MAML for real — few-shot image classification (Omniglot)</h2>
+<p>The sine task isolates the <em>mechanics</em>; real meta-learning is <strong>few-shot classification</strong> — given a handful of labelled examples of <em>novel</em> classes, classify new instances of them. MAML’s home benchmark is <strong>Omniglot</strong> (<a href="https://web.mit.edu/jgross/Public/lake_etal_cogsci2011.pdf">Lake et al., 2011</a> — the reference MAML itself cites): 1623 handwritten characters from 50 alphabets, 20 examples each (“the MNIST of meta-learning”).</p>
+<p>The protocol is <strong>episodic, <span class="math inline">\(N\)</span>-way <span class="math inline">\(K\)</span>-shot</strong>. Each episode samples <span class="math inline">\(N\)</span> new character classes, gives <span class="math inline">\(K\)</span> labelled <em>support</em> examples per class, and asks the model to classify <span class="math inline">\(Q\)</span> <em>query</em> examples. Meta-train and meta-test use <strong>disjoint</strong> characters, so at test time the model faces glyphs it has <em>never seen</em>. The <strong>inner loop</strong> adapts to the episode’s <span class="math inline">\(N\)</span> classes; the <strong>outer loop</strong> learns an initialization from which that adaptation works on <em>any</em> set of characters — exactly the bilevel structure of §1–§2, now on real images.</p>
+<p>We run <strong>5-way 1-shot</strong>: 5 novel characters, <strong>one</strong> labelled example each. The payoff to watch:</p>
+<ul>
+<li>from the meta-init, a <em>single</em> gradient step on those 5 examples classifies fresh samples of the same 5 characters;</li>
+<li><em>before</em> adaptation the meta-init is at <strong>chance</strong> — it memorized no classes, it only learned a good launchpad;</li>
+<li>the <em>same</em> architecture from a random init can’t catch up in a few steps.</li>
+</ul>
+<p>(We reuse a small MLP for speed; the standard conv backbone reaches ~99% with the <strong>same</strong> algorithm — better features, identical mechanism. One-time ~10 MB Omniglot download, cached locally.)</p>
+<div id="cd10bd48" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T17:32:33.780556Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T17:32:33.779728Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T17:32:42.096236Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T17:32:42.093999Z&quot;}}" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os, urllib.request, zipfile</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.image <span class="im">as</span> mpimg</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> prepare_omniglot():</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Download Omniglot once, cache as a 28x28 uint8 array. No torchvision needed."""</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    root <span class="op">=</span> os.path.expanduser(<span class="st">"~/.cache/cl-course-data"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    os.makedirs(root, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    npy <span class="op">=</span> os.path.join(root, <span class="st">"omniglot_bg_28.npy"</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> os.path.exists(npy):</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        zp <span class="op">=</span> os.path.join(root, <span class="st">"images_background.zip"</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> os.path.exists(zp):</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">"downloading Omniglot (~10 MB, one time)..."</span>)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>            urllib.request.urlretrieve(</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>                <span class="st">"https://raw.githubusercontent.com/brendenlake/omniglot/master/python/images_background.zip"</span>, zp</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> zipfile.ZipFile(zp) <span class="im">as</span> z:</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>            z.extractall(root)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        base <span class="op">=</span> os.path.join(root, <span class="st">"images_background"</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> np.linspace(<span class="dv">0</span>, <span class="dv">104</span>, <span class="dv">28</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        chars <span class="op">=</span> []</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> alpha <span class="kw">in</span> <span class="bu">sorted</span>(os.listdir(base)):</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>            ap <span class="op">=</span> os.path.join(base, alpha)</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="kw">not</span> os.path.isdir(ap):</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> ch <span class="kw">in</span> <span class="bu">sorted</span>(os.listdir(ap)):</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>                cp <span class="op">=</span> os.path.join(ap, ch)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> <span class="kw">not</span> os.path.isdir(cp):</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">continue</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>                ims <span class="op">=</span> [</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>                    (<span class="fl">1.0</span> <span class="op">-</span> mpimg.imread(os.path.join(cp, f)))[idx][:, idx]  <span class="co"># invert (ink=1) + downsample</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">for</span> f <span class="kw">in</span> <span class="bu">sorted</span>(os.listdir(cp))</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">if</span> f.endswith(<span class="st">".png"</span>)</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>                ]</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> <span class="bu">len</span>(ims) <span class="op">==</span> <span class="dv">20</span>:</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>                    chars.append(np.stack(ims))</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>        np.save(npy, (np.stack(chars) <span class="op">*</span> <span class="dv">255</span>).astype(np.uint8))</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.load(npy).astype(<span class="st">"float32"</span>) <span class="op">/</span> <span class="fl">255.0</span>  <span class="co"># [964 classes, 20 imgs, 28, 28], ink=1</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> torch.from_numpy(prepare_omniglot()).reshape(<span class="dv">964</span>, <span class="dv">20</span>, <span class="dv">784</span>)</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>perm <span class="op">=</span> torch.randperm(<span class="dv">964</span>, generator<span class="op">=</span>torch.Generator().manual_seed(<span class="dv">0</span>))</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>Xtr, Xte <span class="op">=</span> data[perm[:<span class="dv">800</span>]], data[perm[<span class="dv">800</span>:]]  <span class="co"># DISJOINT meta-train / meta-test characters</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Omniglot:"</span>, <span class="bu">tuple</span>(data.shape), <span class="st">"-&gt; 800 meta-train classes, 164 NOVEL meta-test classes"</span>)</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> episode(pool, N, K, Q, gen):  <span class="co"># one N-way K-shot episode</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>    cls <span class="op">=</span> torch.randperm(pool.shape[<span class="dv">0</span>], generator<span class="op">=</span>gen)[:N]</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>    xs, ys, xq, yq <span class="op">=</span> [], [], [], []</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, c <span class="kw">in</span> <span class="bu">enumerate</span>(cls):</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>        o <span class="op">=</span> torch.randperm(<span class="dv">20</span>, generator<span class="op">=</span>gen)</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>        xs.append(pool[c, o[:K]])</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>        ys <span class="op">+=</span> [i] <span class="op">*</span> K  <span class="co"># support</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>        xq.append(pool[c, o[K : K <span class="op">+</span> Q]])</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>        yq <span class="op">+=</span> [i] <span class="op">*</span> Q  <span class="co"># query</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.cat(xs), torch.tensor(ys), torch.cat(xq), torch.tensor(yq)</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a><span class="co"># show a 5-way 1-shot support set: 5 novel characters, ONE labelled example each</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>xs, ys, xq, yq <span class="op">=</span> episode(Xte, <span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">5</span>, torch.Generator().manual_seed(<span class="dv">3</span>))</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="fl">1.8</span>))</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    ax[i].imshow(xs[i].reshape(<span class="dv">28</span>, <span class="dv">28</span>), cmap<span class="op">=</span><span class="st">"gray_r"</span>)</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    ax[i].axis(<span class="st">"off"</span>)</span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>    ax[i].set_title(<span class="ss">f"class </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>, fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>fig.suptitle(<span class="st">"a 5-way 1-shot episode — one labelled example per NOVEL character"</span>, y<span class="op">=</span><span class="fl">1.12</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"task: classify fresh handwritten samples of these 5 characters -- none seen during meta-training."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>downloading Omniglot (~10 MB, one time)...
+Omniglot: (964, 20, 784) -&gt; 800 meta-train classes, 164 NOVEL meta-test classes</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m5-meta-learning-self-reference_files/figure-html/cell-5-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>task: classify fresh handwritten samples of these 5 characters -- none seen during meta-training.</code></pre>
+</div>
+</div>
+<div id="3c257738" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T17:32:42.099376Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T17:32:42.098764Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T17:33:21.337827Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T17:33:21.337346Z&quot;}}" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># classification MLP + a cross-entropy inner loop (same MAML as section 2, now N-way classification)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mlp(p, x):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    h, n <span class="op">=</span> x, <span class="bu">len</span>(p) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n):</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> h <span class="op">@</span> p[<span class="dv">2</span> <span class="op">*</span> i].t() <span class="op">+</span> p[<span class="dv">2</span> <span class="op">*</span> i <span class="op">+</span> <span class="dv">1</span>]</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">&lt;</span> n <span class="op">-</span> <span class="dv">1</span>:</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>            h <span class="op">=</span> F.relu(h)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> h</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> adapt_ce(p, x, y, alpha, steps, create_graph):</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        grads <span class="op">=</span> torch.autograd.grad(</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>            F.cross_entropy(mlp(p, x), y), p, create_graph<span class="op">=</span>create_graph</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>        p <span class="op">=</span> [pi <span class="op">-</span> alpha <span class="op">*</span> gi <span class="cf">for</span> pi, gi <span class="kw">in</span> <span class="bu">zip</span>(p, grads)]</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> init_cls(N, seed<span class="op">=</span><span class="dv">0</span>, sizes<span class="op">=</span>(<span class="dv">784</span>, <span class="dv">128</span>, <span class="dv">128</span>)):</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    ps <span class="op">=</span> []</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    dims <span class="op">=</span> <span class="bu">list</span>(sizes) <span class="op">+</span> [N]</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> a, b <span class="kw">in</span> <span class="bu">zip</span>(dims[:<span class="op">-</span><span class="dv">1</span>], dims[<span class="dv">1</span>:]):</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        ps <span class="op">+=</span> [</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>            (torch.randn(b, a, generator<span class="op">=</span>g) <span class="op">*</span> math.sqrt(<span class="dv">2</span> <span class="op">/</span> a)).requires_grad_(<span class="va">True</span>),</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>            torch.zeros(b, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ps</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>N, K, Q <span class="op">=</span> <span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">5</span></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>meta <span class="op">=</span> init_cls(N)</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> torch.optim.Adam(meta, lr<span class="op">=</span><span class="fl">2e-3</span>)</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>gen <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">1</span>)</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> it <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">600</span>):  <span class="co"># second-order MAML, ~7 s</span></span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    opt.zero_grad()</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    ml <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">8</span>):  <span class="co"># meta-batch of 8 episodes</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>        xs, ys, xq, yq <span class="op">=</span> episode(Xtr, N, K, Q, gen)</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>        fast <span class="op">=</span> adapt_ce(meta, xs, ys, alpha<span class="op">=</span><span class="fl">0.4</span>, steps<span class="op">=</span><span class="dv">1</span>, create_graph<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>        ml <span class="op">=</span> ml <span class="op">+</span> F.cross_entropy(mlp(fast, xq), yq)</span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>    (ml <span class="op">/</span> <span class="dv">8</span>).backward()</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>    opt.step()</span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> meta_test_acc(base, steps):  <span class="co"># accuracy on NOVEL (held-out) characters</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>    gt <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">7</span>)</span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>    tot <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">200</span>):</span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>        xs, ys, xq, yq <span class="op">=</span> episode(Xte, N, K, Q, gt)</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>        p <span class="op">=</span> [pi.detach().clone().requires_grad_(<span class="va">True</span>) <span class="cf">for</span> pi <span class="kw">in</span> base]</span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>        p <span class="op">=</span> adapt_ce(p, xs, ys, alpha<span class="op">=</span><span class="fl">0.4</span>, steps<span class="op">=</span>steps, create_graph<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>        tot <span class="op">+=</span> (mlp(p, xq).argmax(<span class="dv">1</span>) <span class="op">==</span> yq).<span class="bu">float</span>().mean().item()</span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tot <span class="op">/</span> <span class="dv">200</span></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>rand <span class="op">=</span> [(torch.randn_like(p) <span class="op">*</span> <span class="fl">0.1</span>).requires_grad_(<span class="va">True</span>) <span class="cf">for</span> p <span class="kw">in</span> meta]</span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>axis <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>]</span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>plt.plot(axis, [meta_test_acc(meta, s) <span class="cf">for</span> s <span class="kw">in</span> axis], marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"meta-init"</span>)</span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a>plt.plot(axis, [meta_test_acc(rand, s) <span class="cf">for</span> s <span class="kw">in</span> axis], marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"random init"</span>)</span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>plt.axhline(<span class="dv">1</span> <span class="op">/</span> N, ls<span class="op">=</span><span class="st">"--"</span>, c<span class="op">=</span><span class="st">"gray"</span>, lw<span class="op">=</span><span class="fl">0.8</span>, label<span class="op">=</span><span class="st">"chance (1/N)"</span>)</span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"inner GD steps on the 1-shot support set"</span>)</span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"5-way accuracy on NOVEL characters"</span>)</span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"MAML on Omniglot: one step from the meta-init classifies unseen characters"</span>)</span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>plt.ylim(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"5-way 1-shot, NOVEL classes:  meta-init </span><span class="sc">{</span>meta_test_acc(meta, <span class="dv">0</span>)<span class="sc">:.0%}</span><span class="ss"> before adapting (= chance </span><span class="sc">{</span><span class="dv">1</span> <span class="op">/</span> N<span class="sc">:.0%}</span><span class="ss">),"</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f" </span><span class="sc">{</span>meta_test_acc(meta, <span class="dv">1</span>)<span class="sc">:.0%}</span><span class="ss"> after ONE step."</span></span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"random init reaches only </span><span class="sc">{</span>meta_test_acc(rand, <span class="dv">3</span>)<span class="sc">:.0%}</span><span class="ss"> after 3 steps. The init is the whole story."</span></span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a>    <span class="st">"MLP backbone caps ~70%; a conv net reaches ~99% with the SAME algorithm -- better features, identical mechanism."</span></span>
+<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m5-meta-learning-self-reference_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>5-way 1-shot, NOVEL classes:  meta-init 20% before adapting (= chance 20%), 67% after ONE step.
+random init reaches only 38% after 3 steps. The init is the whole story.
+MLP backbone caps ~70%; a conv net reaches ~99% with the SAME algorithm -- better features, identical mechanism.</code></pre>
+</div>
+</div>
+</section>
+<section id="self-reference-a-matrix-that-modifies-itself" class="level2">
+<h2 data-anchor-id="self-reference-a-matrix-that-modifies-itself">3. Self-reference: a matrix that modifies itself</h2>
+<p>MAML still keeps a clean split — meta-parameters (the init) are learned <em>offline</em>, task parameters <em>online</em>. The <strong>SRWM</strong> dissolves the split entirely. One matrix <span class="math inline">\(W\)</span> plays every role: it reads the input, emits its own control signals, and rewrites itself with the delta rule. The boxed update again, in code terms — <span class="math inline">\(W_{t-1}\)</span> maps <span class="math inline">\(\varphi(\cdot)\in\mathbb{R}^{d}\)</span> to the stacked output <span class="math inline">\([\mathbf{y},\mathbf{k},\mathbf{q},\beta]\)</span>, then:</p>
+<p><span class="math display">\[\bar{\mathbf{v}}_t=W_{t-1}\varphi(\mathbf{k}_t)\ \text{(current)},\quad \mathbf{v}_t=W_{t-1}\varphi(\mathbf{q}_t)\ \text{(target)},\quad W_t=W_{t-1}+\sigma(\beta_t)(\mathbf{v}_t-\bar{\mathbf{v}}_t)\otimes\varphi(\mathbf{k}_t).\]</span></p>
+<p>This is M4’s delta write with one change: the projections that produce <span class="math inline">\(\mathbf{k},\mathbf{q},\beta\)</span> and the values are <strong><span class="math inline">\(W\)</span> itself</strong>, not a separate frozen net. The cell runs an SRWM forward over a sequence, traces how much it rewrites itself per step, and checks the generalization claim — freezing a <em>separate</em> producer matrix reproduces a plain DeltaNet write.</p>
+<div id="25f95b36" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T17:33:21.339507Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T17:33:21.339395Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T17:33:21.385089Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T17:33:21.382881Z&quot;}}" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">6</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> <span class="dv">3</span> <span class="op">*</span> d <span class="op">+</span> <span class="dv">1</span>  <span class="co"># output = [y(d), k(d), q(d), beta(1)]</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> phi(z):</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> F.normalize(z, dim<span class="op">=-</span><span class="dv">1</span>)  <span class="co"># keep things bounded for the demo</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> torch.randn(rows, d) <span class="op">*</span> <span class="fl">0.1</span>  <span class="co"># the self-referential matrix (its own slow+fast)</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>seq <span class="op">=</span> torch.randn(<span class="dv">12</span>, d)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> srwm_step(W, x):</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> W <span class="op">@</span> phi(x)  <span class="co"># W emits output AND its own control signals</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    y, k, q, beta <span class="op">=</span> out[:d], out[d : <span class="dv">2</span> <span class="op">*</span> d], out[<span class="dv">2</span> <span class="op">*</span> d : <span class="dv">3</span> <span class="op">*</span> d], out[<span class="dv">3</span> <span class="op">*</span> d]</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    v_bar <span class="op">=</span> W <span class="op">@</span> phi(k)  <span class="co"># read CURRENT value at its own key   (in R^rows)</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> W <span class="op">@</span> phi(q)  <span class="co"># read TARGET value via its own query (in R^rows)</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    W_new <span class="op">=</span> W <span class="op">+</span> torch.sigmoid(beta) <span class="op">*</span> torch.outer(v <span class="op">-</span> v_bar, phi(k))  <span class="co"># delta-update ITSELF</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> W_new, y, (W_new <span class="op">-</span> W).norm()</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>dW <span class="op">=</span> []</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> seq:</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    W, y, step_norm <span class="op">=</span> srwm_step(W, x)</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    dW.append(step_norm.item())</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>plt.plot(<span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">13</span>), dW, marker<span class="op">=</span><span class="st">"o"</span>)</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"timestep"</span>)</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"|W_t - W_{t-1}|"</span>)</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"SRWM rewrites itself every token (self-modification)"</span>)</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the SAME W produced k, q, beta and the values v, v_bar that then modified W. programmer == program."</span>)</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Generalization check: a SEPARATE fixed producer + delta write == M4's DeltaNet (no self-reference).</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>Wmem <span class="op">=</span> torch.zeros(d, d)  <span class="co"># the fast memory (M4's M)</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>Wprod <span class="op">=</span> torch.randn(<span class="dv">4</span>, d, d) <span class="op">*</span> <span class="fl">0.3</span>  <span class="co"># FIXED slow net producing k,v,q,beta from x</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> delta_step(M, x):</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>    k <span class="op">=</span> phi(Wprod[<span class="dv">0</span>] <span class="op">@</span> x)</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> phi(Wprod[<span class="dv">1</span>] <span class="op">@</span> x)</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> Wprod[<span class="dv">2</span>] <span class="op">@</span> x</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>    beta <span class="op">=</span> (Wprod[<span class="dv">3</span>] <span class="op">@</span> x).mean()</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>    v_bar <span class="op">=</span> M <span class="op">@</span> k</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">+</span> torch.sigmoid(beta) <span class="op">*</span> torch.outer(v <span class="op">-</span> v_bar, k)</span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> seq:</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>    Wmem <span class="op">=</span> delta_step(Wmem, x)</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>    <span class="st">"untie the producer from W -&gt; the update is exactly M4's delta write (DeltaNet); SRWM is its self-referential generalization."</span></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m5-meta-learning-self-reference_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>the SAME W produced k, q, beta and the values v, v_bar that then modified W. programmer == program.
+untie the producer from W -&gt; the update is exactly M4's delta write (DeltaNet); SRWM is its self-referential generalization.</code></pre>
+</div>
+</div>
+</section>
+<section id="two-timescales-two-routes-and-why-this-is-levels" class="level2">
+<h2 data-anchor-id="two-timescales-two-routes-and-why-this-is-levels">4. Two timescales, two routes — and why this is “levels”</h2>
+<p>Step back and the pattern from M2 returns, now named. Every model in M2–M5 has <strong>components that update at different rates</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>fast (inner)</th>
+<th>slow (outer)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FWP / linear attn (M2–M3)</td>
+<td>memory <span class="math inline">\(\mathcal{M}\)</span>, per token</td>
+<td>slow weights <span class="math inline">\(W_\bullet\)</span>, per training step</td>
+</tr>
+<tr class="even">
+<td>DeltaNet (M4)</td>
+<td><span class="math inline">\(\mathcal{M}\)</span> via a learning <em>rule</em></td>
+<td>the rule’s parameters</td>
+</tr>
+<tr class="odd">
+<td>MAML</td>
+<td>task params <span class="math inline">\(\theta'_i\)</span>, per task</td>
+<td>the init <span class="math inline">\(\theta\)</span>, across tasks</td>
+</tr>
+<tr class="even">
+<td>SRWM</td>
+<td><span class="math inline">\(W\)</span> rewriting itself, per token</td>
+<td><span class="math inline">\(W\)</span>’s trained structure, across training</td>
+</tr>
+</tbody>
+</table>
+<p>Order any system’s memories by <strong>how often they update</strong> and you get a stack of timescales — <em>levels</em>. That single reframing is the seed of the <a href="../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">Continuum Memory System</a> and the whole Nested Learning thesis: optimizer, fast memory, and slow weights are not different <em>kinds</em> of thing, just <em>levels</em> of one nested learning process.</p>
+<p><strong>Two routes to “learning to learn”</strong> — worth keeping straight:</p>
+<ul>
+<li><strong>Adapt the weights</strong> (this module): MAML takes explicit gradient steps; SRWM self-modifies. Adaptation lives in <em>parameters</em>.</li>
+<li><strong>Adapt the activations</strong> (RL² / L2RL): an ordinary RNN, meta-trained, carries adaptation in its <em>hidden state</em> — “in-context learning,” no inner gradient at all. Fast weights are the bridge: a memory matrix is “activations that behave like weights,” so the two routes meet exactly at M2–M4’s <span class="math inline">\(\mathcal{M}\)</span>.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Why are meta-learning and self-reference in one notebook — are they actually coupled?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Distinct ideas, but tightly coupled: they are <strong>two mechanisms for the same goal — <em>learning to learn</em> (fast adaptation)</strong> — and the SRWM paper itself positions self-reference <em>as</em> a meta-learning approach, explicitly against MAML. So this isn’t an arbitrary bundling; it’s one conceptual beat with two faces.</p>
+<p><strong>First, they really are different axes</strong> (you can have either without the other):</p>
+<ul>
+<li><strong>Meta-learning</strong> is a <em>training paradigm</em>: learn across a distribution of tasks so that adaptation is fast. It has an explicit <strong>bilevel</strong> structure — inner loop adapts, outer loop learns what the inner loop starts from.</li>
+<li><strong>Self-reference</strong> is an <em>architectural property</em>: one object modifies its own parameters during the forward pass, with no programmer/program split.</li>
+<li>MAML on a vanilla MLP is meta-learning with <strong>zero</strong> self-reference (an external outer loop edits the init; the MLP never touches itself). And an SRWM trained by plain SGD on one task still self-modifies. So the concepts are separable — the question is a fair one.</li>
+</ul>
+<p><strong>Why they belong together anyway:</strong></p>
+<ol type="1">
+<li><p><strong>Same parent question, from M4.</strong> M4 showed <em>a write is a gradient step</em>. Two follow-ups fall out immediately: <em>(a)</em> can we learn a good <strong>starting point</strong> for those steps? → MAML; <em>(b)</em> can the thing taking the steps be the thing <strong>being stepped</strong>? → SRWM. Both are “make the learning process itself learnable.” M5 is the module <em>about that question</em>; MAML and SRWM are its two answers.</p></li>
+<li><p><strong>SRWM is, in practice, a meta-learning method.</strong> The <a href="https://arxiv.org/abs/2202.05780">SRWM paper</a> meta-trains it on the <em>same</em> few-shot benchmarks as MAML — 5-way Omniglot and Mini-ImageNet (§4.1, Table 1: 47.0 ± 0.2% 1-shot Mini-ImageNet, level with DeltaNet and a shade under MAML’s 48.7 ± 1.8) — and positions itself against MAML on exactly the initialization axis (§4.1): <em>“MAML optimises the initial weights for future fine-tuning via gradient descent. In the SRWM, the initial weights also learn and encode its own self-modification algorithm.”</em> The paper reads its own result the same way — <em>“our performance is respectable compared to that of MAML without requiring bi-level optimisation”</em> (§4.1). So self-reference here is <strong>a way of doing meta-learning</strong> — parity with MAML, minus the outer loop — not an unrelated topic that happens to share a module.</p></li>
+<li><p><strong>They’re two points on one spectrum: where does the bilevel structure live?</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>what adapts</th>
+<th>bilevel structure</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>MAML</strong></td>
+<td>weights (explicit GD steps)</td>
+<td><strong>explicit &amp; external</strong> — two optimization loops; meta-init frozen during adaptation</td>
+</tr>
+<tr class="even">
+<td><strong>SRWM</strong></td>
+<td>weights (self-modification)</td>
+<td><strong>collapsed</strong> — the inner loop <em>is</em> the forward-pass self-edit; the outer loop is plain SGD training the self-modifier</td>
+</tr>
+<tr class="odd">
+<td>RL² / in-context (above)</td>
+<td>activations only</td>
+<td>collapsed into hidden state; no inner gradient at all</td>
+</tr>
+</tbody>
+</table>
+<p>MAML keeps the two levels apart; SRWM folds them into a single matrix that is its own meta-learner — the paper’s own framing is that it <em>“collapse[s] these potentially hierarchical meta-levels into one single self-referential weight matrix”</em> (SRWM §6, <em>Related Work</em>) — and RL² folds adaptation into activations. Same question — <em>how is adaptation realized</em> — differing in (what adapts) × (explicit vs collapsed hierarchy).</p></li>
+<li><p><strong>The NL payoff — both are <em>nesting</em>.</strong> A learning process inside a learning process is exactly the course’s destination. Meta-learning makes the nesting <strong>explicit</strong> as two timescales (per-task vs across-task); self-reference is the <strong>limit</strong> where the levels collapse into one self-optimizing object. That’s why the spine threads them as a single beat: M5 = “the nesting becomes the subject,” feeding straight into the Nested Learning track — <a href="../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">test-time training</a> (adaptation <em>in</em> the forward pass) and <a href="../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">levels</a> (order memories by update frequency).</p></li>
+</ol>
+<p><strong>Honest caveat on the packaging.</strong> They <em>could</em> be two modules — the grouping is a pedagogical choice driven by (1)–(4), not a claim that they’re the same thing. If you’d rather study them separately, splitting M5 into “M5a meta-learning / M5b self-reference” is easy and costs nothing in the spine. The reason I kept them together is that the punchline — <em>self-reference is meta-learning with the meta/base hierarchy collapsed into one matrix</em> — lands hardest when you see MAML’s explicit bilevel loop first and then watch SRWM dissolve it.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="code-walkthrough-meta-learning-srwm-in-real-code" class="level2">
+<h2 data-anchor-id="code-walkthrough-meta-learning-srwm-in-real-code">Code walkthrough — meta-learning &amp; SRWM in real code</h2>
+<ul>
+<li><strong>MAML</strong> — the reference implementations use the same pattern as §2: a functional forward, an inner <code>torch.autograd.grad(..., create_graph=True)</code> step, and an outer Adam update on the init. <code>first_order=True</code> simply drops <code>create_graph</code> (our §1 contrast). Libraries: <a href="https://github.com/facebookresearch/higher"><code>higher</code></a>, <a href="https://github.com/learnables/learn2learn"><code>learn2learn</code></a>, and <code>torch.func</code>.</li>
+<li><strong>SRWM</strong> — the <a href="https://arxiv.org/abs/2202.05780">paper’s</a> layer is our <code>srwm_step</code> batched and multi-headed, with a custom CUDA kernel for the self-referential delta update; mathematically identical to the cell above (<a href="https://arxiv.org/abs/2202.05780">§3, Eqs. 5–8</a>).</li>
+<li><strong>The community reproductions</strong> wire self-modification into the full architecture: in <a href="https://github.com/obekt/HOPE-nested-learning">obekt/HOPE-nested-learning</a>, <a href="https://github.com/obekt/HOPE-nested-learning/blob/main/train_hope.py#L70"><code>train_hope.py</code></a> → <code>SelfModifyingLayer</code> is an SRWM-style block (the same <code>memory = a_t * memory + update</code> write, but the producer is part of the block), and <a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/titan/self_modifying.py"><code>titan/self_modifying.py</code></a> in <a href="https://github.com/kmccleary3301/nested_learning">kmccleary3301/nested_learning</a> isolates the mechanism as its own unit. These are the direct ancestors of <a href="../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">HOPE’s self-modifying block</a>.</li>
+</ul>
+<p>The one new ingredient over M4 is <strong>tying the producer to the memory itself</strong> (SRWM) or <strong>backpropagating through an inner gradient step</strong> (MAML) — both just <em>nesting one learning process inside another</em>, which autograd handles for free.</p>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Self-test before M6 — question, then the answer we’d give.</p>
+<p><strong>1. The inner/outer loops of MAML, and why <span class="math inline">\(\theta\)</span> is a launchpad not a solution.</strong> <em>Inner</em> adapts to one task by gradient descent on its support set: <span class="math inline">\(\theta'_i=\theta-\alpha\nabla_\theta\mathcal{L}^{\text{sup}}_{T_i}(\theta)\)</span>. <em>Outer</em> optimizes the shared init across tasks so the <em>adapted</em> params do well on held-out queries: <span class="math inline">\(\min_\theta\sum_i\mathcal{L}^{\text{qry}}_{T_i}(\theta'_i)\)</span>. <span class="math inline">\(\theta\)</span> minimizes loss <em>after</em> adaptation, not any single task’s loss, so on its own it solves nothing — the Omniglot demo showed it sitting at chance (20%) until one step adapts it. It’s positioned for fast descent, i.e.&nbsp;a launchpad.</p>
+<p><strong>2. Why the meta-gradient is second-order, and what first-order drops.</strong> The outer loss is evaluated at <span class="math inline">\(\theta'_i\)</span>, which is itself <span class="math inline">\(\theta\)</span> minus a gradient. Differentiating <span class="math inline">\(\mathcal{L}(\theta'_i)\)</span> w.r.t. <span class="math inline">\(\theta\)</span> therefore passes through <span class="math inline">\(\nabla_\theta\mathcal{L}^{\text{sup}}\)</span>, producing the Jacobian <span class="math inline">\(\partial\theta'_i/\partial\theta = I-\alpha\nabla^2_\theta\mathcal{L}^{\text{sup}}\)</span> — a <strong>Hessian</strong>. First-order MAML (FOMAML) approximates that Jacobian as <span class="math inline">\(I\)</span>, keeping only the query gradient at the adapted point and discarding the Hessian. §1 made the gap concrete: <span class="math inline">\(-0.16\)</span> (full) vs <span class="math inline">\(-0.40\)</span> (first-order), the difference being the <span class="math inline">\(1-2\alpha\)</span> factor.</p>
+<p><strong>3. The SRWM update and the self-reference.</strong> <span class="math inline">\([\mathbf{y}_t,\mathbf{k}_t,\mathbf{q}_t,\beta_t]=W_{t-1}\varphi(\mathbf{x}_t)\)</span>, then <span class="math inline">\(\bar{\mathbf{v}}_t=W_{t-1}\varphi(\mathbf{k}_t)\)</span> (current), <span class="math inline">\(\mathbf{v}_t=W_{t-1}\varphi(\mathbf{q}_t)\)</span> (target), and <span class="math inline">\(W_t=W_{t-1}+\sigma(\beta_t)(\mathbf{v}_t-\bar{\mathbf{v}}_t)\otimes\varphi(\mathbf{k}_t)\)</span>. The <em>same</em> <span class="math inline">\(W_{t-1}\)</span> both emits its control signals <span class="math inline">\(\mathbf{k},\mathbf{q},\beta\)</span> (first line) and supplies the values by querying itself (next two) — programmer = program. Replace those producing-projections with a <em>separate, fixed</em> slow net and the update is exactly M4’s delta write: DeltaNet is SRWM with the producer untied from the memory.</p>
+<p><strong>4. “Levels” as update frequency, and the two routes.</strong> A <em>level</em> is just a set of parameters/state grouped by <strong>how often it updates</strong> — fast inner memory (per token/per task) vs slow weights (per training step); NL treats optimizer, fast memory, and slow weights as levels of one nested process, not different kinds of thing. Two routes to learning-to-learn: <strong>adapt the weights</strong> (MAML’s GD steps, SRWM’s self-modification) vs <strong>adapt the activations</strong> (RL²/L2RL carry adaptation in an RNN’s hidden state — in-context, no inner gradient).</p>
+<p><strong>Next → M6, optimizers as associative memories.</strong> M4 made one write a gradient step; M5 made the inner loop explicit (MAML) and self-referential (SRWM). M6 turns the same lens on the <em>other</em> additive write in every model you have ever trained — the optimizer, piling gradients onto a memory of the gradient stream — and applies M4’s fix one level up.</p>
+<p>Then the <a href="../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">Nested Learning track</a> takes the limit in the other direction: let the memory be <strong>a whole model trained at inference</strong>, its write a <em>multi-step</em> gradient descent on a deeper objective. The hidden state stops being a matrix you add to and becomes a network you <em>train on the fly</em> — test-time training, Titans, Miras, Atlas.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

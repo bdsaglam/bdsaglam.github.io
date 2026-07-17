@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>NL-1 — Test-time learning: TTT → Titans → Miras → Atlas – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-6d841f876cbd7f9db2ca110eea6af95d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-removes" id="toc-why-it-exists-the-limitation-it-removes" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-removes">Why it exists (the limitation it removes)</a></li>
+  <li><a href="#core-idea-the-memory-is-a-model-you-train-at-inference" id="toc-core-idea-the-memory-is-a-model-you-train-at-inference" class="nav-link" data-scroll-target="#core-idea-the-memory-is-a-model-you-train-at-inference">Core idea — the memory is a model you train at inference</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#ttt-the-hidden-state-is-a-model-the-write-is-a-gradient-step" id="toc-ttt-the-hidden-state-is-a-model-the-write-is-a-gradient-step" class="nav-link" data-scroll-target="#ttt-the-hidden-state-is-a-model-the-write-is-a-gradient-step">1. TTT — the hidden state is a model, the write is a gradient step</a>
+  <ul class="collapse">
+  <li><a href="#deep-memory-beats-a-matrix" id="toc-deep-memory-beats-a-matrix" class="nav-link" data-scroll-target="#deep-memory-beats-a-matrix">Deep memory beats a matrix</a></li>
+  </ul></li>
+  <li><a href="#titans-make-the-write-an-optimizer-momentum-forgetting" id="toc-titans-make-the-write-an-optimizer-momentum-forgetting" class="nav-link" data-scroll-target="#titans-make-the-write-an-optimizer-momentum-forgetting">2. Titans — make the write an optimizer (momentum + forgetting)</a></li>
+  <li><a href="#miras-its-all-one-design-space" id="toc-miras-its-all-one-design-space" class="nav-link" data-scroll-target="#miras-its-all-one-design-space">3. Miras — it’s all one design space</a></li>
+  <li><a href="#atlas-memorize-a-window-with-a-muon-style-step" id="toc-atlas-memorize-a-window-with-a-muon-style-step" class="nav-link" data-scroll-target="#atlas-memorize-a-window-with-a-muon-style-step">4. Atlas — memorize a <em>window</em>, with a Muon-style step</a></li>
+  <li><a href="#synthesis-the-write-rule-is-an-optimizer-at-test-time" id="toc-synthesis-the-write-rule-is-an-optimizer-at-test-time" class="nav-link" data-scroll-target="#synthesis-the-write-rule-is-an-optimizer-at-test-time">5. Synthesis — the write rule is an optimizer at test time</a></li>
+  <li><a href="#code-walkthrough-test-time-learning-in-real-code" id="toc-code-walkthrough-test-time-learning-in-real-code" class="nav-link" data-scroll-target="#code-walkthrough-test-time-learning-in-real-code">Code walkthrough — test-time learning in real code</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">NL-1 — Test-time learning: TTT → Titans → Miras → Atlas</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>The question:</strong> what if the hidden state is itself a model, trained at inference?</p>
+<p>First module of the Nested Learning track. Prerequisites: foundations M1–M7. Runs on CPU in seconds; PyTorch throughout. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p><a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> left the write rule as a <strong>formula</strong>: hand it a key and a value, and it produces the vector that goes into the memory. Four papers break the formula open by making the write <em>gradient descent on a loss</em> — and once it is, the memory can be a whole model and the write can be a whole optimizer:</p>
+<ul>
+<li><strong>TTT</strong> (Sun et al., July 2024) — the hidden state <em>is</em> a model <span class="math inline">\(f_W\)</span>; the write is a GD step on a self-supervised loss.</li>
+<li><strong>Titans</strong> (Behrouz, Zhong &amp; Mirrokni, Dec 2024) — make that write an optimizer: momentum on “surprise” + an adaptive forgetting gate.</li>
+<li><strong>Miras</strong> (Behrouz, Razaviyayn, Zhong &amp; Mirrokni, Apr 2025) — the unifying frame: every such model is a choice of <em>(architecture, objective, retention, optimizer)</em>.</li>
+<li><strong>Atlas</strong> (Behrouz et al., May 2025) — turn three of those axes at once: memorize a <em>window</em> of context (the Omega rule), with feature-mapped keys and a Muon-style update.</li>
+</ul>
+<p>That is the order they were written, and each is the repair of a gap the one before left open — Atlas cites Miras throughout and borrows its vocabulary to say what it is fixing. The last three are one group iterating in public: Behrouz, Zhong and Mirrokni are authors on all of them, and on <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a>’s Nested Learning a year after Titans.</p>
+<blockquote class="blockquote">
+<p><strong>Prerequisite math</strong> — <em>singular values</em> and <em>Newton–Schulz whitening</em> (<span class="math inline">\(\kappa\to1\)</span>), which §4 below needs for Atlas’ update, are in the <a href="../../../../courses/continual-learning/primers/linear-algebra.html">linear-algebra primer</a> §2.</p>
+</blockquote>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>State the TTT thesis — <em>the hidden state is a model <span class="math inline">\(f_W\)</span>, the write is <span class="math inline">\(W_t=W_{t-1}-\eta\nabla\ell(W_{t-1};x_t)\)</span> on a self-supervised loss</em> — and show that a <strong>linear</strong> <span class="math inline">\(f_W\)</span> with one step <strong>is</strong> M4’s delta write, so TTT contains DeltaNet as a special case.</li>
+<li>Explain why a <strong>deep</strong> memory (MLP) stores more than a linear one, and where that capacity comes from.</li>
+<li>Write <strong>Titans’</strong> update <span class="math inline">\(M_t=(1-\alpha_t)M_{t-1}+S_t,\ S_t=\eta_t S_{t-1}-\theta_t\nabla\ell\)</span>, and say what the <strong>momentum</strong> (“past surprise”) and <strong>forgetting</strong> <span class="math inline">\(\alpha_t\)</span> terms each buy.</li>
+<li>State <strong>Miras’</strong> four axes — <em>memory architecture · attentional bias · retention gate · memory learning algorithm</em> — and place linear attention, DeltaNet, TTT and Titans as points in that space.</li>
+<li>Describe <strong>Atlas’</strong> additions — the <strong>Omega rule</strong> (memorize a window, not one token) and the <strong>Muon / Newton–Schulz</strong> update — and map them onto Miras’ axes.</li>
+<li>Say what this track does to <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>’s three dials: the write rule stops being a formula, the optimizer moves inside the forward pass, and the gate — <span class="math inline">\(1\)</span> in every sequence memory the foundations built — finally turns.</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-removes" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-removes">Why it exists (the limitation it removes)</h2>
+<p><a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> left the write rule as a formula: given a key and a value, produce what goes in the memory. Hebbian hands the value in raw; delta subtracts what the memory already returns. Either way the answer is a closed-form expression you can write on one line, and the memory it writes into is a <strong>matrix</strong>. Two ceilings come with that:</p>
+<ul>
+<li><strong>Shallow capacity.</strong> A <span class="math inline">\(d\times d\)</span> matrix resolves <span class="math inline">\(\sim d\)</span> associations (<a href="../../../../courses/continual-learning/foundations/m2-fast-weight-programmers.html">M2</a> §4’s capacity law), and a linear map can only represent <em>linear</em> key→value mappings.</li>
+<li><strong>A one-shot, fixed write.</strong> Each token gets exactly one correction. There is no notion of <em>optimizing</em> the memory — no multiple steps, no momentum, no second-order information, no choice of objective.</li>
+</ul>
+<p>TTT asks the question that breaks the formula open: what if the write rule is <strong>gradient descent on a loss</strong>, and the memory is a model being trained while the sequence runs? Both ceilings lift at once. If the hidden state is a <em>model</em> <span class="math inline">\(f_W\)</span> — an MLP, not just a matrix — the memory can be deep and nonlinear; if the write is a gradient step, it can become a <em>real optimization process</em>, with as many steps, as much momentum, and as free a choice of objective as you like.</p>
+<p>Which collapses the last distance between M6’s two levels. <a href="../../../../courses/continual-learning/foundations/m6-optimizers-as-memory.html">M6</a> established that an optimizer <em>is</em> a memory over the gradient stream — but it ran that argument entirely inside the training script, with the optimizer still a thing that moves the model from outside. Here the optimizer you built there becomes <strong>part of the forward pass</strong> — the machinery that writes the sequence memory, one level up from the weights it used to move. The cost is compute (you train a model every forward pass), which is why this line of work is also, always, about doing it <em>efficiently and in parallel</em>.</p>
+</section>
+<section id="core-idea-the-memory-is-a-model-you-train-at-inference" class="level2">
+<h2 data-anchor-id="core-idea-the-memory-is-a-model-you-train-at-inference">Core idea — the memory is a model you train at inference</h2>
+<p>One sentence (<a href="https://arxiv.org/abs/2407.04620">TTT</a>, Sun et al., July 2024): <strong>make the hidden state a model <span class="math inline">\(f_W\)</span>, and the update rule a gradient step on a self-supervised loss <span class="math inline">\(\ell\)</span></strong> — so, in the paper’s words, <em>“updating the hidden state on a test sequence is equivalent to training the model <span class="math inline">\(f\)</span> at test time”</em> (Figure 1). The associative loss is the same one M4 used, now for an arbitrary <span class="math inline">\(f_W\)</span>:</p>
+<p><span class="math display">\[\ell(W;x_t)=\big\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\big\rVert^2,\qquad \boxed{\,W_t=W_{t-1}-\eta\,\nabla_W\ell(W_{t-1};x_t)\,},\qquad \mathbf{y}_t=f_{W_t}(\mathbf{q}_t).\]</span></p>
+<p><em>(Notation note: TTT writes these views as <span class="math inline">\(\theta_K x_t\)</span>, <span class="math inline">\(\theta_V x_t\)</span>, <span class="math inline">\(\theta_Q x_t\)</span> — its “training / label / test view” (§2.3, Eq. 4–5). We keep this course’s <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span>, which is also Titans’ own notation, so the M1–M7 recurrence stays legible across the track.)</em></p>
+<p>With <span class="math inline">\(f_W(\mathbf{k})=W\mathbf{k}\)</span> and one step at <span class="math inline">\(\eta=\tfrac12\)</span>, this is <strong>exactly M4’s delta write</strong> <span class="math inline">\(W+(\mathbf{v}-W\mathbf{k})\mathbf{k}^\top\)</span> — the first cell checks it. TTT makes the same connection from its own side: DeltaNet <em>“is equivalent to TTT-Linear with inner-loop mini-batch size 1, without the Layer Norm and residual connection”</em> (§4.2). Everything that follows turns dials on this one equation:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>paper</th>
+<th>when</th>
+<th>what it turns</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>TTT</strong></td>
+<td>Jul 2024</td>
+<td><span class="math inline">\(f_W\)</span>: linear → <strong>MLP</strong>; 1 → <strong>many</strong> steps</td>
+<td>deep memory, multi-step write</td>
+</tr>
+<tr class="even">
+<td><strong>Titans</strong></td>
+<td>Dec 2024</td>
+<td>the step → <strong>GD + momentum + weight-decay</strong></td>
+<td>“surprise” with memory + adaptive <strong>forgetting</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Miras</strong></td>
+<td>Apr 2025</td>
+<td>names the axes: <em>architecture · objective · retention · optimizer</em></td>
+<td>the whole design space</td>
+</tr>
+<tr class="even">
+<td><strong>Atlas</strong></td>
+<td>May 2025</td>
+<td>objective over <strong>one token → a window</strong>; GD → <strong>Muon</strong></td>
+<td>higher capacity, ~2nd-order write</td>
+</tr>
+</tbody>
+</table>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2407.04620">TTT</a> — §2.1 (Eq. 2, the GD-step update), §2.3 (Eq. 4, the multi-view self-supervised loss; Eq. 5, the output rule), §2.6 (Theorem 1: a linear <span class="math inline">\(f\)</span> with <strong>batch</strong> GD at <span class="math inline">\(\eta=\tfrac12\)</span> from <span class="math inline">\(W_0=0\)</span> <strong>is</strong> linear attention), §2.7 (TTT-Linear vs TTT-MLP). Primary for §1.</li>
+<li><a href="https://arxiv.org/abs/2501.00663">Titans</a> — §3.1: Eq. 12 (the associative loss), Eqs. 9–10 (surprise + momentum), Eqs. 13–14 (the forgetting gate), and the deep MLP memory. Primary for §2.</li>
+<li><a href="https://arxiv.org/abs/2504.13173">Miras</a> — §1 and §4 (the four axes), Definition 3.1 (“attentional bias”), Table 1 (prior models placed in the space), §5.3 (the Moneta / Yaad / Memora instances). Primary for §3.</li>
+<li><a href="https://arxiv.org/abs/2505.23735">Atlas</a> — §3.2 (Eq. 9, the Omega rule; Eq. 10, OmegaNet), §3.1 (polynomial feature maps for capacity), §5 (Eqs. 32–33, Muon / Newton–Schulz). Primary for §4.</li>
+</ul>
+</section>
+</section>
+<section id="ttt-the-hidden-state-is-a-model-the-write-is-a-gradient-step" class="level2">
+<h2 data-anchor-id="ttt-the-hidden-state-is-a-model-the-write-is-a-gradient-step">1. TTT — the hidden state is a model, the write is a gradient step</h2>
+<p>The cleanest form. Instead of <em>adding</em> an outer product to a matrix, we <em>take a gradient step</em> on the associative loss <span class="math inline">\(\ell(W;x_t)=\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2\)</span> — for <strong>any</strong> model <span class="math inline">\(f_W\)</span>. The first cell checks the bridge to M4: a <em>linear</em> <span class="math inline">\(f_W\)</span> with <strong>one</strong> step is the delta rule, to floating-point tolerance.</p>
+<p>Both of the foundations’ linear memories are down there, and the dial between them is the <em>number of steps</em>. One step on <span class="math inline">\(\ell\)</span> gives <span class="math inline">\(W+(\mathbf{v}-W\mathbf{k})\mathbf{k}^\top\)</span> — <a href="../../../../courses/continual-learning/foundations/m4-delta-rule.html">M4</a>’s delta write, a DeltaNet. <strong>Batch</strong> GD from <span class="math inline">\(W_0=0\)</span> gives <span class="math inline">\(W_t=\sum_s \mathbf{v}_s\mathbf{k}_s^\top\)</span> — <a href="../../../../courses/continual-learning/foundations/m3-linear-attention.html">M3</a>’s linear attention, which is TTT’s own Theorem 1 (§2.6). Same <span class="math inline">\(f_W\)</span>, same <span class="math inline">\(\eta=\tfrac12\)</span>, different optimizer, and the two modules M4 spent its length separating fall out of the same equation. That is the dial this whole track turns.</p>
+<div id="c8fe10a0" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T19:01:06.129440Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T19:01:06.129177Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T19:01:07.145003Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T19:01:07.143449Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">8</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> F.normalize(torch.randn(d), dim<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>v <span class="op">=</span> torch.randn(d)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># M4 delta write (beta=1, unit key):  W + (v - W k) k^T</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>W0 <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>delta <span class="op">=</span> W0 <span class="op">+</span> torch.outer(v <span class="op">-</span> W0 <span class="op">@</span> k, k)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># TTT-Linear: one GD step on  l = ||W k - v||^2,  grad = 2(Wk - v)k^T,  step eta=1/2</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> W0.clone().requires_grad_(<span class="va">True</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> ((W <span class="op">@</span> k <span class="op">-</span> v) <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>()</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> torch.autograd.grad(loss, W)[<span class="dv">0</span>]</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>ttt <span class="op">=</span> (W <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> g).detach()</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"TTT-Linear (1 step, eta=1/2)  ==  M4 delta rule :"</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    torch.allclose(delta, ttt, atol<span class="op">=</span><span class="fl">1e-6</span>),</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=&gt; TTT *generalizes* the delta rule: memory = a model f_W, write = a GD step on ||f_W(k)-v||^2."</span>)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"   linear f_W + 1 step recovers M4's delta rule (batch GD instead gives M3's linear attention);"</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"   an MLP f_W or &gt;1 step goes beyond both."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>TTT-Linear (1 step, eta=1/2)  ==  M4 delta rule : True
+=&gt; TTT *generalizes* the delta rule: memory = a model f_W, write = a GD step on ||f_W(k)-v||^2.
+   linear f_W + 1 step recovers M4's delta rule (batch GD instead gives M3's linear attention);
+   an MLP f_W or &gt;1 step goes beyond both.</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: It’s “self-supervised,” but at test time we have no labels. Where does the error signal come from?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>From the data, at <strong>two levels</strong> — and the inner one needs no labels at all.</p>
+<ul>
+<li><strong>Inner loss (self-supervised, test time, no labels).</strong> The target is a <em>view of the input token itself</em>: <span class="math inline">\(\mathbf{k}_t=\theta_K x_t\)</span>, <span class="math inline">\(\mathbf{v}_t=\theta_V x_t\)</span>, and <span class="math inline">\(\ell=\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2\)</span> (TTT §2.3, Eq. 4). The “label” <span class="math inline">\(\mathbf{v}_t\)</span> is a projection of <span class="math inline">\(x_t\)</span>, not external supervision; the error is just how badly the memory reproduces one view of the token from another — Titans’ “surprise.” Well-defined with zero ground truth, and this is what runs at test time. (M4 made the same move: the delta write’s target <span class="math inline">\(\mathbf{v}_t=W_V x_t\)</span> was <em>also</em> a projection of the input, never a label.)</li>
+<li><strong>Outer loss (supervised, training only, real labels).</strong> A separate task loss with ground truth runs during training and shapes <span class="math inline">\(\theta_K,\theta_V\)</span> — it decides <em>what views are worth memorizing</em> so that the label-free inner loop is useful for the real task.</li>
+</ul>
+<p>So labels are never needed at test time; they did their work earlier, in the outer loop, choosing what the self-supervision should target. It’s <strong>meta-learning</strong>: the outer loop configures a self-supervised inner loop. (The one twist over <a href="../../../../courses/continual-learning/foundations/m5-meta-learning-self-reference.html">M5</a>’s MAML — whose inner loop adapts on a <em>labeled</em> support set — is that TTT’s inner objective is self-supervised, so test-time adaptation needs <em>zero</em> labels.)</p>
+<p>Two asides work this end to end, and exist to answer exactly this question:</p>
+<ul>
+<li><a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-aside-self-supervision.html">where the self-supervised error comes from</a> — the <em>abstract</em> version: a toy where the <strong>same</strong> label-free inner loop is useless with random projections and works once the outer loss has trained them (recall error <span class="math inline">\(\approx 1.2 \to 0.23\)</span>).</li>
+<li><a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-aside-image-ttt.html">test-time training you can see</a> — the <em>tangible</em> version: the original image Test-Time Training, where predicting <strong>self-applied rotations</strong> (a free label) claws back much of the accuracy corruption destroys (<span class="math inline">\(0.11\to0.53\)</span>, against <span class="math inline">\(0.98\)</span> clean) using <strong>zero class labels</strong>.</li>
+</ul>
+<p>A second, even more intuitive flavor of the same principle: in next-token prediction the future of the stream is the label for its past — the sequence supervises itself one step late.</p>
+</div>
+</div>
+</div>
+<section id="deep-memory-beats-a-matrix" class="level3">
+<h3 data-anchor-id="deep-memory-beats-a-matrix">Deep memory beats a matrix</h3>
+<p>Why bother making <span class="math inline">\(f_W\)</span> an MLP? Capacity. A linear memory (a matrix) resolves <span class="math inline">\(\sim d\)</span> associations and can only fit <em>linear</em> key→value maps (M2’s law). A <strong>deep</strong> memory has more parameters and nonlinearity, so it stores more. We “train the memory at test time” — fit <span class="math inline">\(f_W\)</span> to a whole set of <span class="math inline">\(N\)</span> associations by gradient descent — and compare a linear vs an MLP backbone as <span class="math inline">\(N\)</span> grows past the matrix capacity <span class="math inline">\(d\)</span>.</p>
+<div id="1be2e339" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T19:01:07.150578Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T19:01:07.150126Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T19:01:08.422661Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T19:01:08.420034Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fit_recall(N, backbone, d<span class="op">=</span><span class="dv">16</span>, h<span class="op">=</span><span class="dv">64</span>, steps<span class="op">=</span><span class="dv">300</span>, lr<span class="op">=</span><span class="fl">0.1</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    K <span class="op">=</span> F.normalize(torch.randn(N, d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> torch.randn(N, d, generator<span class="op">=</span>g)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> backbone <span class="op">==</span> <span class="st">"linear"</span>:</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        P <span class="op">=</span> [torch.zeros(d, d, requires_grad<span class="op">=</span><span class="va">True</span>)]</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        f <span class="op">=</span> <span class="kw">lambda</span> P, x: x <span class="op">@</span> P[<span class="dv">0</span>].t()</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> backbone <span class="op">==</span> <span class="st">"mlp-linear"</span>:</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        P <span class="op">=</span> [</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            (torch.randn(h, d, generator<span class="op">=</span>g) <span class="op">*</span> math.sqrt(<span class="dv">2</span> <span class="op">/</span> d)).requires_grad_(<span class="va">True</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            torch.zeros(h, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            (torch.randn(d, h, generator<span class="op">=</span>g) <span class="op">*</span> math.sqrt(<span class="dv">2</span> <span class="op">/</span> h)).requires_grad_(<span class="va">True</span>),</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            torch.zeros(d, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        f <span class="op">=</span> <span class="kw">lambda</span> P, x: (x <span class="op">@</span> P[<span class="dv">0</span>].t() <span class="op">+</span> P[<span class="dv">1</span>]) <span class="op">@</span> P[<span class="dv">2</span>].t() <span class="op">+</span> P[<span class="dv">3</span>]</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:  <span class="co"># 1-hidden-layer MLP memory (deep memory)</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        P <span class="op">=</span> [</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            (torch.randn(h, d, generator<span class="op">=</span>g) <span class="op">*</span> math.sqrt(<span class="dv">2</span> <span class="op">/</span> d)).requires_grad_(<span class="va">True</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            torch.zeros(h, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            (torch.randn(d, h, generator<span class="op">=</span>g) <span class="op">*</span> math.sqrt(<span class="dv">2</span> <span class="op">/</span> h)).requires_grad_(<span class="va">True</span>),</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            torch.zeros(d, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        f <span class="op">=</span> <span class="kw">lambda</span> P, x: F.relu(x <span class="op">@</span> P[<span class="dv">0</span>].t() <span class="op">+</span> P[<span class="dv">1</span>]) <span class="op">@</span> P[<span class="dv">2</span>].t() <span class="op">+</span> P[<span class="dv">3</span>]</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    opt <span class="op">=</span> torch.optim.Adam(P, lr<span class="op">=</span>lr)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):  <span class="co"># test-time training of the memory on N pairs</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        opt.zero_grad()</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        (((f(P, K) <span class="op">-</span> V) <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>(<span class="dv">1</span>).mean()).backward()</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>        opt.step()</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((f(P, K) <span class="op">-</span> V).norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">/</span> V.norm(dim<span class="op">=</span><span class="dv">1</span>)).mean().item()</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>Ns <span class="op">=</span> [<span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">24</span>, <span class="dv">32</span>, <span class="dv">48</span>]</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>lin <span class="op">=</span> [fit_recall(N, <span class="st">"linear"</span>) <span class="cf">for</span> N <span class="kw">in</span> Ns]</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>mlp_lin <span class="op">=</span> [fit_recall(N, <span class="st">"mlp-linear"</span>) <span class="cf">for</span> N <span class="kw">in</span> Ns]</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>mlp <span class="op">=</span> [fit_recall(N, <span class="st">"mlp"</span>) <span class="cf">for</span> N <span class="kw">in</span> Ns]</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>plt.plot(Ns, lin, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"linear memory (matrix)"</span>)</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>plt.plot(Ns, mlp_lin, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"MLP-linear memory (deep)"</span>)</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>plt.plot(Ns, mlp, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"MLP memory (deep)"</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>plt.axvline(<span class="dv">16</span>, ls<span class="op">=</span><span class="st">"--"</span>, c<span class="op">=</span><span class="st">"gray"</span>, lw<span class="op">=</span><span class="fl">0.7</span>, label<span class="op">=</span><span class="st">"d = 16 (linear capacity)"</span>)</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"# associations N"</span>)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"recall error"</span>)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Deep memory stores past the linear matrix capacity"</span>)</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"at N=32:  linear recall err </span><span class="sc">{</span>lin[<span class="dv">3</span>]<span class="sc">:.2f}</span><span class="ss">   MLP </span><span class="sc">{</span>mlp[<span class="dv">3</span>]<span class="sc">:.2f}</span><span class="ss">  -&gt; the MLP memory is far from saturating."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="nl1-test-time-learning_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>at N=32:  linear recall err 0.69   MLP 0.00  -&gt; the MLP memory is far from saturating.</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="titans-make-the-write-an-optimizer-momentum-forgetting" class="level2">
+<h2 data-anchor-id="titans-make-the-write-an-optimizer-momentum-forgetting">2. Titans — make the write an optimizer (momentum + forgetting)</h2>
+<p>TTT takes <em>one plain</em> gradient step per token. <strong>Titans</strong> (Behrouz, Zhong &amp; Mirrokni, Dec 2024) turns the write into a proper optimizer over the same associative loss (§3.1, Eq. 12), adding two terms — momentum (Eqs. 9–10) and a forgetting gate (Eqs. 13–14). Its §2 names both gaps in one breath, surveying the fast-weight learning rules M1–M4 built: they are <em>“based on momentary surprise, missing the token flow in the sequences,”</em> and most <em>“lacks a forgetting gate, resulting in a poor memory management”</em> (sic). The two new terms are exactly those two repairs:</p>
+<p><span class="math display">\[\boxed{\,M_t=(1-\alpha_t)\,M_{t-1}+S_t,\qquad S_t=\eta_t\,S_{t-1}-\theta_t\,\nabla\ell(M_{t-1};x_t)\,}\]</span></p>
+<ul>
+<li><span class="math inline">\(\nabla\ell\)</span> is the <strong>“momentary surprise”</strong> — how wrong the memory is on this token (large gradient = surprising input).</li>
+<li><span class="math inline">\(\eta_t S_{t-1}\)</span> is <strong>momentum</strong>, what Titans calls <strong>“past surprise”</strong> — surprise accumulated over recent tokens. It’s exactly SGD-momentum on the inner loss. Note <span class="math inline">\(\eta_t\)</span> is the <em>decay</em> on that accumulator, not a step size; <span class="math inline">\(\theta_t\)</span> is the actual (data-dependent) learning rate on the gradient.</li>
+<li><span class="math inline">\((1-\alpha_t)\)</span> is an <strong>adaptive forgetting</strong> gate — data-dependent weight decay. Titans shows <em>“this weight decay mechanism is closely related to the gating mechanism in modern RNNs”</em> (§3.1).</li>
+</ul>
+<p>So the write is <em>gradient descent with momentum and weight decay</em> — an <strong>optimizer running in the forward pass</strong>. And note which dial that forgetting gate turns: it is M7 §3’s <span class="math inline">\(\alpha_t\)</span>, which reads <span class="math inline">\(1\)</span> in every sequence memory of the foundations. M6 does decay a memory — but its <span class="math inline">\(\alpha\)</span> fades a <em>momentum buffer</em>, one level down. Titans is the first memory <em>over tokens</em> in this course built to forget. Two cells show what each new term buys.</p>
+<div id="60489558" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T19:01:08.428249Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T19:01:08.427793Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T19:01:08.595952Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T19:01:08.594324Z&quot;}}" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Momentum ("past surprise") accelerates the inner optimization on ill-conditioned keys.</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">1</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> F.normalize(torch.randn(<span class="dv">20</span>, d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>U, S_, Vt <span class="op">=</span> torch.linalg.svd(K, full_matrices<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> (U <span class="op">*</span> torch.linspace(<span class="fl">1.0</span>, <span class="fl">0.15</span>, <span class="bu">len</span>(S_))) <span class="op">@</span> Vt  <span class="co"># ill-condition</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>Mtrue <span class="op">=</span> torch.randn(d, d)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>V <span class="op">=</span> (Mtrue <span class="op">@</span> K.t()).t()  <span class="co"># reachable target -&gt; loss can hit 0</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> descend(momentum, steps<span class="op">=</span><span class="dv">80</span>, lr<span class="op">=</span><span class="fl">0.3</span>):</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    Z <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    curve <span class="op">=</span> []</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        grad <span class="op">=</span> (</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            <span class="dv">2</span> <span class="op">*</span> (M <span class="op">@</span> K.t() <span class="op">-</span> V.t()) <span class="op">@</span> K <span class="op">/</span> <span class="bu">len</span>(K)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        )  <span class="co"># surprise = grad of mean ||Mk-v||^2</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        Z <span class="op">=</span> momentum <span class="op">*</span> Z <span class="op">-</span> lr <span class="op">*</span> grad  <span class="co"># S_t = eta S_{t-1} - theta grad</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        M <span class="op">=</span> M <span class="op">+</span> Z</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        curve.append(((M <span class="op">@</span> K.t() <span class="op">-</span> V.t()).norm() <span class="op">/</span> V.norm()).item())</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> curve</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>gd, mom <span class="op">=</span> descend(<span class="fl">0.0</span>), descend(<span class="fl">0.9</span>)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>plt.plot(gd, label<span class="op">=</span><span class="st">"plain GD (TTT-style)"</span>)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>plt.plot(mom, label<span class="op">=</span><span class="st">"+ momentum (Titans)"</span>)</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">"log"</span>)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"inner step"</span>)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"relative inner loss"</span>)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'"Past surprise" = momentum: faster memorization on correlated keys'</span>)</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>hit <span class="op">=</span> <span class="kw">lambda</span> c: <span class="bu">next</span>((i <span class="cf">for</span> i, x <span class="kw">in</span> <span class="bu">enumerate</span>(c) <span class="cf">if</span> x <span class="op">&lt;</span> <span class="fl">0.1</span>), <span class="st">"&gt;80"</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"steps to reach &lt;0.1 relative loss:  plain GD </span><span class="sc">{</span>hit(gd)<span class="sc">}</span><span class="ss">,  +momentum </span><span class="sc">{</span>hit(mom)<span class="sc">}</span><span class="ss">."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="nl1-test-time-learning_files/figure-html/cell-4-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>steps to reach &lt;0.1 relative loss:  plain GD &gt;80,  +momentum 46.</code></pre>
+</div>
+</div>
+<div id="fee0339a" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T19:01:08.600713Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T19:01:08.600498Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T19:01:08.696962Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T19:01:08.695086Z&quot;}}" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Forgetting bounds the memory and creates recency (overcapacity stream of 120 associations).</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">2</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">120</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>stream <span class="op">=</span> [</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    (F.normalize(torch.randn(d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">0</span>), torch.randn(d, generator<span class="op">=</span>g))</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(N)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_forget(alpha):</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    norms <span class="op">=</span> []</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> kk, vv <span class="kw">in</span> stream:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        M <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> alpha) <span class="op">*</span> M <span class="op">+</span> torch.outer(vv, kk)  <span class="co"># write + (1 - alpha) forget gate</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        norms.append(M.norm().item())</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    rec <span class="op">=</span> <span class="kw">lambda</span> ago: (</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        (M <span class="op">@</span> stream[<span class="op">-</span>ago][<span class="dv">0</span>] <span class="op">-</span> stream[<span class="op">-</span>ago][<span class="dv">1</span>]).norm().item()</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> stream[<span class="op">-</span>ago][<span class="dv">1</span>].norm().item()</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    recent <span class="op">=</span> <span class="bu">sum</span>(rec(a) <span class="cf">for</span> a <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>)) <span class="op">/</span> <span class="dv">5</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    old <span class="op">=</span> <span class="bu">sum</span>(rec(a) <span class="cf">for</span> a <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">40</span>, <span class="dv">46</span>)) <span class="op">/</span> <span class="dv">6</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> norms, recent, old</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>fig, (axL, axR) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="fl">3.6</span>))</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> alpha <span class="kw">in</span> (<span class="fl">0.0</span>, <span class="fl">0.1</span>, <span class="fl">0.3</span>):</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    norms, recent, old <span class="op">=</span> run_forget(alpha)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    axL.plot(norms, label<span class="op">=</span><span class="ss">f"alpha=</span><span class="sc">{</span>alpha<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    axR.bar([<span class="ss">f"a=</span><span class="sc">{</span>alpha<span class="sc">}</span><span class="ch">\n</span><span class="ss">recent"</span>, <span class="ss">f"a=</span><span class="sc">{</span>alpha<span class="sc">}</span><span class="ch">\n</span><span class="ss">old"</span>], [recent, old])</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>axL.set_xlabel(<span class="st">"token"</span>)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>axL.set_ylabel(<span class="st">"|M_t|"</span>)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>axL.set_title(<span class="st">"forgetting bounds the memory"</span>)</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>axL.legend()</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>axR.set_ylabel(<span class="st">"recall error"</span>)</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>axR.set_title(<span class="st">"and gives recency (recent &lt;&lt; old)"</span>)</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">"alpha=0: |M| blows up, everything interferes. alpha&gt;0: |M| bounded, recent associations stay recallable."</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="nl1-test-time-learning_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>alpha=0: |M| blows up, everything interferes. alpha&gt;0: |M| bounded, recent associations stay recallable.</code></pre>
+</div>
+</div>
+</section>
+<section id="miras-its-all-one-design-space" class="level2">
+<h2 data-anchor-id="miras-its-all-one-design-space">3. Miras — it’s all one design space</h2>
+<p>TTT and Titans optimize the <em>same</em> inner objective — <span class="math inline">\(\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2\)</span> — and neither ever asks whether it should. <strong>Miras</strong> (Behrouz, Razaviyayn, Zhong &amp; Mirrokni, Apr 2025) is the paper that notices the blank: its abstract reports that <em>“most existing sequence models leverage either (1) dot-product similarity, or (2) L2 regression objectives as their attentional bias”</em>. The objective was a default, not a dial. So Miras steps back and says: <em>every</em> model so far (and linear attention, DeltaNet, even softmax attention) is a choice along <strong>four axes</strong> (§1, §4; summarized in its Table 1):</p>
+<ol type="1">
+<li><strong>Memory architecture</strong> — what <span class="math inline">\(f_W\)</span> is (vector / matrix / MLP / feature-mapped).</li>
+<li><strong>Attentional bias</strong> — the <em>inner objective</em> the memory minimizes. Miras makes this a definition: learning the memory’s mapping is based on <em>“an objective <span class="math inline">\(\mathcal L\)</span>, called Attentional Bias, that determines the type of memory and its tendency to prioritize some events”</em> (Definition 3.1). L2, <span class="math inline">\(\ell_p\)</span>, Huber, softmax — this is what to memorize and how to weight events.</li>
+<li><strong>Retention gate</strong> — how the past is kept vs.&nbsp;decayed (forgetting reframed as a <em>retention regularizer</em> <span class="math inline">\(\mathcal R(\cdot)\)</span>).</li>
+<li><strong>Memory learning algorithm</strong> — the optimizer that minimizes the inner objective (GD, GD+momentum, Muon, or a closed-form/non-parametric solution).</li>
+</ol>
+<p>That is <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>‘s three dials, completed: write rule (here split into <em>architecture</em> + <em>objective</em>), gate (<em>retention</em>), and optimizer. Miras’ addition to the hub’s frame is that it makes the <strong>objective</strong> a first-class axis, where M7’s table only ever named the write rules that fall out of one.</p>
+<p>Where this bites: L2 is not always best, and Miras says so directly — the L2 objective <em>“is known to be sensitive to outliers and extreme samples … drawing motivation from robust regression literature, we suggest utilizing the Huber loss-type”</em> (§5.1) — and builds <strong>Yaad</strong>, a Huber-bias instance (§5.3; its siblings <strong>Moneta</strong> and <strong>Memora</strong> turn the <span class="math inline">\(\ell_p\)</span> and KL-retention dials instead). The cell below is our own illustration of that claim, not a figure from the paper: swap L2 for a Huber loss, feed one outlier token, and watch the L2 memory get corrupted while the robust one shrugs it off.</p>
+<div id="bab3a2b5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T19:01:08.826754Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T19:01:08.826296Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T19:01:08.894719Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T19:01:08.892982Z&quot;}}" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Attentional bias as a dial: L2 vs Huber inner loss, with one outlier value in the context.</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fit_bias(kind, d<span class="op">=</span><span class="dv">16</span>, steps<span class="op">=</span><span class="dv">400</span>, lr<span class="op">=</span><span class="fl">0.05</span>, seed<span class="op">=</span><span class="dv">3</span>):</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    K <span class="op">=</span> F.normalize(torch.randn(<span class="dv">8</span>, d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    V <span class="op">=</span> torch.randn(<span class="dv">8</span>, d, generator<span class="op">=</span>g)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    Ko <span class="op">=</span> F.normalize(torch.randn(<span class="dv">1</span>, d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    Vo <span class="op">=</span> torch.randn(<span class="dv">1</span>, d, generator<span class="op">=</span>g) <span class="op">*</span> <span class="dv">30</span>  <span class="co"># OUTLIER</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    Kall, Vall <span class="op">=</span> torch.cat([K, Ko]), torch.cat([V, Vo])</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> torch.zeros(d, d, requires_grad<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    opt <span class="op">=</span> torch.optim.Adam([W], lr<span class="op">=</span>lr)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        opt.zero_grad()</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        pred <span class="op">=</span> Kall <span class="op">@</span> W.t()</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        L <span class="op">=</span> (</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>            ((pred <span class="op">-</span> Vall) <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>(<span class="dv">1</span>).mean()</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> kind <span class="op">==</span> <span class="st">"l2"</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span> F.huber_loss(pred, Vall, delta<span class="op">=</span><span class="fl">1.0</span>) <span class="op">*</span> d</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        L.backward()</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>        opt.step()</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>        ((K <span class="op">@</span> W.t().detach() <span class="op">-</span> V).norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">/</span> V.norm(dim<span class="op">=</span><span class="dv">1</span>)).mean().item()</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    )  <span class="co"># recall on CLEAN keys</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"recall error on the 8 CLEAN keys after one outlier:  L2 bias </span><span class="sc">{</span>fit_bias(<span class="st">'l2'</span>)<span class="sc">:.2f}</span><span class="ss">   Huber bias </span><span class="sc">{</span>fit_bias(<span class="st">'huber'</span>)<span class="sc">:.2f}</span><span class="ss">"</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="st">"L2's gradient scales with the (huge) outlier residual -&gt; it distorts the whole memory;"</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Huber clips that gradient -&gt; the clean associations survive. The inner objective is a design choice."</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>recall error on the 8 CLEAN keys after one outlier:  L2 bias 0.30   Huber bias 0.00
+L2's gradient scales with the (huge) outlier residual -&gt; it distorts the whole memory;
+Huber clips that gradient -&gt; the clean associations survive. The inner objective is a design choice.</code></pre>
+</div>
+</div>
+</section>
+<section id="atlas-memorize-a-window-with-a-muon-style-step" class="level2">
+<h2 data-anchor-id="atlas-memorize-a-window-with-a-muon-style-step">4. Atlas — memorize a <em>window</em>, with a Muon-style step</h2>
+<p>Miras named the axes; <strong>Atlas</strong> (Behrouz et al., May 2025) arrives six weeks later and turns three of them at once — in Miras’ own vocabulary, which it cites throughout and borrows <em>attentional bias</em> from. It opens on three limitations of the recurrent-memory line, Titans among them: <em>“(1) limited memory capacity that is bounded by the architecture of memory and feature mapping of the input; (2) online nature of update, i.e., optimizing the memory only with respect to the last input; and (3) less expressive management of their fixed-size memory”</em> (abstract).</p>
+<p>Read that list as Miras’ axes and the rest of the paper writes itself. (1) is the <strong>memory architecture</strong> — which is why Atlas’ own model, <strong>OmegaNet</strong>, puts polynomial feature maps <span class="math inline">\(\phi\)</span> on the keys and queries for capacity (§3.1). (2) is the <strong>attentional bias</strong>, as Atlas says in its own words: existing models <em>“optimize the inner objective (attentional bias) with respect to only the current input”</em> (§3.2). And (3) is the <strong>memory learning algorithm</strong>, which Atlas glosses as <em>“the internal objective’s optimizer”</em> (§1). The two additions below turn (2) and (3):</p>
+<ol type="1">
+<li><strong>The Omega rule</strong> (§3.2, Eq. 9) — optimize the memory over a <em>sliding window</em> of the last <span class="math inline">\(c\)</span> tokens jointly, not just the current one: <span class="math display">\[\min_{\mathcal M}\ \sum_{i=t-c+1}^{t}\gamma_i^{(t)}\,\lVert \mathcal M(\mathbf{k}_i)-\mathbf{v}_i\rVert_2^2,\]</span> where the input-dependent <span class="math inline">\(\gamma_i^{(t)}\in[0,1]\)</span> <em>“act as hard (direct) gates for the past tokens,”</em> pruning the window in context. Atlas is explicit about the two extremes: <em>“(1) <span class="math inline">\(c=1\)</span>: the update rule becomes online (Delta rule); and (2) <span class="math inline">\(c=\infty\)</span> or context length: the update becomes global optimization w.r.t. all past tokens.”</em> Those polynomial feature maps enter at Eq. 10, the update rule, not in the objective above.</li>
+<li><strong>A Muon-style update</strong> (§5, Eqs. 32–33) — replace plain GD with momentum followed by <strong>Newton–Schulz</strong> orthogonalization of the update: <span class="math display">\[\mathcal M_t=\alpha_t\,\mathcal M_{t-1}-\eta_t\,\mathrm{NS}_k(\mathcal S_t),\qquad \mathcal S_t=\theta_t\,\mathcal S_{t-1}+\nabla\!\!\sum_{i=t-c+1}^{t}\gamma_i^{(t)}\lVert \mathcal M(\phi(\mathbf{k}_i))-\mathbf{v}_i\rVert_2^2.\]</span> As the iteration deepens, <span class="math inline">\(\mathrm{NS}_k\)</span> pushes the update toward a semi-orthogonal matrix — <em>whitening</em> it. Atlas is careful about the claim, and so are we: Muon <em>“not only approximates second-order information, but it also mostly leverages matrix multiplication and can be parallelized across the sequence.”</em> Approximate second-order information, not a second-order method. It is the same <span class="math inline">\(\kappa\to1\)</span> cure as the <a href="../../../../courses/continual-learning/primers/linear-algebra.html">linear-algebra primer</a> §2, and the same Newton–Schulz <a href="../../../../courses/continual-learning/foundations/m6-optimizers-as-memory.html">M6</a> §4 met in Muon — there applied to the <em>gradient</em> memory, here to the <em>sequence</em> memory.</li>
+</ol>
+<p>The cell shows both: Newton–Schulz driving an update’s singular values toward 1, and a window (<span class="math inline">\(c{=}8\)</span>) retaining correlated context that single-token writes (<span class="math inline">\(c{=}1\)</span>) forget.</p>
+<div id="b38208ec" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-16T19:01:08.703424Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-16T19:01:08.700903Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-16T19:01:08.821708Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-16T19:01:08.819593Z&quot;}}" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (a) Newton-Schulz orthogonalization -- the Muon step. Pushes all singular values toward 1.</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> newton_schulz(G, steps<span class="op">=</span><span class="dv">5</span>):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    a, b, c <span class="op">=</span> <span class="fl">3.4445</span>, <span class="op">-</span><span class="fl">4.7750</span>, <span class="fl">2.0315</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> G <span class="op">/</span> (G.norm() <span class="op">+</span> <span class="fl">1e-7</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        A <span class="op">=</span> X <span class="op">@</span> X.t()</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        X <span class="op">=</span> a <span class="op">*</span> X <span class="op">+</span> (b <span class="op">*</span> A <span class="op">+</span> c <span class="op">*</span> A <span class="op">@</span> A) <span class="op">@</span> X</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> X</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">3</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> torch.randn(d, d) <span class="op">@</span> torch.diag(</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    torch.linspace(<span class="fl">0.1</span>, <span class="fl">3.0</span>, d)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>)  <span class="co"># an ill-conditioned update</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>sv_before <span class="op">=</span> torch.linalg.svdvals(G)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>sv_after <span class="op">=</span> torch.linalg.svdvals(newton_schulz(G))</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"Newton-Schulz: singular values  before [</span><span class="sc">{</span>sv_before<span class="sc">.</span><span class="bu">min</span>()<span class="sc">:.2f}</span><span class="ss">, </span><span class="sc">{</span>sv_before<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.2f}</span><span class="ss">]"</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"  -&gt;  after [</span><span class="sc">{</span>sv_after<span class="sc">.</span><span class="bu">min</span>()<span class="sc">:.2f}</span><span class="ss">, </span><span class="sc">{</span>sv_after<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.2f}</span><span class="ss">]  (whitened ~ approx 2nd-order)"</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a><span class="co"># (b) Omega rule: memorize a window of c tokens jointly vs one at a time (correlated keys).</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">4</span>)</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>basis <span class="op">=</span> F.normalize(torch.randn(<span class="dv">5</span>, d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>toks <span class="op">=</span> [</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    (</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        F.normalize(torch.randn(<span class="dv">5</span>, generator<span class="op">=</span>g) <span class="op">@</span> basis, dim<span class="op">=</span><span class="dv">0</span>),</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>        torch.randn(d, generator<span class="op">=</span>g),</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">8</span>)</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> omega(c, lr<span class="op">=</span><span class="fl">0.15</span>, steps<span class="op">=</span><span class="dv">80</span>):</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(toks)):</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>        win <span class="op">=</span> toks[<span class="bu">max</span>(<span class="dv">0</span>, t <span class="op">-</span> c <span class="op">+</span> <span class="dv">1</span>) : t <span class="op">+</span> <span class="dv">1</span>]</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>        Wp <span class="op">=</span> M.clone().requires_grad_(<span class="va">True</span>)</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>            L <span class="op">=</span> <span class="bu">sum</span>(((Wp <span class="op">@</span> kk <span class="op">-</span> vv) <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>() <span class="cf">for</span> kk, vv <span class="kw">in</span> win) <span class="op">/</span> <span class="bu">len</span>(win)</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>            Wp <span class="op">=</span> Wp <span class="op">-</span> lr <span class="op">*</span> torch.autograd.grad(L, Wp)[<span class="dv">0</span>]</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>        M <span class="op">=</span> Wp.detach()</span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (<span class="bu">sum</span>((M <span class="op">@</span> kk <span class="op">-</span> vv).norm() <span class="op">/</span> vv.norm() <span class="cf">for</span> kk, vv <span class="kw">in</span> toks) <span class="op">/</span> <span class="bu">len</span>(toks)).item()</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"Omega rule, recall over all 8 correlated tokens:  c=1 (single) </span><span class="sc">{</span>omega(<span class="dv">1</span>)<span class="sc">:.2f}</span><span class="ss">   c=8 (window) </span><span class="sc">{</span>omega(<span class="dv">8</span>)<span class="sc">:.2f}</span><span class="ss">"</span></span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Newton-Schulz: singular values  before [0.09, 17.73]  -&gt;  after [0.69, 1.14]  (whitened ~ approx 2nd-order)
+Omega rule, recall over all 8 correlated tokens:  c=1 (single) 0.87   c=8 (window) 0.65</code></pre>
+</div>
+</div>
+</section>
+<section id="synthesis-the-write-rule-is-an-optimizer-at-test-time" class="level2">
+<h2 data-anchor-id="synthesis-the-write-rule-is-an-optimizer-at-test-time">5. Synthesis — the write rule is an optimizer at test time</h2>
+<p>Read NL-1 back as one sentence: <strong>the memory’s update is an optimization process running in the forward pass.</strong> TTT = one GD step; Titans = GD + momentum + weight-decay; Miras = the frame that makes the <em>objective</em>, the <em>gate</em> and the <em>optimizer</em> three separate dials rather than one fixed recipe; Atlas = three of those dials turned at once — windowed objective, feature-mapped keys, Newton–Schulz. Which is precisely <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>’s three dials, with the write rule pulled apart into architecture and objective.</p>
+<p><strong>What this does to M6’s table.</strong> <a href="../../../../courses/continual-learning/foundations/m6-optimizers-as-memory.html">M6</a> §5 set the sequence memory and the optimizer side by side and found its last three rows blank on the sequence side — deep, non-linear and preconditioned memories that the optimizer column had and the foundations’ sequence models did not. That was a statement about the foundations, not about the world, and this module is where two of the three fill in:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>sequence memory (M1–M5)</th>
+<th>sequence memory (this module)</th>
+<th>optimizer (M6)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>deeper memory</td>
+<td>—</td>
+<td><strong>TTT-MLP</strong> (TTT §2.7); Titans’ MLP memory (Titans §3.1)</td>
+<td>DMGD (MLP buffer)</td>
+</tr>
+<tr class="even">
+<td>non-linear output</td>
+<td>—</td>
+<td><strong>Atlas’ Newton–Schulz on the update</strong> (Atlas §5, Eqs. 32–33); TTT wrapping its memory as <span class="math inline">\(f(x)=x+\mathrm{LN}(f_{\text{res}}(x))\)</span> (TTT §2.7)</td>
+<td>Muon (Newton–Schulz)</td>
+</tr>
+<tr class="odd">
+<td>preconditioned</td>
+<td>—</td>
+<td>—</td>
+<td>Adam / AdaGrad / Shampoo</td>
+</tr>
+</tbody>
+</table>
+<p>Two things worth reading off it. <strong>The Newton–Schulz row is the same trick on both sides</strong> — M6 filed Muon as a non-linearity on the <em>gradient</em> memory’s output; Atlas puts the identical iteration on the <em>sequence</em> memory’s update. Note its double life: its motive belongs to the row below it (Atlas adopts it because it <em>“approximates second-order information”</em>), but its mechanism is a non-linearity, which is exactly how M6 filed it one level down.</p>
+<p><strong>And the last row is still a dash on the sequence side</strong> — which is the interesting one. Nothing in this lineage preconditions the sequence memory the way Adam preconditions weights: TTT and Miras’ instances descend plainly, Titans adds momentum, Atlas orthogonalizes. The optimizer column solved that problem decades ago. That the transfer has not been made is a gap, not a law.</p>
+<p><strong>Where the track goes next.</strong> M6 found a memory inside the optimizer; NL-1 put an optimizer inside the memory. Neither result is the interesting one alone — the interesting one is that they are the <em>same</em> result, and that nothing stops it at two. The inner test-time optimization and the outer training run are two <strong>levels</strong>, updating at different rates; nothing says a model gets only two. Order every changing part of a model by update frequency and you get <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a>’s continuum — and, at the end of it, <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">HOPE</a>.</p>
+</section>
+<section id="code-walkthrough-test-time-learning-in-real-code" class="level2">
+<h2 data-anchor-id="code-walkthrough-test-time-learning-in-real-code">Code walkthrough — test-time learning in real code</h2>
+<ul>
+<li><strong><a href="https://github.com/test-time-training/ttt-lm-pytorch">TTT</a></strong> — the released layer is our §1 loop, mini-batched (a chunk of tokens per inner step for parallelism) with <span class="math inline">\(f_{\text{res}}\)</span> = TTT-Linear or TTT-MLP, wrapped as <span class="math inline">\(f(x)=x+\mathrm{LN}(f_{\text{res}}(x))\)</span>. The multi-view projections <span class="math inline">\(\theta_K,\theta_V,\theta_Q\)</span> are the outer-loop (slow) weights; <span class="math inline">\(W\)</span> is the fast memory.</li>
+<li><a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/titan/self_modifying.py"><code>titan/self_modifying.py</code></a> in <a href="https://github.com/kmccleary3301/nested_learning">kmccleary3301/nested_learning</a> — this module taken literally, and then one step further. The memory is a <strong>residual MLP</strong> (§1’s deep memory), written by <code>torch.func.grad</code> <em>inside the forward pass</em> with <code>momentum</code> and an optional rank-1 preconditioner (§2, §4). The step further: <code>eta</code> and <code>alpha</code> — Titans’ learning rate and forget gate — are not scalars but <strong>memories of their own</strong>, MLPs that generate the gates per token. That is NL-3’s self-modifying Titans; NL-1 is the layer underneath it.</li>
+<li><a href="https://github.com/obekt/HOPE-nested-learning/blob/main/train_hope.py"><code>train_hope.py</code></a> in <a href="https://github.com/obekt/HOPE-nested-learning">obekt/HOPE-nested-learning</a> — <code>SelfModifyingLayer</code> is §2’s recurrence in twenty readable lines: <em>“Fast-weight memory trained by an inner-loop delta rule,”</em> <span class="math inline">\(M_t=\alpha_t M_{t-1}+\beta_t\,\mathbf{k}_t^\top(\mathbf{v}_t-\mathbf{k}_t M_{t-1})\)</span>, with <code>gate_alpha</code> and <code>gate_beta</code> producing the forget gate and inner learning rate per token — initialized at <span class="math inline">\(\alpha\approx1\)</span> (retain) and <span class="math inline">\(\beta\)</span> small (gentle writes).</li>
+<li><a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/cms.py"><code>cms.py</code></a> — for contrast, the piece that is <strong>not</strong> this module. The Continuum Memory System is a chain of plain MLP blocks whose only novelty is that each updates at its own frequency: no inner loop, no test-time write. Everything NL-1 builds happens <em>inside one level</em>; <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a> is where the levels themselves become the subject.</li>
+</ul>
+<p>The one new ingredient over M4/M5 is <strong>the write is an explicit optimizer on an explicit objective</strong> — <code>autograd.grad</code> inside the forward pass, exactly as in M5’s <code>adapt</code>, now per token and with momentum, forgetting, and update-orthogonalization options.</p>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Self-test — question, then the answer we’d give.</p>
+<p><strong>1. What does TTT change about “the hidden state,” and why is a linear <span class="math inline">\(f_W\)</span> with one step the delta rule?</strong> TTT makes the hidden state a <em>model</em> <span class="math inline">\(f_W\)</span> and the write a gradient step on a self-supervised loss: <span class="math inline">\(W_t=W_{t-1}-\eta\nabla\ell(W_{t-1};x_t)\)</span>, <span class="math inline">\(\ell=\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2\)</span>. With <span class="math inline">\(f_W(\mathbf{k})=W\mathbf{k}\)</span>, <span class="math inline">\(\nabla_W\ell=2(W\mathbf{k}-\mathbf{v})\mathbf{k}^\top\)</span>, so one step at <span class="math inline">\(\eta=\tfrac12\)</span> gives <span class="math inline">\(W+(\mathbf{v}-W\mathbf{k})\mathbf{k}^\top\)</span> — <strong>M4’s delta write, i.e.&nbsp;DeltaNet</strong> (not linear attention: that is M3, and telling the two apart is M4’s entire point). TTT <em>generalizes</em> DeltaNet by letting <span class="math inline">\(f_W\)</span> be deep and the write be multi-step; the paper states the equivalence from its side in §4.2, with the caveat that deployed TTT-Linear also carries a Layer Norm and a residual connection.</p>
+<p><strong>2. Write Titans’ update and say what each new term (vs TTT) does.</strong> <span class="math inline">\(M_t=(1-\alpha_t)M_{t-1}+S_t\)</span>, <span class="math inline">\(S_t=\eta_t S_{t-1}-\theta_t\nabla\ell(M_{t-1};x_t)\)</span> (Titans §3.1, Eqs. 13–14). The gradient <span class="math inline">\(\nabla\ell\)</span> is <em>momentary surprise</em>; <span class="math inline">\(\eta_t S_{t-1}\)</span> is <strong>momentum</strong> (“past surprise”) — SGD-momentum on the inner loss, which accelerates memorization on correlated keys (§2’s first cell); <span class="math inline">\((1-\alpha_t)\)</span> is <strong>adaptive forgetting</strong> — weight decay that Titans makes data-dependent. §2’s second cell isolates what the gate buys before that: even held <em>constant</em>, it bounds <span class="math inline">\(\lVert M\rVert\)</span> and yields recency under overcapacity. Together: the write is GD with momentum and weight decay. In M7’s vocabulary, <span class="math inline">\(\alpha_t\)</span> is the gate dial — <span class="math inline">\(1\)</span> in every sequence memory of M1–M5, and here input-dependent.</p>
+<p><strong>3. State Miras’ four axes and place DeltaNet and Titans in them.</strong> <em>(1) memory architecture · (2) attentional bias (inner objective) · (3) retention gate · (4) memory learning algorithm.</em> Reading Miras’ Table 1 directly: <strong>DeltaNet</strong> = matrix memory · L2 bias · <strong>no retention gate</strong> · GD. <strong>Titans-LMM</strong> = <span class="math inline">\(k\)</span>-layer MLP memory · L2 bias · L2 retention · GD + momentum. <strong>Linear attention</strong> = matrix memory · <em>dot-product</em> bias · no retention gate · GD — so it differs from DeltaNet in the <em>bias</em>, not the gate; the retention gate is what separates DeltaNet from <strong>Gated DeltaNet</strong> (L2 retention). <strong>Softmax attention</strong> is the L2 bias solved <em>non-parametrically</em> (a Nadaraya–Watson estimator, no retention) — the parametric/non-parametric split is an axis of its own. Choosing the bias matters: §3 showed a Huber bias surviving an outlier that corrupts the L2 one, which is the argument behind Miras’ Yaad.</p>
+<p><strong>4. What does Atlas add, and how does it map onto Miras’ axes?</strong> Atlas opens on three limitations (abstract) and turns three of Miras’ four axes. (i) The <strong>Omega rule</strong> (Atlas §3.2, Eq. 9) — optimize the memory over a <em>sliding window</em> of the last <span class="math inline">\(c\)</span> tokens jointly, with input-dependent gates <span class="math inline">\(\gamma_i^{(t)}\)</span> pruning the window; <span class="math inline">\(c=1\)</span> recovers the delta rule, <span class="math inline">\(c=\infty\)</span> is global memorization. That is the <strong>attentional bias</strong> axis, fixing an update that optimizes <em>“with respect to only the current input”</em> (Atlas §3.2). (ii) A <strong>Muon-style update</strong> (Atlas §5, Eqs. 32–33) — momentum followed by <strong>Newton–Schulz</strong> orthogonalization, which whitens the update (singular values → 1, as §4’s cell above shows) to <em>approximate</em> second-order information, not to be a second-order method: the <strong>memory learning algorithm</strong> axis. (iii) Atlas’ own model, OmegaNet, puts polynomial feature maps on keys and queries for capacity (Atlas §3.1) — the <strong>memory architecture</strong> axis.</p>
+<p><strong>Next → <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a>, levels &amp; the Continuum Memory System.</strong> NL-1 put a real optimizer <em>inside</em> the memory, and M6 found a memory <em>inside</em> the optimizer. Read together they say a model has no privileged number of learning loops — so count them: order every changing part by how often it updates, and see what a Transformer looks like from there.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

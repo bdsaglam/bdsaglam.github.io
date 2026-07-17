@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>M6 — Optimizers as associative memories – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-6d841f876cbd7f9db2ca110eea6af95d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-fixes" id="toc-why-it-exists-the-limitation-it-fixes" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</a></li>
+  <li><a href="#the-core-idea-in-one-line" id="toc-the-core-idea-in-one-line" class="nav-link" data-scroll-target="#the-core-idea-in-one-line">The core idea in one line</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#backprop-is-an-associative-memory-write" id="toc-backprop-is-an-associative-memory-write" class="nav-link" data-scroll-target="#backprop-is-an-associative-memory-write">1. Backprop is an associative-memory write</a>
+  <ul class="collapse">
+  <li><a href="#the-catch-this-memory-is-self-referential-backprop-linear-attention" id="toc-the-catch-this-memory-is-self-referential-backprop-linear-attention" class="nav-link" data-scroll-target="#the-catch-this-memory-is-self-referential-backprop-linear-attention">1.1 The catch: this memory is <em>self-referential</em> (backprop ≠ linear attention)</a></li>
+  </ul></li>
+  <li><a href="#momentum-is-a-memory-over-the-gradient-stream" id="toc-momentum-is-a-memory-over-the-gradient-stream" class="nav-link" data-scroll-target="#momentum-is-a-memory-over-the-gradient-stream">2. Momentum is a memory over the <em>gradient stream</em></a>
+  <ul class="collapse">
+  <li><a href="#but-the-ema-is-only-a-low-pass-filter-a-hard-capacity-limit" id="toc-but-the-ema-is-only-a-low-pass-filter-a-hard-capacity-limit" class="nav-link" data-scroll-target="#but-the-ema-is-only-a-low-pass-filter-a-hard-capacity-limit">2.1 …but the EMA is only a low-pass filter — a hard capacity limit</a></li>
+  </ul></li>
+  <li><a href="#the-same-delta-rule-fix-one-level-up-dgd" id="toc-the-same-delta-rule-fix-one-level-up-dgd" class="nav-link" data-scroll-target="#the-same-delta-rule-fix-one-level-up-dgd">3. The same delta-rule fix — one level up (DGD)</a>
+  <ul class="collapse">
+  <li><a href="#delta-momentum-the-delta-rule-on-the-buffer" id="toc-delta-momentum-the-delta-rule-on-the-buffer" class="nav-link" data-scroll-target="#delta-momentum-the-delta-rule-on-the-buffer">3.1 Delta Momentum — the delta rule on the <em>buffer</em></a></li>
+  </ul></li>
+  <li><a href="#adam-and-muon-in-the-same-picture" id="toc-adam-and-muon-in-the-same-picture" class="nav-link" data-scroll-target="#adam-and-muon-in-the-same-picture">4. Adam and Muon, in the same picture</a></li>
+  <li><a href="#the-payoff-the-optimizer-is-a-memory-so-m4s-toolkit-applies-to-it" id="toc-the-payoff-the-optimizer-is-a-memory-so-m4s-toolkit-applies-to-it" class="nav-link" data-scroll-target="#the-payoff-the-optimizer-is-a-memory-so-m4s-toolkit-applies-to-it">5. The payoff — the optimizer is a memory, so M4’s toolkit applies to it</a></li>
+  <li><a href="#code-walkthrough-where-this-lives-in-real-code" id="toc-code-walkthrough-where-this-lives-in-real-code" class="nav-link" data-scroll-target="#code-walkthrough-where-this-lives-in-real-code">Code walkthrough — where this lives in real code</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">M6 — Optimizers as associative memories</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>The question:</strong> why are momentum, Adam, and Muon <em>also</em> memories?</p>
+<p>Sixth module of the foundations spine. Runs on CPU in seconds; PyTorch throughout. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m6-optimizers-as-memory.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>M4 fixed the additive write inside the sequence memory: read what the memory already returns for this key, then write only the correction. M5 followed that write <em>inward</em>, asking who supplies its arguments and what happens when the memory supplies its own. M6 turns back to the write itself — because the fix has a second home. There is another additive write in every model you have ever trained: the <strong>optimizer</strong>, piling gradients onto a memory of the gradient stream. M6 applies M4’s fix one level up.</p>
+<blockquote class="blockquote">
+<p><strong>Prerequisite math</strong> — <em>condition number</em> (the zig-zag), <em>orthogonality</em> (orthogonal tasks), and <em>effective rank</em> are collected in the <a href="../../../courses/continual-learning/primers/linear-algebra.html">linear-algebra primer</a>.</p>
+</blockquote>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>Show that one backprop step on a layer is an <strong>associative-memory write</strong> — <span class="math inline">\(\partial\mathcal L/\partial W=\boldsymbol\delta\,\hat{\mathbf x}^\top\)</span>, an outer product with <strong>key = layer input</strong>, <strong>value = output surprise</strong>.</li>
+<li>Explain why this memory is <strong>self-referential</strong> (it generates its own write targets) — so it is <em>not</em> just linear attention on gradients.</li>
+<li>Read <strong>momentum</strong> as a second memory, one level down: an associative memory that compresses the <strong>gradient stream</strong>, and see why the plain EMA is only a low-pass filter with a hard capacity limit.</li>
+<li>Apply the <strong>same delta-rule fix</strong> one level up — <strong>DGD</strong> (delta rule on the weights) and <strong>Delta Momentum</strong> (delta rule on the buffer) — and see them behave like DeltaNet did against linear attention in M4.</li>
+<li>Place Adam / Muon in the same picture (preconditioning = a learned coordinate map; Muon = a non-linearity on the momentum memory).</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-fixes" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</h2>
+<p>M4 diagnosed the additive write and cured it. Linear attention’s memory only ever <em>added</em> — <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}_t\mathbf{k}_t^\top\)</span> — so it could not edit an association, only pile onto it. The delta rule inserted a <strong>read</strong> before the write: look at what the memory already returns for this key, and write only the correction.</p>
+<p>That fix has a second home, and you have been running the broken version of it for as long as you have trained models.</p>
+<p>Every optimizer is an additive write nobody thinks of as one. Plain SGD adds the momentary gradient to the weights and consults nothing about what is already stored there. Momentum keeps a running memory of the <strong>gradient stream</strong> — <span class="math inline">\(\mathbf{m}_{t+1}=\alpha\mathbf{m}_t-\eta\nabla\mathcal{L}\)</span> — and <em>piles</em> each new gradient onto it: the buffer is scaled by <span class="math inline">\(\alpha\)</span>, but the thing being written in is the raw gradient, chosen without ever reading the buffer. That is exactly M1’s state-blind Hebbian write, the one M4 repaired — just one level up, over a different stream. NL diagnoses it the same way: momentum’s update rule is <em>“independent of its current state”</em>, and so has <em>“limited capacity”</em> (§4.4).</p>
+<p>So the module asks two questions, in order. What does the memory look like from up there — what are the keys and the values when the thing doing the storing is the optimizer? And what does M4’s fix become when you apply it there?</p>
+</section>
+<section id="the-core-idea-in-one-line" class="level2">
+<h2 data-anchor-id="the-core-idea-in-one-line">The core idea in one line</h2>
+<p><span class="math display">\[\boxed{\ \underbrace{W_{t+1}=W_t-\eta\,\nabla_W\mathcal L}_{\text{one SGD step}}\ \equiv\ \underbrace{W_{t+1}=W_t+\eta\,\mathbf u_t\,\hat{\mathbf x}_t^\top}_{\text{one Hebbian write}}\ }\qquad \mathbf u_t=-\boldsymbol\delta_t=-\frac{\partial\mathcal L}{\partial\mathbf y_t}\]</span></p>
+<p>A gradient step writes the association <strong>“layer input <span class="math inline">\(\hat{\mathbf x}_t\)</span> → output-surprise <span class="math inline">\(\mathbf u_t\)</span>”</strong> into <span class="math inline">\(W\)</span>. Training is the memory <em>filling up</em>. Everything else in this module is: <em>which</em> write rule (Hebbian / delta / preconditioned), over <em>which</em> stream (raw gradients, momentum buffer), with <em>how much</em> structure (a matrix, an MLP).</p>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2512.24695">Nested Learning</a> (Behrouz, Razaviyayn, Zhong &amp; Mirrokni, 2025) — the grounding source for the whole module. §4.1 (Eqs. 29–31, backprop as an associative memory; the <em>Backpropagation <span class="math inline">\(\neq\)</span> Linear Attention</em> note), §4.2 (Eqs. 32–37, momentum as a memory; Eqs. 38–42, preconditioning and Muon), §4.3 (the low-pass capacity limit and the orthogonal-tasks failure), §4.4 (Eqs. 48–52, Delta Momentum, DMGD and non-linear outputs; Eq. 53, the time-varying-curvature toy), §4.5 (Eqs. 54–58, DGD and the self-referential reading).</li>
+</ul>
+</section>
+</section>
+<section id="backprop-is-an-associative-memory-write" class="level2">
+<h2 data-anchor-id="backprop-is-an-associative-memory-write">1. Backprop is an associative-memory write</h2>
+<p>For a layer <span class="math inline">\(\mathbf y=W\hat{\mathbf x}\)</span>, the gradient w.r.t. the <strong>matrix</strong> <span class="math inline">\(W\)</span> factors into an outer product (NL Eq. 29):</p>
+<p><span class="math display">\[\frac{\partial\mathcal L}{\partial W}=\boldsymbol\delta\,\hat{\mathbf x}^\top,\qquad \boldsymbol\delta=\frac{\partial\mathcal L}{\partial\mathbf y}\ \ (\text{local output surprise}),\]</span></p>
+<p>because <span class="math inline">\(\partial\mathcal L/\partial W_{ij}=(\partial\mathcal L/\partial y_i)\,\hat x_j\)</span> — <em>“how wrong output <span class="math inline">\(i\)</span> was”</em> times <em>“input <span class="math inline">\(j\)</span>.”</em> So one SGD step <span class="math inline">\(W\!\leftarrow\!W-\eta\,\boldsymbol\delta\hat{\mathbf x}^\top\)</span> is exactly the Hebbian write <span class="math inline">\(\mathcal M\mathrel{+}=\mathbf v\mathbf k^\top\)</span> from <strong>M1</strong>, with <strong>key <span class="math inline">\(=\hat{\mathbf x}\)</span></strong> (input) and <strong>value <span class="math inline">\(=-\boldsymbol\delta\)</span></strong> (negative surprise). Let’s confirm the factorization holds against autograd.</p>
+<div id="179558b8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T14:13:00.224465Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T14:13:00.224395Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T14:13:00.778166Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T14:13:00.777749Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># a single linear layer y = W x, with a squared-error task loss</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> torch.randn(<span class="dv">3</span>, <span class="dv">5</span>, requires_grad<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">5</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> torch.randn(<span class="dv">3</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> W <span class="op">@</span> x</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> ((y <span class="op">-</span> target) <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>()</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>loss.backward()</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>delta <span class="op">=</span> (y <span class="op">-</span> target).detach()  <span class="co"># δ = ∂L/∂y  (output surprise)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>outer <span class="op">=</span> torch.outer(delta, x)  <span class="co"># δ x̂ᵀ</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"∂L/∂W  ==  δ x̂ᵀ  :"</span>, torch.allclose(W.grad, outer, atol<span class="op">=</span><span class="fl">1e-6</span>))</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"key   = x̂ (layer input)"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"value = -δ (negative output surprise),  ‖δ‖ ="</span>, <span class="bu">round</span>(delta.norm().item(), <span class="dv">4</span>))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"→ gradient is ZERO exactly when the prediction is perfect (nothing surprising to write)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>∂L/∂W  ==  δ x̂ᵀ  : True
+key   = x̂ (layer input)
+value = -δ (negative output surprise),  ‖δ‖ = 0.9048
+→ gradient is ZERO exactly when the prediction is perfect (nothing surprising to write)</code></pre>
+</div>
+</div>
+<section id="the-catch-this-memory-is-self-referential-backprop-linear-attention" class="level3">
+<h3 data-anchor-id="the-catch-this-memory-is-self-referential-backprop-linear-attention">1.1 The catch: this memory is <em>self-referential</em> (backprop ≠ linear attention)</h3>
+<p>It is tempting to stop here and say “backprop is just linear attention on gradients.” That misses what NL flags as the crucial difference (§4.1, §4.5).</p>
+<p>In <strong>linear attention</strong> the value <span class="math inline">\(\mathbf v_t\)</span> is an <em>external input</em> — a projection of the incoming token, <strong>independent of the memory</strong> <span class="math inline">\(\mathcal M\)</span>. That independence is exactly what lets it parallelize.</p>
+<p>In <strong>backprop</strong> the value being written is <span class="math inline">\(\mathbf u_t=-\boldsymbol\delta_t=-\partial\mathcal L/\partial\mathbf y_t\)</span> — a <strong>function of the current weights <span class="math inline">\(W_t\)</span> themselves</strong>. The memory <em>generates its own write targets</em>. Change <span class="math inline">\(W\)</span> and the very thing you would store changes. This is a <strong>self-referential</strong> memory (Schmidhuber 1993) — strictly more complex than linear attention on a fixed gradient stream, and the reason §4.5 can build a <em>delta-rule</em> optimizer at all.</p>
+<div id="b4e545f8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T14:13:00.779448Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T14:13:00.779353Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T14:13:00.782144Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T14:13:00.781763Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Same input x, two different weight matrices → different "value" δ to write.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">5</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> torch.randn(<span class="dv">3</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>value_norm <span class="op">=</span> <span class="kw">lambda</span> M: (M <span class="op">@</span> x <span class="op">-</span> target).norm().item()</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"same x,  W1 → ‖δ‖ ="</span>, <span class="bu">round</span>(value_norm(torch.randn(<span class="dv">3</span>, <span class="dv">5</span>)), <span class="dv">4</span>))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"same x,  W2 → ‖δ‖ ="</span>, <span class="bu">round</span>(value_norm(torch.randn(<span class="dv">3</span>, <span class="dv">5</span>)), <span class="dv">4</span>))</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"→ the value written is produced BY the memory; it is not an external input (unlike linear attention)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>same x,  W1 → ‖δ‖ = 3.9436
+same x,  W2 → ‖δ‖ = 2.3113
+→ the value written is produced BY the memory; it is not an external input (unlike linear attention)</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="momentum-is-a-memory-over-the-gradient-stream" class="level2">
+<h2 data-anchor-id="momentum-is-a-memory-over-the-gradient-stream">2. Momentum is a memory over the <em>gradient stream</em></h2>
+<p>Plain SGD (Eq. 32) steps on the <strong>momentary</strong> gradient only — it keeps no record of the gradients it has already seen. Momentum (Eq. 33) adds that record, an EMA of past gradients — Polyak’s <em>heavy ball</em> (<a href="https://doi.org/10.1016/0041-5553%2864%2990137-5">Polyak, 1964</a>). The ill-conditioning this section demonstrates is the motivation Polyak gave for it: a function that “varies weakly in some directions and strongly in others,” where inertia carries the ball along the bottom of the ravine:</p>
+<p><span class="math display">\[\mathbf m_{t+1}=\alpha_t\,\mathbf m_t-\eta_t\,\nabla_{W_t}\mathcal L,\qquad W_{t+1}=W_t+\mathbf m_{t+1}.\]</span></p>
+<p>NL’s reading (Eq. 34): with <span class="math inline">\(\alpha=1\)</span>, <span class="math inline">\(\mathbf m\)</span> is the result of running <strong>gradient descent on <span class="math inline">\(\langle\mathbf m\hat{\mathbf x},\boldsymbol\delta\rangle\)</span></strong> — a <em>value-less</em> associative memory that <strong>compresses past gradients</strong> into its parameters; <span class="math inline">\(\alpha\neq1\)</span> just adds an <span class="math inline">\(\ell_2\)</span> “forget” term. So momentum is a <strong>two-level</strong> optimizer: the inner loop <em>learns the buffer</em> <span class="math inline">\(\mathbf m\)</span> (a memory of the gradient stream), the outer loop <em>uses</em> <span class="math inline">\(\mathbf m\)</span> to move <span class="math inline">\(W\)</span>. Below: the buffer is literally that EMA, and it buys the classic acceleration on an ill-conditioned landscape.</p>
+<blockquote class="blockquote">
+<p><strong>Side note — what “ill-conditioned” means.</strong> A quadratic <span class="math inline">\(\mathcal L(\mathbf w)=\tfrac12\mathbf w^\top A\mathbf w\)</span> has curvature set by the eigenvalues of <span class="math inline">\(A\)</span>. The <strong>condition number</strong> <span class="math inline">\(\kappa=\lambda_{\max}/\lambda_{\min}\)</span> measures how stretched the bowl is: <span class="math inline">\(\kappa=1\)</span> is a round bowl, large <span class="math inline">\(\kappa\)</span> is a long narrow valley. Here <span class="math inline">\(A=\mathrm{diag}(20,1)\)</span>, so <span class="math inline">\(\kappa=20\)</span>. Plain GD must pick a step size small enough to stay stable in the <em>steep</em> direction (<span class="math inline">\(\lambda=20\)</span>), which forces it to crawl along the <em>shallow</em> one (<span class="math inline">\(\lambda=1\)</span>) — the classic <strong>zig-zag</strong>. Momentum cures exactly this: it cancels the oscillation across the steep axis (high-frequency) and accumulates the steady drift along the shallow axis (low-frequency). Condition number returns in §4 — Newton, Adam, and Muon are all attempts to make the <em>effective</em> <span class="math inline">\(\kappa\approx1\)</span>.</p>
+</blockquote>
+<div id="b937163c" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T14:13:00.783123Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T14:13:00.783050Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T14:13:00.790427Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T14:13:00.790096Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ill-conditioned quadratic  L(w) = ½ wᵀ A w,  κ = 20  → GD zig-zags, momentum doesn't</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> torch.diag(torch.tensor([<span class="fl">20.0</span>, <span class="fl">1.0</span>]))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> descend(lr, beta, steps<span class="op">=</span><span class="dv">200</span>):</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> torch.tensor([<span class="fl">5.0</span>, <span class="fl">5.0</span>])</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> torch.zeros(<span class="dv">2</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    hist <span class="op">=</span> []</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> A <span class="op">@</span> w</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> beta <span class="op">*</span> m <span class="op">-</span> lr <span class="op">*</span> g  <span class="co"># the gradient-stream memory (EMA when α=β)</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> w <span class="op">+</span> m</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        hist.append((<span class="fl">0.5</span> <span class="op">*</span> w <span class="op">@</span> A <span class="op">@</span> w).item())</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(hist)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>steps_to <span class="op">=</span> <span class="kw">lambda</span> h, th: <span class="bu">int</span>(np.where(h <span class="op">&lt;</span> th)[<span class="dv">0</span>][<span class="dv">0</span>]) <span class="cf">if</span> (h <span class="op">&lt;</span> th).<span class="bu">any</span>() <span class="cf">else</span> <span class="va">None</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>mu, L <span class="op">=</span> <span class="fl">1.0</span>, <span class="fl">20.0</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>beta_opt <span class="op">=</span> ((L<span class="op">**</span><span class="fl">0.5</span> <span class="op">-</span> mu<span class="op">**</span><span class="fl">0.5</span>) <span class="op">/</span> (L<span class="op">**</span><span class="fl">0.5</span> <span class="op">+</span> mu<span class="op">**</span><span class="fl">0.5</span>)) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>lr_hb <span class="op">=</span> (<span class="dv">2</span> <span class="op">/</span> (L<span class="op">**</span><span class="fl">0.5</span> <span class="op">+</span> mu<span class="op">**</span><span class="fl">0.5</span>)) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>plain, mom <span class="op">=</span> descend(<span class="dv">2</span> <span class="op">/</span> <span class="dv">21</span>, <span class="fl">0.0</span>), descend(lr_hb, beta_opt)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"plain GD   steps to loss&lt;1e-8 : </span><span class="sc">{</span>steps_to(plain, <span class="fl">1e-8</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"momentum   steps to loss&lt;1e-8 : </span><span class="sc">{</span>steps_to(mom, <span class="fl">1e-8</span>)<span class="sc">}</span><span class="ss">   (β=</span><span class="sc">{</span>beta_opt<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co"># the buffer m IS the EMA of the gradient stream</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> torch.tensor([<span class="fl">5.0</span>, <span class="fl">5.0</span>])</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> torch.zeros(<span class="dv">2</span>)</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.9</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> []</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>):</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> A <span class="op">@</span> w</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    gs.append((<span class="op">-</span><span class="dv">2</span> <span class="op">/</span> <span class="dv">21</span> <span class="op">*</span> g).clone())</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> beta <span class="op">*</span> m <span class="op">-</span> <span class="dv">2</span> <span class="op">/</span> <span class="dv">21</span> <span class="op">*</span> g</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    w <span class="op">=</span> w <span class="op">+</span> m</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>ema <span class="op">=</span> torch.zeros(<span class="dv">2</span>)</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> gg <span class="kw">in</span> gs:</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    ema <span class="op">=</span> beta <span class="op">*</span> ema <span class="op">+</span> gg</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"m₅ == Σ βⁱ(-η gᵢ)  (it is the running compression of past gradients):"</span>, torch.allclose(m, ema, atol<span class="op">=</span><span class="fl">1e-5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>plain GD   steps to loss&lt;1e-8 : 119
+momentum   steps to loss&lt;1e-8 : 35   (β=0.403)
+m₅ == Σ βⁱ(-η gᵢ)  (it is the running compression of past gradients): True</code></pre>
+</div>
+</div>
+<section id="but-the-ema-is-only-a-low-pass-filter-a-hard-capacity-limit" class="level3">
+<h3 data-anchor-id="but-the-ema-is-only-a-low-pass-filter-a-hard-capacity-limit">2.1 …but the EMA is only a low-pass filter — a hard capacity limit</h3>
+<p>If momentum is a <em>memory</em> of gradients, how much does it actually remember? With decay <span class="math inline">\(\beta\)</span>, the <span class="math inline">\(i\)</span>-th-most-recent gradient contributes <span class="math inline">\(\beta^i(1-\beta)\)</span> (§4.3). Summing that geometric series tells you how many recent gradients account for the buffer — and the answer is <em>brutally</em> short.</p>
+<div id="e4dbd8ba" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T14:13:00.791589Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T14:13:00.791516Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T14:13:00.794043Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T14:13:00.793679Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> beta <span class="kw">in</span> [<span class="fl">0.9</span>, <span class="fl">0.99</span>]:</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    cum <span class="op">=</span> np.cumsum([(beta<span class="op">**</span>i) <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> beta) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3000</span>)])</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    n50 <span class="op">=</span> <span class="bu">int</span>(np.argmax(cum <span class="op">&gt;=</span> <span class="fl">0.50</span>)) <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    n99 <span class="op">=</span> <span class="bu">int</span>(np.argmax(cum <span class="op">&gt;=</span> <span class="fl">0.99</span>)) <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"β=</span><span class="sc">{</span>beta<span class="sc">}</span><span class="ss">:  last </span><span class="sc">{</span>n50<span class="sc">:&gt;3}</span><span class="ss"> gradients = 50%,   last </span><span class="sc">{</span>n99<span class="sc">:&gt;3}</span><span class="ss"> gradients = 99%  of the buffer"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"β=0.9 (the standard choice): ~the last 44 gradients are essentially the ENTIRE memory."</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Everything older than that contributes &lt;1%. The buffer is a low-pass filter, not a memory."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>β=0.9:  last   7 gradients = 50%,   last  44 gradients = 99%  of the buffer
+β=0.99:  last  69 gradients = 50%,   last 459 gradients = 99%  of the buffer
+
+β=0.9 (the standard choice): ~the last 44 gradients are essentially the ENTIRE memory.
+Everything older than that contributes &lt;1%. The buffer is a low-pass filter, not a memory.</code></pre>
+</div>
+</div>
+<p>This is the <strong>same limitation we hit in M1→M4</strong>: a plain additive/EMA store has tiny effective capacity and forgets the past geometrically. In continual learning with (near-)orthogonal tasks, that short memory is fatal: after many steps on task <span class="math inline">\(t\)</span> the buffer points along task <span class="math inline">\(t\)</span>’s gradient direction and has <strong>no record of the old gradient subspace it should avoid</strong> — so the optimizer walks the weights in a direction that erases the earlier task. NL frames this as a <em>memory-management</em> failure of the optimizer (§4.3), and the fix is the one we already know.</p>
+<blockquote class="blockquote">
+<p><strong>Side note — orthogonality, and why it’s the hard case.</strong> Two vectors are <strong>orthogonal</strong> when their inner product is zero (<span class="math inline">\(\mathbf u_i^\top\mathbf u_j=0\)</span>): they point along fully independent directions and share no component. “Orthogonal tasks” means each task’s gradients live along its own direction <span class="math inline">\(\mathbf u_i\)</span>, with zero overlap between tasks. That is the <em>worst case</em> for a shared memory: progress on task <span class="math inline">\(j\)</span> (moving along <span class="math inline">\(\mathbf u_j\)</span>) does nothing for task <span class="math inline">\(i\)</span>, and over-writing the <span class="math inline">\(\mathbf u_i\)</span> direction <em>purely</em> erases task <span class="math inline">\(i\)</span> with no compensating gain — catastrophic forgetting in its cleanest form. It is the flip side of M1’s orthonormal keys: orthogonal directions don’t interfere <em>if</em> the memory is large enough to hold them all, but a low-capacity store (a short EMA) cannot — so it forgets. Orthogonality returns in §4, where Muon deliberately <em>orthogonalizes</em> the update so the optimizer treats every direction even-handedly.</p>
+</blockquote>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Where does the momentum weight <span class="math inline">\(\beta^i(1-\beta)\)</span> in §2.1 come from?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Unroll the EMA <span class="math inline">\(\mathbf m_t=\beta\mathbf m_{t-1}+(1-\beta)\mathbf g_t\)</span> by substituting it into itself:</p>
+<p><span class="math display">\[\mathbf m_t=\sum_{i=0}^{\infty}\beta^i(1-\beta)\,\mathbf g_{t-i}.\]</span></p>
+<p>Each step multiplies the <em>whole</em> buffer by <span class="math inline">\(\beta\)</span>, so a gradient that entered <span class="math inline">\(i\)</span> steps ago has been multiplied <span class="math inline">\(i\)</span> times → factor <span class="math inline">\(\beta^i\)</span>; it entered with fresh weight <span class="math inline">\((1-\beta)\)</span>. The weights sum to <span class="math inline">\(1\)</span> (since <span class="math inline">\(\sum_i\beta^i(1-\beta)=1\)</span>), so <span class="math inline">\(\mathbf m_t\)</span> is a genuine <strong>weighted average</strong> of the gradient stream. The cumulative share of the <span class="math inline">\(n\)</span> most recent gradients telescopes to <span class="math inline">\(S_n=1-\beta^n\)</span>, which is where §2.1’s “7 and 44” come from: solve <span class="math inline">\(1-\beta^n\ge p\)</span> ⇒ <span class="math inline">\(n\ge\ln(1-p)/\ln\beta\)</span> (β=0.9 → 7 for 50%, 44 for 99%). If you read §4.3 you will see the same horizon reported as 6 and 43 — the paper’s cumulative sum <span class="math inline">\(S_t=\sum_{i=0}^{t}\beta^i(1-\beta)\)</span> runs over <span class="math inline">\(t+1\)</span> terms, so the <em>index</em> it quotes sits one below the <em>count</em>: <span class="math inline">\(1-0.9^6=0.4686\)</span> misses 50%, and <span class="math inline">\(1-0.9^7=0.5217\)</span> is the first to clear it. Same filter and same arithmetic — the derivation above is how you check which it is. The code uses <span class="math inline">\(\mathbf m=\beta\mathbf m-\eta\mathbf g\)</span>, carrying <span class="math inline">\(-\eta\beta^i\)</span> instead of <span class="math inline">\((1-\beta)\beta^i\)</span> — the <span class="math inline">\(\beta^i\)</span> decay is identical; the <span class="math inline">\((1-\beta)\)</span> is just the normalization that turns weights into <em>fractions of the total</em>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Why call momentum a “low-pass filter”?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>It’s the signal-processing reading: treat the gradient stream <span class="math inline">\(\mathbf g_t\)</span> as a <strong>signal over time</strong>; momentum is a filter on it that <strong>passes slow (low-frequency) components and attenuates fast (high-frequency) ones</strong>. A direction the gradient holds for many steps (the true descent trend) survives the averaging and accumulates → <em>passed</em>; a direction that flips sign step to step (zig-zag across an ill-conditioned valley, or minibatch noise) cancels under the average → <em>attenuated</em>. That’s why momentum helps in §2’s demo. The flip side is §2.1’s limitation: a low-pass filter has a fixed cutoff (<span class="math inline">\(\sim1/(1-\beta)\)</span> steps), so it <em>also</em> discards everything older than that window — “low-pass filter” and “tiny memory capacity” are the same fact stated two ways.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="the-same-delta-rule-fix-one-level-up-dgd" class="level2">
+<h2 data-anchor-id="the-same-delta-rule-fix-one-level-up-dgd">3. The same delta-rule fix — one level up (DGD)</h2>
+<p>In M4 we cured the additive memory’s interference by swapping the Hebbian write for the <strong>delta rule</strong>: read what’s stored, write only the <em>correction</em>. NL applies the identical move to the <strong>optimizer</strong>.</p>
+<p><strong>DGD</strong> (Delta Gradient Descent, §4.5) replaces SGD’s dot-product inner objective with <span class="math inline">\(\ell_2\)</span>-regression plus a proximal term. For normalized inputs it has the closed form (Eq. 57, <span class="math inline">\(\eta'=\eta/(1+\eta)\)</span>):</p>
+<p><span class="math display">\[\boxed{\ W_{t+1}=W_t\,\underbrace{(\mathbf I-\eta'\,\hat{\mathbf x}_t\hat{\mathbf x}_t^\top)}_{\text{erase along the current input}}\;-\;\eta'\,\nabla_{W_t}\mathcal L\ }\]</span></p>
+<p>This is <strong>exactly DeltaNet’s matrix form</strong> from M4 (<span class="math inline">\(\mathcal M(\mathbf I-\beta\mathbf k\mathbf k^\top)+\beta\mathbf v\mathbf k^\top\)</span>), with key <span class="math inline">\(=\hat{\mathbf x}\)</span> — but applied to the <em>weights</em> instead of a token memory. It first <strong>discounts what the current input direction already predicts</strong>, then writes the gradient — so the update depends on <span class="math inline">\(W_t\)</span>, not the gradient alone.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>write rule</th>
+<th>behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>linear attention (M3)</td>
+<td><span class="math inline">\(\mathcal M\mathrel{+}=\mathbf v\mathbf k^\top\)</span></td>
+<td>blindly add the new association</td>
+</tr>
+<tr class="even">
+<td><strong>plain SGD</strong></td>
+<td><span class="math inline">\(W\mathrel{-}=\eta\,\nabla\mathcal L\)</span></td>
+<td>blindly add the new gradient</td>
+</tr>
+<tr class="odd">
+<td>DeltaNet (M4)</td>
+<td><span class="math inline">\(\mathcal M(\mathbf I-\beta\mathbf k\mathbf k^\top)+\beta\mathbf v\mathbf k^\top\)</span></td>
+<td>erase old prediction for <span class="math inline">\(\mathbf k\)</span>, then write</td>
+</tr>
+<tr class="even">
+<td><strong>DGD</strong></td>
+<td><span class="math inline">\(W(\mathbf I-\eta'\hat{\mathbf x}\hat{\mathbf x}^\top)-\eta'\nabla\mathcal L\)</span></td>
+<td>discount what <span class="math inline">\(\hat{\mathbf x}\)</span> predicts, then write</td>
+</tr>
+</tbody>
+</table>
+<p>Where does it <em>bite</em>? When inputs are <strong>correlated</strong> (consecutive tokens overlap heavily), plain SGD piles correlated updates on top of each other and — pushed to an aggressive step size — <strong>blows up</strong>. DGD’s erase factor caps each write: the same bounded, interference-resistant update that M4’s <span class="math inline">\((\mathbf I-\beta\mathbf k\mathbf k^\top)\)</span> bought the token memory, now protecting the weights.</p>
+<div id="844cd3d5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T14:13:00.795081Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T14:13:00.795022Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T14:13:00.801997Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T14:13:00.801589Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># stream N correlated keys (tight angular cluster), distinct values, ONE online pass.</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># SGD vs DGD as the optimizer write rule, swept over learning rate.</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> final_error(lr, spread<span class="op">=</span><span class="fl">0.2</span>, N<span class="op">=</span><span class="dv">12</span>, din<span class="op">=</span><span class="dv">10</span>, dout<span class="op">=</span><span class="dv">10</span>, seed<span class="op">=</span><span class="dv">3</span>):</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    torch.manual_seed(seed)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> torch.randn(din)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    base <span class="op">/=</span> base.norm()</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> torch.stack([(<span class="kw">lambda</span> k: k <span class="op">/</span> k.norm())(base <span class="op">+</span> spread <span class="op">*</span> torch.randn(din)) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(N)])</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    vals <span class="op">=</span> torch.randn(N, dout)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> run(opt):</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        W <span class="op">=</span> torch.zeros(dout, din)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N):</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>            k, v <span class="op">=</span> keys[i], vals[i]</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>            g <span class="op">=</span> torch.outer(W <span class="op">@</span> k <span class="op">-</span> v, k)  <span class="co"># ∇ of ½‖Wk−v‖²  = δ kᵀ</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> opt <span class="op">==</span> <span class="st">"sgd"</span>:</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>                W <span class="op">=</span> W <span class="op">-</span> lr <span class="op">*</span> g</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:  <span class="co"># DGD: erase-then-write</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>                ep <span class="op">=</span> lr <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> lr)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>                W <span class="op">=</span> W <span class="op">@</span> (torch.eye(din) <span class="op">-</span> ep <span class="op">*</span> torch.outer(k, k)) <span class="op">-</span> ep <span class="op">*</span> g</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">float</span>(np.mean([(W <span class="op">@</span> keys[i] <span class="op">-</span> vals[i]).norm().item() <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N)]))</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> run(<span class="st">"sgd"</span>), run(<span class="st">"dgd"</span>)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'lr'</span><span class="sc">:&gt;4}</span><span class="ss"> | </span><span class="sc">{</span><span class="st">'SGD err'</span><span class="sc">:&gt;12}</span><span class="ss"> | </span><span class="sc">{</span><span class="st">'DGD err'</span><span class="sc">:&gt;8}</span><span class="ss">"</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> lr <span class="kw">in</span> [<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">4.0</span>]:</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    s, d <span class="op">=</span> final_error(lr)</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>lr<span class="sc">:&gt;4}</span><span class="ss"> | </span><span class="sc">{</span>s<span class="sc">:&gt;12.3f}</span><span class="ss"> | </span><span class="sc">{</span>d<span class="sc">:&gt;8.3f}</span><span class="ss">"</span>)</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">At a safe lr they tie. As lr grows, SGD DIVERGES on the correlated keys"</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"(err → 300 → 27000) while DGD stays bounded — the (I − η′kkᵀ) factor caps each write."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  lr |      SGD err |  DGD err
+ 1.0 |        2.294 |    2.247
+ 2.0 |        5.356 |    2.334
+ 3.0 |      308.937 |    2.423
+ 4.0 |    27701.845 |    2.497
+
+At a safe lr they tie. As lr grows, SGD DIVERGES on the correlated keys
+(err → 300 → 27000) while DGD stays bounded — the (I − η′kkᵀ) factor caps each write.</code></pre>
+</div>
+</div>
+<section id="delta-momentum-the-delta-rule-on-the-buffer" class="level3">
+<h3 data-anchor-id="delta-momentum-the-delta-rule-on-the-buffer">3.1 Delta Momentum — the delta rule on the <em>buffer</em></h3>
+<p>DGD applies the delta rule to the <strong>weights</strong> (the outer write). The same idea on the <strong>momentum buffer</strong> (the inner gradient memory) gives <strong>Delta Momentum</strong> (§4.4, Eq. 48–49): replace the buffer’s Hebbian/EMA objective with <span class="math inline">\(\ell_2\)</span>-regression so it can <em>actively forget</em> stale gradients instead of low-pass-averaging everything. The update rule is</p>
+<p><span class="math display">\[\mathbf m_{i+1}=\mathbf m_i\big(\underbrace{\alpha_{i+1}-\nabla\mathcal L^\top\nabla\mathcal L}_{\text{gradient-dependent decay}}\big)-\eta_t\,\nabla\mathcal L,\qquad W_{i+1}=W_i+\mathbf m_{i+1}.\]</span></p>
+<p>This is <strong>the delta rule with the gradient itself as the key</strong>: the erase factor <span class="math inline">\((\mathbf I-\beta\mathbf k\mathbf k^\top)\)</span> from M4, with <span class="math inline">\(\mathbf k=\nabla\mathcal L\)</span>, collapses to the scalar <span class="math inline">\((\alpha-\nabla\mathcal L^\top\nabla\mathcal L)\)</span>. So the buffer <strong>forgets in proportion to how large the current gradient is</strong> — a strong correction is a reason to drop stale momentum. (The raw factor can go negative when <span class="math inline">\(\lVert\nabla\mathcal L\rVert^2&gt;\alpha\)</span> and blow the buffer up, so in code we floor it at <span class="math inline">\(0\)</span> — <code>max(0, α − η‖g‖²)</code>. Same rule, made numerically safe.)</p>
+<p><strong>Reading the demo.</strong> We minimise a 2-D objective <span class="math inline">\(\psi(r,\theta)\)</span> — think of it as the <strong>loss surface</strong>, with <span class="math inline">\((r,\theta)\)</span> the <em>optimization variables</em> (the analogue of weights), exactly like <span class="math inline">\(\mathcal L(\mathbf w)\)</span> in §2. The <span class="math inline">\(\sin(\omega r)\)</span> term makes its curvature <strong>change as you move</strong> (NL Eq. 53), the regime where a fixed low-pass buffer fails. <strong><span class="math inline">\(\psi\)</span> is the loss, not a prediction:</strong> lower <span class="math inline">\(\psi\)</span> = closer to the bottom of the bowl, and “<span class="math inline">\(\psi&lt;10^{-3}\)</span>” just means “effectively converged to the optimum.” Standard momentum, dragged by stale averaged gradients, stalls; the gradient-dependent decay lets Delta Momentum drop the stale buffer and reach the floor.</p>
+<div id="3d5548c5" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T14:13:00.803050Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T14:13:00.802986Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T14:13:01.194270Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T14:13:01.193825Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># time-varying-curvature toy:  ψ(r,θ) = r² + k(r − θ + α·sin(ωr))²   (NL Eq. 53)</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ψ is the OBJECTIVE (loss) being minimized; (r,θ) are the variables (like weights).</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>k_, al, om <span class="op">=</span> <span class="fl">5.0</span>, <span class="fl">1.5</span>, <span class="fl">3.0</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>grad <span class="op">=</span> <span class="kw">lambda</span> p: np.array(</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    [</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="dv">2</span> <span class="op">*</span> p[<span class="dv">0</span>] <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> k_ <span class="op">*</span> (p[<span class="dv">0</span>] <span class="op">-</span> p[<span class="dv">1</span>] <span class="op">+</span> al <span class="op">*</span> np.sin(om <span class="op">*</span> p[<span class="dv">0</span>])) <span class="op">*</span> (<span class="dv">1</span> <span class="op">+</span> al <span class="op">*</span> om <span class="op">*</span> np.cos(om <span class="op">*</span> p[<span class="dv">0</span>])),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        <span class="dv">2</span> <span class="op">*</span> k_ <span class="op">*</span> (p[<span class="dv">0</span>] <span class="op">-</span> p[<span class="dv">1</span>] <span class="op">+</span> al <span class="op">*</span> np.sin(om <span class="op">*</span> p[<span class="dv">0</span>])) <span class="op">*</span> (<span class="op">-</span><span class="fl">1.0</span>),</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>val <span class="op">=</span> <span class="kw">lambda</span> p: p[<span class="dv">0</span>] <span class="op">**</span> <span class="dv">2</span> <span class="op">+</span> k_ <span class="op">*</span> (p[<span class="dv">0</span>] <span class="op">-</span> p[<span class="dv">1</span>] <span class="op">+</span> al <span class="op">*</span> np.sin(om <span class="op">*</span> p[<span class="dv">0</span>])) <span class="op">**</span> <span class="dv">2</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> optimize(kind, steps<span class="op">=</span><span class="dv">400</span>, lr<span class="op">=</span><span class="fl">0.01</span>, beta<span class="op">=</span><span class="fl">0.9</span>):</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> np.array([<span class="op">-</span><span class="fl">3.5</span>, <span class="fl">2.0</span>])</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> np.zeros(<span class="dv">2</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    hist <span class="op">=</span> []</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> grad(p)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> kind <span class="op">==</span> <span class="st">"sgd"</span>:</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>            p <span class="op">=</span> p <span class="op">-</span> lr <span class="op">*</span> g  <span class="co"># no buffer</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> kind <span class="op">==</span> <span class="st">"mom"</span>:</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> beta <span class="op">*</span> m <span class="op">-</span> lr <span class="op">*</span> g</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>            p <span class="op">=</span> p <span class="op">+</span> m  <span class="co"># low-pass EMA</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> kind <span class="op">==</span> <span class="st">"delta"</span>:  <span class="co"># Eq.49, floored ≥0</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>            decay <span class="op">=</span> <span class="bu">max</span>(<span class="fl">0.0</span>, beta <span class="op">-</span> lr <span class="op">*</span> (g <span class="op">@</span> g))</span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> decay <span class="op">*</span> m <span class="op">-</span> lr <span class="op">*</span> g</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>            p <span class="op">=</span> p <span class="op">+</span> m</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>        hist.append(val(p))</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(hist)</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>reach <span class="op">=</span> <span class="kw">lambda</span> h, th<span class="op">=</span><span class="fl">1e-3</span>: <span class="bu">int</span>(np.where(h <span class="op">&lt;</span> th)[<span class="dv">0</span>][<span class="dv">0</span>]) <span class="cf">if</span> (h <span class="op">&lt;</span> th).<span class="bu">any</span>() <span class="cf">else</span> <span class="va">None</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>curves <span class="op">=</span> {}</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> kind <span class="kw">in</span> [<span class="st">"sgd"</span>, <span class="st">"mom"</span>, <span class="st">"delta"</span>]:</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> optimize(kind)</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>    curves[kind] <span class="op">=</span> h</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>kind<span class="sc">:&gt;5}</span><span class="ss">: final ψ = </span><span class="sc">{</span>h[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.2e}</span><span class="ss">   steps to ψ&lt;1e-3 : </span><span class="sc">{</span>reach(h)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">SGD &amp; standard momentum stall; Delta Momentum forgets stale gradients and reaches the floor."</span>)</span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="fl">6.5</span>, <span class="fl">3.6</span>))</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> kind, style <span class="kw">in</span> [(<span class="st">"sgd"</span>, <span class="st">"--"</span>), (<span class="st">"mom"</span>, <span class="st">"-."</span>), (<span class="st">"delta"</span>, <span class="st">"-"</span>)]:</span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>    plt.semilogy(curves[kind], style, label<span class="op">=</span>kind, lw<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>plt.axhline(<span class="fl">1e-3</span>, color<span class="op">=</span><span class="st">"gray"</span>, ls<span class="op">=</span><span class="st">":"</span>, lw<span class="op">=</span><span class="dv">1</span>, label<span class="op">=</span><span class="st">"ψ = 1e-3 (converged)"</span>)</span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"optimizer step"</span>)</span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"ψ  (objective / loss, log scale)"</span>)</span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Delta Momentum vs standard momentum — time-varying curvature"</span>)</span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  sgd: final ψ = 9.58e-02   steps to ψ&lt;1e-3 : None
+  mom: final ψ = 1.94e-02   steps to ψ&lt;1e-3 : None
+delta: final ψ = 7.59e-04   steps to ψ&lt;1e-3 : 379
+
+SGD &amp; standard momentum stall; Delta Momentum forgets stale gradients and reaches the floor.</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m6-optimizers-as-memory_files/figure-html/cell-7-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: In the Delta-Momentum demo, why the guarded <span class="math inline">\((\alpha-\nabla\mathcal L^\top\nabla\mathcal L)\)</span> decay?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>That decay <strong>is</strong> the delta rule applied to the buffer (NL Eq. 49). DeltaNet’s erase factor <span class="math inline">\((\mathbf I-\beta\mathbf k\mathbf k^\top)\)</span> with the <em>gradient</em> as key (<span class="math inline">\(\mathbf k=\nabla\mathcal L\)</span>) collapses to the scalar <span class="math inline">\((\alpha-\nabla\mathcal L^\top\nabla\mathcal L)\)</span> — the buffer forgets in proportion to the current gradient’s size. The literal factor goes <strong>negative</strong> when <span class="math inline">\(\lVert\nabla\mathcal L\rVert^2&gt;\alpha\)</span>, which flips the buffer’s sign and makes it explode (this wrecked the first prototype of this demo). So the code floors it at <span class="math inline">\(0\)</span> with <code>max(0, α − η‖g‖²)</code>: the same rule, made numerically safe.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="adam-and-muon-in-the-same-picture" class="level2">
+<h2 data-anchor-id="adam-and-muon-in-the-same-picture">4. Adam and Muon, in the same picture</h2>
+<p>The associative-memory reading covers the <em>preconditioned</em> optimizers too (§4.2).</p>
+<ul>
+<li><p><strong>Preconditioning</strong> <span class="math inline">\(W_{t+1}=W_t-\eta\,P^{-1}\mathbf g\)</span> (Eq. 38) is read as a memory that <strong>maps gradients into a better coordinate system</strong> <span class="math inline">\(\hat{\mathbf g}\)</span> (Eq. 39–40). <strong>Adam</strong> (<a href="https://arxiv.org/abs/1412.6980">Kingma &amp; Ba, 2014</a>) is the special case where <span class="math inline">\(P\)</span> is the optimal element-wise <span class="math inline">\(\ell_2\)</span> memory predicting the <strong>variance of the gradient stream</strong> — so Adam too is “just” an associative memory over gradients. Adam names its own parents in its first paragraph: it “is designed to combine the advantages of two recently popular methods: AdaGrad (<a href="https://www.jmlr.org/papers/v12/duchi11a.html">Duchi et al., 2011</a>), which works well with sparse gradients, and RMSProp (<a href="http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf">Tieleman &amp; Hinton, 2012</a>), which works well in on-line and non-stationary settings” (§1) — two existing memories over the gradient stream, combined, plus bias correction. <a href="https://arxiv.org/abs/1802.09568">Shampoo</a> (Gupta, Koren &amp; Singer, 2018) turns the same dial further, replacing the element-wise <span class="math inline">\(P\)</span> with a matrix-valued one.</p></li>
+<li><p><strong>Muon</strong> (Eq. 42, 52) — introduced not in a paper but in a blog post (<a href="https://kellerjordan.github.io/posts/muon/">Jordan et al., 2024</a>) — keeps the momentum buffer but passes its output through a <strong>Newton–Schulz non-linearity</strong> <span class="math inline">\(\sigma=\mathrm{NS}_k\)</span> that <em>orthogonalizes</em> it — <span class="math inline">\(\mathrm{NS}_k\)</span> iterates a cubic polynomial that drives the buffer’s singular values toward <span class="math inline">\(1\)</span>, which NL derives as one gradient step on an explicit orthogonality objective (Eqs. 43–44). In NL’s grammar that is “a non-linearity on top of the memory’s output” (Eq. 52): the standard way to raise a memory’s representation power, here applied to the <em>gradient</em> memory.</p>
+<p>Muon is worth pausing on, because neither half is its own. The buffer is Polyak’s, from 1964. The Newton–Schulz iteration is older still, out of numerical linear algebra, and it reached Muon by a route its authors record: Bernstein &amp; Newhouse’s <a href="https://arxiv.org/abs/2409.20325"><em>Old Optimizer, New Norm</em></a>, whose Appendix A had recommended Newton–Schulz as a computational strategy for Shampoo. Muon is the composition of two borrowed parts — and its account of <em>why</em> orthogonalization helps is offered as a conjecture, not a result: the post speculates that it “effectively increases the scale of other ‘rare directions’ which have small magnitude in the update but are nevertheless important for learning.”</p></li>
+</ul>
+<div id="a2599d6d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T14:13:01.195372Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T14:13:01.195251Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T14:13:01.198621Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T14:13:01.198255Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> newton_schulz(G, steps<span class="op">=</span><span class="dv">5</span>):  <span class="co"># whitens singular values toward 1</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    a, b, c <span class="op">=</span> <span class="fl">3.4445</span>, <span class="op">-</span><span class="fl">4.7750</span>, <span class="fl">2.0315</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> G <span class="op">/</span> (G.norm() <span class="op">+</span> <span class="fl">1e-7</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        AX <span class="op">=</span> X <span class="op">@</span> X.T</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        X <span class="op">=</span> a <span class="op">*</span> X <span class="op">+</span> b <span class="op">*</span> (AX <span class="op">@</span> X) <span class="op">+</span> c <span class="op">*</span> (AX <span class="op">@</span> AX <span class="op">@</span> X)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> X</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>m <span class="op">=</span> torch.randn(<span class="dv">8</span>, <span class="dv">8</span>)  <span class="co"># a momentum buffer (matrix-valued)</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>sb <span class="op">=</span> torch.linalg.svdvals(m)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>sa <span class="op">=</span> torch.linalg.svdvals(newton_schulz(m))</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"momentum singular values  before NS : [</span><span class="sc">{</span>sb<span class="sc">.</span><span class="bu">min</span>()<span class="sc">:.3f}</span><span class="ss">, </span><span class="sc">{</span>sb<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.3f}</span><span class="ss">]"</span>)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"momentum singular values  after  NS : [</span><span class="sc">{</span>sa<span class="sc">.</span><span class="bu">min</span>()<span class="sc">:.3f}</span><span class="ss">, </span><span class="sc">{</span>sa<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.3f}</span><span class="ss">]   (≈ orthogonal → all ~1)"</span>)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Muon = momentum memory + this non-linearity on its output (NL Eq. 52)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>momentum singular values  before NS : [0.781, 5.493]
+momentum singular values  after  NS : [0.682, 1.109]   (≈ orthogonal → all ~1)
+Muon = momentum memory + this non-linearity on its output (NL Eq. 52).</code></pre>
+</div>
+</div>
+</section>
+<section id="the-payoff-the-optimizer-is-a-memory-so-m4s-toolkit-applies-to-it" class="level2">
+<h2 data-anchor-id="the-payoff-the-optimizer-is-a-memory-so-m4s-toolkit-applies-to-it">5. The payoff — the optimizer is a memory, so M4’s toolkit applies to it</h2>
+<p>Put the five modules before this one side by side with this one, and they are the <strong>same table</strong>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>sequence memory (M1–M5)</th>
+<th>optimizer (this module)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>stream</td>
+<td>tokens</td>
+<td>gradients</td>
+</tr>
+<tr class="even">
+<td>key → value</td>
+<td><span class="math inline">\(\mathbf k_t\to\mathbf v_t\)</span></td>
+<td>layer input <span class="math inline">\(\hat{\mathbf x}_t\to\)</span> surprise <span class="math inline">\(-\boldsymbol\delta_t\)</span></td>
+</tr>
+<tr class="odd">
+<td>Hebbian write</td>
+<td>linear attention (M3)</td>
+<td>plain SGD</td>
+</tr>
+<tr class="even">
+<td>+ forget gate</td>
+<td>the global decay gate (M4 §4)</td>
+<td>momentum decay <span class="math inline">\(\alpha\)</span></td>
+</tr>
+<tr class="odd">
+<td>delta write</td>
+<td>DeltaNet (M4)</td>
+<td><strong>DGD / Delta Momentum</strong></td>
+</tr>
+<tr class="even">
+<td>self-referential write</td>
+<td>SRWM (M5)</td>
+<td>backprop itself (§1.1)</td>
+</tr>
+<tr class="odd">
+<td>deeper memory</td>
+<td>—</td>
+<td><strong>DMGD</strong> (MLP buffer)</td>
+</tr>
+<tr class="even">
+<td>non-linear output</td>
+<td>—</td>
+<td><strong>Muon</strong> (Newton–Schulz)</td>
+</tr>
+<tr class="odd">
+<td>preconditioned</td>
+<td>—</td>
+<td><strong>Adam / AdaGrad / Shampoo</strong></td>
+</tr>
+</tbody>
+</table>
+<p>That collapses a distinction we never questioned. “Model” and “optimizer” looked like two different kinds of object: one stores knowledge, the other <em>adjusts</em> the thing that stores knowledge. They are the <strong>same kind of object at different levels</strong> — both associative memories compressing their own stream, tokens for the architecture and gradients for the optimizer. Both hit the same wall (correlated keys interfere, capacity is finite), and the same fixes work.</p>
+<p>The consequence is practical, not just tidy: <strong>every write rule you built in M1–M5 is now available to the optimizer</strong>, because none of them were ever about sequences. DGD is the first instance cashed out — M4’s read-before-write, applied to the weights, buying the same bounded updates under correlated inputs that it bought DeltaNet (§3). Delta Momentum is the second, the same rule with the gradient as the key (§3.1). The rest of the table is the rest of the toolkit — and the last three rows run the other way, the optimizer column carrying deep, non-linear and preconditioned memories with no counterpart on the sequence side of these foundations.</p>
+<p><strong>Where this comes back.</strong> Once the optimizer is a memory, the natural next question is what happens when the <em>sequence</em> memory is trained by one at inference time — that is <a href="../../../courses/continual-learning/tracks/nested-learning/index.html">the Nested Learning track</a>. But nothing in the foundations depends on it: <a href="../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> closes the spine first.</p>
+</section>
+<section id="code-walkthrough-where-this-lives-in-real-code" class="level2">
+<h2 data-anchor-id="code-walkthrough-where-this-lives-in-real-code">Code walkthrough — where this lives in real code</h2>
+<ul>
+<li><a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/optim/m3.py"><code>optim/m3.py</code></a> in <a href="https://github.com/kmccleary3301/nested_learning">kmccleary3301/nested_learning</a> — a paper-faithful implementation of <strong>Multi-scale Momentum Muon</strong> (<a href="https://arxiv.org/abs/2512.24695">NL</a> §7.2, Algorithm 1 — the paper abbreviates it <em>M3</em>, which has nothing to do with this course’s M3). It is this module taken literally: <em>two</em> momentum buffers over the same gradient stream, updated at <em>different</em> frequencies, each passed through Newton–Schulz, then aggregated — a memory hierarchy living inside <code>Optimizer.step()</code>.</li>
+<li><a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/optim/deep.py"><code>optim/deep.py</code></a> — <code>DeepMomentum</code> puts §4.4’s momentum variants behind one <code>variant</code> switch — <code>preconditioned</code>, <code>l2_objective</code>, <code>nl_l2_precond</code>, <code>dmgd</code>, <code>muon</code>. Read it as a map of the design space rather than a faithful transcription: the <code>muon</code> variant, for instance, puts a <code>tanh</code> where the paper has Newton–Schulz.</li>
+<li><a href="https://github.com/obekt/HOPE-nested-learning/blob/main/train_hope.py"><code>train_hope.py</code></a> in <a href="https://github.com/obekt/HOPE-nested-learning">obekt/HOPE-nested-learning</a> — the two levels in one file. <code>build_nested_optimizers</code> builds <em>one AdamW per tier</em>, each stepping on gradients averaged over its own update period, entirely <em>outside</em> the model; inside it, <code>SelfModifyingLayer</code> runs a per-token <strong>delta-rule</strong> write on its own memory.</li>
+</ul>
+<p>The thing to notice in the code: the optimizer’s <code>step()</code> and the memory’s <code>update()</code> are the <strong>same shape of operation</strong> on different buffers — which is exactly the claim of this module.</p>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Self-test before M7 — question, then the answer we’d give.</p>
+<p><strong>1. In what precise sense is one SGD step an associative-memory write — what are the key and the value?</strong> A linear layer’s gradient factors as <span class="math inline">\(\partial\mathcal L/\partial W=\boldsymbol\delta\,\hat{\mathbf x}^\top\)</span> (NL Eq. 29, §1), an outer product. So <span class="math inline">\(W\!\leftarrow\!W-\eta\,\boldsymbol\delta\hat{\mathbf x}^\top\)</span> is the Hebbian write <span class="math inline">\(\mathcal M\mathrel{+}=\mathbf v\mathbf k^\top\)</span> with <strong>key <span class="math inline">\(=\hat{\mathbf x}\)</span></strong> (the layer’s input) and <strong>value <span class="math inline">\(=-\boldsymbol\delta=-\partial\mathcal L/\partial\mathbf y\)</span></strong> (the negative output surprise). Training = the matrix accumulating these (input → surprise) outer products.</p>
+<p><strong>2. Why is backprop-as-memory <em>not</em> just linear attention on gradients?</strong> Because the value it writes, <span class="math inline">\(\mathbf u_t=-\partial\mathcal L/\partial\mathbf y_t\)</span>, is a <strong>function of the current weights</strong> — the memory generates its own write targets (the §1.1 demo: same input, different <span class="math inline">\(W\)</span> → different <span class="math inline">\(\boldsymbol\delta\)</span>). Linear attention’s value is an external, memory-independent input. That self-reference (Schmidhuber 1993) makes backprop a strictly richer memory and is what licenses a <em>delta-rule</em> optimizer in §4.5.</p>
+<p><strong>3. In what sense is momentum a memory, and what is its capacity limit?</strong> The buffer <span class="math inline">\(\mathbf m_{t+1}=\alpha\mathbf m_t-\eta\nabla\mathcal L\)</span> is an associative memory that <strong>compresses the gradient stream</strong> — with <span class="math inline">\(\alpha=1\)</span> it is GD on <span class="math inline">\(\langle\mathbf m\hat{\mathbf x},\boldsymbol\delta\rangle\)</span>, a value-less memory of past gradients (Eq. 34); <span class="math inline">\(\alpha\neq1\)</span> adds an <span class="math inline">\(\ell_2\)</span> forget term (§2). But the plain EMA is only a <strong>low-pass filter</strong>: at <span class="math inline">\(\beta=0.9\)</span> the last ~7 gradients carry 50% and the last ~44 carry 99% of the buffer (§2.1) — older gradients vanish geometrically, which is the optimizer-level cause of catastrophic forgetting on orthogonal tasks.</p>
+<p><strong>4. What does DGD change relative to SGD, and how does it mirror M4?</strong> DGD swaps the dot-product inner objective for <span class="math inline">\(\ell_2\)</span>-regression, giving <span class="math inline">\(W_{t+1}=W_t(\mathbf I-\eta'\hat{\mathbf x}\hat{\mathbf x}^\top)-\eta'\nabla\mathcal L\)</span> (Eq. 57, §3) — it <strong>erases what the current input already predicts, then writes the gradient</strong>. That is <em>literally</em> DeltaNet’s matrix form from M4, one level up (weights instead of a token memory). The benefit is the delta rule’s: bounded, interference-resistant updates under correlated inputs — in the demo, SGD diverges at an aggressive lr while DGD stays bounded.</p>
+<hr>
+<p><strong>Next → M7 — The three dials.</strong> Six modules in, and every memory you have built has been a setting of one recurrence: what goes into the memory, what stays in it, and how the write is applied. M7 collapses the spine into that single equation, places every module you have read on it as a dial setting, and becomes the hub each track departs from.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>NL-1 aside — where does the self-supervised error come from? – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-6d841f876cbd7f9db2ca110eea6af95d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#the-resolution-in-one-paragraph" id="toc-the-resolution-in-one-paragraph" class="nav-link active" data-scroll-target="#the-resolution-in-one-paragraph">The resolution, in one paragraph</a></li>
+  <li><a href="#the-toy-in-context-associative-recall" id="toc-the-toy-in-context-associative-recall" class="nav-link" data-scroll-target="#the-toy-in-context-associative-recall">The toy: in-context associative recall</a></li>
+  <li><a href="#the-two-losses-in-code" id="toc-the-two-losses-in-code" class="nav-link" data-scroll-target="#the-two-losses-in-code">The two losses, in code</a></li>
+  <li><a href="#a.-random-projections-the-inner-loop-runs-but-recall-fails" id="toc-a.-random-projections-the-inner-loop-runs-but-recall-fails" class="nav-link" data-scroll-target="#a.-random-projections-the-inner-loop-runs-but-recall-fails">A. Random projections: the inner loop runs, but recall fails</a></li>
+  <li><a href="#b.-the-outer-loop-teaches-it-what-to-store" id="toc-b.-the-outer-loop-teaches-it-what-to-store" class="nav-link" data-scroll-target="#b.-the-outer-loop-teaches-it-what-to-store">B. The outer loop teaches it what to store</a></li>
+  <li><a href="#c.-at-test-time-only-the-label-free-inner-loop-runs" id="toc-c.-at-test-time-only-the-label-free-inner-loop-runs" class="nav-link" data-scroll-target="#c.-at-test-time-only-the-label-free-inner-loop-runs">C. At test time: only the label-free inner loop runs</a></li>
+  <li><a href="#so-where-does-the-error-come-from" id="toc-so-where-does-the-error-come-from" class="nav-link" data-scroll-target="#so-where-does-the-error-come-from">So — where does the error come from?</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">NL-1 aside — where does the self-supervised error come from?</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><em>A companion to <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>, built to answer one question: test-time learning updates the memory by gradient descent on a “self-supervised” loss — but at test time we have no ground-truth labels. So where does the error signal come from? Optional: read it when NL-1 §1 points here.</em></p>
+<p>Runs on CPU in seconds; pure PyTorch, no GPU. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/nested-learning/nl1-aside-self-supervision.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>The answer has <strong>two levels</strong>, and the whole point is to see them side by side in a tiny, CPU-only toy:</p>
+<ul>
+<li><strong>Inner loss — self-supervised, no labels.</strong> The memory’s update target is <em>manufactured from the input token itself</em>. It runs every forward pass, including test time. No <code>y</code> anywhere.</li>
+<li><strong>Outer loss — supervised, real labels.</strong> Used only during <em>training</em>, to learn the projections that <em>define</em> the inner task — i.e.&nbsp;to teach the label-free inner loop <strong>what is worth memorizing</strong>.</li>
+</ul>
+<section id="the-resolution-in-one-paragraph" class="level2">
+<h2 data-anchor-id="the-resolution-in-one-paragraph">The resolution, in one paragraph</h2>
+<p>In <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> §1 the inner loss is <span class="math inline">\(\ell(W;x_t)=\lVert f_W(\mathbf k_t)-\mathbf v_t\rVert^2\)</span> with <span class="math inline">\(\mathbf k_t=\theta_K x_t\)</span> and <span class="math inline">\(\mathbf v_t=\theta_V x_t\)</span> — <strong>both views of the same token</strong>. So the “label” <span class="math inline">\(\mathbf v_t\)</span> is a projection of the input, not external supervision: the memory is asked to map one view of the token to another, and the error is just <em>how badly it currently does that</em> (Titans’ “surprise”). That needs no ground truth.</p>
+<p>But then <em>why does memorizing <span class="math inline">\(\mathbf k_t\!\to\!\mathbf v_t\)</span> help anything?</em> Because a <strong>separate outer loss</strong>, with real labels, runs at training time and shapes <span class="math inline">\(\theta_K,\theta_V\)</span> so that storing those particular views turns out useful for the real task. Two losses, two timescales:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>inner loss</th>
+<th>outer loss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>objective</td>
+<td><span class="math inline">\(\lVert f_W(\mathbf k_t)-\mathbf v_t\rVert^2\)</span> (reconstruction)</td>
+<td>the real task loss</td>
+</tr>
+<tr class="even">
+<td>supervision</td>
+<td><strong>self-made from <span class="math inline">\(x_t\)</span> — no labels</strong></td>
+<td><strong>ground-truth labels</strong></td>
+</tr>
+<tr class="odd">
+<td>updates</td>
+<td>the fast memory <span class="math inline">\(W\)</span></td>
+<td>the slow projections <span class="math inline">\(\theta_K,\theta_V,\dots\)</span></td>
+</tr>
+<tr class="even">
+<td>when</td>
+<td>every forward pass (incl.&nbsp;test time)</td>
+<td>training only</td>
+</tr>
+</tbody>
+</table>
+<p>We’ll build a toy with <em>both</em> and show the killer fact: the <strong>same</strong> label-free inner loop is useless with random projections and useful after the outer loop has trained them.</p>
+</section>
+<section id="the-toy-in-context-associative-recall" class="level2">
+<h2 data-anchor-id="the-toy-in-context-associative-recall">The toy: in-context associative recall</h2>
+<p>A clean task that needs memory and has an obvious outer label. Each <strong>episode</strong>:</p>
+<ul>
+<li>has <span class="math inline">\(m\)</span> random key→value pairs <span class="math inline">\((\mathbf k_i,\mathbf v_i)\)</span>, <span class="math inline">\(\mathbf k_i,\mathbf v_i\in\mathbb R^d\)</span> — a <em>fresh, random</em> lookup table, so the model cannot bake it into weights; it must <em>store it in the memory at test time</em>;</li>
+<li>presents each pair as a single <strong>token</strong> <span class="math inline">\(x_i = R\,[\mathbf k_i;\mathbf v_i]\)</span> — key and value concatenated, then scrambled by a fixed unknown rotation <span class="math inline">\(R\)</span>, so the model must <em>learn</em> how to extract the key view and the value view;</li>
+<li>ends with a <strong>query</strong> token <span class="math inline">\(x_q = R\,[\mathbf k_j;\mathbf 0]\)</span> (a key, value-part zeroed). The <strong>outer label</strong> is the matching value <span class="math inline">\(\mathbf v_j\)</span>.</li>
+</ul>
+<p>The memory reads the pair-tokens (inner loop, no labels), then we query it; the outer loss checks the recall against <span class="math inline">\(\mathbf v_j\)</span>.</p>
+<div id="7ac69bec" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T07:15:07.551483Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T07:15:07.551417Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T07:15:08.216726Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T07:15:08.216307Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>d, m <span class="op">=</span> <span class="dv">6</span>, <span class="dv">2</span>  <span class="co"># value/key dim; pairs per episode (well under capacity d)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>n <span class="op">=</span> <span class="dv">2</span> <span class="op">*</span> d  <span class="co"># token dim = [key ; value]</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>Rmix, _ <span class="op">=</span> torch.linalg.qr(torch.randn(n, n))  <span class="co"># fixed "world" scrambling of (key, value)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> episode(g):</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    K <span class="op">=</span> F.normalize(torch.randn(m, d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)  <span class="co"># m keys</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    Vv <span class="op">=</span> torch.randn(m, d, generator<span class="op">=</span>g)  <span class="co"># m values (the random lookup table)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> (Rmix <span class="op">@</span> torch.cat([K, Vv], dim<span class="op">=</span><span class="dv">1</span>).t()).t()  <span class="co"># m scrambled pair-tokens (m x n)</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    j <span class="op">=</span> torch.randint(m, (<span class="dv">1</span>,), generator<span class="op">=</span>g).item()  <span class="co"># which key we'll be quizzed on</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    xq <span class="op">=</span> Rmix <span class="op">@</span> torch.cat([K[j], torch.zeros(d)])  <span class="co"># query token: key present, value zeroed</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> X, xq, Vv[j]  <span class="co"># tokens, query, ground-truth answer (outer label)</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>X, xq, y <span class="op">=</span> episode(torch.Generator().manual_seed(<span class="dv">99</span>))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"episode:"</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    X.shape[<span class="dv">0</span>],</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"pair-tokens of dim"</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    X.shape[<span class="dv">1</span>],</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"(scrambled [key;value]);  1 query;  1 label y"</span>,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"a token mixes key &amp; value -&gt; the model must LEARN to extract each view:"</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="bu">tuple</span>(X[<span class="dv">0</span>].shape),</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>episode: 2 pair-tokens of dim 12 (scrambled [key;value]);  1 query;  1 label y
+a token mixes key &amp; value -&gt; the model must LEARN to extract each view: (12,)</code></pre>
+</div>
+</div>
+</section>
+<section id="the-two-losses-in-code" class="level2">
+<h2 data-anchor-id="the-two-losses-in-code">The two losses, in code</h2>
+<p><code>memory()</code> is the <strong>inner loop</strong>. Read it carefully: it takes the tokens and the projections, and <strong>never sees <code>y</code></strong>. Its update target <code>v</code> is a projection of the token — that is the entire self-supervised signal. The <strong>outer loss</strong> is a separate function that <em>does</em> use <code>y</code>.</p>
+<div id="9366fc1c" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T07:15:08.217889Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T07:15:08.217791Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T07:15:08.220502Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T07:15:08.220146Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> inner_loss(W, k, v):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((W <span class="op">@</span> k <span class="op">-</span> v) <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>()  <span class="co"># self-supervised: v is a VIEW of the token, not a label</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> memory(X, xq, tK, tV, eta<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Inner loop: build the fast memory W from the tokens alone. NO label y is used here.</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    trace <span class="op">=</span> []</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> x <span class="kw">in</span> X:</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        k <span class="op">=</span> F.normalize(tK <span class="op">@</span> x, dim<span class="op">=</span><span class="dv">0</span>)  <span class="co"># key view of the token</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        v <span class="op">=</span> tV <span class="op">@</span> x  <span class="co"># value view of the SAME token (the 'target')</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        trace.append(inner_loss(W, k, v))  <span class="co"># surprise on this token (computed without y)</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        W <span class="op">=</span> W <span class="op">+</span> eta <span class="op">*</span> torch.outer(v <span class="op">-</span> W <span class="op">@</span> k, k)  <span class="co"># = one GD step on inner_loss (the delta write)</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    kq <span class="op">=</span> F.normalize(tK <span class="op">@</span> xq, dim<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> W <span class="op">@</span> kq, torch.stack(trace)  <span class="co"># recall prediction, inner-loss trace</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> outer_loss(pred, y):</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((pred <span class="op">-</span> y) <span class="op">**</span> <span class="dv">2</span>).mean()  <span class="co"># supervised: y IS the held-out ground-truth value</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fresh_proj(scale<span class="op">=</span><span class="fl">0.5</span>, seed<span class="op">=</span><span class="dv">0</span>):  <span class="co"># slow weights = projections defining what to store</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (torch.randn(d, n, generator<span class="op">=</span>g) <span class="op">*</span> scale).requires_grad_(<span class="va">True</span>), (</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        torch.randn(d, n, generator<span class="op">=</span>g) <span class="op">*</span> scale</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    ).requires_grad_(<span class="va">True</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"inner_loss uses (W, k, v) -- no y.   outer_loss uses (pred, y) -- the label."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>inner_loss uses (W, k, v) -- no y.   outer_loss uses (pred, y) -- the label.</code></pre>
+</div>
+</div>
+</section>
+<section id="a.-random-projections-the-inner-loop-runs-but-recall-fails" class="level2">
+<h2 data-anchor-id="a.-random-projections-the-inner-loop-runs-but-recall-fails">A. Random projections: the inner loop runs, but recall fails</h2>
+<p>Before any training, run the exact same label-free inner loop with <em>random</em> <span class="math inline">\(\theta_K,\theta_V\)</span>. The inner losses are perfectly well-defined (no <code>y</code> needed) and the memory does store <em>something</em> — but it’s the wrong something, so recall is no better than noise (relative error <span class="math inline">\(\approx 1\)</span>).</p>
+<div id="caf99f1d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T07:15:08.221385Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T07:15:08.221321Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T07:15:08.251459Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T07:15:08.251122Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_recall_err(tK, tV, seed, nep<span class="op">=</span><span class="dv">300</span>):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    tot <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(nep):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        X, xq, y <span class="op">=</span> episode(g)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        pred, _ <span class="op">=</span> memory(X, xq, tK, tV)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        tot <span class="op">+=</span> ((pred <span class="op">-</span> y).norm() <span class="op">/</span> y.norm()).item()</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> tot <span class="op">/</span> nep</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>tK, tV <span class="op">=</span> fresh_proj(seed<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>X, xq, y <span class="op">=</span> episode(torch.Generator().manual_seed(<span class="dv">99</span>))</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>pred, trace <span class="op">=</span> memory(X, xq, tK, tV)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"inner losses per token (computed with NO label):"</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    [<span class="bu">round</span>(t.item(), <span class="dv">2</span>) <span class="cf">for</span> t <span class="kw">in</span> trace],</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"outer recall error on held-out episodes (random projections): </span><span class="sc">{</span>mean_recall_err(tK, tV, seed<span class="op">=</span><span class="dv">7</span>)<span class="sc">:.2f}</span><span class="ss">"</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"=&gt; the self-supervised loop is happily running; it just hasn't been told what's worth storing."</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>inner losses per token (computed with NO label): [4.66, 3.37]
+outer recall error on held-out episodes (random projections): 1.22
+=&gt; the self-supervised loop is happily running; it just hasn't been told what's worth storing.</code></pre>
+</div>
+</div>
+</section>
+<section id="b.-the-outer-loop-teaches-it-what-to-store" class="level2">
+<h2 data-anchor-id="b.-the-outer-loop-teaches-it-what-to-store">B. The outer loop teaches it what to store</h2>
+<p>Now train <strong>only</strong> the projections <span class="math inline">\(\theta_K,\theta_V\)</span> on the <em>outer</em> loss (the labeled recall error), backpropagating <strong>through the inner memory updates</strong> — exactly <a href="../../../../courses/continual-learning/foundations/m5-meta-learning-self-reference.html">M5</a>’s MAML move (gradients flow through the inner steps; here the delta write is differentiable, so a plain <code>.backward()</code> reaches the projections). The fast memory <span class="math inline">\(W\)</span> is still built by the same label-free inner loop; we are only learning <em>what views to feed it</em>.</p>
+<div id="769d7870" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T07:15:08.252622Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T07:15:08.252564Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T07:15:13.969273Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T07:15:13.968865Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>tK, tV <span class="op">=</span> fresh_proj(seed<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> torch.optim.Adam([tK, tV], lr<span class="op">=</span><span class="fl">1e-2</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">1</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>outer_curve, recall_curve, steps <span class="op">=</span> [], [], []</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> it <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3000</span>):</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    opt.zero_grad()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">8</span>):  <span class="co"># a batch of episodes</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        X, xq, y <span class="op">=</span> episode(g)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        pred, _ <span class="op">=</span> memory(X, xq, tK, tV)  <span class="co"># inner loop (no y) ...</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        L <span class="op">=</span> L <span class="op">+</span> outer_loss(pred, y)  <span class="co"># ... scored by the outer loss (y)</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    (L <span class="op">/</span> <span class="dv">8</span>).backward()</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    opt.step()  <span class="co"># trains the PROJECTIONS through the inner updates</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> it <span class="op">%</span> <span class="dv">100</span> <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        outer_curve.append((L <span class="op">/</span> <span class="dv">8</span>).item())</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        steps.append(it)</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        recall_curve.append(mean_recall_err(tK.detach(), tV.detach(), seed<span class="op">=</span><span class="dv">7</span>, nep<span class="op">=</span><span class="dv">60</span>))</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>rand_baseline <span class="op">=</span> mean_recall_err(<span class="op">*</span>fresh_proj(seed<span class="op">=</span><span class="dv">3</span>), seed<span class="op">=</span><span class="dv">7</span>, nep<span class="op">=</span><span class="dv">60</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>fig, (a1, a2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">11</span>, <span class="fl">3.6</span>))</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>a1.plot(steps, outer_curve)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>a1.set_xlabel(<span class="st">"outer step"</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>a1.set_ylabel(<span class="st">"outer loss (uses y)"</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>a1.set_title(<span class="st">"outer loss: supervised, training-time"</span>)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>a1.set_yscale(<span class="st">"log"</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>a2.plot(steps, recall_curve)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>a2.set_xlabel(<span class="st">"outer step"</span>)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>a2.set_ylabel(<span class="st">"test recall error"</span>)</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>a2.set_title(<span class="st">"recall on held-out episodes"</span>)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>a2.axhline(rand_baseline, ls<span class="op">=</span><span class="st">"--"</span>, c<span class="op">=</span><span class="st">"gray"</span>, lw<span class="op">=</span><span class="fl">0.8</span>, label<span class="op">=</span><span class="st">"random projections"</span>)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>a2.legend()</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"recall error  random </span><span class="sc">{</span>recall_curve[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss">  -&gt;  trained </span><span class="sc">{</span>recall_curve[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss">  (1.0 = noise)"</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="nl1-aside-self-supervision_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>recall error  random 1.20  -&gt;  trained 0.23  (1.0 = noise)</code></pre>
+</div>
+</div>
+</section>
+<section id="c.-at-test-time-only-the-label-free-inner-loop-runs" class="level2">
+<h2 data-anchor-id="c.-at-test-time-only-the-label-free-inner-loop-runs">C. At test time: only the label-free inner loop runs</h2>
+<p>The payoff. On <strong>fresh</strong> episodes the model has never seen, we run <em>just</em> the inner loop — no labels, no outer loss, no gradient on the projections — and recall works. The memory learns each new random lookup table at test time, purely from the tokens.</p>
+<div id="009a2816" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T07:15:13.970500Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T07:15:13.970385Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T07:15:13.995321Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T07:15:13.994950Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>tKf, tVf <span class="op">=</span> tK.detach(), tV.detach()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"mean test recall error, brand-new episodes (inner loop only, NO labels): "</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"</span><span class="sc">{</span>mean_recall_err(tKf, tVf, seed<span class="op">=</span><span class="dv">12345</span>)<span class="sc">:.2f}</span><span class="ss">   (random projections were ~</span><span class="sc">{</span>rand_baseline<span class="sc">:.2f}</span><span class="ss">)"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># a few fresh episodes, end to end -- the inner loop never touches y</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">2024</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>errs <span class="op">=</span> []</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">6</span>):</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    X, xq, y <span class="op">=</span> episode(g)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    pred, trace <span class="op">=</span> memory(X, xq, tKf, tVf)  <span class="co"># builds memory from tokens alone, then recalls</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    errs.append(((pred <span class="op">-</span> y).norm() <span class="op">/</span> y.norm()).item())</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"6 fresh episodes, recall relative error:"</span>, [<span class="bu">round</span>(e, <span class="dv">2</span>) <span class="cf">for</span> e <span class="kw">in</span> errs])</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"last episode's inner losses while reading (no y): </span><span class="sc">{</span>[<span class="bu">round</span>(t.item(), <span class="dv">1</span>) <span class="cf">for</span> t <span class="kw">in</span> trace]<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"no label was used to BUILD or QUERY the memory -- the tokens supervised themselves."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>mean test recall error, brand-new episodes (inner loop only, NO labels): 0.24   (random projections were ~1.21)
+6 fresh episodes, recall relative error: [0.67, 0.1, 0.11, 0.27, 0.57, 0.15]
+last episode's inner losses while reading (no y): [2.6, 1.8]
+no label was used to BUILD or QUERY the memory -- the tokens supervised themselves.</code></pre>
+</div>
+</div>
+</section>
+<section id="so-where-does-the-error-come-from" class="level2">
+<h2 data-anchor-id="so-where-does-the-error-come-from">So — where does the error come from?</h2>
+<p><strong>From the data, twice, at two levels:</strong></p>
+<ol type="1">
+<li><strong>Inner (self-supervised, no labels).</strong> The update target is a <em>view of the input token</em> (<span class="math inline">\(\mathbf v_t=\theta_V x_t\)</span>). The error is the memory’s own reconstruction/recall error on that view — well-defined with zero ground truth. This is what runs at <strong>test time</strong>, and it’s how the memory “learns the sequence on the fly.” (In §A you saw it run even with random projections.)</li>
+<li><strong>Outer (supervised, real labels).</strong> A separate task loss, with ground truth, runs at <strong>training time</strong> and shapes the projections <span class="math inline">\(\theta_K,\theta_V\)</span> — i.e.&nbsp;it teaches the label-free inner loop <em>what to extract and store</em>. (In §B that’s what turned a useless inner loop into a working one: recall went from <span class="math inline">\(\approx 1\)</span> to well below it, with the inner mechanism unchanged.)</li>
+</ol>
+<p>Two earlier modules are exactly these two levels:</p>
+<ul>
+<li>the inner loop is <strong><a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> §1’s TTT write</strong> — <span class="math inline">\(\mathbf k_t,\mathbf v_t=\theta_K x_t,\theta_V x_t\)</span>, memory updated by a GD step on <span class="math inline">\(\lVert f_W(\mathbf k_t)-\mathbf v_t\rVert^2\)</span>;</li>
+<li>training it by backprop <strong>through</strong> those inner updates is <strong><a href="../../../../courses/continual-learning/foundations/m5-meta-learning-self-reference.html">M5</a>’s MAML</strong> — outer gradients flow through an inner optimization.</li>
+</ul>
+<p>So “test-time learning” never needed labels at test time: the data supervises itself in the inner loop, and the labels did their job earlier, in the outer loop, deciding what that self-supervision should target. <em>(A second, even more intuitive flavor of the same idea: in next-token prediction the future of the stream is the label for its past — the sequence supervises itself one step late. Same principle, different view.)</em></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

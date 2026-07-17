@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>M2 — Fast Weight Programmers – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-6d841f876cbd7f9db2ca110eea6af95d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-fixes" id="toc-why-it-exists-the-limitation-it-fixes" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</a></li>
+  <li><a href="#core-idea-a-slow-net-programs-a-fast-net" id="toc-core-idea-a-slow-net-programs-a-fast-net" class="nav-link" data-scroll-target="#core-idea-a-slow-net-programs-a-fast-net">Core idea — a slow net programs a fast net</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#from-given-mathbfkmathbfvmathbfq-to-projected-from-the-input" id="toc-from-given-mathbfkmathbfvmathbfq-to-projected-from-the-input" class="nav-link" data-scroll-target="#from-given-mathbfkmathbfvmathbfq-to-projected-from-the-input">1. From “given <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span>” to “projected from the input”</a></li>
+  <li><a href="#two-timescales-slow-weights-frozen-fast-weights-moving" id="toc-two-timescales-slow-weights-frozen-fast-weights-moving" class="nav-link" data-scroll-target="#two-timescales-slow-weights-frozen-fast-weights-moving">2. Two timescales: slow weights frozen, fast weights moving</a></li>
+  <li><a href="#the-programmer-view-the-seed-of-nesting" id="toc-the-programmer-view-the-seed-of-nesting" class="nav-link" data-scroll-target="#the-programmer-view-the-seed-of-nesting">3. The programmer view — the seed of nesting</a>
+  <ul class="collapse">
+  <li><a href="#gradient-flows-through-the-fast-weights-pytorch-autograd" id="toc-gradient-flows-through-the-fast-weights-pytorch-autograd" class="nav-link" data-scroll-target="#gradient-flows-through-the-fast-weights-pytorch-autograd">Gradient flows <em>through</em> the fast weights (PyTorch autograd)</a></li>
+  </ul></li>
+  <li><a href="#the-capacity-law-capacity-key-dimension" id="toc-the-capacity-law-capacity-key-dimension" class="nav-link" data-scroll-target="#the-capacity-law-capacity-key-dimension">4. The capacity law: capacity ≈ key dimension</a></li>
+  <li><a href="#code-walkthrough-slow-vs-fast-weights-in-real-code" id="toc-code-walkthrough-slow-vs-fast-weights-in-real-code" class="nav-link" data-scroll-target="#code-walkthrough-slow-vs-fast-weights-in-real-code">Code walkthrough — slow vs fast weights in real code</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">M2 — Fast Weight Programmers</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>The question:</strong> where do the keys, values, and queries come from?</p>
+<p>Second module of the foundations spine. Runs on CPU in seconds; PyTorch from here on. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m2-fast-weight-programmers.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>M1 gave us a memory matrix and the Hebbian write — but it <em>handed</em> us the keys, values, and queries. M2 asks where <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> come from, and the answer — <em>a “slow” network writes a “fast” network’s weight-memory</em> — is the first real taste of <strong>nesting</strong>.</p>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>Distinguish <strong>slow weights</strong> (trained by gradient descent, frozen within a forward pass) from <strong>fast weights</strong> (the memory, rewritten every token).</li>
+<li>Explain how the slow weights <em>program</em> the fast weights: <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q} = W_k\mathbf{x},\,W_v\mathbf{x},\,W_q\mathbf{x}\)</span>, then the outer product <span class="math inline">\(\mathbf{v}\mathbf{k}^\top\)</span> is an “elementary programming instruction” written into <span class="math inline">\(\mathcal{M}\)</span>.</li>
+<li>See why this is the seed of <strong>nesting / levels</strong>: one network’s outputs become another network’s weights, on two timescales — and watch autograd send the loss <em>back through</em> the fast memory into the slow weights.</li>
+<li>State the FWP <strong>capacity law</strong> (capacity ≈ key dimension) and how it sets up the feature map (M3) and the delta rule (M4).</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-fixes" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</h2>
+<p>M1’s memory was powerful but <em>disembodied</em>: we wrote arbitrary <span class="math inline">\((\mathbf{k},\mathbf{v})\)</span> pairs by hand. In a real model nobody hands you <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> — they must be <strong>computed from the input</strong>.</p>
+<p>And there’s a tension already hiding in M1’s recurrence <span class="math inline">\(\mathcal{M}_t = \mathcal{M}_{t-1} + \mathbf{v}_t\mathbf{k}_t^\top\)</span>: the memory <span class="math inline">\(\mathcal{M}\)</span> changes <strong>every token</strong>, but whatever <em>produces</em> <span class="math inline">\(\mathbf{k},\mathbf{v}\)</span> had better be <strong>stable</strong> (learned once, reused across all tokens and all sequences). That’s two different timescales living in one layer. Fast Weight Programmers make that split explicit — and naming it is the seed of the whole “levels” idea.</p>
+</section>
+<section id="core-idea-a-slow-net-programs-a-fast-net" class="level2">
+<h2 data-anchor-id="core-idea-a-slow-net-programs-a-fast-net">Core idea — a slow net programs a fast net</h2>
+<p>Two sets of weights:</p>
+<ul>
+<li><strong>Slow weights</strong> <span class="math inline">\(W_k, W_v, W_q\)</span> — ordinary trainable weights. Context-independent, changed only by gradient descent <em>across training</em>. <strong>Frozen during a forward pass.</strong></li>
+<li><strong>Fast weights</strong> <span class="math inline">\(\mathcal{M}\)</span> — the memory. Context-dependent, <strong>regenerated at every timestep</strong> from the input; a short-term memory.</li>
+</ul>
+<p><strong>Where the split comes from.</strong> It is three decades older than the transformer, and it arrived in stages — each one removing something the last still did by hand. Von der Malsburg’s <em>correlation theory of brain function</em> (1981) proposed that fast, reversible synaptic changes ride on top of slow ones. <a href="https://www.cs.toronto.edu/~hinton/absps/fastweights87.pdf">Hinton &amp; Plaut (1987)</a> made that a connectionist mechanism: give every connection <strong>two</strong> weights — a slow <em>plastic</em> one holding long-term knowledge, a fast <em>elastic</em> one holding temporary knowledge that decays toward zero — and use the fast ones to restore memories blurred by later learning. But their fast weights still followed a <em>hand-designed</em> rule. <a href="https://people.idsia.ch/~juergen/fastweights/ncfastweightsrev.html">Schmidhuber (1992)</a> removed that last hand-designed piece, and it is the one this module is about: two feedforward nets, where the first <strong>learns by gradient descent</strong> to produce context-dependent weight changes for the second, whose weights vary quickly. The fast weights stopped being a decay rule and became a <em>program</em>.</p>
+<p>At each step the slow net projects the input into self-invented patterns and writes their outer product into the fast weights:</p>
+<p><span class="math display">\[\mathbf{k}_t,\mathbf{v}_t,\mathbf{q}_t = W_k\mathbf{x}_t,\; W_v\mathbf{x}_t,\; W_q\mathbf{x}_t, \qquad \mathcal{M}_t = \mathcal{M}_{t-1} + \mathbf{v}_t\mathbf{k}_t^\top, \qquad \mathbf{y}_t = \mathcal{M}_t\,\mathbf{q}_t.\]</span></p>
+<p>The name <strong>Fast Weight Programmers</strong>, the reading of those 1990s controllers as writing outer products of self-invented keys and values, and the proof that this <em>is</em> linear attention are all <a href="https://arxiv.org/abs/2102.11174">Schlag, Irie &amp; Schmidhuber (2021)</a> — this module’s grounding source, and what M3 and M4 build straight on. Its abstract is the one-liner:</p>
+<blockquote class="blockquote">
+<p>“a <em>‘slow’</em> neural net learns by gradient descent to program the <em>‘fast weights’</em> of another net through sequences of elementary programming instructions which are additive outer products of self-invented activation patterns (today called keys and values).”</p>
+</blockquote>
+<p>The novelty over the classical associative memories of Hebb (1949) and <a href="https://redwood.berkeley.edu/wp-content/uploads/2018/08/hopfield82.pdf">Hopfield (1982)</a>: those associated <strong>pre-wired</strong> patterns; here the slow net <strong>learns to invent</strong> the keys and values it stores (FWP §2). That single shift — <em>learned</em> projections feeding an outer-product memory — turns a static associative memory into a <em>programmable</em> one.</p>
+<p>The chain does not stop here. Schmidhuber’s next move — a weight matrix that programs <em>itself</em>, rather than a second net (<a href="https://link.springer.com/chapter/10.1007/978-1-4471-2063-6_107">1993</a>, “A self-referential weight matrix”) — is where <strong>M5</strong> picks it up.</p>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2102.11174">FWP</a> §2 (background on FWPs; Eqs. 1–3, the slow net’s outer-product write), §3.1 (Eq. 4, the slow weights generating <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span>), the abstract for the one-liner, §4.1 (the capacity limitation). The grounding source for this module.</li>
+<li><a href="https://arxiv.org/abs/2512.24695">Nested Learning</a> §5 — the same memory read as one of the “existing architectures” the paper unifies.</li>
+</ul>
+</section>
+</section>
+<section id="from-given-mathbfkmathbfvmathbfq-to-projected-from-the-input" class="level2">
+<h2 data-anchor-id="from-given-mathbfkmathbfvmathbfq-to-projected-from-the-input">1. From “given <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span>” to “projected from the input”</h2>
+<p>The only change from M1: <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> are now <span class="math inline">\(W_k\mathbf{x},\,W_v\mathbf{x},\,W_q\mathbf{x}\)</span>. The next cell builds a minimal FWP layer as an <code>nn.Module</code> — three <code>nn.Linear</code> slow-weight projections and one fast-weight memory tensor. (The <code>proj_*</code> linears mirror the real repo’s <code>SelfModifyingLayer</code> exactly.)</p>
+<div id="fc5db498" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> FWPLayer(nn.Module):</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""A fast-weight-programmer layer (single head).</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">    SLOW weights proj_k/proj_v/proj_q (nn.Linear): trainable, FROZEN within a</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">        forward pass (gradient descent changes them only across training).</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">    FAST weights M: the memory -- reset per sequence, rewritten every token.</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, d_in, d_key, d_v):</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_k <span class="op">=</span> nn.Linear(d_in, d_key, bias<span class="op">=</span><span class="va">False</span>)   <span class="co"># slow</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_v <span class="op">=</span> nn.Linear(d_in, d_v,   bias<span class="op">=</span><span class="va">False</span>)   <span class="co"># slow</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_q <span class="op">=</span> nn.Linear(d_in, d_key, bias<span class="op">=</span><span class="va">False</span>)   <span class="co"># slow</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.d_key, <span class="va">self</span>.d_v <span class="op">=</span> d_key, d_v</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, X):                                   <span class="co"># X: (T, d_in)</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        M <span class="op">=</span> torch.zeros(<span class="va">self</span>.d_v, <span class="va">self</span>.d_key)              <span class="co"># fast weights, fresh per sequence</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        ys, Mnorms <span class="op">=</span> [], []</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x <span class="kw">in</span> X:</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>            k <span class="op">=</span> F.normalize(<span class="va">self</span>.proj_k(x), dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>            v <span class="op">=</span> <span class="va">self</span>.proj_v(x)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>            q <span class="op">=</span> F.normalize(<span class="va">self</span>.proj_q(x), dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>            M <span class="op">=</span> M <span class="op">+</span> torch.outer(v, k)                       <span class="co"># an elementary programming instruction</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>            ys.append(M <span class="op">@</span> q)<span class="op">;</span> Mnorms.append(M.norm())</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> torch.stack(ys), torch.stack(Mnorms), M</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>layer <span class="op">=</span> FWPLayer(d_in<span class="op">=</span><span class="dv">8</span>, d_key<span class="op">=</span><span class="dv">16</span>, d_v<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> torch.randn(<span class="dv">20</span>, <span class="dv">8</span>)                      <span class="co"># a sequence of 20 tokens, each in R^8</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>Y, Mnorms, M_final <span class="op">=</span> layer.forward(X)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"input sequence X:"</span>, <span class="bu">tuple</span>(X.shape), <span class="st">" -&gt; outputs Y:"</span>, <span class="bu">tuple</span>(Y.shape))</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"SLOW weights: proj_k"</span>, <span class="bu">tuple</span>(layer.proj_k.weight.shape),</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>      <span class="st">"proj_v"</span>, <span class="bu">tuple</span>(layer.proj_v.weight.shape),</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>      <span class="st">"proj_q"</span>, <span class="bu">tuple</span>(layer.proj_q.weight.shape))</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"FAST weights M (final):"</span>, <span class="bu">tuple</span>(M_final.shape), <span class="st">" |M| ="</span>, <span class="bu">round</span>(M_final.norm().item(), <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>input sequence X: (20, 8)  -&gt; outputs Y: (20, 8)
+SLOW weights: proj_k (16, 8) proj_v (8, 8) proj_q (16, 8)
+FAST weights M (final): (8, 16)  |M| = 14.08</code></pre>
+</div>
+</div>
+</section>
+<section id="two-timescales-slow-weights-frozen-fast-weights-moving" class="level2">
+<h2 data-anchor-id="two-timescales-slow-weights-frozen-fast-weights-moving">2. Two timescales: slow weights frozen, fast weights moving</h2>
+<p>Within a single forward pass the slow weights never change — only the fast memory <span class="math inline">\(\mathcal{M}\)</span> is rewritten, once per token. Across sequences, <span class="math inline">\(\mathcal{M}\)</span> resets (short-term memory) while the slow weights persist (long-term, learned). The plot shows <span class="math inline">\(\lVert\mathcal{M}_t\rVert\)</span> climbing through a sequence while the slow weights are provably untouched.</p>
+<div id="8eeda516" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Slow weights are frozen within a forward pass; only the fast memory moves.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>Wk_before <span class="op">=</span> layer.proj_k.weight.detach().clone()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>Y, Mnorms, _ <span class="op">=</span> layer.forward(X)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"slow proj_k unchanged by the forward pass:"</span>, torch.equal(Wk_before, layer.proj_k.weight))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># The fast memory is short-term: re-created (reset to 0) on every forward call.</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>_, Mnorms2, _ <span class="op">=</span> layer.forward(torch.randn(<span class="dv">20</span>, <span class="dv">8</span>))            <span class="co"># a different sequence</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>plt.plot(<span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">21</span>), Mnorms.detach().numpy(),  marker<span class="op">=</span><span class="st">'o'</span>, ms<span class="op">=</span><span class="dv">3</span>, label<span class="op">=</span><span class="st">"sequence 1"</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>plt.plot(<span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">21</span>), Mnorms2.detach().numpy(), marker<span class="op">=</span><span class="st">'o'</span>, ms<span class="op">=</span><span class="dv">3</span>, label<span class="op">=</span><span class="st">"sequence 2"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"timestep t within the sequence"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"|M_t|  (fast weights)"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Fast weights move every token; slow weights stay put; M resets per sequence"</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>slow proj_k unchanged by the forward pass: True</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m2-fast-weight-programmers_files/figure-html/cell-3-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="the-programmer-view-the-seed-of-nesting" class="level2">
+<h2 data-anchor-id="the-programmer-view-the-seed-of-nesting">3. The programmer view — the seed of nesting</h2>
+<p>Here is the conceptual leap. The slow net’s <strong>outputs</strong> (<span class="math inline">\(\mathbf{v}_t,\mathbf{k}_t\)</span>) become, via the outer product, <strong>changes to another network’s weights</strong> (<span class="math inline">\(\mathcal{M}\)</span>). So <span class="math inline">\(\mathcal{M}\)</span> is a “fast network” whose weights are <em>written by</em> the slow network. One model parameterizes another → <strong>nesting</strong>.</p>
+<p>Same slow weights = a fixed <em>program</em>; the fast memory it writes is <em>input-specific</em>. The next cell runs two different sequences through the <strong>same</strong> layer and shows the resulting memories differ completely — the program is fixed, its state is not.</p>
+<div id="0ca40cd3" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>X1 <span class="op">=</span> torch.randn(<span class="dv">20</span>, <span class="dv">8</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X2 <span class="op">=</span> torch.randn(<span class="dv">20</span>, <span class="dv">8</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>Wk_snapshot <span class="op">=</span> layer.proj_k.weight.detach().clone()</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>_, _, M1 <span class="op">=</span> layer.forward(X1)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>_, _, M2 <span class="op">=</span> layer.forward(X2)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"slow weights identical across both runs:"</span>, torch.equal(Wk_snapshot, layer.proj_k.weight))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>rel <span class="op">=</span> ((M1 <span class="op">-</span> M2).norm() <span class="op">/</span> M1.norm()).item()</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"yet  ||M1 - M2|| / ||M1|| = </span><span class="sc">{</span>rel<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=&gt; fixed PROGRAM (slow weights), input-specific STATE (fast weights)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>slow weights identical across both runs: True
+yet  ||M1 - M2|| / ||M1|| = 0.73
+=&gt; fixed PROGRAM (slow weights), input-specific STATE (fast weights).</code></pre>
+</div>
+</div>
+<section id="gradient-flows-through-the-fast-weights-pytorch-autograd" class="level3">
+<h3 data-anchor-id="gradient-flows-through-the-fast-weights-pytorch-autograd">Gradient flows <em>through</em> the fast weights (PyTorch autograd)</h3>
+<p>“Slow weights are trained by gradient descent” hides the interesting part. The loss is computed on the outputs <span class="math inline">\(\mathbf{y}_t = \mathcal{M}_t\mathbf{q}_t\)</span>, and <span class="math inline">\(\mathcal{M}_t\)</span> was itself <em>built from</em> the slow net’s outputs (outer products of <span class="math inline">\(\mathbf{v},\mathbf{k}\)</span>). So the training signal must flow <strong>backward through the fast memory</strong> into <span class="math inline">\(W_k,W_v,W_q\)</span>.</p>
+<p>That back-through-the-memory path is the <strong>inner loop</strong>; gradient descent on the slow weights is the <strong>outer loop</strong>. Two nested loops — and autograd makes the inner one literal. One <code>loss.backward()</code> and every slow weight gets a gradient:</p>
+<div id="ab08092b" class="cell" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>layer.zero_grad()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>Y, _, _ <span class="op">=</span> layer.forward(torch.randn(<span class="dv">20</span>, <span class="dv">8</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> Y.<span class="bu">pow</span>(<span class="dv">2</span>).mean()             <span class="co"># any scalar objective on the outputs</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>loss.backward()                    <span class="co"># autograd unrolls back THROUGH M into the slow weights</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, p <span class="kw">in</span> layer.named_parameters():</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:15s}</span><span class="ss"> grad norm = </span><span class="sc">{</span>p<span class="sc">.</span>grad<span class="sc">.</span>norm()<span class="sc">.</span>item()<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=&gt; every SLOW weight receives a gradient: the outer-loop signal reaches them THROUGH M."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>proj_k.weight   grad norm = 0.9462
+proj_v.weight   grad norm = 0.8859
+proj_q.weight   grad norm = 0.8891
+=&gt; every SLOW weight receives a gradient: the outer-loop signal reaches them THROUGH M.</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="the-capacity-law-capacity-key-dimension" class="level2">
+<h2 data-anchor-id="the-capacity-law-capacity-key-dimension">4. The capacity law: capacity ≈ key dimension</h2>
+<p>M1 showed crosstalk grows with stored pairs. FWP makes it <strong>quantitative</strong>: the memory holds about <strong><code>d_key</code> associations</strong> — the dimension of the <em>projected key</em> — because that’s how many near-orthogonal directions exist to address them. The paper measures exactly this: linear attention with key dim 64 degrades past ~60 associations (<a href="https://arxiv.org/abs/2102.11174">FWP</a> §6.1.1, Fig. 2).</p>
+<p>The next cell reproduces the wall in miniature for a few key dimensions.</p>
+<p><strong>Why this matters for what’s next:</strong> capacity is set by the <em>key</em> dimension, not the model width. So if you map keys through a <strong>feature map</strong> <span class="math inline">\(\phi(\mathbf{k})\)</span> into a <em>higher</em> dimension <span class="math inline">\(d_{\text{dot}}\)</span>, you buy capacity for free — that’s M3’s move (the <span class="math inline">\(\phi\)</span> / DPFP kernel). And <em>editing</em> instead of <em>accumulating</em> (the <strong>delta rule</strong>) is M4.</p>
+<div id="64d97db3" class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> capacity_curve(d_key, Ns, d_v<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">0</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    errs <span class="op">=</span> []</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> N <span class="kw">in</span> Ns:</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        K <span class="op">=</span> F.normalize(torch.randn(N, d_key, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> torch.randn(N, d_v, generator<span class="op">=</span>g)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        M <span class="op">=</span> V.t() <span class="op">@</span> K                         <span class="co"># store all N pairs:  M = sum_i v_i k_i^T</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        recall <span class="op">=</span> (M <span class="op">@</span> K.t()).t()              <span class="co"># query with each key:  row j = M k_j</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        errs.append(((recall <span class="op">-</span> V).norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">/</span> V.norm(dim<span class="op">=</span><span class="dv">1</span>)).mean().item())</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> errs</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>Ns <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">2</span>, <span class="dv">130</span>, <span class="dv">4</span>))</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> d_key <span class="kw">in</span> (<span class="dv">16</span>, <span class="dv">32</span>, <span class="dv">64</span>):</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    plt.plot(Ns, capacity_curve(d_key, Ns), label<span class="op">=</span><span class="ss">f"d_key=</span><span class="sc">{</span>d_key<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    plt.axvline(d_key, ls<span class="op">=</span><span class="st">"--"</span>, c<span class="op">=</span><span class="st">"gray"</span>, lw<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"number of stored associations N"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"mean relative recall error"</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"FWP capacity law: the wall sits at N ~ d_key"</span>)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.show()</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Capacity tracks the KEY dimension. A feature map phi(k) raising d_key buys capacity (M3)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m2-fast-weight-programmers_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Capacity tracks the KEY dimension. A feature map phi(k) raising d_key buys capacity (M3).</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Correlation makes keys non-orthogonal, so we under-use the memory’s capacity. Is that also why the paper says additively <em>stacking</em> gradients is the wrong optimizer write — and doesn’t the same thing hit the gradients flowing back to the slow weights?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>One bottleneck — <strong>effective rank</strong> — seen from three sides.</p>
+<p><strong>The core: capacity ≈ effective rank, not <span class="math inline">\(d_{\text{key}}\)</span>.</strong> “Crosstalk” is the <em>symptom</em> (contaminated recall); the <em>cause</em> is <strong>under-used capacity</strong>. The law “capacity <span class="math inline">\(\approx d_{\text{key}}\)</span>” silently assumes the keys spread across the whole <span class="math inline">\(d_{\text{key}}\)</span>-dimensional space — which random / near-orthogonal keys do. Correlated keys don’t: they cluster into an <strong>effective subspace</strong> of dimension <span class="math inline">\(r &lt; d_{\text{key}}\)</span> (the number of significant singular values of the key set). The memory can only separate as many associations as there are independent key directions, so usable capacity <span class="math inline">\(\approx r\)</span>. Equivalently, <strong>capacity ≈ rank of the key Gram matrix <span class="math inline">\(KK^\top\)</span></strong>. The cell below makes it literal: provision <span class="math inline">\(d_{\text{key}}=64\)</span>, confine the keys to a rank-<span class="math inline">\(r\)</span> subspace, and the wall slides from 64 down to <span class="math inline">\(r\)</span>.</p>
+<p><strong>Forward side (the memory).</strong> This is the M1/M2 capacity wall. Fixes: a <strong>feature map <span class="math inline">\(\phi\)</span></strong> (M3) — which helps <em>twice</em>: it raises the nominal dimension <span class="math inline">\(d_{\text{dot}}\)</span> <em>and</em> spreads correlated inputs into more orthogonal directions (DPFP’s combinatorial ReLU features; key whitening does the same), recovering effective rank — and the <strong>delta write</strong> (M4), which edits instead of stacking.</p>
+<p><strong>Optimizer side (the DGD intuition — yes).</strong> The <a href="https://arxiv.org/abs/2512.24695">Nested Learning paper</a> reframes <em>gradient descent itself</em> as an associative memory (§3.1 Eq 8; §4.1 Eqs 29–30) — every § in this callout is NL, not FWP: one step writes an outer product with <strong>key = layer input <span class="math inline">\(\mathbf{x}_t\)</span></strong> and <strong>value = output surprise <span class="math inline">\(\boldsymbol{\delta}_t\)</span></strong>, i.e.&nbsp;<span class="math inline">\(\partial\mathcal{L}/\partial W_\ell = \boldsymbol{\delta}_\ell\hat{\mathbf{x}}_{\ell-1}^\top\)</span>. Same additive write ⇒ same effective-rank limitation: on <strong>correlated / non-i.i.d.</strong> inputs the stacked updates interfere, “resulting in slower (or less robust) convergence” (§4.2). The fix is <strong>DGD</strong> (§4.5) — a state-aware delta-rule write “capturing the dependencies of data samples <strong>without i.i.d. assumption</strong>” (§1.2). Two precisions: (i) the “sequence” is the <strong>data / gradient stream</strong> across optimizer steps, not back-prop-through-<em>time</em>; (ii) the paper insists <strong>backprop <span class="math inline">\(\neq\)</span> pure Hebbian / linear attention</strong> — the value <span class="math inline">\(\boldsymbol{\delta}_t\)</span> is <strong>self-generated</strong> (depends on the current <span class="math inline">\(W_t\)</span>), making GD a <em>self-referential</em> process (Schmidhuber 1993), which is what DGD / GGD formalize.</p>
+<p><strong>Backward / BPTT side (the distinction to hold).</strong> Gradients flowing through the inner loop into the slow weights <em>are</em> a sum of correlated per-timestep terms — but that’s a <strong>different</strong> effect. Summing correlated gradients still gives the <strong>correct</strong> gradient (gradient of a sum = sum of gradients); correlation makes it <strong>anisotropic / ill-conditioned</strong>, not <strong>corrupted-recall</strong>. The cure is <strong>preconditioning</strong> (Adam / Muon / natural gradient / DGD), the optimizer’s job (M6) — <em>not</em> the architecture’s. And BPTT isn’t special: unrolling the inner loop or using the equivalent parallel / chunked form gives the <em>identical</em> gradient, so the unroll adds no extra crosstalk — it just generates the stream the optimizer must precondition. (The additive recurrence <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}_t\mathbf{k}_t^\top\)</span> has state-Jacobian <span class="math inline">\(\partial\mathcal{M}_t/\partial\mathcal{M}_{t-1}=I\)</span>, so gradients pass through cleanly — no vanish/explode — which is <em>why</em> FWP is parallel-trainable.)</p>
+<p><strong>The unifying point.</strong> <strong>Effective rank is the single quantity</strong> behind both faces: low effective rank = the forward capacity wall <em>and</em> the ill-conditioned key Gram that skews the gradient. They are repaired in different places — <span class="math inline">\(\phi\)</span> / decorrelation + delta write on the forward side (M3/M4), preconditioning optimizers on the backward side (M6). And this is exactly the paper’s case for <strong>architecture-specific optimizers</strong> (§6): “architecture generates the context for optimizers (i.e., gradients). Therefore, the proper memory management of gradients (i.e., optimization algorithm) relies on the choice of architectures … we need to design architecture specific optimizers.” The architecture shapes the gradient distribution; the optimizer should be matched to it.</p>
+<div id="00d8a53a" class="cell" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Provision d_key = 64, but confine keys to an EFFECTIVE subspace of rank r &lt; d_key.</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Usable capacity then tracks r, not d_key: the provisioned capacity is underused.</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> capacity_curve_rank(d_key, rank_r, Ns, d_v<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">0</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    errs <span class="op">=</span> []</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> N <span class="kw">in</span> Ns:</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        basis <span class="op">=</span> F.normalize(torch.randn(rank_r, d_key, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)  <span class="co"># (r, d_key) subspace</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        coeff <span class="op">=</span> torch.randn(N, rank_r, generator<span class="op">=</span>g)                          <span class="co"># (N, r) coordinates</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        K <span class="op">=</span> F.normalize(coeff <span class="op">@</span> basis, dim<span class="op">=</span><span class="dv">1</span>)                                <span class="co"># (N, d_key), rank r</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> torch.randn(N, d_v, generator<span class="op">=</span>g)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        M <span class="op">=</span> V.t() <span class="op">@</span> K</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        recall <span class="op">=</span> (M <span class="op">@</span> K.t()).t()</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        errs.append(((recall <span class="op">-</span> V).norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">/</span> V.norm(dim<span class="op">=</span><span class="dv">1</span>)).mean().item())</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> errs</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>Ns <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">2</span>, <span class="dv">130</span>, <span class="dv">4</span>))</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>d_key <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> r <span class="kw">in</span> (<span class="dv">64</span>, <span class="dv">32</span>, <span class="dv">16</span>):</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    plt.plot(Ns, capacity_curve_rank(d_key, r, Ns), label<span class="op">=</span><span class="ss">f"effective rank r = </span><span class="sc">{</span>r<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    plt.axvline(r, ls<span class="op">=</span><span class="st">"--"</span>, c<span class="op">=</span><span class="st">"gray"</span>, lw<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"number of stored associations N"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"mean relative recall error"</span>)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"d_key = 64 provisioned, but the wall sits at the EFFECTIVE rank r"</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.show()</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Correlated keys -&gt; low effective rank -&gt; the d_key capacity is underused; the wall tracks r, not d_key."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m2-fast-weight-programmers_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Correlated keys -&gt; low effective rank -&gt; the d_key capacity is underused; the wall tracks r, not d_key.</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="code-walkthrough-slow-vs-fast-weights-in-real-code" class="level2">
+<h2 data-anchor-id="code-walkthrough-slow-vs-fast-weights-in-real-code">Code walkthrough — slow vs fast weights in real code</h2>
+<p>Our <code>FWPLayer</code> is a deliberate miniature of <a href="https://github.com/obekt/HOPE-nested-learning/blob/main/train_hope.py"><code>train_hope.py</code></a> → <code>SelfModifyingLayer</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.proj_q <span class="op">=</span> nn.Linear(dim, dim)   <span class="co"># \</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.proj_k <span class="op">=</span> nn.Linear(dim, dim)   <span class="co">#  &gt;  SLOW weights (trained by gradient descent)</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.proj_v <span class="op">=</span> nn.Linear(dim, dim)   <span class="co"># /</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>...</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>q, k, v <span class="op">=</span> <span class="va">self</span>.proj_q(x), <span class="va">self</span>.proj_k(x), <span class="va">self</span>.proj_v(x)   <span class="co"># slow net invents k, v, q</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>memory <span class="op">=</span> a_t <span class="op">*</span> memory <span class="op">+</span> update                              <span class="co"># FAST weights (rewritten per token)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The <code>proj_*</code> linears are the <strong>slow weights</strong>; <code>memory</code> is the <strong>fast weights</strong> — identical roles to our toy. The other reproduction, <a href="https://github.com/kmccleary3301/nested_learning">kmccleary3301/nested_learning</a>, keeps the split too (<a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/fast_state.py"><code>fast_state.py</code></a> holds the fast memory; the projections live in the block).</p>
+<p>The FWP paper’s own code is <a href="https://github.com/ischlag/fast-weight-transformers/tree/main/synthetic"><code>ischlag/fast-weight-transformers</code></a>: <a href="https://github.com/ischlag/fast-weight-transformers/blob/main/synthetic/linearAttention.py"><code>linearAttention.py</code></a> (the FWP), <a href="https://github.com/ischlag/fast-weight-transformers/blob/main/synthetic/softmaxAttention.py"><code>softmaxAttention.py</code></a> (the baseline), and <a href="https://github.com/ischlag/fast-weight-transformers/blob/main/synthetic/associativeRetrievalDataset.py"><code>associativeRetrievalDataset.py</code></a> — the capacity task we miniaturized in §4.</p>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Ready for M3 when you can:</p>
+<ol type="1">
+<li>Name which weights are “slow” vs “fast” in <span class="math inline">\(\;\mathbf{k},\mathbf{v},\mathbf{q} = W_k\mathbf{x},W_v\mathbf{x},W_q\mathbf{x};\ \ \mathcal{M}_t = \mathcal{M}_{t-1}+\mathbf{v}_t\mathbf{k}_t^\top;\ \ \mathbf{y}_t=\mathcal{M}_t\mathbf{q}_t\)</span> — and what trains each.</li>
+<li>Explain why “a slow net writes a fast net’s weights” is <em>nesting</em>, and which timescale each loop runs on (the autograd cell shows the inner loop literally).</li>
+<li>State the capacity law and how a feature map <span class="math inline">\(\phi\)</span> raises capacity.</li>
+</ol>
+<p><strong>Next → M3, Linear attention = fast weights.</strong> We’ve built the FWP; M3 proves it <em>is</em> linear attention in full — the <span class="math inline">\(O(N)\)</span> vs <span class="math inline">\(O(N^2)\)</span> story, the kernel / feature map <span class="math inline">\(\phi\)</span>, and the recurrent-vs-parallel forms — turning the sketch from M1’s §4 callout into the complete architecture picture.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

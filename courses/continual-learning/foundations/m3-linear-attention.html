@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>M3 — Linear attention is fast weights – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-6d841f876cbd7f9db2ca110eea6af95d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-fixes" id="toc-why-it-exists-the-limitation-it-fixes" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</a></li>
+  <li><a href="#core-idea-take-attention-apart-then-put-it-back-cheap" id="toc-core-idea-take-attention-apart-then-put-it-back-cheap" class="nav-link" data-scroll-target="#core-idea-take-attention-apart-then-put-it-back-cheap">Core idea — take attention apart, then put it back cheap</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#attention-from-scratch-query-key-value" id="toc-attention-from-scratch-query-key-value" class="nav-link" data-scroll-target="#attention-from-scratch-query-key-value">1. Attention, from scratch — query, key, value</a></li>
+  <li><a href="#why-attention-is-expensive-it-keeps-every-token" id="toc-why-attention-is-expensive-it-keeps-every-token" class="nav-link" data-scroll-target="#why-attention-is-expensive-it-keeps-every-token">2. Why attention is expensive — it keeps every token</a></li>
+  <li><a href="#delete-the-softmax-associativity-collapses-the-sum" id="toc-delete-the-softmax-associativity-collapses-the-sum" class="nav-link" data-scroll-target="#delete-the-softmax-associativity-collapses-the-sum">3. Delete the softmax — associativity collapses the sum</a></li>
+  <li><a href="#that-matrix-mathbfs-is-m2s-fast-weight-memory" id="toc-that-matrix-mathbfs-is-m2s-fast-weight-memory" class="nav-link" data-scroll-target="#that-matrix-mathbfs-is-m2s-fast-weight-memory">4. That matrix <span class="math inline">\(\mathbf{S}\)</span> is M2’s fast-weight memory</a></li>
+  <li><a href="#two-faces-of-one-computation-on2-parallel-vs-on-recurrent" id="toc-two-faces-of-one-computation-on2-parallel-vs-on-recurrent" class="nav-link" data-scroll-target="#two-faces-of-one-computation-on2-parallel-vs-on-recurrent">5. Two faces of one computation: <span class="math inline">\(O(N^2)\)</span> parallel vs <span class="math inline">\(O(N)\)</span> recurrent</a></li>
+  <li><a href="#the-feature-map-phi-what-it-buys-and-what-it-costs" id="toc-the-feature-map-phi-what-it-buys-and-what-it-costs" class="nav-link" data-scroll-target="#the-feature-map-phi-what-it-buys-and-what-it-costs">6. The feature map <span class="math inline">\(\phi\)</span> — what it buys and what it costs</a></li>
+  <li><a href="#code-walkthrough-linear-attention-in-real-code" id="toc-code-walkthrough-linear-attention-in-real-code" class="nav-link" data-scroll-target="#code-walkthrough-linear-attention-in-real-code">Code walkthrough — linear attention in real code</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">M3 — Linear attention <em>is</em> fast weights</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>The question:</strong> what happens to attention if you delete the softmax?</p>
+<p>Third module of the foundations spine. Runs on CPU in seconds; PyTorch throughout. <a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/foundations/m3-linear-attention.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid" alt="Open In Colab"></a></p>
+<p>M2 built a fast-weight programmer <strong>from the Schmidhuber side</strong>: a slow net writes an outer-product memory <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}_t\mathbf{k}_t^\top\)</span>. M3 reaches the <strong>same object from the Transformer side</strong> — take ordinary attention, delete the softmax, and the whole “attend to every past token” sum <strong>collapses into exactly that matrix</strong>. So a <em>linear</em> Transformer is secretly an RNN with a matrix memory, and that memory is M2’s fast weights.</p>
+<blockquote class="blockquote">
+<p><strong>Prerequisite math</strong> — <em>effective rank / capacity</em> and <em>orthogonality</em> (what the feature map <span class="math inline">\(\phi\)</span> buys) are in the <a href="../../../courses/continual-learning/primers/linear-algebra.html">linear-algebra primer</a> §1, §3.</p>
+</blockquote>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>Rebuild <strong>softmax self-attention</strong> from query/key/value and read it as content-addressable lookup — and see <em>why</em> softmax makes recall sharp but costs <span class="math inline">\(O(N^2)\)</span> and a growing KV cache.</li>
+<li>Write attention as a <strong>kernel</strong> <span class="math inline">\(\mathrm{sim}(\mathbf{q},\mathbf{k})\)</span> and see that softmax is the <em>one specific kernel</em> (<span class="math inline">\(\exp\)</span>) that <strong>forbids</strong> factorization — which is why real attention must keep every token.</li>
+<li>Replace the kernel with a <strong>factorizable</strong> feature map <span class="math inline">\(\mathrm{sim}(\mathbf{q},\mathbf{k})=\phi(\mathbf{q})^\top\phi(\mathbf{k})\)</span> and use <strong>associativity</strong> to collapse the <span class="math inline">\(O(N^2)\)</span> token-by-token sum into a single fixed-size matrix <span class="math inline">\(\mathbf{S}=\sum_j\phi(\mathbf{k}_j)\mathbf{v}_j^\top\)</span>.</li>
+<li>Recognize that <span class="math inline">\(\mathbf{S}\)</span> <strong>is M2’s fast-weight memory</strong> <span class="math inline">\(\mathcal{M}\)</span> — same outer-product write — so <em>linear attention = fast-weight programmer = a linear RNN</em>. Three names, one recurrence.</li>
+<li>Switch between the <strong>parallel form</strong> (train like a Transformer, <span class="math inline">\(O(N^2)\)</span>) and the <strong>recurrent form</strong> (infer like an RNN, <span class="math inline">\(O(1)\)</span> per token) and verify they compute the identical function.</li>
+<li>Explain where the feature map <span class="math inline">\(\phi\)</span> buys back the capacity from M2’s capacity law, and what it costs.</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-fixes" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</h2>
+<p>M2 left us with a working fast-weight layer and no reason to trust it. It was an orphan mechanism: an outer-product memory that Schmidhuber proposed in 1992, justified on its own terms, with no stated relationship to the architecture that actually went on to win everything. Nothing in M2 tells you whether the fast-weight write is a curiosity or a necessity — and that open question from M1’s §4 callout is still sitting there: <em>what exactly makes something “linear attention,” and how does it relate to the Transformer you already know?</em></p>
+<p>M3 repairs that by deriving M2’s memory from the Transformer instead of postulating it. Take softmax self-attention (<a href="https://arxiv.org/abs/1706.03762">Vaswani et al., 2017</a>), remove exactly one operation, and M2’s write is what falls out — not an alternative to attention but what attention <em>is</em> once you stop paying for the softmax. The orphan gets a parent.</p>
+<p>The operation is worth removing on its own merits. Softmax attention computes a similarity between <strong>every pair</strong> of positions: an <span class="math inline">\(N\times N\)</span> matrix for a length-<span class="math inline">\(N\)</span> sequence. That is <span class="math inline">\(O(N^2)\)</span> time and memory, and autoregressive decoding makes it worse — each new token attends to <strong>all</strong> previous tokens, so you cache every past key and value (the KV cache grows without bound). This is <em>the</em> scaling wall of Transformers.</p>
+<p>The fix is almost embarrassingly simple: <strong>remove the softmax.</strong> Once the pairwise similarity factorizes, the sum over past tokens re-associates into a running matrix you can carry forward — constant memory, linear time. And that running matrix is precisely the fast-weight memory M2 already built.</p>
+<p>Two groups walked into this from opposite doors, which is why the identity is worth a module of its own. <a href="https://arxiv.org/abs/2006.16236">Katharopoulos et al.&nbsp;(2020)</a> came from the efficiency side — they wanted attention to stop costing <span class="math inline">\(O(N^2)\)</span>, found the collapse, and noticed the result was an RNN; they say nothing about fast weights. A year later, <a href="https://arxiv.org/abs/2102.11174">Schlag, Irie &amp; Schmidhuber (2021)</a> came from Schmidhuber’s own side and proved the two are formally the same object — the “secretly” in their title is doing real work, reporting a connection that the efficiency line had not seen. M3 is where the two lineages turn out to be one thing.</p>
+</section>
+<section id="core-idea-take-attention-apart-then-put-it-back-cheap" class="level2">
+<h2 data-anchor-id="core-idea-take-attention-apart-then-put-it-back-cheap">Core idea — take attention apart, then put it back cheap</h2>
+<p>The whole module is one move: write attention with a <strong>general</strong> similarity kernel, notice that <strong>softmax is the single kernel that blocks factorization</strong>, and swap it for a factorizable feature map <span class="math inline">\(\phi\)</span>. The instant you do, the “attend to every past token” sum re-associates into one fixed-size matrix — and that matrix is M2’s fast-weight memory.</p>
+<p>So we go in order, building the thing before we break it:</p>
+<ol type="1">
+<li><strong>§1–§2</strong> — rebuild <strong>original (softmax) attention</strong> from query/key/value and feel its cost.</li>
+<li><strong>§3 onward</strong> — delete the softmax and watch <strong>linear attention / fast weights</strong> fall out, then the parallel↔︎recurrent duality and the price of going linear.</li>
+</ol>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2006.16236">Linear Transformers</a> (<em>Transformers are RNNs</em>) — §3.2 (Linearized Attention: the kernel factorization), §3.2.1 (the feature map <span class="math inline">\(\phi=\mathrm{elu}+1\)</span>, Eq. 7), §3.4 (Transformers are RNNs: the recurrence <span class="math inline">\(s_i=s_{i-1}+\phi(x_iW_K)(x_iW_V)^\top\)</span>, Eq. 18). The grounding source.</li>
+<li><a href="https://arxiv.org/abs/2102.11174">FWP</a> §3.1–§3.2 — the same identity reached from the fast-weights side — and §4.1, the capacity analysis we tie back to.</li>
+<li><a href="https://arxiv.org/abs/1908.11775">Transformer Dissection</a> (Tsai et al., 2019) §3 — where §3’s general-kernel formulation comes from, one step upstream of the linearization.</li>
+</ul>
+</section>
+</section>
+<section id="attention-from-scratch-query-key-value" class="level2">
+<h2 data-anchor-id="attention-from-scratch-query-key-value">1. Attention, from scratch — query, key, value</h2>
+<p>One self-attention layer — the scaled dot-product attention of <a href="https://arxiv.org/abs/1706.03762">Vaswani et al.&nbsp;(2017)</a> — turns each token <span class="math inline">\(\mathbf{x}_t\)</span> into three roles via learned projections:</p>
+<ul>
+<li><strong>query</strong> <span class="math inline">\(\mathbf{q}_t = W_Q\mathbf{x}_t\)</span> — what position <span class="math inline">\(t\)</span> is looking for,</li>
+<li><strong>key</strong> <span class="math inline">\(\mathbf{k}_t = W_K\mathbf{x}_t\)</span> — the handle position <span class="math inline">\(t\)</span> advertises to others,</li>
+<li><strong>value</strong> <span class="math inline">\(\mathbf{v}_t = W_V\mathbf{x}_t\)</span> — the content it contributes if attended to.</li>
+</ul>
+<p><span class="math inline">\(W_Q,W_K,W_V\)</span> are trained once and <strong>frozen at inference</strong> — they are exactly M2’s <em>slow weights</em>, the fixed program. Position <span class="math inline">\(t\)</span> compares its query against every key with a scaled dot product, turns those scores into weights with a <strong>softmax</strong> (non-negative, summing to 1), and reads out the weighted average of values:</p>
+<p><span class="math display">\[\mathbf{o}_t = \sum_{j\le t}\underbrace{\frac{\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)}{\sum_{l\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_l/\sqrt d)}}_{\text{attention weight } A_{tj}}\;\mathbf{v}_j.\]</span></p>
+<p>Read it as <strong>content-addressable, soft dictionary lookup</strong>: the query retrieves a blend of the values whose keys it matches. Softmax makes it a <em>competition</em> — the best-matching key dominates, the rest are suppressed. That sharp, winner-take-most selection is exactly what makes softmax attention so good at <em>exact recall</em> — and the property we sacrifice when we linearize. (<span class="math inline">\(t\le\)</span> enforces causality: position <span class="math inline">\(t\)</span> sees only the past.)</p>
+<p>The cell builds this from a raw input <span class="math inline">\(X\)</span>, one step at a time, then checks the intuition: a query deliberately aligned with one key should pull out that key’s value almost alone.</p>
+<div id="8211b21f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T07:33:15.435120Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T07:33:15.435043Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T07:33:16.189344Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T07:33:16.188921Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>N, d_model, d, m <span class="op">=</span> <span class="dv">12</span>, <span class="dv">16</span>, <span class="dv">8</span>, <span class="dv">8</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> torch.randn(N, d_model)                       <span class="co"># a sequence of N tokens</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>W_Q <span class="op">=</span> nn.Linear(d_model, d, bias<span class="op">=</span><span class="va">False</span>)           <span class="co"># SLOW weights -- M2's fixed program</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>W_K <span class="op">=</span> nn.Linear(d_model, d, bias<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>W_V <span class="op">=</span> nn.Linear(d_model, m, bias<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>Q, K, V <span class="op">=</span> W_Q(X), W_K(X), W_V(X)                  <span class="co"># project each token into its three roles</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> softmax_attention(Q, K, V, causal<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    N, d <span class="op">=</span> Q.shape</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> (Q <span class="op">@</span> K.t()) <span class="op">/</span> d<span class="op">**</span><span class="fl">0.5</span>                 <span class="co"># (N, N) pairwise similarities</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> causal:</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        mask <span class="op">=</span> torch.triu(torch.ones(N, N, dtype<span class="op">=</span>torch.<span class="bu">bool</span>), diagonal<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        scores <span class="op">=</span> scores.masked_fill(mask, <span class="bu">float</span>(<span class="st">'-inf'</span>))</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> scores.softmax(dim<span class="op">=-</span><span class="dv">1</span>)                     <span class="co"># row-normalized weights (each row sums to 1)</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> A <span class="op">@</span> V, A                               <span class="co"># weighted average of values</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>O, A <span class="op">=</span> softmax_attention(Q, K, V)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"X:"</span>, <span class="bu">tuple</span>(X.shape), <span class="st">"-&gt; Q,K,V:"</span>, <span class="bu">tuple</span>(Q.shape), <span class="bu">tuple</span>(K.shape), <span class="bu">tuple</span>(V.shape))</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"attention weights A:"</span>, <span class="bu">tuple</span>(A.shape), <span class="st">" rows sum to 1:"</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>      torch.allclose(A.<span class="bu">sum</span>(<span class="op">-</span><span class="dv">1</span>), torch.ones(N)))</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"output O:"</span>, <span class="bu">tuple</span>(O.shape))</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Intuition: a query pointed straight at key 5 should retrieve mostly value 5 (non-causal probe).</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>q <span class="op">=</span> K[<span class="dv">5</span>:<span class="dv">6</span>] <span class="op">*</span> <span class="fl">6.0</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> ((q <span class="op">@</span> K.t()) <span class="op">/</span> d<span class="op">**</span><span class="fl">0.5</span>).softmax(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>rel <span class="op">=</span> ((w <span class="op">@</span> V) <span class="op">-</span> V[<span class="dv">5</span>:<span class="dv">6</span>]).norm() <span class="op">/</span> V[<span class="dv">5</span>:<span class="dv">6</span>].norm()</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">query aligned with key 5 -&gt; weight on token 5 = </span><span class="sc">{</span>w[<span class="dv">0</span>,<span class="dv">5</span>]<span class="sc">:.2f}</span><span class="ss">  (uniform would be </span><span class="sc">{</span><span class="dv">1</span><span class="op">/</span>N<span class="sc">:.2f}</span><span class="ss">)"</span>)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"retrieval error vs value[5] = </span><span class="sc">{</span>rel<span class="sc">:.2f}</span><span class="ss">  -&gt; softmax concentrates on the matching key"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>X: (12, 16) -&gt; Q,K,V: (12, 8) (12, 8) (12, 8)
+attention weights A: (12, 12)  rows sum to 1: True
+output O: (12, 8)
+
+query aligned with key 5 -&gt; weight on token 5 = 0.81  (uniform would be 0.08)
+retrieval error vs value[5] = 0.13  -&gt; softmax concentrates on the matching key</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Why are there <em>two</em> sums in the §1 attention formula (<span class="math inline">\(A_{tj}\)</span>)? It looks redundant / wrong.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Not wrong, and not redundant — they’re <strong>two different operations</strong> that happen to range over the same positions, which is exactly why they carry <strong>different dummy indices</strong> (<span class="math inline">\(j\)</span> and <span class="math inline">\(l\)</span>):</p>
+<p><span class="math display">\[\mathbf{o}_t=\underbrace{\sum_{j\le t}}_{\substack{\text{(outer)}\\\text{mix the values}}}\;\underbrace{\frac{\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)}{\underbrace{\sum_{l\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_l/\sqrt d)}_{\text{(inner) normalizer }Z_t}}}_{A_{tj}}\;\mathbf{v}_j.\]</span></p>
+<ul>
+<li><strong>Inner sum (over <span class="math inline">\(l\)</span>)</strong> is the softmax <strong>denominator</strong> <span class="math inline">\(Z_t\)</span> — the “partition function.” It is a sum over <em>all</em> keys <span class="math inline">\(l\le t\)</span> that produces a <strong>single scalar</strong> per query <span class="math inline">\(t\)</span>, and exists only to force <span class="math inline">\(\sum_{j\le t}A_{tj}=1\)</span> (weights that average, not just accumulate).</li>
+<li><strong>Outer sum (over <span class="math inline">\(j\)</span>)</strong> is the actual <strong>weighted average of values</strong>.</li>
+</ul>
+<p>The reason the letters differ: <span class="math inline">\(Z_t\)</span> does <strong>not</strong> depend on the outer index <span class="math inline">\(j\)</span>, so it’s a constant you can pull out front —</p>
+<p><span class="math display">\[\mathbf{o}_t=\frac{1}{Z_t}\sum_{j\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)\,\mathbf{v}_j,\qquad Z_t=\sum_{l\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_l/\sqrt d).\]</span></p>
+<p>Reusing <span class="math inline">\(j\)</span> for both would falsely tie the normalizer to the single term being summed; the separate dummy <span class="math inline">\(l\)</span> says “sum over <em>everything</em> to normalize, independently of which <span class="math inline">\(j\)</span> you’re currently weighting.” It’s just <strong>softmax written in full</strong> — <em>exponentiate each score, then divide by the sum of all the exponentials</em> — wrapped around a weighted sum of values.</p>
+<p>It’s also exactly the two steps in the code, where the library hides the inner sum:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> scores.softmax(dim<span class="op">=-</span><span class="dv">1</span>)   <span class="co"># the INNER sum: divides each row by that row's exp-sum (= Z_t)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>out <span class="op">=</span> A <span class="op">@</span> V                  <span class="co"># the OUTER sum: mix the values with those normalized weights</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>(In §3 we keep these two sums explicit but separate — <span class="math inline">\(\mathbf{S}_t\)</span> is the numerator’s running version, <span class="math inline">\(\mathbf{z}_t\)</span> the denominator’s — which is what lets each collapse into a fixed-size state.)</p>
+<hr>
+<p><strong>Numerator-over-denominator — softmax <em>is</em> §3’s general formula.</strong> The cleanest way to see all this: don’t fold the normalizer inside the weight at all. Put the value-mixing in the numerator and the normalizer in the denominator, each as its own sum. Then softmax attention is <em>literally</em> §3’s general-kernel formula with the choice <span class="math inline">\(\mathrm{sim}(\mathbf{q},\mathbf{k})=\exp(\mathbf{q}^\top\mathbf{k}/\sqrt d)\)</span>:</p>
+<p><span class="math display">\[\mathbf{o}_t=\frac{\displaystyle\sum_{j\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)\,\mathbf{v}_j}{\displaystyle\sum_{j\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)}\qquad\Longleftrightarrow\qquad \mathbf{o}_t=\frac{\displaystyle\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)\,\mathbf{v}_j}{\displaystyle\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)}.\]</span></p>
+<p>In this shape <strong>both</strong> sums are over the <em>same</em> dummy <span class="math inline">\(j\)</span> — no second letter needed, because numerator and denominator are now <em>separate expressions</em> and each binds its own <span class="math inline">\(j\)</span> independently. (The <span class="math inline">\(A_{tj}\)</span> form at the top is the same thing with the denominator folded <em>into</em> the weight; that folding is precisely what forces the distinct <span class="math inline">\(l\)</span>, to keep the normalizer from clashing with the outer <span class="math inline">\(j\)</span>. Two notations, identical value.)</p>
+<p>This side-by-side is the entire setup for §3. The collapse happens the instant <span class="math inline">\(\mathrm{sim}\)</span> <strong>factors</strong> as <span class="math inline">\(\phi(\mathbf{q}_t)^\top\phi(\mathbf{k}_j)\)</span>: then <span class="math inline">\(\phi(\mathbf{q}_t)\)</span> pulls out of <em>both</em> sums at once —</p>
+<p><span class="math display">\[\text{numerator}\to\Big(\sum_{j\le t}\mathbf{v}_j\,\phi(\mathbf{k}_j)^\top\Big)\phi(\mathbf{q}_t)=\mathbf{S}_t\,\phi(\mathbf{q}_t),\qquad \text{denominator}\to\Big(\sum_{j\le t}\phi(\mathbf{k}_j)\Big)^{\!\top}\!\phi(\mathbf{q}_t)=\mathbf{z}_t^\top\phi(\mathbf{q}_t),\]</span></p>
+<p>leaving the fixed-size state <span class="math inline">\((\mathbf{S}_t,\mathbf{z}_t)\)</span>. Softmax’s <span class="math inline">\(\exp\)</span> does <strong>not</strong> factor, so nothing pulls out and both sums stay glued to all <span class="math inline">\(j\le t\)</span> — that’s the §2 cost, seen right here in the formula.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="why-attention-is-expensive-it-keeps-every-token" class="level2">
+<h2 data-anchor-id="why-attention-is-expensive-it-keeps-every-token">2. Why attention is expensive — it keeps every token</h2>
+<p>The scores <span class="math inline">\(A\)</span> form an <span class="math inline">\(N\times N\)</span> matrix: <strong>every</strong> query against <strong>every</strong> key. That is the cost.</p>
+<ul>
+<li><strong>Compute/memory:</strong> building and storing <span class="math inline">\(A\)</span> is <span class="math inline">\(O(N^2)\)</span> — quadratic in sequence length.</li>
+<li><strong>Inference:</strong> to score the next token you need all past keys and values, so you cache them — the <strong>KV cache grows linearly with <span class="math inline">\(N\)</span></strong>, unbounded.</li>
+</ul>
+<p>The cell visualizes the object we are paying for: a dense, causal <span class="math inline">\(N\times N\)</span> triangle. Everything in M3 is about replacing it with something fixed-size.</p>
+<div id="c12d6ea2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T07:33:16.190551Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T07:33:16.190451Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T07:33:16.254836Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T07:33:16.254498Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>O, A <span class="op">=</span> softmax_attention(Q, K, V)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>plt.imshow(A.detach(), cmap<span class="op">=</span><span class="st">"viridis"</span>)<span class="op">;</span> plt.colorbar()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"softmax attention: a full N x N similarity matrix (causal)"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"key j"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"query t"</span>)<span class="op">;</span> plt.show()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"A is N x N ="</span>, <span class="bu">tuple</span>(A.shape), <span class="st">"and grows with N; at inference you cache every past K, V."</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"=&gt; O(N^2) time and memory. That is the wall linear attention removes."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m3-linear-attention_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>A is N x N = (12, 12) and grows with N; at inference you cache every past K, V.
+=&gt; O(N^2) time and memory. That is the wall linear attention removes.</code></pre>
+</div>
+</div>
+</section>
+<section id="delete-the-softmax-associativity-collapses-the-sum" class="level2">
+<h2 data-anchor-id="delete-the-softmax-associativity-collapses-the-sum">3. Delete the softmax — associativity collapses the sum</h2>
+<p>Write attention with a <strong>general</strong> similarity kernel instead of the specific softmax one:</p>
+<p><span class="math display">\[\mathbf{o}_t = \frac{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)\,\mathbf{v}_j}{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)}.\]</span></p>
+<p>Reading attention this way — as a kernel applied to pairs of inputs, with softmax just one choice of kernel — is <a href="https://arxiv.org/abs/1908.11775">Tsai et al.’s (2019)</a> reframing, and it is the step that makes everything after it possible: once <span class="math inline">\(\exp\)</span> is a <em>parameter</em> rather than part of the definition, you can ask what other kernels are legal. Katharopoulos et al.&nbsp;build directly on it.</p>
+<p>Softmax is the choice <span class="math inline">\(\mathrm{sim}(\mathbf{q},\mathbf{k})=\exp(\mathbf{q}^\top\mathbf{k}/\sqrt d)\)</span>. The exponential of a dot product <strong>does not split</strong> into a <span class="math inline">\(\mathbf{q}\)</span>-part times a <span class="math inline">\(\mathbf{k}\)</span>-part — so you are stuck with all <span class="math inline">\(N^2\)</span> similarities and must keep every token (that was §2).</p>
+<p>Now demand a kernel that <strong>does</strong> split: a feature map <span class="math inline">\(\phi\)</span> with <span class="math inline">\(\mathrm{sim}(\mathbf{q},\mathbf{k})=\phi(\mathbf{q})^\top\phi(\mathbf{k})\)</span>. This is <a href="https://arxiv.org/abs/2006.16236">Katharopoulos et al.’s (2020)</a> move, §3.2 — take the kernel view and impose factorization on it. Substitute and pull <span class="math inline">\(\phi(\mathbf{q}_t)\)</span> out of the sum (associativity of the matrix product):</p>
+<p><span class="math display">\[\mathbf{o}_t = \frac{\big(\sum_{j\le t}\mathbf{v}_j\,\phi(\mathbf{k}_j)^\top\big)\,\phi(\mathbf{q}_t)}{\big(\sum_{j\le t}\phi(\mathbf{k}_j)^\top\big)\,\phi(\mathbf{q}_t)} = \frac{\mathbf{S}_t\,\phi(\mathbf{q}_t)}{\mathbf{z}_t^\top\phi(\mathbf{q}_t)},\qquad \mathbf{S}_t=\sum_{j\le t}\mathbf{v}_j\phi(\mathbf{k}_j)^\top,\;\; \mathbf{z}_t=\sum_{j\le t}\phi(\mathbf{k}_j).\]</span></p>
+<p>The “sum over all past tokens” has <strong>collapsed into one fixed-size matrix</strong> <span class="math inline">\(\mathbf{S}_t\)</span> (plus a normalizer <span class="math inline">\(\mathbf{z}_t\)</span>). You no longer store tokens — you store their accumulated outer products. Incrementally:</p>
+<p><span class="math display">\[\boxed{\;\mathbf{S}_t = \mathbf{S}_{t-1} + \mathbf{v}_t\,\phi(\mathbf{k}_t)^\top, \qquad \mathbf{o}_t \propto \mathbf{S}_t\,\phi(\mathbf{q}_t)\;}\]</span></p>
+<p>— which is <strong>M2’s fast-weight write</strong>, the only change being that the raw key passes through <span class="math inline">\(\phi\)</span> first.</p>
+<p>The cell makes the collapse concrete. With <span class="math inline">\(\mathrm{sim}=\phi(\mathbf{q})^\top\phi(\mathbf{k})\)</span> the <strong>same numbers</strong> group two ways: <span class="math inline">\((\Phi_Q\Phi_K^\top)\,V\)</span> builds the <span class="math inline">\(N\times N\)</span> scores first (quadratic), while <span class="math inline">\(\Phi_Q\,(\Phi_K^\top V)\)</span> builds the small <span class="math inline">\(\mathbf{S}=\Phi_K^\top V\)</span> first (linear). For <em>non-causal</em> attention they are algebraically identical — same result, and <span class="math inline">\(\mathbf{S}\)</span> is fixed-size regardless of <span class="math inline">\(N\)</span>.</p>
+<div id="31e2e6c0" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T07:33:16.256063Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T07:33:16.255990Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T07:33:16.258477Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T07:33:16.258223Z&quot;}}" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> phi(x):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># feature map: elu(x)+1  -&gt; strictly positive, so similarities stay non-negative</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> F.elu(x) <span class="op">+</span> <span class="fl">1.0</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> linear_attn_two_ways(Q, K, V):</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    PQ, PK <span class="op">=</span> phi(Q), phi(K)                       <span class="co"># (N, p)</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># (a) attention grouping: build the N x N score matrix, then mix values</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    O_quad <span class="op">=</span> (PQ <span class="op">@</span> PK.t()) <span class="op">@</span> V                    <span class="co"># (N,N) intermediate</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># (b) fast-weight grouping: build S = sum_j phi(k_j) v_j^T first, then read</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    S <span class="op">=</span> PK.t() <span class="op">@</span> V                                <span class="co"># (p, m)  &lt;-- fixed size, independent of N</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    O_lin <span class="op">=</span> PQ <span class="op">@</span> S</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> O_quad, O_lin, S</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>O_quad, O_lin, S <span class="op">=</span> linear_attn_two_ways(Q, K, V)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"same function, two groupings -&gt; identical:"</span>, torch.allclose(O_quad, O_lin, atol<span class="op">=</span><span class="fl">1e-5</span>))</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"attention grouping forms an N x N ="</span>, (N, N), <span class="st">"matrix"</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"fast-weight grouping forms S ="</span>, <span class="bu">tuple</span>(S.shape), <span class="st">"(p x m) -- size does NOT grow with N"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>same function, two groupings -&gt; identical: True
+attention grouping forms an N x N = (12, 12) matrix
+fast-weight grouping forms S = (8, 8) (p x m) -- size does NOT grow with N</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Does softmax forbid the collapse <em>because</em> it’s a sharp, winner-take-most competition?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Half right — and the half that’s off is worth pulling apart, because softmax has <strong>two separate properties</strong> and only one of them is the obstruction.</p>
+<ul>
+<li><strong>Sharp competition (winner-take-most)</strong> — real, and it’s why softmax recalls <em>exactly</em>: the normalized exponential piles weight onto the best-matching key. This is the property §6’s probe shows linear attention losing (the <code>dd=64</code> cell in §6 drives it home: softmax error → <strong>0.000</strong>, exact recall).</li>
+<li><strong>Non-factorizability</strong> — <em>this</em> is what blocks the collapse. The sum collapses (§3) only if the score splits as <span class="math inline">\(\mathrm{sim}(\mathbf{q},\mathbf{k})=\phi(\mathbf{q})^\top\phi(\mathbf{k})\)</span> — a <span class="math inline">\(\mathbf{q}\)</span>-part times a <span class="math inline">\(\mathbf{k}\)</span>-part — so you can pull <span class="math inline">\(\phi(\mathbf{q}_t)\)</span> out of the sum. The softmax score <span class="math inline">\(\exp(\mathbf{q}^\top\mathbf{k}/\sqrt d)\)</span> <strong>does not split</strong>. That’s a purely <em>algebraic</em> fact about the exponential of a dot product; it has nothing to do with how peaked the weights are.</li>
+</ul>
+<p><strong>The clean test that separates them:</strong> crank the softmax <strong>temperature</strong>. <span class="math inline">\(\exp(\mathbf{q}^\top\mathbf{k}/\tau)\)</span> with large <span class="math inline">\(\tau\)</span> gives a nearly <em>uniform</em> distribution — no winner at all — yet it <em>still</em> cannot be collapsed to a finite-size state. Sharpness changed; collapsibility didn’t. So sharpness is not the cause.</p>
+<p><strong>But the instinct isn’t wrong — the two share a root.</strong> The exponential kernel corresponds to an <strong>infinite-dimensional</strong> feature map: <span class="math inline">\(\exp(\mathbf{q}^\top\mathbf{k})=\sum_{n\ge 0}\frac{(\mathbf{q}^\top\mathbf{k})^n}{n!}\)</span> — polynomial features of <em>every</em> degree. That single fact does both jobs at once:</p>
+<ul>
+<li>infinite dimension is <em>why</em> it can’t be written as a finite <span class="math inline">\(\phi(\mathbf{q})^\top\phi(\mathbf{k})\)</span> → <strong>no finite-state collapse</strong>, and</li>
+<li>infinite dimension is <em>why</em> it can carve out one key arbitrarily sharply → <strong>exact recall</strong>.</li>
+</ul>
+<p>A finite feature map <span class="math inline">\(\phi:\mathbb{R}^d\to\mathbb{R}^p\)</span> is a <em>finite-rank approximation</em> of that kernel: it <strong>buys</strong> the <span class="math inline">\(O(N)\)</span> collapse and <strong>pays</strong> in sharpness — only <span class="math inline">\(\sim p\)</span> associations fit before outer products superpose and interfere (§6’s lossy recall; M2’s capacity law). So the right mental model is: <strong>sharpness and non-collapsibility are siblings — both children of the infinite-dimensional exp kernel — not cause and effect.</strong> Linearizing trades the infinite dimension (sharp, uncollapsible) for a finite one (blurrier, collapsible).</p>
+</div>
+</div>
+</div>
+</section>
+<section id="that-matrix-mathbfs-is-m2s-fast-weight-memory" class="level2">
+<h2 data-anchor-id="that-matrix-mathbfs-is-m2s-fast-weight-memory">4. That matrix <span class="math inline">\(\mathbf{S}\)</span> is M2’s fast-weight memory</h2>
+<p>Look again at <span class="math inline">\(\mathbf{S}=\sum_j\mathbf{v}_j\phi(\mathbf{k}_j)^\top\)</span> — a sum of outer products of values and (feature-mapped) keys. That is <strong>exactly</strong> M2’s write <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}_t\mathbf{k}_t^\top\)</span>, with <span class="math inline">\(\mathbf{k}\mapsto\phi(\mathbf{k})\)</span>. The “linear Transformer” and the “fast-weight programmer” are the <em>same object</em>; M2 reached it by asking how to write a memory, M3 by asking how to make attention cheap.</p>
+<p>The cell rebuilds the <strong>causal</strong> linear attention as M2’s per-token loop — initialize <span class="math inline">\(\mathbf{S}=0\)</span>, write one outer product per token, read with the query — and confirms it matches the masked parallel form. This loop is identical in shape to M2’s <code>FWPLayer.forward</code>; the only new ingredient is <span class="math inline">\(\phi\)</span>.</p>
+<div id="795ff720" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T07:33:16.259546Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T07:33:16.259472Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T07:33:16.262944Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T07:33:16.262578Z&quot;}}" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> linear_attn_recurrent(Q, K, V):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># M2's fast-weight loop, with phi on the keys/queries. Causal by construction.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    PQ, PK <span class="op">=</span> phi(Q), phi(K)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    p, mdim <span class="op">=</span> PK.shape[<span class="dv">1</span>], V.shape[<span class="dv">1</span>]</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    S <span class="op">=</span> torch.zeros(mdim, p)                 <span class="co"># fast-weight memory M, fresh per sequence</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    z <span class="op">=</span> torch.zeros(p)                       <span class="co"># running key-sum for the normalizer</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    outs <span class="op">=</span> []</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(Q.shape[<span class="dv">0</span>]):</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        S <span class="op">=</span> S <span class="op">+</span> torch.outer(V[t], PK[t])     <span class="co"># WRITE: one outer product (M2's update, k -&gt; phi(k))</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        z <span class="op">=</span> z <span class="op">+</span> PK[t]</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        num <span class="op">=</span> S <span class="op">@</span> PQ[t]                      <span class="co"># READ:  query the memory</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        outs.append(num <span class="op">/</span> (z <span class="op">@</span> PQ[t] <span class="op">+</span> <span class="fl">1e-6</span>))</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.stack(outs)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> linear_attn_parallel_causal(Q, K, V):</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># same thing as one masked matmul (the training-time form)</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    PQ, PK <span class="op">=</span> phi(Q), phi(K)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> PQ <span class="op">@</span> PK.t()                                  <span class="co"># (N, N), unnormalized</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    mask <span class="op">=</span> torch.tril(torch.ones(N, N))</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> scores <span class="op">*</span> mask</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    num <span class="op">=</span> scores <span class="op">@</span> V</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    den <span class="op">=</span> (scores.<span class="bu">sum</span>(dim<span class="op">=-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)) <span class="op">+</span> <span class="fl">1e-6</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> num <span class="op">/</span> den</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>O_rec <span class="op">=</span> linear_attn_recurrent(Q, K, V)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>O_par <span class="op">=</span> linear_attn_parallel_causal(Q, K, V)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"recurrent fast-weight loop == parallel masked form:"</span>,</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>      torch.allclose(O_rec, O_par, atol<span class="op">=</span><span class="fl">1e-5</span>))</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the per-token loop IS M2's FWPLayer.forward, with k -&gt; phi(k). Same recurrence, new name."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>recurrent fast-weight loop == parallel masked form: True
+the per-token loop IS M2's FWPLayer.forward, with k -&gt; phi(k). Same recurrence, new name.</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Write the boxed recurrence from memory, and point to exactly where it is M2’s fast-weight write.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\boxed{\;\mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\,\phi(\mathbf{k}_t)^\top,\qquad \mathbf{o}_t\propto \mathbf{S}_t\,\phi(\mathbf{q}_t)\;}\qquad\Big(\text{normalizer }\mathbf{z}_t=\mathbf{z}_{t-1}+\phi(\mathbf{k}_t),\ \ \mathbf{o}_t=\tfrac{\mathbf{S}_t\phi(\mathbf{q}_t)}{\mathbf{z}_t^\top\phi(\mathbf{q}_t)}\Big)\]</span></p>
+<p>Term by term: each token adds one <strong>outer product</strong> <span class="math inline">\(\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span> into the matrix <span class="math inline">\(\mathbf{S}_t\in\mathbb{R}^{m\times p}\)</span> — store the association “key <span class="math inline">\(\phi(\mathbf{k}_t)\Rightarrow\)</span> value <span class="math inline">\(\mathbf{v}_t\)</span>” — and a query reads it back as a matrix–vector product <span class="math inline">\(\mathbf{S}_t\phi(\mathbf{q}_t)\)</span>.</p>
+<p><strong>Where it’s M2’s write — literally the same line, with <span class="math inline">\(\mathbf{k}\mapsto\phi(\mathbf{k})\)</span>.</strong> M2’s <code>FWPLayer</code> wrote</p>
+<p><span class="math display">\[\mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}_t\mathbf{k}_t^\top,\qquad \mathbf{y}_t=\mathcal{M}_t\mathbf{q}_t,\]</span></p>
+<p>the “elementary programming instruction” — an additive outer product into the fast weights. M3’s recurrence is that <strong>identical</strong> instruction with the raw key replaced by a feature-mapped key <span class="math inline">\(\phi(\mathbf{k}_t)\)</span> (and the optional denominator <span class="math inline">\(\mathbf{z}_t\)</span> that M2 dropped in favor of <code>F.normalize</code>-ing <span class="math inline">\(\mathbf{k},\mathbf{q}\)</span>). So the dictionary is exact:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>M3 (linear attention)</th>
+<th>M2 (fast-weight programmer)</th>
+<th>role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{S}_t\)</span></td>
+<td><span class="math inline">\(\mathcal{M}_t\)</span></td>
+<td><strong>fast weights</strong> — the memory, rewritten every token, reset per sequence</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span></td>
+<td><span class="math inline">\(\mathbf{v}_t\mathbf{k}_t^\top\)</span></td>
+<td>the outer-product write (one programming instruction)</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(W_Q,W_K,W_V\)</span> (and <span class="math inline">\(\phi\)</span>)</td>
+<td><span class="math inline">\(W_q,W_k,W_v\)</span></td>
+<td><strong>slow weights</strong> — the fixed program that invents <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>In code it’s visible directly: the <code>linear_attn_recurrent</code> cell above runs <code>S = S + torch.outer(V[t], PK[t])</code> with <code>PK = phi(K)</code> — character-for-character M2’s <code>M = M + torch.outer(v, k)</code>. <em>Linear attention is the fast-weight write; the only new symbol is <span class="math inline">\(\phi\)</span>.</em></p>
+</div>
+</div>
+</div>
+</section>
+<section id="two-faces-of-one-computation-on2-parallel-vs-on-recurrent" class="level2">
+<h2 data-anchor-id="two-faces-of-one-computation-on2-parallel-vs-on-recurrent">5. Two faces of one computation: <span class="math inline">\(O(N^2)\)</span> parallel vs <span class="math inline">\(O(N)\)</span> recurrent</h2>
+<p>This is the practical payoff and the duality at the heart of every modern linear-attention / SSM model:</p>
+<ul>
+<li><strong>Parallel form</strong> (training): one big masked matmul over all positions — fully parallel on a GPU, but materializes the <span class="math inline">\(N\times N\)</span> scores, so <span class="math inline">\(O(N^2)\)</span>.</li>
+<li><strong>Recurrent form</strong> (inference): carry the fixed <span class="math inline">\(p\times m\)</span> state <span class="math inline">\(\mathbf{S}\)</span> and update one token at a time — <span class="math inline">\(O(1)\)</span> memory and time <em>per token</em>, <span class="math inline">\(O(N)\)</span> total, no growing KV cache.</li>
+</ul>
+<p>Same math, two schedules. The cell times the two <strong>non-causal</strong> groupings from §3 as <span class="math inline">\(N\)</span> grows — the attention grouping curves up quadratically, the fast-weight grouping stays linear.</p>
+<div id="6ac4bbc8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T07:33:16.263828Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T07:33:16.263770Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T07:33:16.366371Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T07:33:16.365890Z&quot;}}">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> time_grouping(N, d<span class="op">=</span><span class="dv">32</span>, m<span class="op">=</span><span class="dv">32</span>, reps<span class="op">=</span><span class="dv">5</span>):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    Q, K, V <span class="op">=</span> torch.randn(N, d), torch.randn(N, d), torch.randn(N, m)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    PQ, PK <span class="op">=</span> phi(Q), phi(K)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># quadratic: (PQ PK^T) V</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    t0 <span class="op">=</span> time.perf_counter()</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(reps):</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        _ <span class="op">=</span> (PQ <span class="op">@</span> PK.t()) <span class="op">@</span> V</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    t_quad <span class="op">=</span> (time.perf_counter() <span class="op">-</span> t0) <span class="op">/</span> reps</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># linear: PQ (PK^T V)</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    t0 <span class="op">=</span> time.perf_counter()</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(reps):</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        _ <span class="op">=</span> PQ <span class="op">@</span> (PK.t() <span class="op">@</span> V)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    t_lin <span class="op">=</span> (time.perf_counter() <span class="op">-</span> t0) <span class="op">/</span> reps</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> t_quad, t_lin</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>Ns <span class="op">=</span> [<span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">1024</span>, <span class="dv">2048</span>, <span class="dv">4096</span>]</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>tq, tl <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>[time_grouping(n) <span class="cf">for</span> n <span class="kw">in</span> Ns])</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>plt.plot(Ns, tq, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"attention grouping  (PQ·PKᵀ)·V   ~ O(N²)"</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>plt.plot(Ns, tl, marker<span class="op">=</span><span class="st">"o"</span>, label<span class="op">=</span><span class="st">"fast-weight grouping  PQ·(PKᵀ·V)  ~ O(N)"</span>)</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"sequence length N"</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"time per call (s)"</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Same result, two groupings: quadratic vs linear"</span>)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"at N=</span><span class="sc">{</span>Ns[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">: attention grouping </span><span class="sc">{</span>tq[<span class="op">-</span><span class="dv">1</span>] <span class="op">/</span> tl[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.0f}</span><span class="ss">x slower than fast-weight grouping"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m3-linear-attention_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>at N=4096: attention grouping 152x slower than fast-weight grouping</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: The parallel ↔︎ recurrent duality: which form trains, which infers, and why do they give the same function?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Both forms compute the <em>same</em> causal sum <span class="math inline">\(\mathbf{o}_t\propto\sum_{j\le t}\big(\phi(\mathbf{q}_t)^\top\phi(\mathbf{k}_j)\big)\mathbf{v}_j\)</span> — they just <strong>schedule the arithmetic differently</strong>.</p>
+<ul>
+<li><strong>Parallel form — for training.</strong> Build the masked score matrix in one shot: <span class="math inline">\(\mathbf{O}=\mathrm{tril}(\Phi_Q\Phi_K^\top)\,V\)</span>. Every position is computed at once, so it saturates a GPU — but it materializes the <span class="math inline">\(N\times N\)</span> scores, hence <span class="math inline">\(O(N^2)\)</span> compute/memory. You use it to <strong>train</strong> because there’s no sequential dependency to wait on (and autograd flows through one big matmul). This is §4’s <code>linear_attn_parallel_causal</code>.</li>
+<li><strong>Recurrent form — for inference.</strong> Carry the running state <span class="math inline">\(\mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span> and read <span class="math inline">\(\mathbf{o}_t\propto\mathbf{S}_t\phi(\mathbf{q}_t)\)</span>, one token at a time: <span class="math inline">\(O(1)\)</span> memory and time <em>per token</em>, <span class="math inline">\(O(N)\)</span> total, <strong>no growing KV cache</strong>. You use it to <strong>decode</strong>. This is §4’s <code>linear_attn_recurrent</code> — M2’s <code>FWPLayer</code> loop.</li>
+</ul>
+<p><strong>Why identical:</strong> it’s just associativity + distributivity, reassociated. Grouping <span class="math inline">\((\Phi_Q\Phi_K^\top)V\)</span> (scores first) versus accumulating <span class="math inline">\(\sum_{j\le t}\mathbf{v}_j\phi(\mathbf{k}_j)^\top\)</span> then reading (state first) are the same products summed in a different order. The causal mask “<span class="math inline">\(j\le t\)</span>” is enforced two ways that agree: the <code>tril</code> zeroes future scores in the parallel form, while the recurrence has <em>only seen</em> tokens up to <span class="math inline">\(t\)</span> when it emits <span class="math inline">\(\mathbf{o}_t\)</span>. §4’s cell checked it: <code>O_rec == O_par</code> → <code>allclose True</code>.</p>
+<p><strong>The deeper reason it’s even <em>possible</em>:</strong> the additive recurrence has state-Jacobian <span class="math inline">\(\partial\mathbf{S}_t/\partial\mathbf{S}_{t-1}=I\)</span> — linear and identity. That’s what lets the unroll be reorganized into a single parallel matmul with no vanishing/exploding gradients, unlike a <em>nonlinear</em> RNN whose Jacobian product blows up or decays.</p>
+<p>Katharopoulos et al.&nbsp;noticed this duality for one architecture; <a href="https://arxiv.org/abs/2405.21060">Dao &amp; Gu (2024)</a> made it the organizing principle. Their <em>structured state space duality</em> (SSD) connects state-space models and attention variants through decompositions of structured semiseparable matrices, so the recurrent ⇔ masked-matmul equivalence stops being a fact about linear attention and becomes a fact about a whole class — which is what let them design Mamba-2’s core layer around the fast schedule. So: <strong>train in parallel like a Transformer, run as an <span class="math inline">\(O(1)\)</span>-memory RNN at inference — same weights, same function.</strong></p>
+</div>
+</div>
+</div>
+</section>
+<section id="the-feature-map-phi-what-it-buys-and-what-it-costs" class="level2">
+<h2 data-anchor-id="the-feature-map-phi-what-it-buys-and-what-it-costs">6. The feature map <span class="math inline">\(\phi\)</span> — what it buys and what it costs</h2>
+<p>Two jobs for <span class="math inline">\(\phi\)</span>, both already visible in M1/M2:</p>
+<ol type="1">
+<li><strong>Non-negativity for the normalizer.</strong> The denominator <span class="math inline">\(\mathbf{z}_t^\top\phi(\mathbf{q}_t)\)</span> must stay positive to act like a softmax-style average; <span class="math inline">\(\phi=\mathrm{elu}+1&gt;0\)</span> guarantees it. This is Katharopoulos et al.’s choice (§3.2.1) — they take <code>elu</code> over <code>relu</code> precisely so the gradient does not die for negative inputs. (Many modern variants drop the denominator entirely and instead normalize <span class="math inline">\(\mathbf{k},\mathbf{q}\)</span> — exactly what M2’s <code>FWPLayer</code> did with <code>F.normalize</code>.)</li>
+<li><strong>Capacity.</strong> From M2’s capacity law, the memory resolves about as many associations as the <strong>key dimension</strong> — really the <em>effective rank</em> of the key set. Mapping keys through <span class="math inline">\(\phi:\mathbb{R}^d\!\to\!\mathbb{R}^p\)</span> with <span class="math inline">\(p&gt;d\)</span> raises that dimension and spreads correlated keys apart, buying capacity back. <strong>DPFP</strong> (deterministic parameter-free projection) is one such map — FWP’s own contribution (<a href="https://arxiv.org/abs/2102.11174">Schlag et al., 2021</a>, §5.4), combinatorial ReLU features that widen the key space without adding a single learned parameter, proposed there against the capacity problem that Katharopoulos’s <span class="math inline">\(\mathrm{elu}+1\)</span> leaves open.</li>
+</ol>
+<p>The cost is the catch: linear attention’s fixed <span class="math inline">\(p\times m\)</span> state is <strong>lossy</strong> where softmax is exact. Superposing many outer products in one matrix causes interference, so exact copy/recall degrades — the same crosstalk wall from M1, now as the defining limitation of the whole family. The cell shows the gap: point the last query straight at one stored key and compare what softmax (§1) vs linear attention (§4) retrieve.</p>
+<div id="a4a1b874" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T07:33:16.367510Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T07:33:16.367424Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T07:33:16.371678Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T07:33:16.371201Z&quot;}}" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A copy/recall probe: token 5 carries a distinctive key; the last query asks for its value.</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>Nq, dd <span class="op">=</span> <span class="dv">40</span>, <span class="dv">16</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>Kp <span class="op">=</span> torch.randn(Nq, dd)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>Vp <span class="op">=</span> torch.randn(Nq, dd)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>Qp <span class="op">=</span> torch.randn(Nq, dd)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>Qp[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> Kp[target] <span class="op">*</span> <span class="fl">4.0</span>                       <span class="co"># last query points straight at key 5</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>O_soft, _ <span class="op">=</span> softmax_attention(Qp, Kp, Vp, causal<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>O_lin <span class="op">=</span> linear_attn_recurrent(Qp, Kp, Vp)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>err_soft <span class="op">=</span> (O_soft[<span class="op">-</span><span class="dv">1</span>] <span class="op">-</span> Vp[target]).norm() <span class="op">/</span> Vp[target].norm()</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>err_lin  <span class="op">=</span> (O_lin[<span class="op">-</span><span class="dv">1</span>]  <span class="op">-</span> Vp[target]).norm() <span class="op">/</span> Vp[target].norm()</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"recall error at the targeted query:  softmax </span><span class="sc">{</span>err_soft<span class="sc">:.3f}</span><span class="ss">   linear </span><span class="sc">{</span>err_lin<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"softmax isolates the target far more sharply; linear attention superposes -&gt; lossy recall."</span>)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"That loss is the price of O(1) memory, and what M4's delta rule attacks."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>recall error at the targeted query:  softmax 0.139   linear 0.957
+softmax isolates the target far more sharply; linear attention superposes -&gt; lossy recall.
+That loss is the price of O(1) memory, and what M4's delta rule attacks.</code></pre>
+</div>
+</div>
+<div id="99331e08" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A copy/recall probe with larger dimension: token 5 carries a distinctive key; the last query asks for its value.</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>Nq, dd <span class="op">=</span> <span class="dv">40</span>, <span class="dv">64</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>Kp <span class="op">=</span> torch.randn(Nq, dd)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>Vp <span class="op">=</span> torch.randn(Nq, dd)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>Qp <span class="op">=</span> torch.randn(Nq, dd)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>Qp[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> Kp[target] <span class="op">*</span> <span class="fl">4.0</span>                       <span class="co"># last query points straight at key 5</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>O_soft, _ <span class="op">=</span> softmax_attention(Qp, Kp, Vp, causal<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>O_lin <span class="op">=</span> linear_attn_recurrent(Qp, Kp, Vp)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>err_soft <span class="op">=</span> (O_soft[<span class="op">-</span><span class="dv">1</span>] <span class="op">-</span> Vp[target]).norm() <span class="op">/</span> Vp[target].norm()</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>err_lin  <span class="op">=</span> (O_lin[<span class="op">-</span><span class="dv">1</span>]  <span class="op">-</span> Vp[target]).norm() <span class="op">/</span> Vp[target].norm()</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"recall error at the targeted query:  softmax </span><span class="sc">{</span>err_soft<span class="sc">:.3f}</span><span class="ss">   linear </span><span class="sc">{</span>err_lin<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"softmax isolates the target far more sharply; linear attention superposes -&gt; lossy recall."</span>)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"That loss is the price of O(1) memory, and what M4's delta rule attacks."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>recall error at the targeted query:  softmax 0.000   linear 0.981
+softmax isolates the target far more sharply; linear attention superposes -&gt; lossy recall.
+That loss is the price of O(1) memory, and what M4's delta rule attacks.</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: What does linearizing cost, and what do the two jobs of <span class="math inline">\(\phi\)</span> buy back?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>The cost: lossy superposition.</strong> Softmax keeps <em>every</em> token and can isolate any one of them, so recall is exact — but it pays <span class="math inline">\(O(N^2)\)</span> and an unbounded KV cache. Linear attention throws all of that away into <strong>one fixed <span class="math inline">\(p\times m\)</span> matrix</strong> <span class="math inline">\(\mathbf{S}_t=\sum_{j\le t}\mathbf{v}_j\phi(\mathbf{k}_j)^\top\)</span>. Every association is <em>superposed</em> in the same matrix, so once you store more than about <span class="math inline">\(p\)</span> near-orthogonal keys (really the <strong>effective rank</strong> of the key set, M2’s capacity law), new writes interfere with old ones and a query returns a contaminated blend instead of the value you wanted. The probe above is exactly this trade: softmax recall error <span class="math inline">\(0.139\)</span> (and <span class="math inline">\(\to 0.000\)</span> at <span class="math inline">\(\texttt{dd=64}\)</span>) vs linear <span class="math inline">\(0.957\)</span>. So the price of <span class="math inline">\(O(1)\)</span> memory and <span class="math inline">\(O(N)\)</span> time is <strong>exact recall</strong> — you can no longer pull out a single stored token cleanly. (M4’s delta rule softens this by <em>editing</em> instead of piling on, but the fixed-size lossiness is inherent to the family.)</p>
+<p><strong>What <span class="math inline">\(\phi\)</span> buys (the two jobs above):</strong></p>
+<ol type="1">
+<li><strong>Non-negativity for the normalizer.</strong> The denominator <span class="math inline">\(\mathbf{z}_t^\top\phi(\mathbf{q}_t)\)</span> must stay positive for <span class="math inline">\(\mathbf{o}_t\)</span> to behave like a weighted <em>average</em>; <span class="math inline">\(\phi=\mathrm{elu}+1&gt;0\)</span> guarantees it. (Many modern variants drop the denominator entirely and instead <span class="math inline">\(L_2\)</span>-normalize <span class="math inline">\(\mathbf{k},\mathbf{q}\)</span> — exactly what M2’s <code>FWPLayer</code> did with <code>F.normalize</code>.)</li>
+<li><strong>Capacity / effective rank.</strong> Mapping keys through <span class="math inline">\(\phi:\mathbb{R}^d\to\mathbb{R}^p\)</span> with <span class="math inline">\(p&gt;d\)</span> (e.g.&nbsp;DPFP’s combinatorial ReLU features) raises the nominal key dimension <strong>and</strong> spreads correlated keys into more orthogonal directions — recovering effective rank, so more associations fit before they interfere (M1’s crosstalk wall, M2’s capacity law).</li>
+</ol>
+<p>Neither job removes the lossiness; they push the wall further out. The exactness gap between softmax and <em>any</em> finite <span class="math inline">\(\phi\)</span> is the same point as Q1: a finite feature map is a finite-rank approximation of the infinite-dimensional <span class="math inline">\(\exp\)</span> kernel.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="code-walkthrough-linear-attention-in-real-code" class="level2">
+<h2 data-anchor-id="code-walkthrough-linear-attention-in-real-code">Code walkthrough — linear attention in real code</h2>
+<p>The recurrence we wrote by hand is the whole of a production linear-attention layer. From <a href="https://github.com/idiap/fast-transformers/blob/master/fast_transformers/attention/linear_attention.py"><code>linear_attention.py</code></a> in <a href="https://github.com/idiap/fast-transformers">idiap/fast-transformers</a>, the Linear Transformers paper’s own library — non-causal:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>Q, K <span class="op">=</span> feature_map(Q), feature_map(K)          <span class="co"># phi = elu(x)+1</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>KV <span class="op">=</span> torch.einsum(<span class="st">"nshd,nshm-&gt;nhmd"</span>, K, V)     <span class="co"># S = sum_j phi(k_j) v_j^T   (the fast weights)</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>Z  <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> torch.einsum(<span class="st">"nlhd,nhd-&gt;nlh"</span>, Q, K.<span class="bu">sum</span>(dim<span class="op">=</span><span class="dv">1</span>))   <span class="co"># normalizer 1 / (phi(q)·z)</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>V_out <span class="op">=</span> torch.einsum(<span class="st">"nlhd,nhmd,nlh-&gt;nlhm"</span>, Q, KV, Z)     <span class="co"># o = S phi(q) / (...)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><a href="https://github.com/idiap/fast-transformers/blob/master/fast_transformers/attention/causal_linear_attention.py"><code>causal_linear_attention.py</code></a> swaps the one-shot <code>KV</code> for the <strong>running</strong> <span class="math inline">\(\mathbf{S}_t\)</span> we built in §4 (a custom CUDA scan), giving the <span class="math inline">\(O(N)\)</span> inference path.</p>
+<ul>
+<li><a href="https://github.com/obekt/HOPE-nested-learning/blob/main/train_hope.py"><code>train_hope.py</code></a> → <code>SelfModifyingLayer</code> is the same loop in M2’s notation: <code>memory = a_t * memory + update</code>; <code>update</code> is the outer product <span class="math inline">\(\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span>.</li>
+<li><a href="https://github.com/ischlag/fast-weight-transformers/blob/main/synthetic/linearAttention.py"><code>linearAttention.py</code></a> — the FWP paper’s own code — is this exact recurrence, written from the fast-weights side; the clearest single file showing “linear attention” and “fast weights” are one loop.</li>
+</ul>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Ready for M4 when you can:</p>
+<ol type="1">
+<li>Rebuild softmax attention from query/key/value, and say why softmax forbids the collapse but <span class="math inline">\(\phi(\mathbf{q})^\top\phi(\mathbf{k})\)</span> allows it — and what object the collapse produces.</li>
+<li>Write the boxed recurrence <span class="math inline">\(\mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span> from memory and point to where it is M2’s fast-weight write.</li>
+<li>Explain the parallel ↔︎ recurrent duality: which form trains, which infers, and why both give the same function.</li>
+<li>State the cost of going linear (lossy superposition / recall) and name the two things <span class="math inline">\(\phi\)</span> buys.</li>
+</ol>
+<p><strong>Next → M4, the delta rule / DeltaNet.</strong> Linear attention only ever <em>adds</em> to <span class="math inline">\(\mathbf{S}\)</span> — §6’s lossy recall is the symptom. M4 replaces the additive write with an <strong>error-correcting</strong> one: before writing, read what’s already stored for this key and write only the <em>difference</em>. That single change turns the pile-on memory into one that can <em>edit</em> associations — the first real fix to the crosstalk wall we’ve now hit three times.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
