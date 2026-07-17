@@ -79,6 +79,24 @@ table.table { font-size: 0.92rem; }
 /* A long command line must scroll inside its own block, not push the page
    sideways on a phone. */
 pre, div.sourceCode { overflow-x: auto; }
+
+/* A display equation wider than the text column must scroll inside its own
+   box — otherwise it reaches into the right-hand TOC on desktop, and off the
+   screen on a phone. */
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+
+/* A many-column table cannot shrink below its min-content width, so on a
+   phone it must scroll inside its own box rather than push the page. */
+@media (max-width: 767.98px) {
+  main.content table.table { display: block; width: max-content; max-width: 100%; overflow-x: auto; }
+}
+
+/* The cheatsheet is a reference, not prose: denser than the reading measure,
+   which also brings its widest equations back inside the column. */
+body.cheatsheet main.content { font-size: 0.86rem; }
+body.cheatsheet main.content h1 { font-size: 1.7rem; }
+body.cheatsheet main.content h2 { font-size: 1.25rem; }
+body.cheatsheet main.content h3 { font-size: 1.05rem; }
 figure figcaption, table.table > caption,
 figure + p, p:has(> img.img-fluid) + p {
   font-size: 0.88rem; color: #6a6058; line-height: 1.55; }

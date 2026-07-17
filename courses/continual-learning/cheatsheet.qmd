@@ -1,6 +1,7 @@
 ---
 title: "Cheatsheet"
 subtitle: "Every formula in the course, one line each."
+body-classes: cheatsheet
 ---
 
 Compact reference for the [course](index.qmd). One line per formula, in module order, then the unifying view.
