@@ -207,7 +207,10 @@ window.Quarto = {
 </section>
 <section id="m3-linear-attention-is-fast-weights" class="level2">
 <h2 data-anchor-id="m3-linear-attention-is-fast-weights">M3 — Linear attention <em>is</em> fast weights</h2>
-<p><span class="math display">\[\text{softmax: } \mathbf{o}_t=\sum_{j\le t}\frac{\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)}{\sum_{l\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_l/\sqrt d)}\,\mathbf{v}_j \qquad\xrightarrow[\text{drop softmax}]{\text{general kernel}}\qquad \mathbf{o}_t=\frac{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)\,\mathbf{v}_j}{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)}\]</span></p>
+<p><span class="math display">\[\text{softmax: } \mathbf{o}_t=\frac{\sum_{j\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)\,\mathbf{v}_j}{\sum_{j\le t}\exp(\mathbf{q}_t^\top\mathbf{k}_j/\sqrt d)} \qquad\xrightarrow[\text{drop softmax}]{\text{general kernel}}\qquad \mathbf{o}_t=\frac{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)\,\mathbf{v}_j}{\sum_{j\le t}\mathrm{sim}(\mathbf{q}_t,\mathbf{k}_j)}\]</span></p>
+<ul>
+<li>Same shape both sides — the only edit is <span class="math inline">\(\exp(\cdot)\to\mathrm{sim}(\cdot)\)</span>. The normalizer is one scalar per query, so it sits in the denominator rather than inside each weight.</li>
+</ul>
 <p>Factorize <span class="math inline">\(\mathrm{sim}(\mathbf{q},\mathbf{k})=\phi(\mathbf{q})^\top\phi(\mathbf{k})\)</span> → pull <span class="math inline">\(\phi(\mathbf{q}_t)\)</span> out of the sum → <strong>collapse</strong>:</p>
 <p><span class="math display">\[\mathbf{S}_t=\sum_{j\le t}\mathbf{v}_j\phi(\mathbf{k}_j)^\top,\quad \mathbf{z}_t=\sum_{j\le t}\phi(\mathbf{k}_j) \qquad\Rightarrow\qquad \mathbf{o}_t=\frac{\mathbf{S}_t\,\phi(\mathbf{q}_t)}{\mathbf{z}_t^\top\phi(\mathbf{q}_t)}\]</span></p>
 <p><span class="math display">\[\boxed{\ \mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\,\phi(\mathbf{k}_t)^\top\ }\quad\text{(= M2's write with }\mathbf{k}\mapsto\phi(\mathbf{k})\text{)}\]</span></p>
