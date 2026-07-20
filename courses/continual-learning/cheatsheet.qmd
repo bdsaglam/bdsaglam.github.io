@@ -56,6 +56,7 @@ $$\bar{\mathbf{v}}_t=\mathcal{M}_{t-1}\phi(\mathbf{k}_t)\quad(\text{read first})
 - **= one SGD step** on $\tfrac12\lVert\mathcal{M}\phi(\mathbf{k})-\mathbf{v}\rVert^2$, since $\nabla_{\mathcal{M}}=(\bar{\mathbf{v}}-\mathbf{v})\phi(\mathbf{k})^\top$; step size $=\beta_t$.
 - **Erase-then-write (matrix form):** $\mathcal{M}_t=\mathcal{M}_{t-1}\big(I-\beta_t\phi(\mathbf{k}_t)\phi(\mathbf{k}_t)^\top\big)+\beta_t\mathbf{v}_t\phi(\mathbf{k}_t)^\top$ — a targeted erase along $\mathbf{k}_t$, vs. the **global** decay gate $\mathcal{M}_t=(1-\beta)\mathcal{M}_{t-1}+\beta\mathbf{v}_t\mathbf{k}_t^\top$.
 - DeltaNet = linear Transformer with this write; wins in overcapacity / revisited-key regimes.
+- **Decoupled erase/write (GDN2, M4 §6):** $\mathcal{M}_t=\mathcal{M}_{t-1}\big(I-(\mathbf{b}_t\odot\mathbf{k}_t)\mathbf{k}_t^\top\big)+(\mathbf{w}_t\odot\mathbf{v}_t)\mathbf{k}_t^\top$ — channel-wise **erase gate** $\mathbf{b}_t$ (key side) and **write gate** $\mathbf{w}_t$ (value side) replace the single $\beta_t$; tie $\mathbf{b}_t{=}\mathbf{w}_t{=}\beta_t\mathbf{1}$ ⇒ the coupled form above. [Gated DeltaNet-2](https://arxiv.org/abs/2605.22791) → KDA (gates tied, decay channel-wise) → gated delta (decay scalar).
 
 ## M5 — Meta-learning & self-reference
 
