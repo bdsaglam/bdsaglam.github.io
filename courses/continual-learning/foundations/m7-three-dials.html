@@ -293,7 +293,7 @@ window.Quarto = {
 <li><strong>Constant</strong> <span class="math inline">\(\alpha&lt;1\)</span> — a fixed exponential fade of everything, oldest first.</li>
 <li><strong>Learnable / channel-wise / input-dependent</strong> — the memory decides per token what to drop, which is what the paper’s own list (§5, quoted above) enumerates.</li>
 </ul>
-<p>The distinction worth holding, from M4 §4: the gate is a <strong>global</strong> fade — it decays every stored association at once, including the ones you were not writing to. The delta rule’s erase factor <span class="math inline">\((\mathbf{I}-\beta\mathbf{k}\mathbf{k}^\top)\)</span> looks like forgetting but is not this dial: it erases <em>only along <span class="math inline">\(\mathbf{k}\)</span></em>. Targeted edit (write dial) and global forget (gate dial) are independent, and you can turn both.</p>
+<p>The distinction worth holding, from M4 §4: the gate is a <strong>global</strong> fade — it decays every stored association at once, including the ones you were not writing to. The delta rule’s erase factor <span class="math inline">\((\mathbf{I}-\beta\mathbf{k}\mathbf{k}^\top)\)</span> looks like forgetting but is not this dial: it erases <em>only along <span class="math inline">\(\mathbf{k}\)</span></em>. Targeted edit (write dial) and global forget (gate dial) are independent, and you can turn both. And “how much to erase” need not equal “how much to write”: <a href="../../../courses/continual-learning/foundations/m4-delta-rule.html">Gated DeltaNet-2</a> (M4 §6) splits the delta rule’s single <span class="math inline">\(\beta_t\)</span> into channel-wise <strong>erase</strong> (key-side) and <strong>write</strong> (value-side) gates — a decoupling on the write dial, not this one.</p>
 </section>
 <section id="dial-3-the-optimizer-how-the-write-is-applied" class="level3">
 <h3 data-anchor-id="dial-3-the-optimizer-how-the-write-is-applied">Dial 3 — the optimizer: <em>how the write is applied</em></h3>
@@ -506,6 +506,22 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td>—</td>
 </tr>
 <tr class="odd">
+<td><strong>channel-wise gated delta</strong></td>
+<td><span class="math inline">\(\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span></td>
+<td><span class="math inline">\(\mathrm{diag}(\alpha_t)\)</span></td>
+<td>edit + channel-wise forget</td>
+<td>KDA (<a href="https://arxiv.org/abs/2510.26692">Kimi Linear</a>; Kimi Team, 2025)</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><strong>decoupled gated delta</strong></td>
+<td><span class="math inline">\(\mathbf{w}_t\odot\mathbf{v}_t-\mathbf{S}_{t-1}(\mathbf{b}_t\odot\mathbf{k}_t)\)</span></td>
+<td><span class="math inline">\(\mathrm{diag}(\alpha_t)\)</span></td>
+<td>edit; erase (key) &amp; write (value) decoupled</td>
+<td><a href="https://arxiv.org/abs/2605.22791">Gated DeltaNet-2</a> (Hatamizadeh, Choi &amp; Kautz, 2026)</td>
+<td>M4</td>
+</tr>
+<tr class="odd">
 <td><strong>self-referential delta</strong></td>
 <td>delta, with <span class="math inline">\(\mathbf{k},\mathbf{q},\beta\)</span> and the values read out of <span class="math inline">\(\mathbf{S}_{t-1}\)</span></td>
 <td><span class="math inline">\(1\)</span></td>
@@ -547,7 +563,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 </tr>
 </tbody>
 </table>
-<p>The first five rows are the master recurrence exactly. Here is how each of the last three departs from it, because each departure says something:</p>
+<p>The first seven rows are the master recurrence exactly. Here is how each of the last four departs from it, because each departure says something:</p>
 <ul>
 <li><strong>Oja’s rule</strong> (<a href="https://arxiv.org/abs/2512.24695">NL</a> §5, Eq. 66) subtracts its correction from <span class="math inline">\(\phi(\mathbf{k}_t)\)</span>, not from <span class="math inline">\(\mathbf{v}_t\)</span>. The outer product is still there, but the corrected factor is the <em>key</em> — so it is not a setting of <span class="math inline">\(\text{write}_t\)</span> at all. NL derives it as one gradient step on a Hebbian objective plus a <span class="math inline">\(\lVert\mathcal{M}^\top\mathbf{v}_t\rVert^2\)</span> term (Eq. 67), which is where the norm control comes from; the same source reports it underperforming delta-rule models in practice.</li>
 <li><strong>The Omega rule</strong> (<a href="https://arxiv.org/abs/2505.23735">Atlas</a> §3; <a href="https://arxiv.org/abs/2512.24695">NL</a> §5, Eq. 68) writes a <em>sum</em> of outer products per step, one per token in a window — so one token is no longer one rank-one write. At <span class="math inline">\(c=1\)</span> it collapses back to the delta row.</li>
