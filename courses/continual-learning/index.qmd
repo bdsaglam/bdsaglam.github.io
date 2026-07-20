@@ -96,7 +96,6 @@ The papers the modules are built around, by public URL.
 | [Nested Learning](https://arxiv.org/abs/2512.24695) | M1, M2, M6, M7, and the whole Nested Learning track |
 | [FWP](https://arxiv.org/abs/2102.11174) | M2; DeltaNet in M4 |
 | [Gated DeltaNet-2](https://arxiv.org/abs/2605.22791) | M4; the decoupled gated-delta row of M7's zoo |
-| [Kimi Linear (KDA)](https://arxiv.org/abs/2510.26692) | M4, and the channel-wise gated-delta row of M7's zoo |
 | [Linear Transformers](https://arxiv.org/abs/2006.16236) | M1, M3, M7 |
 | [MAML](https://arxiv.org/abs/1703.03400) | M5; the backpropagation primer |
 | [SRWM](https://arxiv.org/abs/2202.05780) | M5 |
@@ -108,7 +107,7 @@ The papers the modules are built around, by public URL.
 | [Atlas](https://arxiv.org/abs/2505.23735) | NL-1 |
 | [TTT-E2E](https://arxiv.org/abs/2512.23675) | NL-4; the *end-to-end* row of M7's zoo |
 
-**Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, Mamba-2, Gated DeltaNet and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested — and in this lineage it often is — the module says so rather than picking a winner.
+**Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, Mamba-2, Gated DeltaNet, KDA and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested — and in this lineage it often is — the module says so rather than picking a winner.
 
 ## Licence
 
