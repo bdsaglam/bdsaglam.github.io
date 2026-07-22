@@ -188,7 +188,7 @@ window.Quarto = {
   <li><a href="#a.-random-projections-the-inner-loop-runs-but-recall-fails" id="toc-a.-random-projections-the-inner-loop-runs-but-recall-fails" class="nav-link" data-scroll-target="#a.-random-projections-the-inner-loop-runs-but-recall-fails">A. Random projections: the inner loop runs, but recall fails</a></li>
   <li><a href="#b.-the-outer-loop-teaches-it-what-to-store" id="toc-b.-the-outer-loop-teaches-it-what-to-store" class="nav-link" data-scroll-target="#b.-the-outer-loop-teaches-it-what-to-store">B. The outer loop teaches it what to store</a></li>
   <li><a href="#c.-at-test-time-only-the-label-free-inner-loop-runs" id="toc-c.-at-test-time-only-the-label-free-inner-loop-runs" class="nav-link" data-scroll-target="#c.-at-test-time-only-the-label-free-inner-loop-runs">C. At test time: only the label-free inner loop runs</a></li>
-  <li><a href="#so-where-does-the-error-come-from" id="toc-so-where-does-the-error-come-from" class="nav-link" data-scroll-target="#so-where-does-the-error-come-from">So — where does the error come from?</a></li>
+  <li><a href="#where-does-the-error-come-from" id="toc-where-does-the-error-come-from" class="nav-link" data-scroll-target="#where-does-the-error-come-from">Where does the error come from?</a></li>
   </ul>
 </nav>
     </div>
@@ -220,16 +220,16 @@ window.Quarto = {
 <figcaption>Open In Colab</figcaption>
 </figure>
 </div>
-<p><em>A companion to <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>, built to answer one question: test-time learning updates the memory by gradient descent on a “self-supervised” loss — but at test time we have no ground-truth labels. So where does the error signal come from? Optional: read it when NL-1 §1 points here.</em></p>
+<p><em>A companion to <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>, built to answer one question: test-time learning updates the memory by gradient descent on a “self-supervised” loss, but at test time we have no ground-truth labels. So where does the error signal come from? Optional: read it when NL-1 §1 points here.</em></p>
 <p>Runs on CPU in seconds; pure PyTorch, no GPU.</p>
 <p>The answer has <strong>two levels</strong>, and the whole point is to see them side by side in a tiny, CPU-only toy:</p>
 <ul>
 <li><strong>Inner loss — self-supervised, no labels.</strong> The memory’s update target is <em>manufactured from the input token itself</em>. It runs every forward pass, including test time. No <code>y</code> anywhere.</li>
-<li><strong>Outer loss — supervised, real labels.</strong> Used only during <em>training</em>, to learn the projections that <em>define</em> the inner task — i.e.&nbsp;to teach the label-free inner loop <strong>what is worth memorizing</strong>.</li>
+<li><strong>Outer loss — supervised, real labels.</strong> Used only during <em>training</em>, to learn the projections that <em>define</em> the inner task, i.e.&nbsp;to teach the label-free inner loop <strong>what is worth memorizing</strong>.</li>
 </ul>
 <section id="the-resolution-in-one-paragraph" class="level2">
 <h2 data-anchor-id="the-resolution-in-one-paragraph">The resolution, in one paragraph</h2>
-<p>In <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> §1 the inner loss is <span class="math inline">\(\ell(W;x_t)=\lVert f_W(\mathbf k_t)-\mathbf v_t\rVert^2\)</span> with <span class="math inline">\(\mathbf k_t=\theta_K x_t\)</span> and <span class="math inline">\(\mathbf v_t=\theta_V x_t\)</span> — <strong>both views of the same token</strong>. So the “label” <span class="math inline">\(\mathbf v_t\)</span> is a projection of the input, not external supervision: the memory is asked to map one view of the token to another, and the error is just <em>how badly it currently does that</em> (Titans’ “surprise”). That needs no ground truth.</p>
+<p>In <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> §1 the inner loss is <span class="math inline">\(\ell(W;x_t)=\lVert f_W(\mathbf k_t)-\mathbf v_t\rVert^2\)</span> with <span class="math inline">\(\mathbf k_t=\theta_K x_t\)</span> and <span class="math inline">\(\mathbf v_t=\theta_V x_t\)</span> — <strong>both views of the same token</strong>. That makes the “label” <span class="math inline">\(\mathbf v_t\)</span> a projection of the input, not external supervision: the memory is asked to map one view of the token to another, and the error is just <em>how badly it currently does that</em> (Titans’ “surprise”). That needs no ground truth.</p>
 <p>But then <em>why does memorizing <span class="math inline">\(\mathbf k_t\!\to\!\mathbf v_t\)</span> help anything?</em> Because a <strong>separate outer loss</strong>, with real labels, runs at training time and shapes <span class="math inline">\(\theta_K,\theta_V\)</span> so that storing those particular views turns out useful for the real task. Two losses, two timescales:</p>
 <table class="caption-top table">
 <colgroup>
@@ -267,7 +267,7 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>We’ll build a toy with <em>both</em> and show the killer fact: the <strong>same</strong> label-free inner loop is useless with random projections and useful after the outer loop has trained them.</p>
+<p>We’ll build a toy with <em>both</em> and show that the <strong>same</strong> label-free inner loop is useless with random projections and useful after the outer loop has trained them.</p>
 </section>
 <section id="the-toy-in-context-associative-recall" class="level2">
 <h2 data-anchor-id="the-toy-in-context-associative-recall">The toy: in-context associative recall</h2>
@@ -442,7 +442,7 @@ outer recall error on held-out episodes (random projections): 1.22
 </section>
 <section id="c.-at-test-time-only-the-label-free-inner-loop-runs" class="level2">
 <h2 data-anchor-id="c.-at-test-time-only-the-label-free-inner-loop-runs">C. At test time: only the label-free inner loop runs</h2>
-<p>The payoff. On <strong>fresh</strong> episodes the model has never seen, we run <em>just</em> the inner loop — no labels, no outer loss, no gradient on the projections — and recall works. The memory learns each new random lookup table at test time, purely from the tokens.</p>
+<p>On <strong>fresh</strong> episodes the model has never seen, we run just the inner loop (no labels, no outer loss, no gradient on the projections) and recall works. The memory learns each new random lookup table at test time, purely from the tokens.</p>
 <div id="009a2816" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-26T07:15:13.970500Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-26T07:15:13.970385Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-26T07:15:13.995321Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-26T07:15:13.994950Z&quot;}}">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>tKf, tVf <span class="op">=</span> tK.detach(), tV.detach()</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(</span>
@@ -468,12 +468,12 @@ no label was used to BUILD or QUERY the memory -- the tokens supervised themselv
 </div>
 </div>
 </section>
-<section id="so-where-does-the-error-come-from" class="level2">
-<h2 data-anchor-id="so-where-does-the-error-come-from">So — where does the error come from?</h2>
+<section id="where-does-the-error-come-from" class="level2">
+<h2 data-anchor-id="where-does-the-error-come-from">Where does the error come from?</h2>
 <p><strong>From the data, twice, at two levels:</strong></p>
 <ol type="1">
-<li><strong>Inner (self-supervised, no labels).</strong> The update target is a <em>view of the input token</em> (<span class="math inline">\(\mathbf v_t=\theta_V x_t\)</span>). The error is the memory’s own reconstruction/recall error on that view — well-defined with zero ground truth. This is what runs at <strong>test time</strong>, and it’s how the memory “learns the sequence on the fly.” (In §A you saw it run even with random projections.)</li>
-<li><strong>Outer (supervised, real labels).</strong> A separate task loss, with ground truth, runs at <strong>training time</strong> and shapes the projections <span class="math inline">\(\theta_K,\theta_V\)</span> — i.e.&nbsp;it teaches the label-free inner loop <em>what to extract and store</em>. (In §B that’s what turned a useless inner loop into a working one: recall went from <span class="math inline">\(\approx 1\)</span> to well below it, with the inner mechanism unchanged.)</li>
+<li><strong>Inner (self-supervised, no labels).</strong> The update target is a <em>view of the input token</em> (<span class="math inline">\(\mathbf v_t=\theta_V x_t\)</span>). The error is the memory’s own reconstruction/recall error on that view, well-defined with zero ground truth. This is what runs at <strong>test time</strong>, and it’s how the memory “learns the sequence on the fly.” (In §A you saw it run even with random projections.)</li>
+<li><strong>Outer (supervised, real labels).</strong> A separate task loss, with ground truth, runs at <strong>training time</strong> and shapes the projections <span class="math inline">\(\theta_K,\theta_V\)</span>: it teaches the label-free inner loop <em>what to extract and store</em>. (In §B that’s what turned a useless inner loop into a working one: recall went from <span class="math inline">\(\approx 1\)</span> to well below it, with the inner mechanism unchanged.)</li>
 </ol>
 <p>Two earlier modules are exactly these two levels:</p>
 <ul>
