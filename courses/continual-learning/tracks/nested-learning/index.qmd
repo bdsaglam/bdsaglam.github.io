@@ -11,7 +11,7 @@ $$\mathbf{S}_t=\alpha_t\,\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathb
 
 and asks each track to say which of the three dials it turns, from what to what. This track turns **all three** — and the write dial so far that the recurrence stops being a formula:
 
-- **Write rule:** from $\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)$, a closed-form correction, to *whatever an optimizer produces*. The memory stops being the matrix $\mathbf{S}$ and becomes a **model** $f_W$ — an MLP, not just a map — and the write becomes gradient descent on $\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2$ run **inside the forward pass**. This is M7 §5's *optimizer-shaped* row, and the frame's own warning applies: once $\text{write}_t$ is "run an optimizer," the content of the design moves into the optimizer dial.
+- **Write rule:** from $\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)$, a closed-form correction, to *whatever an optimizer produces*. The memory stops being the matrix $\mathbf{S}$ and becomes a **model** $f_W$ (an MLP, not just a map), and the write becomes gradient descent on $\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2$ run **inside the forward pass**. This is M7 §5's *optimizer-shaped* row, and the frame's own warning applies: once $\text{write}_t$ is "run an optimizer," the content of the design moves into the optimizer dial.
 - **Optimizer:** from one plain step at a learned rate to **momentum**, then to momentum passed through a Newton–Schulz orthogonalization. [M6](../../foundations/m6-optimizers-as-memory.ipynb) turned this dial in the *training script*; here the same dial is turned **inside the architecture**.
 - **Gate:** from $1$ to input-dependent $(1-\alpha_t)$. Every sequence memory in M7 §3's table reads $1$ here — *"nothing in the foundations ever forgets on purpose."* M6's row is the exception that fixes the rule: it does decay, but on its *momentum buffer*, not on a token store. Titans is where the dial turns on the sequence memory itself.
 
@@ -32,7 +32,7 @@ There is a fourth thing to turn, and it is inside the first. Once the write is a
 | Dec 2025 | [Nested Learning](https://arxiv.org/abs/2512.24695) | Behrouz, Razaviyayn, Zhong & Mirrokni | every memory becomes a level — the destination |
 | Dec 2025 | [TTT-E2E](https://arxiv.org/abs/2512.23675) | Tandon et al. | the shared objective drops; the inner loop trains on the real next token |
 
-Behrouz, Zhong and Mirrokni are authors on the four from Titans to Nested Learning: that stretch is one team's twelve months, not four bolts from the blue. The last row is a different group — TTT's own, Sun and Dalal and Li among them — which is why [NL-4](nl4-end-to-end-ttt.ipynb) reads as a family argument rather than an outside attack: the people who built the key–value construction are the ones asking whether it was needed. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) walks the first four in exactly this order; NL-4 takes up the last.
+Behrouz, Zhong and Mirrokni are authors on the four from Titans to Nested Learning: that stretch is one team's twelve months, not four bolts from the blue. The last row is a different group (TTT's own, Sun and Dalal and Li among them), which is why [NL-4](nl4-end-to-end-ttt.ipynb) reads as a family argument rather than an outside attack: the people who built the key–value construction are the ones asking whether it was needed. Dates are arXiv v1. [NL-1](nl1-test-time-learning.ipynb) walks the first four in exactly this order; NL-4 takes up the last.
 
 ## The modules
 

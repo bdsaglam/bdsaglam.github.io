@@ -8,9 +8,9 @@ I made this course because I could not follow the [Nested Learning](https://arxi
 paper as fully as I wanted to.
 :::
 
-It is a great paper and a dense one — a unifying theory of memory, and a new architecture built from it — resting on decades of work it can only compress into notation. Reading it straight through means reconstructing that work as you go.
+It is a great paper and a dense one — a unifying theory of memory, and a new architecture built from it, resting on decades of work it can only compress into notation. Reading it straight through means reconstructing that work as you go.
 
-So I rebuilt the pieces, one at a time, in notebooks you can run and change. They proved worth separating from the paper that sent me looking for them: the foundations stand on their own, and Nested Learning is one track on top. Each module introduces a single idea and cites the paper that first published it, and most open on something an earlier module left unresolved — M1 is where the chain starts, M7 is where it collapses. The order is conceptual, not chronological — the delta rule comes fourth but dates from 1960.
+So I rebuilt the pieces, one at a time, in notebooks you can run and change. They proved worth separating from the paper that sent me looking for them: the foundations stand on their own, and Nested Learning is one track on top. Each module introduces a single idea and cites the paper that first published it, and most open on something an earlier module left unresolved: M1 is where the chain starts, M7 is where it collapses. The order is conceptual, not chronological — the delta rule comes fourth but dates from 1960.
 
 ::: {.callout-note}
 ## What this course covers — and what it doesn't
@@ -22,7 +22,7 @@ It is **not** a survey of the continual-learning literature. There is no EWC, no
 
 ## Who it's for
 
-Anyone who has read — or bounced off — a paper like DeltaNet, Titans, or Nested Learning and wants the machinery underneath rather than a summary of it. You should be able to read PyTorch and follow linear algebra and backprop; where a module needs more, it points you at a primer that builds the piece from scratch.
+Anyone who has read (or bounced off) a paper like DeltaNet, Titans, or Nested Learning and wants the machinery underneath rather than a summary of it. You should be able to read PyTorch and follow linear algebra and backprop; where a module needs more, it points you at a primer that builds the piece from scratch.
 
 By the end, you should be able to:
 
@@ -69,7 +69,7 @@ Adding a track renumbers nothing — the contract is in [M7](foundations/m7-thre
 
 ## The spine in one breath
 
-Start with one primitive: a memory you write with an outer product and read with a matrix–vector product (**M1**). Make the writes programmable and you get fast-weight programmers (**M2**), which *are* linear attention (**M3**). Swap the additive write for an error-correcting one and you get the delta rule / DeltaNet (**M4**). Let the memory supply its own keys, values and write rate — ask who writes the writer — and you get meta-learning and self-referential weights (**M5**). Then notice the *optimizer* was an associative memory over the gradient stream all along, and that M4's fix applies to it too (**M6**). Collapse all six into one recurrence with three dials (**M7**) — and the tracks take it from there, where the argument and the calendar finally coincide: the Nested Learning track follows TTT → Titans → Miras → Atlas in the order they were published, one team's twelve months, each paper repairing the gap the last left open.
+Start with one primitive: a memory you write with an outer product and read with a matrix–vector product (**M1**). Make the writes programmable and you get fast-weight programmers (**M2**), which *are* linear attention (**M3**). Swap the additive write for an error-correcting one and you get the delta rule / DeltaNet (**M4**). Let the memory supply its own keys, values and write rate (ask who writes the writer) and you get meta-learning and self-referential weights (**M5**). Then notice the *optimizer* was an associative memory over the gradient stream all along, and that M4's fix applies to it too (**M6**). Collapse all six into one recurrence with three dials (**M7**) — and the tracks take it from there, where the argument and the calendar finally coincide: the Nested Learning track follows TTT → Titans → Miras → Atlas in the order they were published, one team's twelve months, each paper repairing the gap the last left open.
 
 Every formula in the course, one line each, is on the [cheatsheet](cheatsheet.qmd).
 
@@ -81,7 +81,7 @@ Every formula in the course, one line each, is on the [cheatsheet](cheatsheet.qm
 
 **Runtimes.** Most notebooks finish in seconds. Three take minutes: [M5](foundations/m5-meta-learning-self-reference.ipynb) and the Nested Learning track's [image-TTT](tracks/nested-learning/nl1-aside-image-ttt.ipynb) and [HOPE-training](tracks/nested-learning/nl3-aside-training-hope.ipynb) asides. M5 and image-TTT each fetch a ~10 MB dataset once (Omniglot, MNIST) and cache it locally; everything else is self-contained.
 
-**If a notebook feels absurdly slow, cap the thread count.** Several demos use tensors small enough that torch's intra-op parallelism costs far more than it saves, and the penalty grows with core count. On a 14-core machine the HOPE-training aside took 9 minutes with default threads and 23 seconds under `OMP_NUM_THREADS=1` — same output, 24× apart. Worth doing for the whole course:
+**If a notebook feels absurdly slow, cap the thread count.** Several demos use tensors small enough that torch's intra-op parallelism costs far more than it saves, and the penalty grows with core count. On a 14-core machine the HOPE-training aside took 9 minutes with default threads and 23 seconds under `OMP_NUM_THREADS=1` — same output, 24× apart. Do it for the whole course:
 
 ```bash
 OMP_NUM_THREADS=1 uv run jupyter lab
@@ -107,7 +107,7 @@ The papers the modules are built around, by public URL.
 | [Atlas](https://arxiv.org/abs/2505.23735) | NL-1 |
 | [TTT-E2E](https://arxiv.org/abs/2512.23675) | NL-4; the *end-to-end* row of M7's zoo |
 
-**Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, Mamba-2, Gated DeltaNet, KDA and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested — and in this lineage it often is — the module says so rather than picking a winner.
+**Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, Mamba-2, Gated DeltaNet, KDA and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested (and in this lineage it often is), the module says so rather than picking a winner.
 
 ## Licence
 
