@@ -224,7 +224,7 @@ window.Quarto = {
 </figure>
 </div>
 <p><strong>The question:</strong> how do the pieces combine into one continual-learning architecture?</p>
-<p>Third module of the Nested Learning track, and the Nested Learning paper’s own architecture. Prerequisites: foundations M1–M7, <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>, <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a>. Runs on CPU in seconds; PyTorch throughout.</p>
+<p>Third module of the Nested Learning track, and the Nested Learning paper’s own architecture. Prerequisites: foundations M1–M7, <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>, <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a>.</p>
 <p>This is the capstone. Everything before it was a part; HOPE is the machine you get when you snap them together. By the end you should be able to:</p>
 <ul>
 <li>State HOPE’s two halves (a <strong>self-modifying (“self-referential”) Titans</strong> memory followed by a <strong>Continuum Memory System</strong>) and say which module each piece comes from.</li>
@@ -410,7 +410,7 @@ outer anchor → memory stays expressive (var&gt;0) and predicts far better than
 </div>
 </div>
 <p>So self-modification is safe for the same reason MAML and TTT (M5, NL-1) are: the <strong>inner adaptation has no labels, but it is a learned procedure validated by an outer loop that does.</strong> Four things hold it in place: (1) the output still predicts <strong>real tokens</strong> through the LM head; (2) the value-generating functions and <strong>initial states are meta-learned</strong> against that real loss; (3) inputs are <strong>real data</strong>, so each self-target transforms real signal; (4) the update is <strong>bounded</strong>, one gated step per token from the meta-learned init.</p>
-<p>Only the second is the paper’s own argument, and it is emphatic: §8.1 calls meta-learning the initial states “<em>essential for both fast-adaption, training stability, robustness to noise in the data</em>.” The other three are our reading of the design — <a href="https://arxiv.org/abs/2512.24695">NL</a> never raises collapse as a failure mode, so it names no defence against it. Nor is there a formal guarantee. But note what the paper’s own sentence concedes: its stability rests on design choices, not a guarantee.</p>
+<p>Only the second is the paper’s own argument, and it is emphatic: §8.1 calls meta-learning the initial states “<em>essential for both fast-adaption, training stability, robustness to noise in the data</em>.” The other three are our reading of the design — <a href="https://arxiv.org/abs/2512.24695">NL</a> never raises collapse as a failure mode, so it names no defence against it. But note what the paper’s own sentence concedes: its stability rests on design choices, not a guarantee.</p>
 </section>
 <section id="the-two-pieces-are-complementary-and-dgd-lives-inside" class="level2">
 <h2 data-anchor-id="the-two-pieces-are-complementary-and-dgd-lives-inside">4. The two pieces are complementary — and DGD lives inside</h2>

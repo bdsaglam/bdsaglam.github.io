@@ -221,7 +221,6 @@ window.Quarto = {
 </figure>
 </div>
 <p><em>A companion to <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>, built to answer one question: test-time learning updates the memory by gradient descent on a “self-supervised” loss, but at test time we have no ground-truth labels. So where does the error signal come from? Optional: read it when NL-1 §1 points here.</em></p>
-<p>Runs on CPU in seconds; pure PyTorch, no GPU.</p>
 <p>The answer has <strong>two levels</strong>, and the whole point is to see them side by side in a tiny, CPU-only toy:</p>
 <ul>
 <li><strong>Inner loss — self-supervised, no labels.</strong> The memory’s update target is <em>manufactured from the input token itself</em>. It runs every forward pass, including test time. No <code>y</code> anywhere.</li>

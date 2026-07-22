@@ -229,7 +229,7 @@ window.Quarto = {
 </figure>
 </div>
 <p><strong>The question:</strong> where do the keys, values, and queries come from?</p>
-<p>Second module of the foundations spine. Runs on CPU in seconds; PyTorch from here on.</p>
+<p>Second module of the foundations spine.</p>
 <p>M1 gave us a memory matrix and the Hebbian write — but it <em>handed</em> us the keys, values, and queries. M2 asks where <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> come from. The answer, <em>a “slow” network writing a “fast” network’s weight-memory</em>, is the first real taste of <strong>nesting</strong>.</p>
 <section id="objective" class="level2">
 <h2 data-anchor-id="objective">Objective</h2>
@@ -244,7 +244,7 @@ window.Quarto = {
 <section id="why-it-exists-the-limitation-it-fixes" class="level2">
 <h2 data-anchor-id="why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</h2>
 <p>M1’s memory was powerful but <em>disembodied</em>: we wrote arbitrary <span class="math inline">\((\mathbf{k},\mathbf{v})\)</span> pairs by hand. In a real model nobody hands you <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> — they must be <strong>computed from the input</strong>.</p>
-<p>And there’s a tension already hiding in M1’s recurrence <span class="math inline">\(\mathcal{M}_t = \mathcal{M}_{t-1} + \mathbf{v}_t\mathbf{k}_t^\top\)</span>: the memory <span class="math inline">\(\mathcal{M}\)</span> changes <strong>every token</strong>, but whatever <em>produces</em> <span class="math inline">\(\mathbf{k},\mathbf{v}\)</span> had better be <strong>stable</strong> (learned once, reused across all tokens and all sequences). That’s two different timescales living in one layer. Fast Weight Programmers make that split explicit. Naming it is the seed of the whole “levels” idea.</p>
+<p>And there’s a tension already hiding in M1’s recurrence <span class="math inline">\(\mathcal{M}_t = \mathcal{M}_{t-1} + \mathbf{v}_t\mathbf{k}_t^\top\)</span>: the memory <span class="math inline">\(\mathcal{M}\)</span> changes <strong>every token</strong>, but whatever <em>produces</em> <span class="math inline">\(\mathbf{k},\mathbf{v}\)</span> had better be <strong>stable</strong> (learned once, reused across all tokens and all sequences). That’s two different timescales living in one layer. Fast Weight Programmers make that split explicit.</p>
 </section>
 <section id="core-idea-a-slow-net-programs-a-fast-net" class="level2">
 <h2 data-anchor-id="core-idea-a-slow-net-programs-a-fast-net">Core idea — a slow net programs a fast net</h2>
@@ -272,7 +272,7 @@ window.Quarto = {
 </section>
 <section id="from-given-mathbfkmathbfvmathbfq-to-projected-from-the-input" class="level2">
 <h2 data-anchor-id="from-given-mathbfkmathbfvmathbfq-to-projected-from-the-input">1. From “given <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span>” to “projected from the input”</h2>
-<p>The only change from M1: <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> are now <span class="math inline">\(W_k\mathbf{x},\,W_v\mathbf{x},\,W_q\mathbf{x}\)</span>. The next cell builds a minimal FWP layer as an <code>nn.Module</code> — three <code>nn.Linear</code> slow-weight projections and one fast-weight memory tensor. (The <code>proj_*</code> linears mirror the real repo’s <code>SelfModifyingLayer</code> exactly.)</p>
+<p>The only change from M1: <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> are now <span class="math inline">\(W_k\mathbf{x},\,W_v\mathbf{x},\,W_q\mathbf{x}\)</span>. The next cell builds a minimal FWP layer as an <code>nn.Module</code> — three <code>nn.Linear</code> slow-weight projections and one fast-weight memory tensor.</p>
 <div id="fc5db498" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>

@@ -232,7 +232,6 @@ window.Quarto = {
 </div>
 <p><strong>The question:</strong> M1 through M6 built six mechanisms. How many ideas is that, really?</p>
 <p>Answer: one, with three dials. This module collapses the spine into a single recurrence, then shows every module you have read as a setting of it. It is also the hub the rest of the course attaches to — each track states its dial setting and departs from here.</p>
-<p>Runs on CPU in seconds.</p>
 <section id="objective" class="level2">
 <h2 data-anchor-id="objective">Objective</h2>
 <p>After this module you should be able to:</p>
@@ -419,7 +418,7 @@ delta recall of k0: tensor([ 0.5684, -1.0845, -1.3986])
 the two values written to k0: tensor([ 1.5410, -0.2934, -2.1788]) tensor([ 0.5684, -1.0845, -1.3986])</code></pre>
 </div>
 </div>
-<p>Read the two prints together. On orthogonal keys the difference is exactly zero, because the delta rule’s correction term is <em>zero by construction</em>: writing to <span class="math inline">\(\mathbf{e}_i\)</span> touches only column <span class="math inline">\(i\)</span>, so when the write to <span class="math inline">\(\mathbf{e}_j\)</span> arrives, <span class="math inline">\(\mathbf{S}_{t-1}\mathbf{e}_j\)</span> is still the zero vector and the residual collapses to <span class="math inline">\(\mathbf{v}_t\)</span>. A memory that never revisits a key has nothing to correct, and the fancier rule does nothing at all.</p>
+<p>On orthogonal keys the difference is exactly zero, because the delta rule’s correction term is <em>zero by construction</em>: writing to <span class="math inline">\(\mathbf{e}_i\)</span> touches only column <span class="math inline">\(i\)</span>, so when the write to <span class="math inline">\(\mathbf{e}_j\)</span> arrives, <span class="math inline">\(\mathbf{S}_{t-1}\mathbf{e}_j\)</span> is still the zero vector and the residual collapses to <span class="math inline">\(\mathbf{v}_t\)</span>. A memory that never revisits a key has nothing to correct, and the fancier rule does nothing at all.</p>
 <p>Revisit one key and the same two settings tell opposite stories: <code>hebb</code> returns <span class="math inline">\(\mathbf{v}_0+\mathbf{v}_1\)</span> (it can only accumulate), <code>delta</code> returns <span class="math inline">\(\mathbf{v}_1\)</span> (it read <span class="math inline">\(\mathbf{v}_0\)</span>, wrote the difference, and the sum telescoped). That is <a href="../../../courses/continual-learning/foundations/m4-delta-rule.html">M4</a>’s entire argument — the failure in its §1, the fix in its §2, the payoff in its §5 — reproduced here by changing one string in one function call.</p>
 <p>M4 is not a new model. It is <code>write="delta"</code>.</p>
 <p>The same board reaches M1 and M3 the same way — this time on the <span class="math inline">\(\phi\)</span> knob and the gate.</p>
@@ -582,7 +581,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 </section>
 <section id="exit-check" class="level2">
 <h2 data-anchor-id="exit-check">Exit check</h2>
-<p>Self-test: question, then the answer we’d give.</p>
+<p>Self-test:</p>
 <p><strong>1. State any model in this course as a setting of the three dials.</strong> Pick the recurrence <span class="math inline">\(\mathbf{S}_t=\alpha_t\mathbf{S}_{t-1}+\beta_t(\text{write}_t)\phi(\mathbf{k}_t)^\top\)</span> and fill three slots. <em>DeltaNet:</em> <span class="math inline">\(\text{write}_t=\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span>, <span class="math inline">\(\alpha_t=1\)</span>, one plain step at learned rate <span class="math inline">\(\beta_t\)</span>. <em>Linear attention:</em> <span class="math inline">\(\text{write}_t=\mathbf{v}_t\)</span>, <span class="math inline">\(\alpha_t=1\)</span>, one plain step at rate <span class="math inline">\(1\)</span>. M1 is the same setting with <span class="math inline">\(\phi=\text{identity}\)</span>, M2 the same setting with <span class="math inline">\(\mathbf{v}_t=W_v\mathbf{x}_t\)</span>. <em>SRWM:</em> the DeltaNet setting, with <span class="math inline">\(\mathbf{k},\mathbf{q},\beta\)</span> and both values read out of the memory itself. If you can say the three slots, you can say the model.</p>
 <p><strong>2. Which dial does M4 turn?</strong> The <strong>write rule</strong>, and only it: <span class="math inline">\(\mathbf{v}_t\to\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span>. The gate stays at <span class="math inline">\(1\)</span> and the optimizer stays a single plain step. §4 ran the flip: identical to Hebbian on orthogonal keys, and the <em>only</em> thing that can recover the second value on a revisited one.</p>
 <p><strong>3. Which dial does M6 turn?</strong> The <strong>optimizer</strong>: one plain step <span class="math inline">\(\to\)</span> momentum, DGD, Adam, Muon. But M6’s content is what turning it means: an optimizer is <em>itself</em> a memory over a second stream (gradients, keyed by layer inputs, valued by output surprises), with its own write rule and its own gate. Turning the optimizer dial is setting the three dials again, one level down.</p>

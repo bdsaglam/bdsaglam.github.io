@@ -224,10 +224,9 @@ window.Quarto = {
 </figure>
 </div>
 <p><em>The chain rule by hand, a scalar autograd engine built from scratch, the matrix view (<span class="math inline">\(\partial\mathcal L/\partial W=\boldsymbol\delta\hat{\mathbf x}^\top\)</span>), PyTorch’s autograd, and higher-order/meta-gradients — each with a runnable demo. Optional: read it when a foundations module points here.</em></p>
-<p>Runs on CPU in seconds — or clone the repo and <code>uv sync</code> in <code>courses/continual-learning/</code>.</p>
 <p><strong>Why build it from scratch here?</strong> M6 makes a claim that only lands if backprop is <em>concrete</em> to you: one gradient step on a layer is an <strong>associative-memory write</strong> — for <span class="math inline">\(\mathbf y=W\hat{\mathbf x}\)</span>,</p>
 <p><span class="math display">\[\frac{\partial\mathcal L}{\partial W}=\boldsymbol\delta\,\hat{\mathbf x}^\top,\qquad \boldsymbol\delta=\frac{\partial\mathcal L}{\partial\mathbf y},\]</span></p>
-<p>an outer product with <strong>key = input <span class="math inline">\(\hat{\mathbf x}\)</span></strong> and <strong>value = <span class="math inline">\(-\boldsymbol\delta\)</span> (negative surprise)</strong>. You cannot feel that reframing while backprop is a black box. So we open the box.</p>
+<p>an outer product with <strong>key = input <span class="math inline">\(\hat{\mathbf x}\)</span></strong> and <strong>value = <span class="math inline">\(-\boldsymbol\delta\)</span> (negative surprise)</strong>. You cannot feel that reframing while backprop is a black box.</p>
 <section id="the-chain-rule-concretely" class="level2">
 <h2 data-anchor-id="the-chain-rule-concretely">1. The chain rule, concretely</h2>
 <p>Backprop <em>is</em> the chain rule applied to a composed function, bookkept efficiently.</p>
@@ -637,7 +636,7 @@ W.grad == δ x̂ᵀ (hand-derived)?              True
 </section>
 <section id="torch-grad-tips-common-practice" class="level2">
 <h2 data-anchor-id="torch-grad-tips-common-practice">7. Torch grad tips &amp; common practice</h2>
-<p>The rest is the practical vocabulary you’ll use throughout the course. Each item below has a runnable micro-demo that <strong>prints the effect</strong>.</p>
+<p>The rest is the practical vocabulary you’ll use throughout the course.</p>
 <p><strong>7.1 Gradients ACCUMULATE, which is why you call <code>zero_grad()</code>.</strong> <code>.backward()</code> <strong>adds</strong> into <code>.grad</code> rather than overwriting it (this is what let §3’s <code>a*a</code> sum over paths). If you call <code>.backward()</code> twice without clearing, gradients <strong>double</strong>; training loops must call <code>optimizer.zero_grad()</code> (or <code>p.grad = None</code>) each step.</p>
 <p><strong>7.2 <code>no_grad</code> / <code>inference_mode</code>: don’t build a graph.</strong> At eval time you don’t need gradients; tracking them wastes memory and time. <code>torch.no_grad()</code> stops the graph from being recorded; <code>torch.inference_mode()</code> is a stronger, faster version. Under either, results have <code>requires_grad=False</code>.</p>
 <div id="c2506070" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-12T05:36:57.195880Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-12T05:36:57.195819Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-12T05:36:57.198709Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-12T05:36:57.198351Z&quot;}}" data-execution_count="10">

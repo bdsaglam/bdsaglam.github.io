@@ -218,7 +218,6 @@ window.Quarto = {
 </figure>
 </div>
 <p><em>Orthogonality, eigen/SVD/condition number, effective rank — each with a runnable demo. Optional: read it when a foundations module points here.</em></p>
-<p>Runs on CPU in seconds — or clone the repo and <code>uv sync</code> in <code>courses/continual-learning/</code>.</p>
 <section id="orthogonality-orthonormality" class="level2">
 <h2 data-anchor-id="orthogonality-orthonormality">1. Orthogonality &amp; orthonormality</h2>
 <p>The <strong>inner product</strong> <span class="math inline">\(\mathbf u^\top\mathbf v=\sum_i u_i v_i=\lVert\mathbf u\rVert\lVert\mathbf v\rVert\cos\theta\)</span> measures alignment. Two non-zero vectors are <strong>orthogonal</strong> (<span class="math inline">\(\mathbf u\perp\mathbf v\)</span>) when <span class="math inline">\(\mathbf u^\top\mathbf v=0\)</span> — i.e.&nbsp;<span class="math inline">\(\theta=90^\circ\)</span>, <em>no shared component</em>. A set is <strong>orthonormal</strong> when every pair is orthogonal <strong>and</strong> each vector has unit length. An <strong>orthonormal basis</strong> is the nicest coordinate system there is: every vector decomposes as <span class="math inline">\(\mathbf x=\sum_i(\mathbf q_i^\top\mathbf x)\,\mathbf q_i\)</span>, and writing along one <span class="math inline">\(\mathbf q_i\)</span> leaves all the others untouched.</p>
