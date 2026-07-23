@@ -175,6 +175,61 @@ $$\mathcal{L}(W_0;X)=\frac1T\sum_{i=1}^{T/b}\ \sum_{t=(i-1)b+1}^{ib}\ell_t(W_{i-
 - **Division of labour** (§5): updated weights = **long-term** memory (lossy, compressed); **sliding window** $k$ = **short-term** memory (exact). $k\ge b$ required, else the model is "a bigram again within each batch" (§2.3). Forgetting lives in the *architecture*, not the gate.
 - Defaults $k{=}8$K, $b{=}1$K, last $1/4$ of blocks (§2.3, §3.2). Scales with context like full attention at 3B/164B tokens, 2.7× faster at 128K — but **loses badly on NIAH** (§3.5): compression ≠ recall. Both halves predate it in [Clark et al., 2022](https://arxiv.org/abs/2212.02475); what is new is linear complexity and the scaling evidence (§4.3).
 
+## SSM-1 — The linear state-space model
+
+Continuous system $h'(t)=Ah(t)+Bx(t)$, $y(t)=Ch(t)$; zero-order hold discretizes it ([S4D](https://arxiv.org/abs/2206.11893) §3.1):
+
+$$\bar A=\exp(\Delta A),\qquad \bar B=(\Delta A)^{-1}\big(\exp(\Delta A)-I\big)\,\Delta B$$
+
+$$\boxed{\ h_t=\bar A\,h_{t-1}+\bar B\,x_t,\quad y_t=C\,h_t\ }\qquad\xrightarrow{\text{unroll}}\qquad y=\bar K * x,\quad \bar K_\ell=C\,\bar A^{\,\ell}\,\bar B$$
+
+- **Gate $=\bar A$.** M3 multiplied the old state by $1$; this multiplies by $\bar A=\exp(\Delta A)$, a *fixed, structured* per-channel decay — M7's gate $\alpha_t$ off its $1$ pin (SSM-1 §2).
+- **Two schedules, one function** ([S4](https://arxiv.org/abs/2111.00396) Eq. 5): train as the convolution $y=\bar K*x$ ($O(L\log L)$ by FFT), infer by the recurrence ($O(1)$/token) — M3's parallel/recurrent duality again.
+- **Why a structured $A$ remembers** ([HiPPO](https://arxiv.org/abs/2008.07669)): a random diagonal forgets; S4D-Lin $a_n=-\tfrac12+i\pi n$ tiles the frequency axis so a fixed-size state reconstructs the far past. Diagonal kernel $\bar K_\ell=\sum_n C_n\bar A_n^{\,\ell}\bar B_n$ (S4D Eq. 7).
+
+## SSM-2 — Selectivity (Mamba / S6)
+
+Make the SSM parameters input-dependent ([Mamba](https://arxiv.org/abs/2312.00752) §3.2, Alg. 2), with $A$ left a learned parameter:
+
+$$\Delta_t=\operatorname{softplus}\big(\text{param}+s_\Delta(x_t)\big),\quad B_t=s_B(x_t),\quad C_t=s_C(x_t),\qquad \bar A_t=\exp(\Delta_t A)$$
+
+At a single mode $N{=}1,\,A{=}-1$ the recurrence is exactly a gate (Mamba Thm 1):
+
+$$\boxed{\ h_t=(1-g_t)\,h_{t-1}+g_t\,x_t,\qquad g_t=1-e^{-\Delta_t}=\sigma\big(\text{param}+s_\Delta(x_t)\big)\ }$$
+
+- **$\Delta_t$ is the gate and step size** (Mamba §3.5.2): large $\Delta_t\Rightarrow\bar A_t\to0$, write the token and reset; small $\Delta_t\Rightarrow\bar A_t\to1$, hold the state and ignore it. Same gate M4, the LSTM and GRU use.
+- **Dial move:** the gate $\alpha_t=\bar A_t$ goes from fixed-structured (SSM-1) to *input-dependent, channel-wise* (diagonal $A$). The write stays additive.
+- **Cost:** input-dependence makes the influence matrix $W_{t,j}=C_t\big(\prod_{k=j+1}^{t}\bar A_k\big)B_j$ non-Toeplitz — no single convolution, so a parallel scan replaces the FFT.
+
+## SSM-3 — Mamba-2 and the duality (SSD)
+
+Restrict the state matrix to a scalar, $A_t=a_tI$ ([Mamba-2](https://arxiv.org/abs/2405.21060) §5.1). The whole sequence-to-sequence map collapses to one matrix:
+
+$$\boxed{\ M=L\circ(CB^\top),\qquad L_{ij}=\prod_{k=j+1}^{i}a_k\ \ (j\le i)\ }\qquad y_i=\sum_{j\le i}L_{ij}\,(C_i^\top B_j)\,x_j$$
+
+- **= masked linear attention:** query $q_i=C_i$, key $k_j=B_j$, value $v_j=x_j$, decay mask $L$ — M3's $(L\circ(QK^\top))V$ with the causal ones replaced by running decays (Mamba-2 Cor. 5.1). Set every $a_t=1$ ⇒ M3 exactly.
+- **Structured state-space duality:** one $M$, a linear $O(T)$ recurrence and a quadratic $O(T^2)$ attention form; the chunked block algorithm interpolates (diagonal blocks = intra-chunk attention, off-diagonal = recurrence over chunk states) — why Mamba-2 runs 2–8× over Mamba's scan (§6).
+- **Dial:** additive (Hebbian) write, selective **scalar** gate $\alpha_t=a_t$ — M7 §5's gated-Hebbian row, beside RetNet. "Transformers are SSMs" = scalar-identity SSM $\equiv$ 1-semiseparable masked linear attention (not softmax).
+
+## SSM-4 — The gate, from none to selective
+
+The master recurrence with the gate $\alpha_t$ swept across its range, and the write axis (additive vs. delta) crossing it — M7 §5's zoo read down the gate column.
+
+$$\mathbf{S}_t=\alpha_t\,\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathbf{k}_t)^\top,\qquad \mathbf{o}_t\propto\mathbf{S}_t\,\phi(\mathbf{q}_t)$$
+
+Two independent bits set the gate: input-dependent or not, scalar or channel-wise. Crossed with the write:
+
+| gate $\alpha_t$ | additive write $\mathbf{v}_t$ | delta write $\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)$ |
+|---|---|---|
+| none, $\alpha_t=1$ | linear attention | DeltaNet |
+| fixed scalar $\gamma$ | [RetNet](https://arxiv.org/abs/2307.08621) | — |
+| fixed diagonal $\bar A$ | S4 (SSM-1) | — |
+| input-dep. scalar $a_t$ | Mamba-2 (SSM-3) | Gated DeltaNet |
+| input-dep. channel-wise $\mathrm{diag}(\boldsymbol\alpha_t)$ | Mamba / S6 (SSM-2), [GLA](https://arxiv.org/abs/2312.06635) | KDA |
+
+- Endpoints are exact identities: gate $1$ = M3 linear attention; a scalar gate = SSM-3's masked attention. A channel-wise gate is a memory neither can express (fade one channel, hold another).
+- Two of M7's three dials (write × gate). The **optimizer** dial is the one this track never turns — every cell here is a single plain step; turn it and the memory becomes a network trained at test time (another track's departure).
+
 ---
 
 ## The unifying view

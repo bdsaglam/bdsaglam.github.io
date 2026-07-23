@@ -64,6 +64,7 @@ Each track names the dial it turns and follows one line of work as far as it goe
 | Track | The dial it turns | The question it answers |
 |---|---|---|
 | [Nested Learning](tracks/nested-learning/index.qmd)<br>4 modules + 4 asides | All three — the write rule until it stops being a formula and becomes a learner, then the objective inside it | What if every memory in the model is a learner, and the only thing that separates them is how often they update? |
+| [State-Space Models](tracks/state-space-models/index.qmd)<br>4 modules + 2 asides | The gate $\alpha_t$, from none to input-dependent | What if you reach the same linear-time memory from a continuous state space, and where does that put Mamba on the map? |
 
 Adding a track renumbers nothing — the contract is in [M7](foundations/m7-three-dials.ipynb) §6 and spelled out in the [README](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/README.md).
 
@@ -106,8 +107,12 @@ The papers the modules are built around, by public URL.
 | [Miras](https://arxiv.org/abs/2504.13173) | NL-1 |
 | [Atlas](https://arxiv.org/abs/2505.23735) | NL-1 |
 | [TTT-E2E](https://arxiv.org/abs/2512.23675) | NL-4; the *end-to-end* row of M7's zoo |
+| [S4](https://arxiv.org/abs/2111.00396) | SSM-1 |
+| [Mamba](https://arxiv.org/abs/2312.00752) | SSM-2 |
+| [Mamba-2](https://arxiv.org/abs/2405.21060) | SSM-3; the gated-Hebbian row of M7's zoo |
+| [HiPPO](https://arxiv.org/abs/2008.07669) | SSM-1 |
 
-**Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, Mamba-2, Gated DeltaNet, KDA and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested (and in this lineage it often is), the module says so rather than picking a winner.
+**Where each mechanism came from.** These are the papers the course *rebuilds*; they are not the papers that *invented* the pieces. Each module names and links the originating work where the mechanism is introduced — Hebb and the 1972 trio for the outer-product write (M1), Schmidhuber's fast-weight programmers (M2), Widrow–Hoff 1960 for the delta rule and Yang et al. for its gated descendant (M4), Polyak 1964 through AdaGrad, Adam, Shampoo and Muon (M6), and the write-rule zoo in [M7](foundations/m7-three-dials.ipynb), where RetNet, GLA, Gated DeltaNet, KDA and OjaNet each link their own paper as dial settings the course does not otherwise cover. Where priority is genuinely contested (and in this lineage it often is), the module says so rather than picking a winner.
 
 ## Licence
 
