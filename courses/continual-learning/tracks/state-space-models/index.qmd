@@ -1,0 +1,53 @@
+---
+title: "Track — State-Space Models"
+subtitle: "The other door to linear-time memory: continuous state spaces, selectivity, and why Transformers turn out to be SSMs."
+---
+
+State-space models reach the same fixed-size, linear-time memory as the foundations spine, but from a
+different starting point: a continuous-time system $h'(t)=Ah(t)+Bx(t)$, discretized into a recurrence and
+trained as a convolution. This track builds that lineage from scratch — S4, then Mamba's selectivity,
+then Mamba-2's duality — and ends by placing the whole family on M7's three dials.
+
+## The dial setting
+
+M7's master recurrence is
+
+$$\mathbf{S}_t=\alpha_t\,\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathbf{k}_t)^\top,\qquad \mathbf{o}_t\propto\mathbf{S}_t\,\phi(\mathbf{q}_t).$$
+
+This track turns the **gate** $\alpha_t$ — the dial for *what stays* — on the Hebbian (additive) write
+$\text{write}_t=\mathbf{v}_t$. The SSM lineage is that one dial swept across its full range:
+
+- **$\alpha_t=1$** — never forget. This is M3 linear attention, the track's starting point.
+- **$\alpha_t$ fixed and structured** — a per-channel decay $\bar A$, set once and tuned to remember. This is **S4** (SSM-1).
+- **$\alpha_t$ input-dependent, channel-wise** — the memory picks its own decay per token. This is **Mamba / S6** (SSM-2), the same setting the zoo already names *channel-wise* for the delta write.
+- **$\alpha_t=a_t$, a scalar** — the input-dependent scalar special case. This is **Mamba-2** (SSM-3), and collapsing to a scalar is exactly what makes the SSM a masked linear attention.
+
+The **write** dial stays Hebbian throughout the SSM lineage. Its cross-axis — the delta write of M4 — is
+where SSMs meet Gated DeltaNet; SSM-4 reads both lineages off the same gate.
+
+**Prerequisites.** Foundations only: [M1](../../foundations/m1-associative-memory.ipynb) (associative
+memory), [M3](../../foundations/m3-linear-attention.ipynb) (linear attention *is* fast weights),
+[M7](../../foundations/m7-three-dials.ipynb) (the three dials); SSM-4 also builds on
+[M4](../../foundations/m4-delta-rule.ipynb) (the gate and the gated delta rule). No other track — tracks
+are siblings, never a sequence.
+
+**The papers.**
+
+| Date | Paper | Who | What it added |
+|---|---|---|---|
+| 2020 | [HiPPO](https://arxiv.org/abs/2008.07669) | Gu et al. | a structured $A$ that provably remembers, from optimal polynomial projection |
+| 2021 | [S4](https://arxiv.org/abs/2111.00396) | Gu et al. | the structured state space: the recurrence is a convolution, trainable at scale |
+| 2022 | [S4D](https://arxiv.org/abs/2206.11893) | Gu et al. | the diagonal simplification the toys actually run |
+| 2023 | [Mamba](https://arxiv.org/abs/2312.00752) | Gu & Dao | selectivity: input-dependent parameters, at the cost of the convolution |
+| 2024 | [Mamba-2](https://arxiv.org/abs/2405.21060) | Dao & Gu | structured state-space duality: the SSM is masked linear attention |
+
+## The modules
+
+| # | Module | The question it answers |
+|---|---|---|
+| SSM-1 | [The linear state-space model](ssm1-linear-state-space.ipynb) | How does a fixed linear recurrence become a long-range memory you can train in parallel? |
+| SSM-2 | [Selectivity (Mamba / S6)](ssm2-selectivity.ipynb) | What breaks when the recurrence cannot choose what to remember? |
+| SSM-3 | [Mamba-2 and the duality](ssm3-mamba2-ssd.ipynb) | If the SSM and linear attention are both linear recurrences, are they the same thing? |
+| SSM-4 | [The gate, from none to selective](ssm4-gate-spectrum.ipynb) | Linear attention, RetNet, S4, Mamba, Gated DeltaNet: how many gates is that, really? |
+
+**Asides** — [the parallel scan](ssm2-aside-parallel-scan.ipynb) · [hybrid attention–SSM models](ssm4-aside-hybrid-models.ipynb). Optional; read each when the module points you at it.
