@@ -37,7 +37,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-7392b282ce3a9936c446b3a9779df258.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -157,6 +157,10 @@ window.Quarto = {
   <li><a href="#nl-2-levels-the-continuum-memory-system" id="toc-nl-2-levels-the-continuum-memory-system" class="nav-link" data-scroll-target="#nl-2-levels-the-continuum-memory-system">NL-2 — Levels &amp; the Continuum Memory System</a></li>
   <li><a href="#nl-3-hope-assembling-it-all" id="toc-nl-3-hope-assembling-it-all" class="nav-link" data-scroll-target="#nl-3-hope-assembling-it-all">NL-3 — HOPE (assembling it all)</a></li>
   <li><a href="#nl-4-end-to-end-ttt-ttt-e2e" id="toc-nl-4-end-to-end-ttt-ttt-e2e" class="nav-link" data-scroll-target="#nl-4-end-to-end-ttt-ttt-e2e">NL-4 — End-to-end TTT (TTT-E2E)</a></li>
+  <li><a href="#ssm-1-the-linear-state-space-model" id="toc-ssm-1-the-linear-state-space-model" class="nav-link" data-scroll-target="#ssm-1-the-linear-state-space-model">SSM-1 — The linear state-space model</a></li>
+  <li><a href="#ssm-2-selectivity-mamba-s6" id="toc-ssm-2-selectivity-mamba-s6" class="nav-link" data-scroll-target="#ssm-2-selectivity-mamba-s6">SSM-2 — Selectivity (Mamba / S6)</a></li>
+  <li><a href="#ssm-3-mamba-2-and-the-duality-ssd" id="toc-ssm-3-mamba-2-and-the-duality-ssd" class="nav-link" data-scroll-target="#ssm-3-mamba-2-and-the-duality-ssd">SSM-3 — Mamba-2 and the duality (SSD)</a></li>
+  <li><a href="#ssm-4-the-gate-from-none-to-selective" id="toc-ssm-4-the-gate-from-none-to-selective" class="nav-link" data-scroll-target="#ssm-4-the-gate-from-none-to-selective">SSM-4 — The gate, from none to selective</a></li>
   <li><a href="#the-unifying-view" id="toc-the-unifying-view" class="nav-link" data-scroll-target="#the-unifying-view">The unifying view</a></li>
   </ul>
 </nav>
@@ -366,6 +370,85 @@ window.Quarto = {
 <li><span class="math inline">\(W_{i-1}\)</span> vs <span class="math inline">\(W_0\)</span> is the entire difference: Eq. 6 scores the model <em>after</em> TTT ⇒ <strong>gradients of gradients</strong>; Eq. 4 pretends the inner steps won’t happen (= dynamic evaluation, <a href="https://arxiv.org/abs/1709.07432">Krause et al.</a>). Cost: <strong>3.4× slower</strong> training at 8K (FlashAttention has no grad-of-grad), 1.2× <em>faster</em> at 128K.</li>
 <li><strong>Division of labour</strong> (§5): updated weights = <strong>long-term</strong> memory (lossy, compressed); <strong>sliding window</strong> <span class="math inline">\(k\)</span> = <strong>short-term</strong> memory (exact). <span class="math inline">\(k\ge b\)</span> required, else the model is “a bigram again within each batch” (§2.3). Forgetting lives in the <em>architecture</em>, not the gate.</li>
 <li>Defaults <span class="math inline">\(k{=}8\)</span>K, <span class="math inline">\(b{=}1\)</span>K, last <span class="math inline">\(1/4\)</span> of blocks (§2.3, §3.2). Scales with context like full attention at 3B/164B tokens, 2.7× faster at 128K — but <strong>loses badly on NIAH</strong> (§3.5): compression ≠ recall. Both halves predate it in <a href="https://arxiv.org/abs/2212.02475">Clark et al., 2022</a>; what is new is linear complexity and the scaling evidence (§4.3).</li>
+</ul>
+</section>
+<section id="ssm-1-the-linear-state-space-model" class="level2">
+<h2 data-anchor-id="ssm-1-the-linear-state-space-model">SSM-1 — The linear state-space model</h2>
+<p>Continuous system <span class="math inline">\(h'(t)=Ah(t)+Bx(t)\)</span>, <span class="math inline">\(y(t)=Ch(t)\)</span>; zero-order hold discretizes it (<a href="https://arxiv.org/abs/2206.11893">S4D</a> §3.1):</p>
+<p><span class="math display">\[\bar A=\exp(\Delta A),\qquad \bar B=(\Delta A)^{-1}\big(\exp(\Delta A)-I\big)\,\Delta B\]</span></p>
+<p><span class="math display">\[\boxed{\ h_t=\bar A\,h_{t-1}+\bar B\,x_t,\quad y_t=C\,h_t\ }\qquad\xrightarrow{\text{unroll}}\qquad y=\bar K * x,\quad \bar K_\ell=C\,\bar A^{\,\ell}\,\bar B\]</span></p>
+<ul>
+<li><strong>Gate <span class="math inline">\(=\bar A\)</span>.</strong> M3 multiplied the old state by <span class="math inline">\(1\)</span>; this multiplies by <span class="math inline">\(\bar A=\exp(\Delta A)\)</span>, a <em>fixed, structured</em> per-channel decay — M7’s gate <span class="math inline">\(\alpha_t\)</span> off its <span class="math inline">\(1\)</span> pin (SSM-1 §2).</li>
+<li><strong>Two schedules, one function</strong> (<a href="https://arxiv.org/abs/2111.00396">S4</a> Eq. 5): train as the convolution <span class="math inline">\(y=\bar K*x\)</span> (<span class="math inline">\(O(L\log L)\)</span> by FFT), infer by the recurrence (<span class="math inline">\(O(1)\)</span>/token) — M3’s parallel/recurrent duality again.</li>
+<li><strong>Why a structured <span class="math inline">\(A\)</span> remembers</strong> (<a href="https://arxiv.org/abs/2008.07669">HiPPO</a>): a random diagonal forgets; S4D-Lin <span class="math inline">\(a_n=-\tfrac12+i\pi n\)</span> tiles the frequency axis so a fixed-size state reconstructs the far past. Diagonal kernel <span class="math inline">\(\bar K_\ell=\sum_n C_n\bar A_n^{\,\ell}\bar B_n\)</span> (S4D Eq. 7).</li>
+</ul>
+</section>
+<section id="ssm-2-selectivity-mamba-s6" class="level2">
+<h2 data-anchor-id="ssm-2-selectivity-mamba-s6">SSM-2 — Selectivity (Mamba / S6)</h2>
+<p>Make the SSM parameters input-dependent (<a href="https://arxiv.org/abs/2312.00752">Mamba</a> §3.2, Alg. 2), with <span class="math inline">\(A\)</span> left a learned parameter:</p>
+<p><span class="math display">\[\Delta_t=\operatorname{softplus}\big(\text{param}+s_\Delta(x_t)\big),\quad B_t=s_B(x_t),\quad C_t=s_C(x_t),\qquad \bar A_t=\exp(\Delta_t A)\]</span></p>
+<p>At a single mode <span class="math inline">\(N{=}1,\,A{=}-1\)</span> the recurrence is exactly a gate (Mamba Thm 1):</p>
+<p><span class="math display">\[\boxed{\ h_t=(1-g_t)\,h_{t-1}+g_t\,x_t,\qquad g_t=1-e^{-\Delta_t}=\sigma\big(\text{param}+s_\Delta(x_t)\big)\ }\]</span></p>
+<ul>
+<li><strong><span class="math inline">\(\Delta_t\)</span> is the gate and step size</strong> (Mamba §3.5.2): large <span class="math inline">\(\Delta_t\Rightarrow\bar A_t\to0\)</span>, write the token and reset; small <span class="math inline">\(\Delta_t\Rightarrow\bar A_t\to1\)</span>, hold the state and ignore it. Same gate M4, the LSTM and GRU use.</li>
+<li><strong>Dial move:</strong> the gate <span class="math inline">\(\alpha_t=\bar A_t\)</span> goes from fixed-structured (SSM-1) to <em>input-dependent, channel-wise</em> (diagonal <span class="math inline">\(A\)</span>). The write stays additive.</li>
+<li><strong>Cost:</strong> input-dependence makes the influence matrix <span class="math inline">\(W_{t,j}=C_t\big(\prod_{k=j+1}^{t}\bar A_k\big)B_j\)</span> non-Toeplitz — no single convolution, so a parallel scan replaces the FFT.</li>
+</ul>
+</section>
+<section id="ssm-3-mamba-2-and-the-duality-ssd" class="level2">
+<h2 data-anchor-id="ssm-3-mamba-2-and-the-duality-ssd">SSM-3 — Mamba-2 and the duality (SSD)</h2>
+<p>Restrict the state matrix to a scalar, <span class="math inline">\(A_t=a_tI\)</span> (<a href="https://arxiv.org/abs/2405.21060">Mamba-2</a> §5.1). The whole sequence-to-sequence map collapses to one matrix:</p>
+<p><span class="math display">\[\boxed{\ M=L\circ(CB^\top),\qquad L_{ij}=\prod_{k=j+1}^{i}a_k\ \ (j\le i)\ }\qquad y_i=\sum_{j\le i}L_{ij}\,(C_i^\top B_j)\,x_j\]</span></p>
+<ul>
+<li><strong>= masked linear attention:</strong> query <span class="math inline">\(q_i=C_i\)</span>, key <span class="math inline">\(k_j=B_j\)</span>, value <span class="math inline">\(v_j=x_j\)</span>, decay mask <span class="math inline">\(L\)</span> — M3’s <span class="math inline">\((L\circ(QK^\top))V\)</span> with the causal ones replaced by running decays (Mamba-2 Cor. 5.1). Set every <span class="math inline">\(a_t=1\)</span> ⇒ M3 exactly.</li>
+<li><strong>Structured state-space duality:</strong> one <span class="math inline">\(M\)</span>, a linear <span class="math inline">\(O(T)\)</span> recurrence and a quadratic <span class="math inline">\(O(T^2)\)</span> attention form; the chunked block algorithm interpolates (diagonal blocks = intra-chunk attention, off-diagonal = recurrence over chunk states) — why Mamba-2 runs 2–8× over Mamba’s scan (§6).</li>
+<li><strong>Dial:</strong> additive (Hebbian) write, selective <strong>scalar</strong> gate <span class="math inline">\(\alpha_t=a_t\)</span> — M7 §5’s gated-Hebbian row, beside RetNet. “Transformers are SSMs” = scalar-identity SSM <span class="math inline">\(\equiv\)</span> 1-semiseparable masked linear attention (not softmax).</li>
+</ul>
+</section>
+<section id="ssm-4-the-gate-from-none-to-selective" class="level2">
+<h2 data-anchor-id="ssm-4-the-gate-from-none-to-selective">SSM-4 — The gate, from none to selective</h2>
+<p>The master recurrence with the gate <span class="math inline">\(\alpha_t\)</span> swept across its range, and the write axis (additive vs.&nbsp;delta) crossing it — M7 §5’s zoo read down the gate column.</p>
+<p><span class="math display">\[\mathbf{S}_t=\alpha_t\,\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathbf{k}_t)^\top,\qquad \mathbf{o}_t\propto\mathbf{S}_t\,\phi(\mathbf{q}_t)\]</span></p>
+<p>Two independent bits set the gate: input-dependent or not, scalar or channel-wise. Crossed with the write:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>gate <span class="math inline">\(\alpha_t\)</span></th>
+<th>additive write <span class="math inline">\(\mathbf{v}_t\)</span></th>
+<th>delta write <span class="math inline">\(\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>none, <span class="math inline">\(\alpha_t=1\)</span></td>
+<td>linear attention</td>
+<td>DeltaNet</td>
+</tr>
+<tr class="even">
+<td>fixed scalar <span class="math inline">\(\gamma\)</span></td>
+<td><a href="https://arxiv.org/abs/2307.08621">RetNet</a></td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>fixed diagonal <span class="math inline">\(\bar A\)</span></td>
+<td>S4 (SSM-1)</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>input-dep. scalar <span class="math inline">\(a_t\)</span></td>
+<td>Mamba-2 (SSM-3)</td>
+<td>Gated DeltaNet</td>
+</tr>
+<tr class="odd">
+<td>input-dep. channel-wise <span class="math inline">\(\mathrm{diag}(\boldsymbol\alpha_t)\)</span></td>
+<td>Mamba / S6 (SSM-2), <a href="https://arxiv.org/abs/2312.06635">GLA</a></td>
+<td>KDA</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Endpoints are exact identities: gate <span class="math inline">\(1\)</span> = M3 linear attention; a scalar gate = SSM-3’s masked attention. A channel-wise gate is a memory neither can express (fade one channel, hold another).</li>
+<li>Two of M7’s three dials (write × gate). The <strong>optimizer</strong> dial is the one this track never turns — every cell here is a single plain step; turn it and the memory becomes a network trained at test time (another track’s departure).</li>
 </ul>
 <hr>
 </section>

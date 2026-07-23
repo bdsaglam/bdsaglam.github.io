@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>SSM-4 — The gate, from none to selective – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-role-it-plays" id="toc-why-it-exists-the-role-it-plays" class="nav-link" data-scroll-target="#why-it-exists-the-role-it-plays">Why it exists (the role it plays)</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#the-gate-axis-from-none-to-channel-wise" id="toc-the-gate-axis-from-none-to-channel-wise" class="nav-link" data-scroll-target="#the-gate-axis-from-none-to-channel-wise">1. The gate axis, from none to channel-wise</a></li>
+  <li><a href="#the-second-axis-the-write-and-the-map-it-completes" id="toc-the-second-axis-the-write-and-the-map-it-completes" class="nav-link" data-scroll-target="#the-second-axis-the-write-and-the-map-it-completes">2. The second axis: the write, and the map it completes</a></li>
+  <li><a href="#one-recurrence-the-gate-set-three-ways" id="toc-one-recurrence-the-gate-set-three-ways" class="nav-link" data-scroll-target="#one-recurrence-the-gate-set-three-ways">3. One recurrence, the gate set three ways</a></li>
+  <li><a href="#two-of-the-three-dials" id="toc-two-of-the-three-dials" class="nav-link" data-scroll-target="#two-of-the-three-dials">4. Two of the three dials</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">SSM-4 — The gate, from none to selective</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/state-space-models/ssm4-gate-spectrum.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
+<p><strong>The question:</strong> linear attention, RetNet, S4, Mamba, Gated DeltaNet — how many gates is that, really?</p>
+<p>Fourth module of the State-Space Models track. Prerequisites: <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm3-mamba2-ssd.html">SSM-3</a>, <a href="../../../../courses/continual-learning/foundations/m4-delta-rule.html">M4</a>, <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>.</p>
+<p>The track turned one dial four times. SSM-1 set the gate to a fixed structured decay, SSM-2 let each token choose it channel by channel, and SSM-3 narrowed that choice to a single scalar and watched the recurrence turn into an attention matrix. Every move was on the gate, and every module left the write untouched. This one stops moving and looks back down the axis. Linear attention, RetNet, S4, Mamba, GLA, Gated DeltaNet and KDA all run on the same recurrence, and the gate alone tells most of them apart. Read across its range, from a gate that does nothing to one that fades the memory per channel at the token’s command, and that list of names becomes five settings of one number. The write rule supplies a second axis, the additive-or-delta choice M4 turned, and the two together make a grid with a slot for every model here.</p>
+<blockquote class="blockquote">
+<p>Grounding: a synthesis of the track and the foundations. The map is M7 §5’s write-rule zoo read down its gate column, with the delta-side rows from M4 §6. Its two named-but-not-built anchors, <a href="https://arxiv.org/abs/2307.08621">RetNet</a> (Sun et al., 2023) and <a href="https://arxiv.org/abs/2312.06635">GLA</a> (Yang et al., 2023), are checked against their own papers below; every other model is cited to the module that builds it.</p>
+</blockquote>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>Read the gate as one axis with two questions behind it: does the decay depend on the input, and does it act as one scalar or one factor per channel. Name the setting at each rung: none (<a href="../../../../courses/continual-learning/foundations/m3-linear-attention.html">M3</a> linear attention), fixed scalar (RetNet), fixed structured diagonal (S4 / <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm1-linear-state-space.html">SSM-1</a>), input-dependent scalar (Mamba-2 / <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm3-mamba2-ssd.html">SSM-3</a>), input-dependent channel-wise (Mamba / <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-selectivity.html">SSM-2</a>, GLA).</li>
+<li>Add the write dial from <a href="../../../../courses/continual-learning/foundations/m4-delta-rule.html">M4</a> as a second axis, additive against delta, and place the DeltaNet family beside the SSMs on the resulting grid: DeltaNet at delta with no gate, Gated DeltaNet at delta with a scalar gate, KDA at delta with a channel-wise gate.</li>
+<li>Run one parametrized recurrence with the gate set three ways and watch the gate value, and nothing else, change what the memory keeps.</li>
+<li>Recover M3’s linear attention at gate <span class="math inline">\(1\)</span> and SSM-3’s masked-attention output at a scalar gate as exact numerical identities, which anchor the axis to the modules that built its endpoints.</li>
+<li>Read the whole picture as two of <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>’s three dials, and say why the third, the optimizer, is the one this track never turned.</li>
+</ul>
+</section>
+<section id="why-it-exists-the-role-it-plays" class="level2">
+<h2 data-anchor-id="why-it-exists-the-role-it-plays">Why it exists (the role it plays)</h2>
+<p>Every earlier module in this track repaired the one before it. SSM-1’s fixed gate could not select, so SSM-2 made it input-dependent; SSM-2 lost the convolution, so SSM-3 restricted the gate to a scalar and bought back a closed form. This module repairs nothing. It stops adding and starts organizing.</p>
+<p>The reason to stop is that the track has quietly built a coordinate rather than a chain. Four modules moved a single dial across its range, and the range holds more than the four points the track happened to land on. RetNet sits between M3 and S4. GLA sits beside Mamba. Gated DeltaNet and KDA sit one axis over, on the delta write. Left as a list, these are seven papers with seven notations. Placed on the gate axis with the write axis crossing it, they are a grid you can read in one glance, and the grid is the one M7 drew as its write-rule zoo, now filled in and sorted by the dial this track turns.</p>
+<p>That is the role a synthesis module plays. It does not add a mechanism; it fixes where the mechanisms you already have sit relative to each other, so the next paper you meet arrives with a coordinate instead of a fresh vocabulary.</p>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2512.24695">Nested Learning</a> §5 for the master recurrence and the gate settings it lists (“<em>either is 1, learnable, channel-wise, and/or input-dependent</em>”); the map here is <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> §5’s zoo read down that gate column. The delta-side members are M4 §4 and §6 (DeltaNet, Gated DeltaNet, KDA). The two anchors checked against their own papers are <a href="https://arxiv.org/abs/2307.08621">RetNet</a> (Sun et al., 2023) §2.1 Eq. 6 and §2.2 Eq. 8, for a decay <span class="math inline">\(\gamma\)</span> that is a fixed scalar per head, and <a href="https://arxiv.org/abs/2312.06635">GLA</a> (Yang et al., 2023) §4.1 Eq. 3, for a data-dependent gate that acts per channel. The SSM rungs are cited to the modules that build them: S4 to SSM-1, Mamba to SSM-2, Mamba-2 to SSM-3.</li>
+</ul>
+</section>
+</section>
+<section id="the-gate-axis-from-none-to-channel-wise" class="level2">
+<h2 data-anchor-id="the-gate-axis-from-none-to-channel-wise">1. The gate axis, from none to channel-wise</h2>
+<p>The master recurrence is the one M7 wrote and the track has been setting:</p>
+<p><span class="math display">\[\mathbf{S}_t=\alpha_t\,\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathbf{k}_t)^\top,\qquad \mathbf{o}_t\propto\mathbf{S}_t\,\phi(\mathbf{q}_t).\]</span></p>
+<p>The gate is <span class="math inline">\(\alpha_t\)</span>, the factor that multiplies the old memory before the new write lands (M7 §2, dial 2). It is the only term that touches what is already stored, so it alone decides what fades. Reading it across its range means asking two questions of that factor, and the two are independent.</p>
+<p>First, does <span class="math inline">\(\alpha_t\)</span> depend on the input? A gate fixed at training time applies the same decay schedule to every sequence. An input-dependent gate lets the current token set the decay, which is what SSM-2 called selectivity.</p>
+<p>Second, is <span class="math inline">\(\alpha_t\)</span> one number or many? A scalar gate fades the whole state by a single factor. A channel-wise gate carries one factor per coordinate of the state, so it can hold some directions and drop others in the same step. The two write as <span class="math inline">\(\alpha_t\mathbf{S}_{t-1}\)</span> and <span class="math inline">\(\mathrm{diag}(\boldsymbol\alpha_t)\mathbf{S}_{t-1}\)</span>.</p>
+<p>Two yes-or-no questions make four corners, plus the origin where the gate is switched off. Each is a named model.</p>
+<ul>
+<li><strong>None, <span class="math inline">\(\alpha_t=1\)</span>.</strong> Nothing fades; the memory only appends. This is M3 linear attention, the Hebbian memory the whole course starts from (<a href="https://arxiv.org/abs/2006.16236">linear attention</a>, Katharopoulos et al., 2020; M3 §3).</li>
+<li><strong>Fixed, scalar.</strong> A single constant <span class="math inline">\(\gamma\in(0,1)\)</span> fades everything by the same factor every step, set once and shared across the sequence. This is <a href="https://arxiv.org/abs/2307.08621">RetNet</a>’s retention, <span class="math inline">\(\mathbf{S}_n=\gamma\mathbf{S}_{n-1}+\mathbf{k}_n^\top\mathbf{v}_n\)</span> with <span class="math inline">\(\gamma\)</span> a fixed scalar, and a different fixed <span class="math inline">\(\gamma\)</span> per head for a spread of timescales (RetNet §2.1 Eq. 6, §2.2 Eq. 8).</li>
+<li><strong>Fixed, channel-wise.</strong> A structured diagonal <span class="math inline">\(\bar A\)</span>, set at training time, gives each mode its own fixed decay. This is S4, the model SSM-1 built: the gate is <span class="math inline">\(\alpha_t=\bar A\)</span>, and the reason it is structured rather than random is that a random diagonal forgets (SSM-1 §1; <a href="https://arxiv.org/abs/2111.00396">S4</a>, Gu et al., 2021).</li>
+<li><strong>Input-dependent, scalar.</strong> One number per token, chosen by the token, fading the entire state. This is Mamba-2, the model SSM-3 built: <span class="math inline">\(\alpha_t=a_t\)</span> with <span class="math inline">\(a_t=\exp(\Delta_t A)\)</span> a function of the input, restricted to a scalar so the recurrence keeps its attention form (SSM-3 §2; <a href="https://arxiv.org/abs/2405.21060">Mamba-2</a> §5.1).</li>
+<li><strong>Input-dependent, channel-wise.</strong> One factor per coordinate, each chosen by the token. This is Mamba, the model SSM-2 built, where <span class="math inline">\(\bar A_t=\exp(\Delta_t A)\)</span> is diagonal and input-dependent (SSM-2 §2; <a href="https://arxiv.org/abs/2312.00752">Mamba</a> §3). It is also GLA, reached from the linear-attention side rather than the state-space side: its gate is a vector <span class="math inline">\(\boldsymbol\alpha_t\in(0,1)^{d_k}\)</span> produced by a low-rank map and a sigmoid on the token, applied as <span class="math inline">\(\mathrm{diag}(\boldsymbol\alpha_t)\)</span> (GLA §4.1 Eq. 3, §4.4).</li>
+</ul>
+<p>The last rung is where the two families the track has been joining meet once more. GLA arrives from M3’s linear attention by attaching a forget gate to the Hebbian write; Mamba arrives from SSM-1’s state space by making the diagonal transition input-dependent. They land on the same setting, an additive write with an input-dependent per-channel gate. GLA’s own paper draws the map from its side: it describes Mamba-2 as the more restricted case with a scalar gate <span class="math inline">\(\gamma_t\mathbf{1}\mathbf{1}^\top\)</span> in place of GLA’s per-channel one (GLA §4.1), which is exactly the step from this rung up to the one above it.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Is the gate really one axis, or a 2-by-2 grid dressed as a line?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Two independent bits, input-dependence and granularity, make four settings, so the picture is a 2-by-2 with an off corner, not a totally ordered line. RetNet’s fixed scalar and S4’s fixed diagonal are not one strictly above the other; they differ on the granularity bit while sharing the fixed bit. Same for Mamba-2 and Mamba on the input-dependent side.</p>
+<p>The line in §1 is a reading path through those corners, chosen so each step adds one capability: switch the gate on (none to fixed scalar), let it act per channel (to fixed diagonal), let the token set it (to input scalar), then both at once (to input channel-wise). It is a tour, not a ranking, and the demo in §3 slides along it precisely because the endpoints, gate <span class="math inline">\(1\)</span> and a scalar gate, are the exact recurrences M3 and SSM-3 already pinned down.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="the-second-axis-the-write-and-the-map-it-completes" class="level2">
+<h2 data-anchor-id="the-second-axis-the-write-and-the-map-it-completes">2. The second axis: the write, and the map it completes</h2>
+<p>The gate is one dial. M4 turned a different one, the write rule, and it is the axis that separates the SSM family from the DeltaNet family.</p>
+<p>The write is the vector paired with the key in the outer product (M7 §2, dial 1). Two choices matter here. The <strong>additive</strong> or Hebbian write stores the value as handed in, <span class="math inline">\(\text{write}_t=\mathbf{v}_t\)</span>, and never reads the memory first (M1, M3). The <strong>delta</strong> write reads the memory at the current key and stores only the error, <span class="math inline">\(\text{write}_t=\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span>, so a revisited key is edited rather than piled onto (M4 §3). Every SSM in this track uses the additive write; DeltaNet and its descendants use the delta write. That choice, not the gate, is what makes them different families.</p>
+<p>Now cross the two axes. The gate runs down the rows, from no gate to an input-dependent per-channel gate; the write runs across the columns, additive or delta. Every model the course has named lands in one cell.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>gate <span class="math inline">\(\alpha_t\)</span> ↓ · write →</th>
+<th><strong>additive</strong> <span class="math inline">\(\;\mathbf{v}_t\)</span></th>
+<th><strong>delta</strong> <span class="math inline">\(\;\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>none</strong> <span class="math inline">\(\;\alpha_t=1\)</span></td>
+<td>linear attention</td>
+<td>DeltaNet</td>
+</tr>
+<tr class="even">
+<td><strong>fixed scalar</strong> <span class="math inline">\(\;\gamma\)</span></td>
+<td>RetNet</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><strong>fixed diagonal</strong> <span class="math inline">\(\;\bar A\)</span></td>
+<td>S4</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><strong>input-dep. scalar</strong> <span class="math inline">\(\;a_t\)</span></td>
+<td>Mamba-2</td>
+<td>Gated DeltaNet</td>
+</tr>
+<tr class="odd">
+<td><strong>input-dep. channel-wise</strong> <span class="math inline">\(\;\mathrm{diag}(\boldsymbol\alpha_t)\)</span></td>
+<td>Mamba / S6, GLA</td>
+<td>KDA</td>
+</tr>
+</tbody>
+</table>
+<p>Read down the additive column and you get this track, S4 to Mamba, one move per row. Read down the delta column and you get M4’s family: DeltaNet with no gate, Gated DeltaNet once a scalar gate is added, KDA once that gate goes channel-wise (M4 §4, §6). The two columns are the same ladder of gates built on two different writes, which is why Gated DeltaNet reads as the RetNet-and-Mamba-2 gate on a delta write and KDA as the Mamba gate on a delta write. The gate axis this track turned is the axis M4’s family climbs too; only the write underneath it differs. The empty cells are real gaps: the course names no model with a fixed, data-independent gate on a delta write.</p>
+</section>
+<section id="one-recurrence-the-gate-set-three-ways" class="level2">
+<h2 data-anchor-id="one-recurrence-the-gate-set-three-ways">3. One recurrence, the gate set three ways</h2>
+<p>The grid claims the gate is a real axis, a single argument you can slide with named models at its settings. To check that, build one recurrence, hold the write and the keys and values fixed, and move only the gate. If the axis is real, gate <span class="math inline">\(1\)</span> should reproduce M3 exactly, a scalar gate should reproduce SSM-3’s masked-attention output exactly, and a channel-wise gate should give a memory neither of those can.</p>
+<p>The recurrence is the master one with the gate passed in. When the gate is a length-<span class="math inline">\(T\)</span> vector of per-step scalars it fades the whole state; when it is a <span class="math inline">\(T\times N\)</span> array it fades each of the <span class="math inline">\(N\)</span> state channels on its own. Everything else is held constant.</p>
+<div id="ssm4cell06" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T14:56:03.905417Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T14:56:03.905342Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T14:56:04.782580Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T14:56:04.782138Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>T, N, P <span class="op">=</span> <span class="dv">12</span>, <span class="dv">4</span>, <span class="dv">3</span>          <span class="co"># sequence length; state/key dim N; value dim P</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> torch.randn(T, N)       <span class="co"># key map   B_t  (phi(k_t))</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>C <span class="op">=</span> torch.randn(T, N)       <span class="co"># query map C_t</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> torch.randn(T, P)       <span class="co"># values / inputs</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> recurrence(B, C, X, gate, write<span class="op">=</span><span class="st">"hebb"</span>):</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># M7's master recurrence with the gate passed in (same shape as SSM-3's).</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># S_t = alpha_t (.) S_{t-1} + write_t B_t^T ;  y_t = C_t^T S_t .  State S is N x P.</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># gate[t] is a scalar (fade the whole state) or a length-N vector (fade each channel).</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    S <span class="op">=</span> torch.zeros(N, P)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    Y <span class="op">=</span> torch.zeros(T, P)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(T):</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> gate[t]</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> g[:, <span class="va">None</span>] <span class="cf">if</span> g.dim() <span class="op">==</span> <span class="dv">1</span> <span class="cf">else</span> g                <span class="co"># channel-wise -&gt; broadcast over values</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> X[t] <span class="cf">if</span> write <span class="op">==</span> <span class="st">"hebb"</span> <span class="cf">else</span> X[t] <span class="op">-</span> (B[t] <span class="op">@</span> S)   <span class="co"># additive (Hebbian) vs delta (M4)</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        S <span class="op">=</span> g <span class="op">*</span> S <span class="op">+</span> torch.outer(B[t], w)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        Y[t] <span class="op">=</span> C[t] <span class="op">@</span> S</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Y</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> decay_mask(a):</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># L_ij = prod_{k=j+1..i} a_k for j &lt;= i (SSM-3's 1-semiseparable decay mask).</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    cum <span class="op">=</span> torch.cumsum(torch.log(a), dim<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.tril(torch.exp(cum[:, <span class="va">None</span>] <span class="op">-</span> cum[<span class="va">None</span>, :]))</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>G <span class="op">=</span> C <span class="op">@</span> B.t()                                                <span class="co"># score table G_ij = C_i . B_j</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="co"># gate = 1 (none): the recurrence must be M3 linear attention exactly</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>Y_none <span class="op">=</span> recurrence(B, C, X, gate<span class="op">=</span>torch.ones(T), write<span class="op">=</span><span class="st">"hebb"</span>)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>Y_m3   <span class="op">=</span> (torch.tril(torch.ones(T, T)) <span class="op">*</span> G) <span class="op">@</span> X</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(Y_none, Y_m3, atol<span class="op">=</span><span class="fl">1e-5</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"gate = 1         -&gt; M3 linear attention    | max diff"</span>, <span class="ss">f"</span><span class="sc">{</span>(Y_none <span class="op">-</span> Y_m3)<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.1e}</span><span class="ss">"</span>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="co"># gate = scalar a_t (input-dependent): must be SSM-3's masked linear attention exactly</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> torch.sigmoid(torch.randn(T))                            <span class="co"># one scalar gate per token, in (0,1)</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>Y_scalar <span class="op">=</span> recurrence(B, C, X, gate<span class="op">=</span>a, write<span class="op">=</span><span class="st">"hebb"</span>)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>Y_ssd    <span class="op">=</span> (decay_mask(a) <span class="op">*</span> G) <span class="op">@</span> X                           <span class="co"># y = (L o (C B^T)) X, SSM-3 section 2</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(Y_scalar, Y_ssd, atol<span class="op">=</span><span class="fl">1e-5</span>)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"gate = a_t       -&gt; SSM-3 masked attention | max diff"</span>, <span class="ss">f"</span><span class="sc">{</span>(Y_scalar <span class="op">-</span> Y_ssd)<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.1e}</span><span class="ss">"</span>)</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="co"># gate = channel-wise vector: a memory neither special case can express</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>Achan <span class="op">=</span> torch.sigmoid(torch.randn(T, N))                    <span class="co"># one gate per state channel, per token</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>Y_chan <span class="op">=</span> recurrence(B, C, X, gate<span class="op">=</span>Achan, write<span class="op">=</span><span class="st">"hebb"</span>)</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"gate = diag(a_t) -&gt; channel-wise SSM       | differs from the scalar gate by"</span>,</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"</span><span class="sc">{</span>(Y_chan <span class="op">-</span> Y_scalar)<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.2f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>gate = 1         -&gt; M3 linear attention    | max diff 1.2e-06
+gate = a_t       -&gt; SSM-3 masked attention | max diff 1.9e-06
+gate = diag(a_t) -&gt; channel-wise SSM       | differs from the scalar gate by 7.82</code></pre>
+</div>
+</div>
+<p>The two asserts hold to floating-point tolerance, so the endpoints of the axis are not analogies. At gate <span class="math inline">\(1\)</span> the recurrence is M3’s linear attention exactly, the append-only memory with no forgetting. At a per-token scalar gate it is SSM-3’s masked linear attention exactly, the decay-masked <span class="math inline">\(CB^\top\)</span> that module derived from Mamba-2’s scalar restriction. One function, one argument apart, sits at two named points the course reached from opposite directions. The channel-wise run is a third memory neither endpoint can produce, because a single number cannot fade one state channel while holding another; the last print shows the two outputs are simply different functions of the same inputs.</p>
+<div id="ssm4cell08" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T14:56:04.783714Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T14:56:04.783620Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T14:56:05.137773Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T14:56:05.137321Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># One retention task, three gates. Orthogonal keys, so recall is exact and the gate is the</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># only thing acting: write value v_i at key e_i, then read every key back at the final step.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">3</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>Tr <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> torch.eye(Tr)                       <span class="co"># e_0 ... e_{Tr-1}: orthonormal, so state dim N = Tr</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>vals <span class="op">=</span> torch.randn(Tr, P)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>gates <span class="op">=</span> {</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"none  (alpha = 1)"</span>:            torch.ones(Tr),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"input scalar  (alpha = a_t)"</span>:  torch.sigmoid(torch.randn(Tr)) <span class="op">*</span> <span class="fl">0.25</span> <span class="op">+</span> <span class="fl">0.70</span>,      <span class="co"># per token</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"input channel-wise (diag)"</span>:    torch.sigmoid(torch.randn(Tr, Tr)) <span class="op">*</span> <span class="fl">0.25</span> <span class="op">+</span> <span class="fl">0.70</span>,  <span class="co"># per channel</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">7</span>, <span class="fl">3.6</span>))</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, gate <span class="kw">in</span> gates.items():</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    S <span class="op">=</span> torch.zeros(Tr, P)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(Tr):</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        g <span class="op">=</span> gate[t]<span class="op">;</span> g <span class="op">=</span> g[:, <span class="va">None</span>] <span class="cf">if</span> g.dim() <span class="op">==</span> <span class="dv">1</span> <span class="cf">else</span> g</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        S <span class="op">=</span> g <span class="op">*</span> S <span class="op">+</span> torch.outer(keys[t], vals[t])</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    retained <span class="op">=</span> torch.stack([(keys[i] <span class="op">@</span> S).norm() <span class="op">/</span> vals[i].norm() <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(Tr)])</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    ax.plot(<span class="bu">range</span>(Tr), retained.tolist(), marker<span class="op">=</span><span class="st">"o"</span>, ms<span class="op">=</span><span class="dv">4</span>, label<span class="op">=</span>name)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"key age  (0 = written first, 15 = written last)"</span>)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"fraction of the value still recalled"</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"what each gate keeps: recall of orthogonal keys at the final step"</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>ax.legend(fontsize<span class="op">=</span><span class="dv">8</span>)<span class="op">;</span> ax.grid(alpha<span class="op">=</span><span class="fl">0.3</span>)<span class="op">;</span> plt.tight_layout()<span class="op">;</span> plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ssm4-gate-spectrum_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The three curves share every key, every value and every readout; only the gate differs, and the memory keeps something different in each. With no gate the memory recalls every key at full strength no matter how old, which is linear attention’s append-only behaviour and, past a point, its failure mode. The input scalar gate fades recall smoothly with age: every channel shares one per-step factor, so a key’s retention is set by how long ago it was written and nothing else. The channel-wise gate breaks that tie. Its curve is jagged because each key rides its own channel’s accumulated gate, so two keys written the same distance back are kept and dropped differently, which is the content-dependent forgetting selectivity buys. The axis in §1 is this plot: one argument, slid from the top curve to the bottom, is the difference between the models the grid names.</p>
+<p><strong>Honest scope.</strong> This is a map, not a benchmark. The two asserts settle exact identities, that gate <span class="math inline">\(1\)</span> is M3 and a scalar gate is SSM-3’s masked attention, and the plot shows three gate settings producing visibly different retention on one synthetic recall task with orthogonal keys at <span class="math inline">\(T=16\)</span>. It locates models on the gate axis; it ranks nothing. Nothing here compares Mamba to GLA on a real task, measures speed, or trains a parameter: the named models differ in how their gates and writes are parameterized and learned at scale, which this toy either holds fixed or sets by hand. What the toy does establish is the module’s one claim, that the gate is a single real axis with the course’s models at settings of it, and that its endpoints are the exact recurrences earlier modules built.</p>
+</section>
+<section id="two-of-the-three-dials" class="level2">
+<h2 data-anchor-id="two-of-the-three-dials">4. Two of the three dials</h2>
+<p>Step back and the grid is not new. Its two axes are two of M7’s three dials. The columns are dial 1, the write rule, the axis M4 turned from additive to delta. The rows are dial 2, the gate, the axis this track turned from none to channel-wise. The whole track has been filling in one face of the three-dial coordinate M7 laid out, the face where the write stays additive and the gate sweeps its range, while M4’s family fills in the neighbouring face where the write is delta.</p>
+<p>The third dial, the optimizer, is the one nothing in this track touched. Every model on the grid applies its write in a single plain step at some rate <span class="math inline">\(\beta_t\)</span> (M7 §2, dial 3). Turn that dial and the write can take many steps, carry momentum, or precondition, which is where the memory stops being a matrix and becomes a small network trained at inference time. That is another track’s departure point, not this one’s.</p>
+<p>So the placement of any model here is three coordinates: a write, a gate, and an optimizer.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>write</th>
+<th>gate</th>
+<th>optimizer</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>linear attention</td>
+<td>additive</td>
+<td>none</td>
+<td>plain step, rate <span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td>RetNet</td>
+<td>additive</td>
+<td>fixed scalar <span class="math inline">\(\gamma\)</span></td>
+<td>plain step, rate <span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="odd">
+<td>S4</td>
+<td>additive</td>
+<td>fixed diagonal <span class="math inline">\(\bar A\)</span></td>
+<td>plain step, rate <span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td>Mamba-2</td>
+<td>additive</td>
+<td>input scalar <span class="math inline">\(a_t\)</span></td>
+<td>plain step, rate <span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="odd">
+<td>Mamba / S6, GLA</td>
+<td>additive</td>
+<td>input channel-wise</td>
+<td>plain step, rate <span class="math inline">\(1\)</span></td>
+</tr>
+<tr class="even">
+<td>DeltaNet</td>
+<td>delta</td>
+<td>none</td>
+<td>plain step, rate <span class="math inline">\(\beta_t\)</span></td>
+</tr>
+<tr class="odd">
+<td>Gated DeltaNet</td>
+<td>delta</td>
+<td>input scalar</td>
+<td>plain step, rate <span class="math inline">\(\beta_t\)</span></td>
+</tr>
+<tr class="even">
+<td>KDA</td>
+<td>delta</td>
+<td>input channel-wise</td>
+<td>plain step, rate <span class="math inline">\(\beta_t\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The optimizer column is constant down the whole table: every model here lives at one setting of dial 3, a single plain step. That is the map’s edge. Naming the three coordinates is the whole content of “state your dial setting,” the contract M7 §6 asks every track to sign, and a model you meet after this course is half-read once you have them, because you have turned each dial by hand and watched what it does.</p>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>You have the map when you can:</p>
+<ol type="1">
+<li>Say the gate’s two questions, whether it depends on the input and whether it is scalar or channel-wise, and name the model at each setting: linear attention at none, RetNet at fixed scalar, S4 at fixed diagonal, Mamba-2 at input scalar, Mamba and GLA at input channel-wise.</li>
+<li>Add the write axis and place the delta family beside the SSMs: DeltaNet, Gated DeltaNet and KDA are the none, scalar and channel-wise gates built on a delta write instead of an additive one.</li>
+<li>Explain why gate <span class="math inline">\(1\)</span> is exactly M3 and a scalar gate is exactly SSM-3’s masked attention, and why a channel-wise gate is a memory neither can express.</li>
+<li>Read the grid as two of M7’s three dials, and say why the optimizer, the third, is the one this track left alone.</li>
+</ol>
+<p><strong>Next →</strong> back to <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7 — the three dials</a>, the coordinate system this track has been filling in. The gate column of its write-rule zoo (§5) is the axis this track walked; the <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm4-aside-hybrid-models.html">hybrid-models aside</a> steps off it to ask why frontier models still interleave these gated SSM blocks with full attention.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

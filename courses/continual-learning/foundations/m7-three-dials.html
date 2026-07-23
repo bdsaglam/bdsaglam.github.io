@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-7392b282ce3a9936c446b3a9779df258.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -486,9 +486,17 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td>constant, or input-dependent</td>
 <td>append + global forget</td>
 <td><a href="https://arxiv.org/abs/2307.08621">RetNet</a> (Sun et al., 2023; <span class="math inline">\(\gamma\)</span> fixed per head), <a href="https://arxiv.org/abs/2405.21060">Mamba-2</a> (Dao &amp; Gu, 2024; <span class="math inline">\(a_t\)</span> input-dependent)</td>
-<td>—</td>
+<td>SSM-3</td>
 </tr>
 <tr class="odd">
+<td><strong>channel-wise gated Hebbian</strong></td>
+<td><span class="math inline">\(\mathbf{v}_t\)</span></td>
+<td>diagonal; fixed or input-dependent</td>
+<td>append + per-channel forget</td>
+<td><a href="https://arxiv.org/abs/2111.00396">S4</a> (Gu et al., 2021), <a href="https://arxiv.org/abs/2312.00752">Mamba</a> (Gu &amp; Dao, 2023), <a href="https://arxiv.org/abs/2312.06635">GLA</a> (Yang et al., 2023)</td>
+<td>SSM-1, SSM-2</td>
+</tr>
+<tr class="even">
 <td><strong>delta</strong></td>
 <td><span class="math inline">\(\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span></td>
 <td><span class="math inline">\(1\)</span></td>
@@ -496,7 +504,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td>DeltaNet (<a href="https://arxiv.org/abs/2102.11174">FWP</a> §4.2; Schlag, Irie &amp; Schmidhuber, 2021)</td>
 <td>M4</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>gated delta</strong></td>
 <td><span class="math inline">\(\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span></td>
 <td>input-dependent</td>
@@ -504,7 +512,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td><a href="https://arxiv.org/abs/2412.06464">Gated DeltaNet</a> (Yang, Kautz &amp; Hatamizadeh, 2024)</td>
 <td>—</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>channel-wise gated delta</strong></td>
 <td><span class="math inline">\(\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span></td>
 <td><span class="math inline">\(\mathrm{diag}(\alpha_t)\)</span></td>
@@ -512,7 +520,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td>KDA (<a href="https://arxiv.org/abs/2510.26692">Kimi Linear</a>; Kimi Team, 2025)</td>
 <td>—</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>decoupled gated delta</strong></td>
 <td><span class="math inline">\(\mathbf{w}_t\odot\mathbf{v}_t-\mathbf{S}_{t-1}(\mathbf{b}_t\odot\mathbf{k}_t)\)</span></td>
 <td><span class="math inline">\(\mathrm{diag}(\alpha_t)\)</span></td>
@@ -520,7 +528,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td><a href="https://arxiv.org/abs/2605.22791">Gated DeltaNet-2</a> (Hatamizadeh, Choi &amp; Kautz, 2026)</td>
 <td>M4</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>self-referential delta</strong></td>
 <td>delta, with <span class="math inline">\(\mathbf{k},\mathbf{q},\beta\)</span> and the values read out of <span class="math inline">\(\mathbf{S}_{t-1}\)</span></td>
 <td><span class="math inline">\(1\)</span></td>
@@ -528,7 +536,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td><a href="https://arxiv.org/abs/2202.05780">SRWM</a> (Irie et al., 2022)</td>
 <td>M5</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>Oja’s rule</strong></td>
 <td>correction on the <strong>key</strong> side: <span class="math inline">\(\mathbf{v}_t\big(\phi(\mathbf{k}_t)^\top-\mathbf{S}_{t-1}^\top\mathbf{v}_t\big)\)</span></td>
 <td><span class="math inline">\(\alpha_t\)</span></td>
@@ -536,7 +544,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td>OjaNet (<a href="https://arxiv.org/abs/2512.24695">NL</a> §5, Eq. 66); rule from <a href="https://doi.org/10.1007/BF00275687">Oja, 1982</a></td>
 <td>—</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>Omega rule</strong></td>
 <td>delta over a <strong>window</strong> of the last <span class="math inline">\(c\)</span> tokens, not just this one</td>
 <td><span class="math inline">\(\mathrm{diag}(\alpha_t)\)</span></td>
@@ -544,7 +552,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td><a href="https://arxiv.org/abs/2505.23735">Atlas</a> (Behrouz et al., 2025; OmegaNet)</td>
 <td><a href="../../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning track</a></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>optimizer-shaped</strong></td>
 <td>whatever an optimizer produces: many steps, a deeper inner objective, a non-<span class="math inline">\(L_2\)</span> one</td>
 <td>varies</td>
@@ -552,7 +560,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <td><a href="https://arxiv.org/abs/2407.04620">TTT</a> (Sun et al., 2024), <a href="https://arxiv.org/abs/2501.00663">Titans</a> (Behrouz et al., 2024), <a href="https://arxiv.org/abs/2504.13173">Miras</a> (Behrouz et al., 2025)</td>
 <td><a href="../../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning track</a></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>end-to-end</strong></td>
 <td>one step on the network’s <strong>own</strong> next-token loss <span class="math inline">\(\ell_t=\texttt{CE}(f(x_{t-1});x_t)\)</span> — no key, no value, no per-layer target</td>
 <td><span class="math inline">\(1\)</span></td>
@@ -562,7 +570,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 </tr>
 </tbody>
 </table>
-<p>The first seven rows are the master recurrence exactly. Here is how each of the last four departs from it, because each departure says something:</p>
+<p>The first eight rows are the master recurrence exactly. Here is how each of the last four departs from it, because each departure says something:</p>
 <ul>
 <li><strong>Oja’s rule</strong> (<a href="https://arxiv.org/abs/2512.24695">NL</a> §5, Eq. 66) subtracts its correction from <span class="math inline">\(\phi(\mathbf{k}_t)\)</span>, not from <span class="math inline">\(\mathbf{v}_t\)</span>. The outer product is still there, but the corrected factor is the <em>key</em>, so it is not a setting of <span class="math inline">\(\text{write}_t\)</span> at all. NL derives it as one gradient step on a Hebbian objective plus a <span class="math inline">\(\lVert\mathcal{M}^\top\mathbf{v}_t\rVert^2\)</span> term (Eq. 67), which is where the norm control comes from; the same source reports it underperforming delta-rule models in practice.</li>
 <li><strong>The Omega rule</strong> (<a href="https://arxiv.org/abs/2505.23735">Atlas</a> §3; <a href="https://arxiv.org/abs/2512.24695">NL</a> §5, Eq. 68) writes a <em>sum</em> of outer products per step, one per token in a window, so one token is no longer one rank-one write. At <span class="math inline">\(c=1\)</span> it collapses back to the delta row.</li>

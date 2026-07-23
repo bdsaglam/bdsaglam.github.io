@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>SSM-2 — Selectivity (Mamba / S6) – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-removes" id="toc-why-it-exists-the-limitation-it-removes" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-removes">Why it exists (the limitation it removes)</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#a-fixed-ssm-has-a-content-agnostic-kernel" id="toc-a-fixed-ssm-has-a-content-agnostic-kernel" class="nav-link" data-scroll-target="#a-fixed-ssm-has-a-content-agnostic-kernel">1. A fixed SSM has a content-agnostic kernel</a></li>
+  <li><a href="#the-fix-make-delta-b-and-c-input-dependent" id="toc-the-fix-make-delta-b-and-c-input-dependent" class="nav-link" data-scroll-target="#the-fix-make-delta-b-and-c-input-dependent">2. The fix: make <span class="math inline">\(\Delta\)</span>, <span class="math inline">\(B\)</span>, and <span class="math inline">\(C\)</span> input-dependent</a></li>
+  <li><a href="#the-cost-no-single-convolution-so-you-scan" id="toc-the-cost-no-single-convolution-so-you-scan" class="nav-link" data-scroll-target="#the-cost-no-single-convolution-so-you-scan">3. The cost: no single convolution, so you scan</a></li>
+  <li><a href="#the-toy-selective-copying" id="toc-the-toy-selective-copying" class="nav-link" data-scroll-target="#the-toy-selective-copying">4. The toy: selective copying</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">SSM-2 — Selectivity (Mamba / S6)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/state-space-models/ssm2-selectivity.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
+<p><strong>The question:</strong> what breaks when the recurrence cannot choose what to remember?</p>
+<p>Second module of the State-Space Models track. Prerequisites: <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm1-linear-state-space.html">SSM-1</a>, <a href="../../../../courses/continual-learning/foundations/m3-linear-attention.html">M3</a>, <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>.</p>
+<p>SSM-1 built a memory with a fixed decay. Its recurrence <span class="math inline">\(h_t=\bar A h_{t-1}+\bar B x_t\)</span> uses the same <span class="math inline">\(\bar A,\bar B,C\)</span> at every step, which is exactly what let the whole sequence collapse into one convolution kernel <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span>. That fixed kernel is also the ceiling. Because <span class="math inline">\(\bar A\)</span> is the same at every step, the memory applies one decay to a token that matters and to filler alike, and it has no way to hold onto the first while letting the second pass. This module is Mamba’s answer: let the step size and the input and output maps depend on the current token, so the gate can open on content the model should keep and stay shut on content it should drop. The move turns M7’s gate dial from fixed-structured to input-dependent, and the bill it pays is the convolution SSM-1 relied on.</p>
+<blockquote class="blockquote">
+<p>Grounding: <a href="https://arxiv.org/abs/2312.00752">Mamba</a> (Gu &amp; Dao, 2023) §3.2 for the selection mechanism and Algorithm 2, §3.5.2 for the interpretation of <span class="math inline">\(\Delta\)</span>, and §2 (Eqs. 1–4) for the discretization and the LTI convolution that selectivity breaks. Equations are cited by section, equation, or algorithm; anything I derive myself is marked as mine.</p>
+</blockquote>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>Explain why a linear time-invariant (LTI) SSM cannot select by content: its kernel <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span> depends on the lag <span class="math inline">\(\ell\)</span> alone, so a past token is weighted by how long ago it arrived and never by what it is (Mamba §3.1).</li>
+<li>Write Mamba’s selection mechanism: make <span class="math inline">\(\Delta_t, B_t, C_t\)</span> functions of the input while <span class="math inline">\(A\)</span> stays a learned parameter, with <span class="math inline">\(\Delta_t=\operatorname{softplus}(\text{param}+s_\Delta(x_t))\)</span> and <span class="math inline">\(\bar A_t=\exp(\Delta_t A)\)</span> (Mamba §3.2, Algorithm 2, Eq. 4).</li>
+<li>Read <span class="math inline">\(\Delta_t\)</span> as the learned gate and step size: a large <span class="math inline">\(\Delta_t\)</span> closes the retention and writes the current token, a small <span class="math inline">\(\Delta_t\)</span> holds the state and ignores it (Mamba §3.5.2).</li>
+<li>Say why input-dependent parameters make the recurrence time-varying, which removes the single global convolution and forces a scan (Mamba §3.2; <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-aside-parallel-scan.html">the parallel-scan aside</a>).</li>
+<li>State the module’s dial setting: an additive write with the gate <span class="math inline">\(\alpha_t=\bar A_t\)</span> turned from fixed-structured (SSM-1) to input-dependent and channel-wise (M7 §2).</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-removes" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-removes">Why it exists (the limitation it removes)</h2>
+<p>SSM-1’s memory has a fixed decay, set once by <span class="math inline">\(A\)</span> and the step size <span class="math inline">\(\Delta\)</span> and held constant for the whole sequence. That constancy is the property Mamba calls linear time invariance (Mamba §2): the parameters <span class="math inline">\((\Delta, A, B, C)\)</span>, and with them <span class="math inline">\((\bar A, \bar B)\)</span>, are the same at every step. LTI is what buys the convolution, because the per-lag weight <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span> does not depend on position, so one kernel covers the whole sequence and training runs by FFT (SSM-1 §3).</p>
+<p>The same constancy caps what the memory can do. A model that applies one fixed decay to every token cannot look at a token and decide to keep it, or look at filler and decide to drop it, because the decision would have to change <span class="math inline">\(\bar A\)</span> from step to step and <span class="math inline">\(\bar A\)</span> is fixed. Mamba names the two tasks that expose this (Mamba §3.1). In <strong>selective copying</strong>, the tokens to remember sit at positions that vary from sequence to sequence, so a fixed lag-weighting cannot track them. In <strong>induction heads</strong>, the model must recall a value cued by content. An LTI SSM solves the plain copying task, where the spacing is fixed, and fails these, where it is not.</p>
+<p>The fix is to give up time invariance on purpose. Make the step size <span class="math inline">\(\Delta_t\)</span> and the input and output maps <span class="math inline">\(B_t, C_t\)</span> depend on the current token, so the gate <span class="math inline">\(\bar A_t=\exp(\Delta_t A)\)</span> can differ from step to step according to content. In M7’s terms this is one dial: keep the additive write, and turn the gate <span class="math inline">\(\alpha_t=\bar A_t\)</span> from the fixed-structured value SSM-1 set to an input-dependent, channel-wise one (M7 §2’s “input-dependent” gate). What it costs is the subject of §3.</p>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2312.00752">Mamba</a> (Gu &amp; Dao, 2023): §3.1 — the selective-copying and induction-head tasks and why LTI models fail them; §3.2 — the selection mechanism (Algorithm 2; <span class="math inline">\(s_B(x)=\operatorname{Linear}_N(x)\)</span>, <span class="math inline">\(s_C(x)=\operatorname{Linear}_N(x)\)</span>, <span class="math inline">\(s_\Delta(x)=\operatorname{Broadcast}_D(\operatorname{Linear}_1(x))\)</span>, <span class="math inline">\(\tau_\Delta=\operatorname{softplus}\)</span>); §2 Eq. 4 — the ZOH discretization <span class="math inline">\(\bar A=\exp(\Delta A)\)</span>; §3.3 — why the time-varying model needs a scan; §3.5.1–3.5.2 — Theorem 1’s gated-recurrence connection and the interpretation of <span class="math inline">\(\Delta\)</span>. The grounding source; every equation below is cited to it.</li>
+</ul>
+</section>
+</section>
+<section id="a-fixed-ssm-has-a-content-agnostic-kernel" class="level2">
+<h2 data-anchor-id="a-fixed-ssm-has-a-content-agnostic-kernel">1. A fixed SSM has a content-agnostic kernel</h2>
+<p>Unrolling SSM-1’s recurrence gave a single kernel (SSM-1 §3): the output is <span class="math inline">\(y_t=\sum_{\ell}\bar K_\ell\,x_{t-\ell}\)</span> with <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span> (Mamba Eq. 3a). Read the kernel as a schedule of weights, where the token that arrived <span class="math inline">\(\ell\)</span> steps ago contributes with weight <span class="math inline">\(\bar K_\ell\)</span>. That weight is a function of the lag <span class="math inline">\(\ell\)</span> and nothing else. It does not see the token’s value, so it cannot give a token that matters a larger weight than filler sitting at the same distance.</p>
+<p>The consequence is that the memory prefers by recency and never by content. Drop the same salient value at an early position or a late one, and the late copy comes out larger for the single reason that it is closer to the read, weighted by <span class="math inline">\(\bar A^{\text{lag}}\)</span>. Mamba states the failure directly: an LTI model’s constant dynamics “cannot let them select the correct information from their context,” and on the convolutional side the varying spacing between the relevant inputs and the output “cannot be modeled by static convolution kernels” (Mamba §3.1). The cell builds the SSM-1 kernel and shows the recency-only preference.</p>
+<div id="ssm2cell04" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T13:07:04.458943Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T13:07:04.458640Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T13:07:05.328320Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T13:07:05.327889Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> discretize(A, B, dt):</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ZOH, diagonal case (Mamba Eq. 4): Abar = exp(dt*A), Bbar = (exp(dt*A)-1)/A * B</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    Abar <span class="op">=</span> torch.exp(dt <span class="op">*</span> A)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    Bbar <span class="op">=</span> (Abar <span class="op">-</span> <span class="fl">1.0</span>) <span class="op">/</span> A <span class="op">*</span> B</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Abar, Bbar</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_recurrence(Abar, Bbar, C, x):</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># SSM-1's LTI recurrence: h_t = Abar h_{t-1} + Bbar x_t ;  y_t = C h_t</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> torch.zeros(Abar.shape[<span class="dv">0</span>])</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> []</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> xt <span class="kw">in</span> x:</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> Abar <span class="op">*</span> h <span class="op">+</span> Bbar <span class="op">*</span> xt</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        out.append((C <span class="op">*</span> h).<span class="bu">sum</span>())</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.stack(out)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># One real diagonal mode: N=1, A=-1 -- Mamba's Theorem 1 setting, so the gate stays legible.</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> torch.tensor([<span class="op">-</span><span class="fl">1.0</span>])</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> torch.tensor([<span class="fl">1.0</span>])</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>C <span class="op">=</span> torch.tensor([<span class="fl">1.0</span>])</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>L, dt <span class="op">=</span> <span class="dv">40</span>, <span class="fl">0.1</span>                                    <span class="co"># a fixed step size -&gt; a fixed, slow kernel</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>Abar, Bbar <span class="op">=</span> discretize(A, B, dt)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>kernel <span class="op">=</span> torch.stack([(C <span class="op">*</span> Abar <span class="op">**</span> l <span class="op">*</span> Bbar).<span class="bu">sum</span>() <span class="cf">for</span> l <span class="kw">in</span> torch.arange(L)])   <span class="co"># Kbar_l = C Abar^l Bbar</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the fixed kernel weights a past token by its LAG alone (Mamba Eq. 3a):"</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"  Kbar[:6] ="</span>, [<span class="ss">f"</span><span class="sc">{</span>v<span class="sc">:.3f}</span><span class="ss">"</span> <span class="cf">for</span> v <span class="kw">in</span> kernel[:<span class="dv">6</span>].tolist()])</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="co"># the same salient value at an early vs a late position: the late one wins on recency, not content</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>x_early <span class="op">=</span> torch.zeros(L)<span class="op">;</span> x_early[<span class="dv">5</span>]  <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>x_late  <span class="op">=</span> torch.zeros(L)<span class="op">;</span> x_late[<span class="dv">25</span>]  <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>r_early <span class="op">=</span> run_recurrence(Abar, Bbar, C, x_early)[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>r_late  <span class="op">=</span> run_recurrence(Abar, Bbar, C, x_late)[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"recall of the same marker at position  5 : </span><span class="sc">{</span>r_early<span class="sc">.</span>item()<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"recall of the same marker at position 25 : </span><span class="sc">{</span>r_late<span class="sc">.</span>item()<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"ratio = </span><span class="sc">{</span>(r_late <span class="op">/</span> r_early)<span class="sc">.</span>item()<span class="sc">:.3f}</span><span class="ss">  ==  Abar^-(25-5) = </span><span class="sc">{</span>(Abar <span class="op">**</span> <span class="op">-</span><span class="dv">20</span>)<span class="sc">.</span>item()<span class="sc">:.3f}</span><span class="ss">  (pure recency, not content)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>the fixed kernel weights a past token by its LAG alone (Mamba Eq. 3a):
+  Kbar[:6] = ['0.095', '0.086', '0.078', '0.070', '0.064', '0.058']
+recall of the same marker at position  5 : 0.0032
+recall of the same marker at position 25 : 0.0235
+ratio = 7.389  ==  Abar^-(25-5) = 7.389  (pure recency, not content)</code></pre>
+</div>
+</div>
+<p>The kernel is a fixed, monotone decay, so the weight on a past token is set entirely by its lag. The two recalls make it concrete: the marker at the later position comes back larger than the identical marker at the earlier one, and the ratio between them is exactly <span class="math inline">\(\bar A\)</span> raised to the gap in their positions, with nothing about content entering. A memory whose only knob is “how long ago” cannot implement “this one is worth keeping.” Selectivity turns that knob into something the token itself can set.</p>
+</section>
+<section id="the-fix-make-delta-b-and-c-input-dependent" class="level2">
+<h2 data-anchor-id="the-fix-make-delta-b-and-c-input-dependent">2. The fix: make <span class="math inline">\(\Delta\)</span>, <span class="math inline">\(B\)</span>, and <span class="math inline">\(C\)</span> input-dependent</h2>
+<p>Mamba’s change is small to state. Take the four parameters of the SSM and let three of them become functions of the current token (Mamba §3.2, Algorithm 2):</p>
+<p><span class="math display">\[B_t=s_B(x_t),\qquad C_t=s_C(x_t),\qquad \Delta_t=\operatorname{softplus}\big(\text{param}+s_\Delta(x_t)\big),\]</span></p>
+<p>with <span class="math inline">\(s_B(x)=\operatorname{Linear}_N(x)\)</span>, <span class="math inline">\(s_C(x)=\operatorname{Linear}_N(x)\)</span>, and <span class="math inline">\(s_\Delta(x)=\operatorname{Broadcast}_D(\operatorname{Linear}_1(x))\)</span> (Mamba §3.2). The state matrix <span class="math inline">\(A\)</span> stays a plain learned parameter. Mamba’s reason for leaving <span class="math inline">\(A\)</span> alone is that it reaches the recurrence only through <span class="math inline">\(\bar A_t=\exp(\Delta_t A)\)</span>, so making <span class="math inline">\(\Delta_t\)</span> selective already makes the effective transition <span class="math inline">\(\bar A_t\)</span> selective, and a separate selection on <span class="math inline">\(A\)</span> would be redundant (Mamba §3.5.2).</p>
+<p>The load-bearing parameter is <span class="math inline">\(\Delta_t\)</span>. Discretization turns it into the gate: <span class="math inline">\(\bar A_t=\exp(\Delta_t A)\)</span> and, for a diagonal mode, <span class="math inline">\(\bar B_t=\frac{\exp(\Delta_t a)-1}{a}B_t\)</span> (Mamba Eq. 4, reduced to one channel as in SSM-1 §2). With <span class="math inline">\(A\)</span> stable (<span class="math inline">\(\operatorname{Re}(a)&lt;0\)</span>), a large <span class="math inline">\(\Delta_t\)</span> sends <span class="math inline">\(\bar A_t\)</span> toward <span class="math inline">\(0\)</span> and <span class="math inline">\(\bar B_t\)</span> toward a full write, so the step wipes the old state and stores the current token. A small <span class="math inline">\(\Delta_t\)</span> sends <span class="math inline">\(\bar A_t\)</span> toward <span class="math inline">\(1\)</span> and <span class="math inline">\(\bar B_t\)</span> toward <span class="math inline">\(0\)</span>, so the state persists and the token is ignored. Mamba reads it the same way: “a large <span class="math inline">\(\Delta\)</span> resets the state <span class="math inline">\(h\)</span> and focuses on the current input <span class="math inline">\(x\)</span>, while a small <span class="math inline">\(\Delta\)</span> persists the state and ignores the current input” (Mamba §3.5.2). At <span class="math inline">\(A=-1\)</span> with a single mode this is exactly a gate, <span class="math inline">\(h_t=(1-g_t)h_{t-1}+g_t x_t\)</span> with <span class="math inline">\(g_t=1-\exp(-\Delta_t)\)</span>, which is Mamba’s Theorem 1. Since <span class="math inline">\(1-\exp(-\operatorname{softplus}(z))=\sigma(z)\)</span>, that gate is a sigmoid of the input: the same gate M4 used to fade its memory, and the one inside every LSTM and GRU.</p>
+<p>The demo hand-sets <span class="math inline">\(s_\Delta\)</span> to read a marker channel: a token flagged as content gets a large <span class="math inline">\(\Delta_t\)</span>, filler gets a small one. Real Mamba learns this detector from the token; wiring it by hand isolates the mechanism, which is the point of the toy. The cell prints the gate on a marker and on filler.</p>
+<div id="ssm2cell07" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T13:07:05.329489Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T13:07:05.329384Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T13:07:05.527895Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T13:07:05.527514Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Selection: Delta_t = softplus(param + s_Delta(x_t)). Here s_Delta reads a marker channel</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># (large Delta on content, small on filler), hand-wired to isolate the gate; Mamba learns it.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> delta_of(marker, w<span class="op">=</span><span class="fl">12.0</span>, b<span class="op">=-</span><span class="fl">7.0</span>):</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> F.softplus(b <span class="op">+</span> w <span class="op">*</span> marker)              <span class="co"># Mamba: tau_Delta = softplus (section 3.2)</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the gate opens and closes by content (A = -1):"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'token'</span><span class="sc">:&gt;8}</span><span class="ss">  </span><span class="sc">{</span><span class="st">'Delta_t'</span><span class="sc">:&gt;8}</span><span class="ss">  </span><span class="sc">{</span><span class="st">'Abar_t'</span><span class="sc">:&gt;8}</span><span class="ss">  </span><span class="sc">{</span><span class="st">'Bbar_t'</span><span class="sc">:&gt;8}</span><span class="ss">"</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, mk <span class="kw">in</span> [(<span class="st">"filler"</span>, <span class="fl">0.0</span>), (<span class="st">"marker"</span>, <span class="fl">1.0</span>)]:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> delta_of(torch.tensor(mk))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    Ab, Bb <span class="op">=</span> torch.exp(d <span class="op">*</span> A), (torch.exp(d <span class="op">*</span> A) <span class="op">-</span> <span class="fl">1.0</span>) <span class="op">/</span> A <span class="op">*</span> B</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:&gt;8}</span><span class="ss">  </span><span class="sc">{</span>d<span class="sc">.</span>item()<span class="sc">:8.3f}</span><span class="ss">  </span><span class="sc">{</span>Ab<span class="sc">.</span>item()<span class="sc">:8.3f}</span><span class="ss">  </span><span class="sc">{</span>Bb<span class="sc">.</span>item()<span class="sc">:8.3f}</span><span class="ss">"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># the retain/write curves as functions of Delta, with the two operating points marked</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>dd <span class="op">=</span> torch.logspace(<span class="op">-</span><span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">200</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>retain <span class="op">=</span> torch.exp(dd <span class="op">*</span> A[<span class="dv">0</span>])                       <span class="co"># Abar = exp(Delta * A)</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>write  <span class="op">=</span> <span class="fl">1.0</span> <span class="op">-</span> torch.exp(dd <span class="op">*</span> A[<span class="dv">0</span>])                 <span class="co"># Bbar = 1 - exp(Delta*A) at A=-1,B=1 (Theorem 1's g)</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>plt.plot(dd, retain, label<span class="op">=</span><span class="vs">r"retain  </span><span class="dv">$\b</span><span class="vs">ar A_t=</span><span class="er">\</span><span class="vs">exp</span><span class="kw">(</span><span class="dv">\D</span><span class="vs">elta_t A</span><span class="kw">)</span><span class="dv">$</span><span class="vs">"</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>plt.plot(dd, write,  label<span class="op">=</span><span class="vs">r"write  </span><span class="dv">$\b</span><span class="vs">ar B_t=1-</span><span class="er">\</span><span class="vs">exp</span><span class="kw">(</span><span class="dv">\D</span><span class="vs">elta_t A</span><span class="kw">)</span><span class="dv">$</span><span class="vs">"</span>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, mk <span class="kw">in</span> [(<span class="st">"filler"</span>, <span class="fl">0.0</span>), (<span class="st">"marker"</span>, <span class="fl">1.0</span>)]:</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    dv <span class="op">=</span> delta_of(torch.tensor(mk)).item()</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    plt.axvline(dv, color<span class="op">=</span><span class="st">"gray"</span>, ls<span class="op">=</span><span class="st">":"</span>, lw<span class="op">=</span><span class="fl">0.8</span>)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    plt.text(dv, <span class="fl">0.55</span>, <span class="ss">f" </span><span class="sc">{</span>name<span class="sc">}</span><span class="ch">\n</span><span class="ss"> $</span><span class="ch">\\</span><span class="ss">Delta$=</span><span class="sc">{</span>dv<span class="sc">:.2g}</span><span class="ss">"</span>, fontsize<span class="op">=</span><span class="dv">8</span>, va<span class="op">=</span><span class="st">"center"</span>)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>)<span class="op">;</span> plt.xlabel(<span class="vs">r"step size </span><span class="dv">$\D</span><span class="vs">elta_t</span><span class="dv">$</span><span class="vs">"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"gate value"</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="vs">r"large </span><span class="dv">$\D</span><span class="vs">elta</span><span class="dv">$</span><span class="vs"> writes the current token and resets; small </span><span class="dv">$\D</span><span class="vs">elta</span><span class="dv">$</span><span class="vs"> holds and ignores"</span>, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>plt.legend(fontsize<span class="op">=</span><span class="dv">8</span>, loc<span class="op">=</span><span class="st">"center left"</span>)<span class="op">;</span> plt.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"small Delta: Abar-&gt;1, Bbar-&gt;0 (persist, ignore).  large Delta: Abar-&gt;0, Bbar-&gt;1 (reset, write)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>the gate opens and closes by content (A = -1):
+   token   Delta_t    Abar_t    Bbar_t
+  filler     0.001     0.999     0.001
+  marker     5.007     0.007     0.993</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ssm2-selectivity_files/figure-html/cell-3-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>small Delta: Abar-&gt;1, Bbar-&gt;0 (persist, ignore).  large Delta: Abar-&gt;0, Bbar-&gt;1 (reset, write).</code></pre>
+</div>
+</div>
+<p>The two rows are the gate opening and closing by content. On the marker the step size is large, the retention <span class="math inline">\(\bar A_t\)</span> collapses to near zero and the write <span class="math inline">\(\bar B_t\)</span> is near one, so the token is stored and the previous state cleared. On filler the step size is tiny, <span class="math inline">\(\bar A_t\)</span> sits just below one and <span class="math inline">\(\bar B_t\)</span> is near zero, so the state holds and the filler barely enters. The retain and write curves cross exactly as Theorem 1’s gate <span class="math inline">\(g_t=1-\exp(-\Delta_t)\)</span> predicts, which is what makes <span class="math inline">\(\Delta_t\)</span> a single focus control the token sets: opening the write and closing the memory are the same motion.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Why not make <span class="math inline">\(A\)</span> input-dependent too, if selection is the goal?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You could, and Mamba discusses it (§3.5.2). The reason it does not is that <span class="math inline">\(A\)</span> influences the recurrence only through the discretized transition <span class="math inline">\(\bar A_t=\exp(\Delta_t A)\)</span>. Since <span class="math inline">\(\Delta_t\)</span> is already input-dependent, <span class="math inline">\(\bar A_t\)</span> is already input-dependent, so a token can already set its own effective decay through <span class="math inline">\(\Delta_t\)</span>. Selecting on <span class="math inline">\(A\)</span> as well would add parameters without adding reach: “selectivity in <span class="math inline">\(\Delta\)</span> is enough to ensure selectivity in <span class="math inline">\((\bar A, \bar B)\)</span>, and is the main source of improvement” (Mamba §3.5.2).</p>
+<p>The division of labor is that <span class="math inline">\(A\)</span> carries the fixed structure that makes the mode a stable memory (the S4 and S4D content of SSM-1), and <span class="math inline">\(\Delta_t\)</span> carries the per-token decision of how much of that memory to spend on this token. Making <span class="math inline">\(B_t\)</span> and <span class="math inline">\(C_t\)</span> selective adds finer control on top: <span class="math inline">\(B_t\)</span> sets how much of the token enters the state, <span class="math inline">\(C_t\)</span> how much of the state reaches the output, which Mamba reads as gating on content and on context respectively (Mamba §3.5.2).</p>
+</div>
+</div>
+</div>
+</section>
+<section id="the-cost-no-single-convolution-so-you-scan" class="level2">
+<h2 data-anchor-id="the-cost-no-single-convolution-so-you-scan">3. The cost: no single convolution, so you scan</h2>
+<p>The convolution existed because the kernel weight <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span> depended on the lag alone. Once <span class="math inline">\(\Delta_t, B_t, C_t\)</span> vary with the input, the weight linking a past token at position <span class="math inline">\(j\)</span> to the output at position <span class="math inline">\(t\)</span> becomes</p>
+<p><span class="math display">\[W_{t,j}=C_t\Big(\textstyle\prod_{k=j+1}^{t}\bar A_k\Big)\bar B_j,\]</span></p>
+<p>a product of the specific gates at the steps in between (my expansion of Algorithm 2’s time-varying recurrence). Two positions the same distance apart no longer share a weight, because the tokens between them differ. The parameters are now time-varying, so there is no single kernel to convolve: the weight between two positions depends on the particular tokens between them rather than on their distance alone.</p>
+<p>The clean way to see it is to read <span class="math inline">\(W\)</span> as a matrix. For an LTI SSM <span class="math inline">\(W_{t,j}\)</span> depends only on <span class="math inline">\(t-j\)</span>, so <span class="math inline">\(W\)</span> is constant along each diagonal, which is the definition of a convolution (a Toeplitz operator). For the selective SSM the diagonals are no longer constant, so no convolution reproduces it. What still works is to roll the recurrence forward one step at a time, carrying the state, which is a scan (Mamba Algorithm 2 labels the selective model “time-varying: recurrence (scan) only”). A naive scan is sequential and would give up the parallel training SSM-1 prized; recovering it takes an associative parallel scan, the subject of <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-aside-parallel-scan.html">the parallel-scan aside</a>. The cell builds <span class="math inline">\(W\)</span> both ways and checks which one is Toeplitz.</p>
+<div id="ssm2cell11" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T13:07:05.529058Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T13:07:05.528989Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T13:07:05.620763Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T13:07:05.620364Z&quot;}}" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> selective_scan(A, x, delta, B_seq, C_seq):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># time-varying recurrence (Mamba Algorithm 2). delta:(L,), B_seq,C_seq:(L,N).</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># returns y:(L,) and the per-step gates for inspection.</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> torch.zeros(A.shape[<span class="dv">0</span>])</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    ys, Abars, Bbars <span class="op">=</span> [], [], []</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(x.shape[<span class="dv">0</span>]):</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        Ab <span class="op">=</span> torch.exp(delta[t] <span class="op">*</span> A)               <span class="co"># Abar_t = exp(Delta_t A): now varies with t</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        Bb <span class="op">=</span> (Ab <span class="op">-</span> <span class="fl">1.0</span>) <span class="op">/</span> A <span class="op">*</span> B_seq[t]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> Ab <span class="op">*</span> h <span class="op">+</span> Bb <span class="op">*</span> x[t]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        ys.append((C_seq[t] <span class="op">*</span> h).<span class="bu">sum</span>())<span class="op">;</span> Abars.append(Ab)<span class="op">;</span> Bbars.append(Bb)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.stack(ys), torch.stack(Abars), torch.stack(Bbars)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> influence_matrix(Abars, Bbars, C_seq):</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># W[t,j] = C_t (prod_{k=j+1..t} Abar_k) Bbar_j : weight of input j on output t (N=1)</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    a, b, c <span class="op">=</span> Abars[:, <span class="dv">0</span>], Bbars[:, <span class="dv">0</span>], C_seq[:, <span class="dv">0</span>]</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    Lx <span class="op">=</span> a.shape[<span class="dv">0</span>]</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> torch.zeros(Lx, Lx)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(Lx):</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(t <span class="op">+</span> <span class="dv">1</span>):</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>            W[t, j] <span class="op">=</span> c[t] <span class="op">*</span> (torch.prod(a[j <span class="op">+</span> <span class="dv">1</span>:t <span class="op">+</span> <span class="dv">1</span>]) <span class="cf">if</span> t <span class="op">&gt;</span> j <span class="cf">else</span> torch.tensor(<span class="fl">1.0</span>)) <span class="op">*</span> b[j]</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> W</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> toeplitz_dev(W):</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># a convolution has constant diagonals; measure the largest spread within any diagonal</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    Lx <span class="op">=</span> W.shape[<span class="dv">0</span>]<span class="op">;</span> dev <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> d <span class="kw">in</span> <span class="bu">range</span>(Lx):</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        diag <span class="op">=</span> torch.stack([W[j <span class="op">+</span> d, j] <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(Lx <span class="op">-</span> d)])</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        dev <span class="op">=</span> <span class="bu">max</span>(dev, (diag <span class="op">-</span> diag.mean()).<span class="bu">abs</span>().<span class="bu">max</span>().item())</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dev</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>Ls <span class="op">=</span> <span class="dv">24</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>marker <span class="op">=</span> torch.zeros(Ls)<span class="op">;</span> marker[[<span class="dv">6</span>, <span class="dv">15</span>]] <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>xs <span class="op">=</span> torch.randn(Ls)</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>Bs, Cs <span class="op">=</span> B.repeat(Ls, <span class="dv">1</span>), C.repeat(Ls, <span class="dv">1</span>)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>_, Ab_lti, Bb_lti <span class="op">=</span> selective_scan(A, xs, torch.full((Ls,), dt), Bs, Cs)     <span class="co"># constant Delta -&gt; LTI</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>_, Ab_sel, Bb_sel <span class="op">=</span> selective_scan(A, xs, delta_of(marker),      Bs, Cs)     <span class="co"># selective Delta</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>W_lti, W_sel <span class="op">=</span> influence_matrix(Ab_lti, Bb_lti, Cs), influence_matrix(Ab_sel, Bb_sel, Cs)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"deviation from a convolution (how far the diagonals are from constant):"</span>)</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  LTI (constant Delta): </span><span class="sc">{</span>toeplitz_dev(W_lti)<span class="sc">:.2e}</span><span class="ss">   -&gt; Toeplitz, one kernel"</span>)</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  selective           : </span><span class="sc">{</span>toeplitz_dev(W_sel)<span class="sc">:.3f}</span><span class="ss">   -&gt; not Toeplitz, no single kernel"</span>)</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="fl">3.4</span>))</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a_, W, ttl <span class="kw">in</span> [(ax[<span class="dv">0</span>], W_lti, <span class="st">"LTI: constant diagonals (a convolution)"</span>),</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>                   (ax[<span class="dv">1</span>], W_sel, <span class="st">"selective: content-dependent weights"</span>)]:</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    im <span class="op">=</span> a_.imshow(W, aspect<span class="op">=</span><span class="st">"auto"</span>, cmap<span class="op">=</span><span class="st">"magma"</span>)<span class="op">;</span> a_.set_title(ttl, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    a_.set_xlabel(<span class="st">"input position j"</span>)<span class="op">;</span> a_.set_ylabel(<span class="st">"output position t"</span>)</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    fig.colorbar(im, ax<span class="op">=</span>a_, fraction<span class="op">=</span><span class="fl">0.046</span>)</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"marked positions (6, 15) write strongly and are held forward, breaking the diagonal structure."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>deviation from a convolution (how far the diagonals are from constant):
+  LTI (constant Delta): 7.45e-09   -&gt; Toeplitz, one kernel
+  selective           : 0.910   -&gt; not Toeplitz, no single kernel</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ssm2-selectivity_files/figure-html/cell-4-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>marked positions (6, 15) write strongly and are held forward, breaking the diagonal structure.</code></pre>
+</div>
+</div>
+<p>The LTI influence matrix is constant along its diagonals to floating-point tolerance, the signature of a single kernel sliding over the sequence. The selective matrix is not: the columns at the marked positions write strongly and the held state carries them forward, so the weight between two positions depends on what sits between them, and the diagonals vary. The heatmaps show the same thing by eye, with clean stripes on the left and an irregular pattern on the right. This is what “selectivity breaks the LTI convolution” means in one picture, and it is why the hardware-aware scan the rest of Mamba is built around exists at all.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: If selectivity kills the convolution, isn’t Mamba slower than S4?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In raw arithmetic the selective scan does more work than a fixed convolution, and a naive version that writes the full state to memory at every step would indeed be slow. Mamba’s answer is not to restore the convolution but to make the scan cheap where it actually costs, which is memory bandwidth. Its selective scan is a hardware-aware kernel that keeps the expanded state in fast SRAM, runs the recurrence there, and never materializes the state in slow HBM (Mamba §3.3). The recurrence is also associative, so it parallelizes over the sequence in <span class="math inline">\(O(\log T)\)</span> depth instead of running strictly left to right. Both points are the subject of <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-aside-parallel-scan.html">the parallel-scan aside</a>; the toy here uses a plain Python scan and makes no efficiency claim.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="the-toy-selective-copying" class="level2">
+<h2 data-anchor-id="the-toy-selective-copying">4. The toy: selective copying</h2>
+<p>Now run the two models on the task the fixed kernel cannot do. Each sequence is a stream of filler values with one marked token dropped at a random position; the marker carries a payload, and the job is to report that payload at the end, ignoring the filler before and after it. The marker position varies from sequence to sequence, which is the exact difficulty Mamba’s selective-copying task is built around (Mamba §3.1): a fixed lag-weighting cannot track a target that moves.</p>
+<p>The one thing that differs between the two models is the gate. The selective model sets <span class="math inline">\(\Delta_t\)</span> from the marker channel, large on the marker and small on filler, so it writes the payload when it appears and holds it through the filler. The LTI model uses a constant <span class="math inline">\(\Delta\)</span>; to be fair it is given its best constant, chosen by a small search, and both models get the same closed-form gain on the readout so each is judged at its best. The cell prints the recall error for both and plots the recovered payload against the true one.</p>
+<div id="ssm2cell15" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T13:07:05.622068Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T13:07:05.621981Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T13:07:11.336210Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T13:07:11.335884Z&quot;}}" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_batch(L, n, gen):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># one marked token per sequence at a random position, carrying a random payload; rest is filler</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> torch.randn(n, L, generator<span class="op">=</span>gen)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> torch.randn(n, generator<span class="op">=</span>gen)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    pos <span class="op">=</span> torch.randint(<span class="dv">0</span>, L, (n,), generator<span class="op">=</span>gen)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> torch.zeros(n, L)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n):</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        m[i, pos[i]] <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        x[i, pos[i]] <span class="op">=</span> p[i]</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x, m, p</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> recall(x, m, selective, const_dt):</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    n, L <span class="op">=</span> x.shape</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    Bs, Cs <span class="op">=</span> B.repeat(L, <span class="dv">1</span>), C.repeat(L, <span class="dv">1</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> torch.zeros(n)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n):</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        d <span class="op">=</span> delta_of(m[i]) <span class="cf">if</span> selective <span class="cf">else</span> torch.full((L,), const_dt)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        out[i] <span class="op">=</span> selective_scan(A, x[i], d, Bs, Cs)[<span class="dv">0</span>][<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> recall_err(phat, p):</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> (phat <span class="op">@</span> p) <span class="op">/</span> (phat <span class="op">@</span> phat <span class="op">+</span> <span class="fl">1e-9</span>)              <span class="co"># best scalar readout gain (fair to both models)</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ((g <span class="op">*</span> phat <span class="op">-</span> p).norm() <span class="op">/</span> p.norm()).item()</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>gen <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">7</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> [<span class="fl">0.02</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">4.0</span>]      <span class="co"># candidate constant step sizes for the LTI baseline</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>Ls_task <span class="op">=</span> [<span class="dv">16</span>, <span class="dv">32</span>, <span class="dv">48</span>, <span class="dv">64</span>]</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>err_sel, err_lti <span class="op">=</span> [], []</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> Lt <span class="kw">in</span> Ls_task:</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    x, m, p <span class="op">=</span> make_batch(Lt, <span class="dv">256</span>, gen)</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    err_sel.append(recall_err(recall(x, m, <span class="va">True</span>, <span class="fl">0.0</span>), p))</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    err_lti.append(<span class="bu">min</span>(recall_err(recall(x, m, <span class="va">False</span>, cd), p) <span class="cf">for</span> cd <span class="kw">in</span> grid))    <span class="co"># LTI at its best constant</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"L=</span><span class="sc">{</span>Lt<span class="sc">:3d}</span><span class="ss">   selective err = </span><span class="sc">{</span>err_sel[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.3f}</span><span class="ss">    LTI (best constant Delta) err = </span><span class="sc">{</span>err_lti[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>x, m, p <span class="op">=</span> make_batch(<span class="dv">64</span>, <span class="dv">256</span>, gen)</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>best_cd <span class="op">=</span> <span class="bu">min</span>(grid, key<span class="op">=</span><span class="kw">lambda</span> cd: recall_err(recall(x, m, <span class="va">False</span>, cd), p))</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>ph_sel, ph_lti <span class="op">=</span> recall(x, m, <span class="va">True</span>, <span class="fl">0.0</span>), recall(x, m, <span class="va">False</span>, best_cd)</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>gs <span class="op">=</span> (ph_sel <span class="op">@</span> p) <span class="op">/</span> (ph_sel <span class="op">@</span> ph_sel)<span class="op">;</span> gl <span class="op">=</span> (ph_lti <span class="op">@</span> p) <span class="op">/</span> (ph_lti <span class="op">@</span> ph_lti)</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="fl">9.5</span>, <span class="fl">3.4</span>))</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].scatter(p, gl <span class="op">*</span> ph_lti, s<span class="op">=</span><span class="dv">8</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="ss">f"LTI (err </span><span class="sc">{</span>err_lti[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss">)"</span>)</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].scatter(p, gs <span class="op">*</span> ph_sel, s<span class="op">=</span><span class="dv">8</span>, alpha<span class="op">=</span><span class="fl">0.6</span>, label<span class="op">=</span><span class="ss">f"selective (err </span><span class="sc">{</span>err_sel[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss">)"</span>)</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>lim <span class="op">=</span> [p.<span class="bu">min</span>().item(), p.<span class="bu">max</span>().item()]</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(lim, lim, <span class="st">"k"</span>, lw<span class="op">=</span><span class="dv">1</span>)<span class="op">;</span> ax[<span class="dv">0</span>].set_title(<span class="st">"recovered vs true payload (L=64)"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_xlabel(<span class="st">"true payload p"</span>)<span class="op">;</span> ax[<span class="dv">0</span>].set_ylabel(<span class="st">"recovered payload"</span>)<span class="op">;</span> ax[<span class="dv">0</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(Ls_task, err_sel, <span class="st">"o-"</span>, label<span class="op">=</span><span class="st">"selective"</span>)</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(Ls_task, err_lti, <span class="st">"s--"</span>, label<span class="op">=</span><span class="st">"LTI (best constant)"</span>)</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">"recall error vs sequence length"</span>, fontsize<span class="op">=</span><span class="dv">9</span>)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_xlabel(<span class="st">"sequence length L (more filler)"</span>)<span class="op">;</span> ax[<span class="dv">1</span>].set_ylabel(<span class="st">"relative recall error"</span>)</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_ylim(<span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.05</span>)<span class="op">;</span> ax[<span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"selective: writes on the marker, holds through filler -&gt; error stays low as L grows."</span>)</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"LTI: no constant step (best here Delta=</span><span class="sc">{</span>best_cd<span class="sc">}</span><span class="ss">) both writes the payload and ignores filler -&gt; error near 1."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>L= 16   selective err = 0.005    LTI (best constant Delta) err = 0.966
+L= 32   selective err = 0.009    LTI (best constant Delta) err = 0.973
+L= 48   selective err = 0.012    LTI (best constant Delta) err = 0.988
+L= 64   selective err = 0.019    LTI (best constant Delta) err = 0.992</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ssm2-selectivity_files/figure-html/cell-5-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>selective: writes on the marker, holds through filler -&gt; error stays low as L grows.
+LTI: no constant step (best here Delta=0.02) both writes the payload and ignores filler -&gt; error near 1.</code></pre>
+</div>
+</div>
+<p>The selective model recovers the payload almost exactly and stays accurate as the filler grows, because it writes on the marker and then holds, so the length of the gauntlet barely matters. The LTI model cannot get near it at any constant step size. A large step writes the payload but forgets it within a few filler tokens; a small step holds but never writes the payload strongly and lets the accumulated filler bury it. Its best constant is a compromise that fails both ways, and the error rises as the sequence lengthens because there is more filler to average in. The scatter shows it directly, a tight line on <span class="math inline">\(y=x\)</span> for the selective model and a diffuse cloud for the fixed one.</p>
+<p>One more check ties the selective implementation back to SSM-1. The selective scan is a strict generalization of the LTI recurrence: turn off the input-dependence, holding <span class="math inline">\(\Delta\)</span>, <span class="math inline">\(B\)</span>, and <span class="math inline">\(C\)</span> constant, and it must compute the identical function SSM-1 computed. This is an exact identity, so it is an assertion rather than a plot.</p>
+<div id="ssm2cell18" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T13:07:11.337471Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T13:07:11.337398Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T13:07:11.343665Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T13:07:11.343367Z&quot;}}" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># With input-dependence OFF (constant Delta, B, C) the selective scan must reduce to</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># SSM-1's LTI recurrence, exactly. An identity, so it is an assert.</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>xa <span class="op">=</span> torch.randn(<span class="dv">50</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>La <span class="op">=</span> xa.shape[<span class="dv">0</span>]</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>y_lti <span class="op">=</span> run_recurrence(<span class="op">*</span>discretize(A, B, dt), C, xa)                            <span class="co"># SSM-1's recurrence</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>y_sel <span class="op">=</span> selective_scan(A, xa, torch.full((La,), dt), B.repeat(La, <span class="dv">1</span>), C.repeat(La, <span class="dv">1</span>))[<span class="dv">0</span>]</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"max |selective_scan(const) - SSM-1 recurrence| ="</span>, <span class="ss">f"</span><span class="sc">{</span>(y_sel <span class="op">-</span> y_lti)<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">.</span>item()<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(y_sel, y_lti, atol<span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"torch.allclose -&gt; True: with input-dependence OFF, the selective scan is exactly SSM-1's LTI SSM."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>max |selective_scan(const) - SSM-1 recurrence| = 0.00e+00
+torch.allclose -&gt; True: with input-dependence OFF, the selective scan is exactly SSM-1's LTI SSM.</code></pre>
+</div>
+</div>
+<p>The two outputs agree to floating-point tolerance, so the selective scan contains SSM-1’s LTI SSM as the special case where nothing depends on the input. Selectivity is a setting of this one recurrence.</p>
+<p><strong>Honest scope.</strong> This is a mechanism demo at the smallest scale that shows the effect. The state is a single real diagonal mode (<span class="math inline">\(N=1\)</span>, <span class="math inline">\(A=-1\)</span>), Mamba’s Theorem 1 setting, which keeps the gate legible but sits far below the diagonal state of a real Mamba block and holds only one scalar, so the toy shows selecting one token rather than copying many in order. The selection function is hand-wired to a marker channel instead of learned from the token, which isolates the gate at the cost of not testing whether the detector is learnable (in the paper it is). And the scan is a plain Python loop with no hardware-aware kernel, so it settles what selectivity computes and leaves how Mamba makes it fast to <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-aside-parallel-scan.html">the parallel-scan aside</a>. What the toy does settle is the module’s one claim: with the state size and the write held fixed, letting the gate depend on content is what lets the memory keep a token that matters and ignore the filler around it, which a fixed gate cannot do at any constant step size.</p>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Ready for SSM-3 when you can:</p>
+<ol type="1">
+<li>Explain why an LTI SSM cannot select by content: the kernel <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span> weights a past token by its lag alone, so it prefers by recency and has no knob for “this token matters.”</li>
+<li>Write Mamba’s selection mechanism: <span class="math inline">\(B_t=s_B(x_t)\)</span>, <span class="math inline">\(C_t=s_C(x_t)\)</span>, <span class="math inline">\(\Delta_t=\operatorname{softplus}(\text{param}+s_\Delta(x_t))\)</span>, with <span class="math inline">\(A\)</span> left a parameter, and say why <span class="math inline">\(A\)</span> need not be selective.</li>
+<li>Read <span class="math inline">\(\Delta_t\)</span> through <span class="math inline">\(\bar A_t=\exp(\Delta_t A)\)</span>: a large <span class="math inline">\(\Delta_t\)</span> resets the state and writes the current token, a small <span class="math inline">\(\Delta_t\)</span> holds the state and ignores it, which at <span class="math inline">\(A=-1\)</span> is Theorem 1’s gate.</li>
+<li>Say why input-dependent parameters remove the single convolution (the influence matrix stops being Toeplitz) and force a scan.</li>
+<li>State the dial setting: an additive write with the gate <span class="math inline">\(\alpha_t=\bar A_t\)</span> turned from fixed-structured to input-dependent and channel-wise, and name a task a fixed gate cannot do.</li>
+</ol>
+<p><strong>Next →</strong> <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm3-mamba2-ssd.html">SSM-3 — Mamba-2 and the duality</a>. Selectivity bought content-based memory at the price of the convolution. SSM-3 restricts the gate to a scalar per head and finds the recurrence turning back into an attention matrix, which is where the SSM line rejoins linear attention.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

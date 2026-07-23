@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>SSM-2 aside — the parallel scan – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#the-recurrence-as-a-chain-of-affine-maps" id="toc-the-recurrence-as-a-chain-of-affine-maps" class="nav-link active" data-scroll-target="#the-recurrence-as-a-chain-of-affine-maps">1. The recurrence as a chain of affine maps</a></li>
+  <li><a href="#sequential-scan-versus-log-depth-parallel-scan" id="toc-sequential-scan-versus-log-depth-parallel-scan" class="nav-link" data-scroll-target="#sequential-scan-versus-log-depth-parallel-scan">2. Sequential scan versus log-depth parallel scan</a></li>
+  <li><a href="#what-this-shows" id="toc-what-this-shows" class="nav-link" data-scroll-target="#what-this-shows">What this shows</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">SSM-2 aside — the parallel scan</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/state-space-models/ssm2-aside-parallel-scan.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
+<p><em>A companion to <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-selectivity.html">SSM-2</a>: selectivity makes the recurrence time-varying, so it is no longer a convolution. This shows how you still run it in parallel instead of a left-to-right loop, in <span class="math inline">\(O(\log T)\)</span> depth. Optional: read it when SSM-2 §3 points here.</em></p>
+<blockquote class="blockquote">
+<p>Grounding: <a href="https://arxiv.org/abs/2208.04933">S5</a> (Smith et al., 2022) computes the linear SSM recurrence with an associative parallel scan in place of S4’s convolution; <a href="https://arxiv.org/abs/2312.00752">Mamba</a> (Gu &amp; Dao, 2023) §3.3 runs the same scan inside a hardware-aware kernel. The canonical reference for the work-efficient associative scan is Blelloch’s “Prefix sums and their applications” (<a href="https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf">Blelloch, 1990</a>).</p>
+</blockquote>
+<section id="the-recurrence-as-a-chain-of-affine-maps" class="level2">
+<h2 data-anchor-id="the-recurrence-as-a-chain-of-affine-maps">1. The recurrence as a chain of affine maps</h2>
+<p>SSM-2 made the step size and the input and output maps depend on the token, so <span class="math inline">\(\bar A_t\)</span> and <span class="math inline">\(\bar B_t\)</span> change at every position and the single convolution kernel of SSM-1 is gone. What is left is the bare recurrence <span class="math inline">\(h_t=\bar A_t h_{t-1}+\bar B_t x_t\)</span>, and the obvious way to run it is a left-to-right loop that carries the state one token at a time. That loop is <span class="math inline">\(T\)</span> steps deep: each state waits on the one before it, so a sequence of length <span class="math inline">\(T\)</span> takes <span class="math inline">\(T\)</span> sequential stages no matter how many processors you have.</p>
+<p>The way out starts with a small observation. Each step is an affine map of the state: step <span class="math inline">\(t\)</span> sends <span class="math inline">\(h\)</span> to <span class="math inline">\(\bar A_t h+\bar B_t x_t\)</span>, and once <span class="math inline">\(x_t\)</span> is known that map is fixed, with no further dependence on <span class="math inline">\(h\)</span>. Write the map as a pair <span class="math inline">\((a_t,b_t)\)</span> with <span class="math inline">\(a_t=\bar A_t\)</span> and <span class="math inline">\(b_t=\bar B_t x_t\)</span>, standing for <span class="math inline">\(h\mapsto a_t h+b_t\)</span>. Running the recurrence from <span class="math inline">\(h_0\)</span> to <span class="math inline">\(h_t\)</span> is then applying these maps in order, <span class="math inline">\(f_t\circ f_{t-1}\circ\cdots\circ f_1\)</span>.</p>
+<p>Composing two consecutive maps gives another affine map. Apply <span class="math inline">\(f_{t-1}\)</span> then <span class="math inline">\(f_t\)</span>:</p>
+<p><span class="math display">\[h\;\mapsto\;a_t\big(a_{t-1}h+b_{t-1}\big)+b_t\;=\;\big(a_t a_{t-1}\big)h+\big(a_t b_{t-1}+b_t\big).\]</span></p>
+<p>The result is again of the form <span class="math inline">\(h\mapsto a\,h+b\)</span>, so it has its own pair. Define the combine operator that produces that pair from an earlier map <span class="math inline">\((a_1,b_1)\)</span> and a later map <span class="math inline">\((a_2,b_2)\)</span>:</p>
+<p><span class="math display">\[(a_1,b_1)\bullet(a_2,b_2)=\big(a_1 a_2,\ a_2 b_1+b_2\big).\]</span></p>
+<p>Reading left to right, <span class="math inline">\(u\bullet v\)</span> means “apply <span class="math inline">\(u\)</span>, then <span class="math inline">\(v\)</span>”. Because <span class="math inline">\(\bullet\)</span> is composition of affine maps, it inherits associativity: <span class="math inline">\((u\bullet v)\bullet w\)</span> and <span class="math inline">\(u\bullet(v\bullet w)\)</span> are the same composed map. Function composition is always associative, but the payoff here is that we can check it on the pairs by pure algebra, and that associativity is the single property a parallel scan needs. The cell builds the pairs from a small selective recurrence and verifies it as an exact identity.</p>
+<div id="psaside02" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T13:38:32.266283Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T13:38:32.266052Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T13:38:32.975993Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T13:38:32.975591Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># A small time-varying (selective) recurrence: h_t = Abar_t h_{t-1} + Bbar_t x_t.</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># After SSM-2's selectivity Abar_t, Bbar_t change every step, so there is no single</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># convolution kernel, only this per-step recurrence. Scalar state (N=1) keeps it legible.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>T <span class="op">=</span> <span class="dv">8</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> torch.tensor(<span class="op">-</span><span class="fl">1.0</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(T)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>delta <span class="op">=</span> torch.rand(T) <span class="op">*</span> <span class="fl">2.0</span> <span class="op">+</span> <span class="fl">0.1</span>          <span class="co"># a different step size per token (selectivity)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>Abar <span class="op">=</span> torch.exp(delta <span class="op">*</span> A)                <span class="co"># a_t = exp(delta_t A): now varies with t</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>Bbar <span class="op">=</span> (Abar <span class="op">-</span> <span class="fl">1.0</span>) <span class="op">/</span> A                    <span class="co"># diagonal ZOH input weight (Mamba Eq. 4)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> Bbar <span class="op">*</span> x                               <span class="co"># b_t = Bbar_t x_t</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Each step is the affine map  h -&gt; a_t h + b_t, carried as the pair (a_t, b_t).</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>pairs <span class="op">=</span> <span class="bu">list</span>(<span class="bu">zip</span>(Abar.tolist(), b.tolist()))</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> combine(u, v):</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># u is the earlier map, v the later one: "do u, then v".</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># (a1,b1) . (a2,b2) = (a1 a2, a2 b1 + b2), the composition of two affine maps.</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    (a1, b1), (a2, b2) <span class="op">=</span> u, v</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (a1 <span class="op">*</span> a2, a2 <span class="op">*</span> b1 <span class="op">+</span> b2)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Associativity is the whole trick: combine(combine(u,v),w) == combine(u,combine(v,w)).</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>u, v, w <span class="op">=</span> pairs[<span class="dv">0</span>], pairs[<span class="dv">1</span>], pairs[<span class="dv">2</span>]</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>left  <span class="op">=</span> combine(combine(u, v), w)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>right <span class="op">=</span> combine(u, combine(v, w))</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"combine(combine(u,v),w) ="</span>, <span class="bu">tuple</span>(<span class="bu">round</span>(z, <span class="dv">6</span>) <span class="cf">for</span> z <span class="kw">in</span> left))</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"combine(u,combine(v,w)) ="</span>, <span class="bu">tuple</span>(<span class="bu">round</span>(z, <span class="dv">6</span>) <span class="cf">for</span> z <span class="kw">in</span> right))</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(torch.tensor(left), torch.tensor(right), atol<span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"assert passes: the combine operator is associative"</span>)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="co"># The pair really is the composition: applying it to a state h equals doing u then v.</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>h0 <span class="op">=</span> <span class="fl">0.37</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>a12, b12 <span class="op">=</span> combine(u, v)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>applied_in_order <span class="op">=</span> v[<span class="dv">0</span>] <span class="op">*</span> (u[<span class="dv">0</span>] <span class="op">*</span> h0 <span class="op">+</span> u[<span class="dv">1</span>]) <span class="op">+</span> v[<span class="dv">1</span>]</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">composed pair on h=</span><span class="sc">{</span>h0<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>a12 <span class="op">*</span> h0 <span class="op">+</span> b12<span class="sc">:.6f}</span><span class="ss">   apply u then v: </span><span class="sc">{</span>applied_in_order<span class="sc">:.6f}</span><span class="ss">"</span>)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">abs</span>((a12 <span class="op">*</span> h0 <span class="op">+</span> b12) <span class="op">-</span> applied_in_order) <span class="op">&lt;</span> <span class="fl">1e-6</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"assert passes: (a,b) composes the two affine maps"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>combine(combine(u,v),w) = (0.026852, -0.764215)
+combine(u,combine(v,w)) = (0.026852, -0.764215)
+assert passes: the combine operator is associative
+
+composed pair on h=0.37: -0.006272   apply u then v: -0.006272
+assert passes: (a,b) composes the two affine maps</code></pre>
+</div>
+</div>
+<p>Both groupings return the identical pair, so <span class="math inline">\(\bullet\)</span> is associative to floating-point tolerance, and the composed pair applied to a state matches running the two maps one after the other. That second check confirms the pair is not a bookkeeping trick but the actual composition. Associativity is what lets a scan regroup the long chain <span class="math inline">\(f_T\circ\cdots\circ f_1\)</span> into a balanced tree of combines and evaluate it in <span class="math inline">\(O(\log T)\)</span> depth, which is the next section.</p>
+</section>
+<section id="sequential-scan-versus-log-depth-parallel-scan" class="level2">
+<h2 data-anchor-id="sequential-scan-versus-log-depth-parallel-scan">2. Sequential scan versus log-depth parallel scan</h2>
+<p>A prefix scan over <span class="math inline">\(\bullet\)</span> produces, at each position <span class="math inline">\(t\)</span>, the running composition <span class="math inline">\(P_t=(\bar A_1,\bar B_1 x_1)\bullet\cdots\bullet(\bar A_t,\bar B_t x_t)\)</span>, which is the affine map from <span class="math inline">\(h_0\)</span> to <span class="math inline">\(h_t\)</span>. With <span class="math inline">\(h_0=0\)</span> the <span class="math inline">\(a\)</span>-component multiplies zero and drops out, so the <span class="math inline">\(b\)</span>-component of <span class="math inline">\(P_t\)</span> is exactly <span class="math inline">\(h_t\)</span>. One scan over the pairs therefore returns the whole state trajectory.</p>
+<p>The direct way to compute the scan is left to right: fold <span class="math inline">\(\bullet\)</span> across the sequence, one combine per token. This is the loop again, <span class="math inline">\(T-1\)</span> combines stacked in a chain of depth <span class="math inline">\(T-1\)</span>, each waiting on the previous result. Associativity buys a different schedule. Since regrouping is free, the same prefixes can be assembled by a balanced tree of combines. The Hillis–Steele scan is the plainest version: at pass <span class="math inline">\(d\)</span> every position <span class="math inline">\(i\)</span> combines itself with the position <span class="math inline">\(2^d\)</span> back, <span class="math inline">\(x_i\leftarrow x_{i-2^d}\bullet x_i\)</span>, and after <span class="math inline">\(\lceil\log_2 T\rceil\)</span> passes each position holds its full prefix. The passes run in sequence, but the combines inside a pass are independent, so the dependency depth is <span class="math inline">\(O(\log T)\)</span> rather than <span class="math inline">\(O(T)\)</span>.</p>
+<p>The two scans compute the same prefixes with the operator only reassociated, so their outputs must agree exactly, and the <span class="math inline">\(b\)</span>-components must match the state from the plain recurrence. The cell asserts both, prints the depth each scan reaches, and sweeps <span class="math inline">\(T\)</span> to show the depths growing as <span class="math inline">\(T\)</span> against <span class="math inline">\(\log T\)</span>. One caveat rides along: Hillis–Steele reaches log depth by doing more total combines than the loop, <span class="math inline">\(O(T\log T)\)</span> against <span class="math inline">\(O(T)\)</span>. It trades work for depth. Blelloch’s work-efficient scan recovers <span class="math inline">\(O(\log T)\)</span> depth at <span class="math inline">\(O(T)\)</span> work, and that is the version real SSM kernels build on.</p>
+<div id="psaside05" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T13:38:32.977159Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T13:38:32.977065Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T13:38:33.348866Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T13:38:33.348497Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> recurrence(Abar, Bbar_x):</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the plain left-to-right loop: h_t = a_t h_{t-1} + b_t, with h_0 = 0</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    h, hs <span class="op">=</span> <span class="fl">0.0</span>, []</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> a, bt <span class="kw">in</span> <span class="bu">zip</span>(Abar.tolist(), Bbar_x.tolist()):</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> a <span class="op">*</span> h <span class="op">+</span> bt</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        hs.append(h)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.tensor(hs)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sequential_scan(pairs, combine):</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># fold . left to right: one combine per step, dependency depth = T - 1</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    out, ops <span class="op">=</span> [pairs[<span class="dv">0</span>]], <span class="dv">0</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="bu">len</span>(pairs)):</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        out.append(combine(out[<span class="op">-</span><span class="dv">1</span>], pairs[i]))</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>        ops <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out, <span class="bu">len</span>(pairs) <span class="op">-</span> <span class="dv">1</span>, ops</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> parallel_scan(pairs, combine):</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Hillis-Steele inclusive scan. Pass d combines each position with the one 2^d back;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combines within a pass are independent, so depth = ceil(log2 T).</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    cur <span class="op">=</span> <span class="bu">list</span>(pairs)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    depth, ops, offset <span class="op">=</span> <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> offset <span class="op">&lt;</span> <span class="bu">len</span>(pairs):</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        nxt <span class="op">=</span> <span class="bu">list</span>(cur)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(offset, <span class="bu">len</span>(pairs)):</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>            nxt[i] <span class="op">=</span> combine(cur[i <span class="op">-</span> offset], cur[i])</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>            ops <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        cur, offset, depth <span class="op">=</span> nxt, offset <span class="op">*</span> <span class="dv">2</span>, depth <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cur, depth, ops</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>seq_pref, seq_depth, seq_ops <span class="op">=</span> sequential_scan(pairs, combine)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>par_pref, par_depth, par_ops <span class="op">=</span> parallel_scan(pairs, combine)</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) the two scans return identical prefixes: same operator, only regrouped</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>seq_b <span class="op">=</span> torch.tensor([p[<span class="dv">1</span>] <span class="cf">for</span> p <span class="kw">in</span> seq_pref])</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>par_b <span class="op">=</span> torch.tensor([p[<span class="dv">1</span>] <span class="cf">for</span> p <span class="kw">in</span> par_pref])</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"max |sequential - parallel| over prefixes ="</span>, <span class="ss">f"</span><span class="sc">{</span>(seq_b <span class="op">-</span> par_b)<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">.</span>item()<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(seq_b, par_b, atol<span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"assert passes: sequential and parallel scans agree exactly"</span>)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) the b-component of the scan is the state h_t (h_0 = 0)</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>h_loop <span class="op">=</span> recurrence(Abar, b)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"max |scan b-component - recurrence h_t| ="</span>, <span class="ss">f"</span><span class="sc">{</span>(par_b <span class="op">-</span> h_loop)<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">.</span>item()<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(par_b, h_loop, atol<span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"assert passes: the scan reproduces the recurrence's state trajectory"</span>)</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">T = </span><span class="sc">{</span>T<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  sequential loop : depth </span><span class="sc">{</span>seq_depth<span class="sc">:2d}</span><span class="ss">   (</span><span class="sc">{</span>seq_ops<span class="sc">}</span><span class="ss"> combines)   O(T) depth"</span>)</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  parallel scan   : depth </span><span class="sc">{</span>par_depth<span class="sc">:2d}</span><span class="ss">   (</span><span class="sc">{</span>par_ops<span class="sc">}</span><span class="ss"> combines)   O(log T) depth, more total work"</span>)</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="co"># depth versus sequence length: O(T) against O(log T)</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>Ts <span class="op">=</span> [<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">32</span>, <span class="dv">64</span>, <span class="dv">128</span>, <span class="dv">256</span>, <span class="dv">512</span>, <span class="dv">1024</span>]</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>seq_d <span class="op">=</span> [t <span class="op">-</span> <span class="dv">1</span> <span class="cf">for</span> t <span class="kw">in</span> Ts]</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>par_d <span class="op">=</span> [math.ceil(math.log2(t)) <span class="cf">for</span> t <span class="kw">in</span> Ts]</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="fl">3.2</span>))</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>plt.plot(Ts, seq_d, <span class="st">"o-"</span>, label<span class="op">=</span><span class="st">"sequential loop  (depth $T-1$)"</span>)</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>plt.plot(Ts, par_d, <span class="st">"s-"</span>, label<span class="op">=</span><span class="vs">r"parallel scan  </span><span class="kw">(</span><span class="vs">depth </span><span class="dv">$</span><span class="er">\</span><span class="vs">lceil</span><span class="er">\</span><span class="vs">log_2 T</span><span class="ch">\r</span><span class="vs">ceil</span><span class="dv">$</span><span class="kw">)</span><span class="vs">"</span>)</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>plt.xscale(<span class="st">"log"</span>, base<span class="op">=</span><span class="dv">2</span>)<span class="op">;</span> plt.yscale(<span class="st">"log"</span>, base<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"sequence length T"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"sequential depth"</span>)</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"the scan flattens O(T) sequential depth to O(log T)"</span>)</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>plt.legend(fontsize<span class="op">=</span><span class="dv">8</span>)<span class="op">;</span> plt.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"at T=1024 the loop is 1023 stages deep; the scan is 10."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>max |sequential - parallel| over prefixes = 0.00e+00
+assert passes: sequential and parallel scans agree exactly
+max |scan b-component - recurrence h_t| = 0.00e+00
+assert passes: the scan reproduces the recurrence's state trajectory
+
+T = 8
+  sequential loop : depth  7   (7 combines)   O(T) depth
+  parallel scan   : depth  3   (17 combines)   O(log T) depth, more total work</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ssm2-aside-parallel-scan_files/figure-html/cell-3-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>at T=1024 the loop is 1023 stages deep; the scan is 10.</code></pre>
+</div>
+</div>
+<p>The sequential and parallel scans return the same prefixes, and the scan’s <span class="math inline">\(b\)</span>-components match the recurrence’s <span class="math inline">\(h_t\)</span> to floating point, so the parallel schedule computes exactly the state SSM-2’s loop computes. Only the depth differs: the loop stacks <span class="math inline">\(T-1\)</span> combines that each wait on the last, while the Hillis–Steele scan finishes in <span class="math inline">\(\lceil\log_2 T\rceil\)</span> passes, and the plot shows that gap widening from a few levels to hundreds as <span class="math inline">\(T\)</span> grows. The scan pays in total combines, <span class="math inline">\(O(T\log T)\)</span> here against the loop’s <span class="math inline">\(O(T)\)</span>, which a work-efficient scan removes. On real hardware the independent combines inside each pass run at once, so log-depth is what turns a length-<span class="math inline">\(T\)</span> recurrence into a parallel computation.</p>
+</section>
+<section id="what-this-shows" class="level2">
+<h2 data-anchor-id="what-this-shows">What this shows</h2>
+<ul>
+<li><strong>A time-varying linear recurrence is a chain of affine maps, and composing affine maps is associative.</strong> Writing each step as a pair <span class="math inline">\((\bar A_t,\ \bar B_t x_t)\)</span> and composing with <span class="math inline">\((a_1,b_1)\bullet(a_2,b_2)=(a_1a_2,\ a_2b_1+b_2)\)</span> turns “run the recurrence” into “prefix-scan the pairs”. Associativity is the property that makes it valid, and it holds exactly.</li>
+<li><strong>Associativity lets the scan choose its schedule.</strong> The prefixes computed left to right in <span class="math inline">\(O(T)\)</span> sequential depth are also computed by a balanced tree in <span class="math inline">\(O(\log T)\)</span> depth. The sequential and parallel scans return identical outputs, and the scan’s <span class="math inline">\(b\)</span>-component is the state <span class="math inline">\(h_t\)</span> that SSM-2’s loop produces.</li>
+<li><strong>This is why selectivity did not cost the parallel form.</strong> SSM-1 trained by convolution; SSM-2 broke that convolution, but the selective recurrence is still associative, so a prefix scan recovers parallel evaluation. S5 computes linear SSMs this way, and Mamba’s selective scan is the same idea wrapped in a hardware-aware kernel.</li>
+</ul>
+<p><strong>Honest scope.</strong> This is a plain Python and tensor scan, written to make associativity and depth visible; it makes no throughput claim. Hillis–Steele here runs <span class="math inline">\(O(T\log T)\)</span> combines against the loop’s <span class="math inline">\(O(T)\)</span>, so on one CPU thread the loop is faster at these sizes. The win is parallel <em>depth</em> on hardware that evaluates the independent combines together, and a work-efficient scan (Blelloch) closes the extra-work gap. The toy carries a scalar mode (<span class="math inline">\(N=1\)</span>), so a pair is two numbers; a real selective SSM keeps <span class="math inline">\(\bar A_t\)</span> as a diagonal and the combine is the same formula with elementwise products. And the speed of the real thing comes from keeping that state in SRAM across the scan (Mamba §3.3), which a Python loop does not model. What the toy settles is the claim SSM-2 forwards here: the selective recurrence is associative, so it runs as a prefix scan in <span class="math inline">\(O(\log T)\)</span> depth instead of a <span class="math inline">\(T\)</span>-step loop.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

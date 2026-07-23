@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>SSM-1 — The linear state-space model – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../../index.html">
+    <span class="navbar-title">Barış Deniz Sağlam</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../courses/continual-learning/index.html"> 
+<span class="menu-text">Course</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-opens-up" id="toc-why-it-exists-the-limitation-it-opens-up" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-opens-up">Why it exists (the limitation it opens up)</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#the-continuous-system" id="toc-the-continuous-system" class="nav-link" data-scroll-target="#the-continuous-system">1. The continuous system</a></li>
+  <li><a href="#discretize-zoh-to-a-recurrence" id="toc-discretize-zoh-to-a-recurrence" class="nav-link" data-scroll-target="#discretize-zoh-to-a-recurrence">2. Discretize (ZOH) to a recurrence</a></li>
+  <li><a href="#the-recurrence-is-a-convolution" id="toc-the-recurrence-is-a-convolution" class="nav-link" data-scroll-target="#the-recurrence-is-a-convolution">3. The recurrence is a convolution</a></li>
+  <li><a href="#why-a-structured-a-remembers" id="toc-why-a-structured-a-remembers" class="nav-link" data-scroll-target="#why-a-structured-a-remembers">4. Why a structured <span class="math inline">\(A\)</span> remembers</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">SSM-1 — The linear state-space model</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/tracks/state-space-models/ssm1-linear-state-space.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
+<p><strong>The question:</strong> how does a fixed linear recurrence become a long-range memory you can train in parallel?</p>
+<p>First module of the State-Space Models track. Prerequisites: <a href="../../../../courses/continual-learning/foundations/m1-associative-memory.html">M1</a>, <a href="../../../../courses/continual-learning/foundations/m3-linear-attention.html">M3</a>, <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>.</p>
+<p>M3 collapsed attention into a running memory <span class="math inline">\(\mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\,\phi(\mathbf{k}_t)^\top\)</span> that only ever adds. In M7’s master recurrence <span class="math inline">\(\mathbf{S}_t=\alpha_t\mathbf{S}_{t-1}+\beta_t\,(\text{write}_t)\,\phi(\mathbf{k}_t)^\top\)</span>, M3 is the setting with the gate held at <span class="math inline">\(\alpha_t=1\)</span>: the memory never forgets (M7 §1–2). That memory also has no notion of a continuous process running underneath the tokens, and no decay rate you could tune, because it was built by removing an operation from attention rather than derived from a system that evolves in time.</p>
+<p>This module derives a memory from the other direction. It starts from a continuous-time linear system <span class="math inline">\(h'(t)=Ah(t)+Bx(t)\)</span> driven by a matrix <span class="math inline">\(A\)</span>, discretizes it into a recurrence whose per-step decay <span class="math inline">\(\bar A\)</span> is exactly M7’s gate, and shows that recurrence is also a convolution you can run over the whole sequence at once. The one design choice that decides whether the memory reaches far back is the shape of <span class="math inline">\(A\)</span>.</p>
+<blockquote class="blockquote">
+<p>Grounding: <a href="https://arxiv.org/abs/2111.00396">S4</a> (Gu et al., 2021) §2 for the continuous system, the discretization, and the convolution kernel; <a href="https://arxiv.org/abs/2206.11893">S4D</a> (Gu et al., 2022) §3 for the diagonal parameterization the toy runs and §4 for its initialization; <a href="https://arxiv.org/abs/2008.07669">HiPPO</a> (Gu et al., 2020) for why a structured <span class="math inline">\(A\)</span> remembers. Equations are cited by section and number; anything I derive myself is marked as mine.</p>
+</blockquote>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>Write a continuous-time linear state-space model <span class="math inline">\(h'(t)=Ah(t)+Bx(t)\)</span>, <span class="math inline">\(y(t)=Ch(t)\)</span> and read the state <span class="math inline">\(h(t)\)</span> as a running summary of the input’s past.</li>
+<li>Discretize it with zero-order hold to the recurrence <span class="math inline">\(h_t=\bar A h_{t-1}+\bar B x_t\)</span>, <span class="math inline">\(y_t=Ch_t\)</span>, using <span class="math inline">\(\bar A=\exp(\Delta A)\)</span> and <span class="math inline">\(\bar B=(\Delta A)^{-1}(\exp(\Delta A)-I)\,\Delta B\)</span> (S4D §3.1).</li>
+<li>Unroll the recurrence into a convolution <span class="math inline">\(y=\bar K * x\)</span> with kernel <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span> (S4 Eq. 5), and say which form trains and which infers.</li>
+<li>Explain why a structured diagonal <span class="math inline">\(A\)</span> keeps long-range history that a random one loses, with HiPPO’s one-line reason (optimal projection of the past onto Legendre polynomials).</li>
+<li>State the module’s dial setting: an additive write with the gate <span class="math inline">\(\alpha_t=\bar A\)</span> fixed and structured, against M3’s <span class="math inline">\(\alpha_t=1\)</span>.</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-opens-up" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-opens-up">Why it exists (the limitation it opens up)</h2>
+<p>M3’s linear attention reached a fixed-size memory by deleting the softmax, and it left the gate at <span class="math inline">\(\alpha_t=1\)</span>: every token is added and nothing is removed (M7 §2, the gate dial). Two blind spots follow. The memory cannot forget, so old associations sit in the state at full strength until they saturate it. And it has no dial for <em>how fast</em> to forget, because it was never derived from a process that runs in time. Linear attention is a rule for accumulating tokens; it does not assume the tokens are samples of anything.</p>
+<p>State-space models start from the opposite assumption. They posit a continuous linear system underneath the sequence, a differential equation whose state <span class="math inline">\(h(t)\)</span> integrates the input, and read the tokens as samples of it. Forgetting is then not bolted on: it falls out of the system’s own dynamics, set by the matrix <span class="math inline">\(A\)</span>. Discretizing that system gives a recurrence that looks like M3’s with one change that is the whole module: the old state is multiplied by a decay <span class="math inline">\(\bar A\)</span> before the new input is written in. That <span class="math inline">\(\bar A\)</span> is M7’s gate <span class="math inline">\(\alpha_t\)</span>, no longer pinned at 1 but fixed once by <span class="math inline">\(A\)</span> and the step size <span class="math inline">\(\Delta\)</span>, and held constant across the sequence.</p>
+<p>So the dial setting is: keep M3’s additive write, and turn the gate from <span class="math inline">\(\alpha_t=1\)</span> to a fixed structured <span class="math inline">\(\bar A\)</span>. The state here is a vector driven by a scalar input rather than a matrix driven by key–value pairs, so there is no outer product in the toy, but the dial is the same one, what multiplies the old state before the new write. The reward is that the same recurrence has a convolution form you can train in parallel over the whole sequence. The bill the rest of the track pays is that a fixed <span class="math inline">\(\bar A\)</span> cannot decide what to remember from the content of a token; that is SSM-2.</p>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2111.00396">S4</a> (Gu et al., 2021): §2 — the continuous SSM (Eq. 1), the discretization (Eq. 3), the convolution view and kernel (Eqs. 4–5). The grounding source for the recurrence-to-convolution identity. S4’s own default discretization is the bilinear rule; the ZOH form below is S4D’s.</li>
+<li><a href="https://arxiv.org/abs/2206.11893">S4D</a> (Gu et al., 2022): §3.1 — the ZOH discretization <span class="math inline">\(\bar A=\exp(\Delta A)\)</span>, <span class="math inline">\(\bar B=(\Delta A)^{-1}(\exp(\Delta A)-I)\,\Delta B\)</span>; §3.2 (Eq. 7) — the diagonal kernel <span class="math inline">\(\bar K_\ell=\sum_n C_n\bar A_n^\ell\bar B_n\)</span>; §4 (Eq. 9) — the S4D-Lin initialization the toy uses.</li>
+<li><a href="https://arxiv.org/abs/2008.07669">HiPPO</a> (Gu et al., 2020): the structured <span class="math inline">\(A\)</span> as the optimal operator for online projection of the input’s history onto Legendre polynomials. Used in brief in §4; not derived here.</li>
+</ul>
+</section>
+</section>
+<section id="the-continuous-system" class="level2">
+<h2 data-anchor-id="the-continuous-system">1. The continuous system</h2>
+<p>A state-space model is a linear ODE. A scalar input <span class="math inline">\(x(t)\)</span> drives an <span class="math inline">\(N\)</span>-dimensional state <span class="math inline">\(h(t)\)</span>, and a readout collapses the state to an output:</p>
+<p><span class="math display">\[h'(t)=A\,h(t)+B\,x(t),\qquad y(t)=C\,h(t).\]</span></p>
+<p><span class="math inline">\(A\in\mathbb{R}^{N\times N}\)</span> is the state matrix, <span class="math inline">\(B\in\mathbb{R}^{N\times1}\)</span> writes the input into the state, <span class="math inline">\(C\in\mathbb{R}^{1\times N}\)</span> reads it out (S4 Eq. 1, which also carries a skip term <span class="math inline">\(D\,x(t)\)</span> we set to zero). Solve the ODE for a single input impulse at <span class="math inline">\(t=0\)</span> and the output is <span class="math inline">\(y(t)=C\,e^{tA}B\)</span>, where <span class="math inline">\(e^{tA}\)</span> is the matrix exponential, the operator that advances the linear system by time <span class="math inline">\(t\)</span>. So the state is a fading trace of everything the input has done, and <span class="math inline">\(A\)</span> alone decides the shape of that fade.</p>
+<p>Diagonalize <span class="math inline">\(A\)</span> and the picture is simplest: each diagonal entry <span class="math inline">\(a=\mathrm{Re}(a)+i\,\mathrm{Im}(a)\)</span> is one independent mode with response <span class="math inline">\(e^{ta}\)</span>. Its real part sets how fast the mode decays, which is how long it remembers, and its imaginary part sets how fast it oscillates. Diagonalizing a real system produces complex conjugate modes, so from here <span class="math inline">\(A\)</span> (and with it <span class="math inline">\(\bar A,\bar B,C\)</span>) is a vector of complex numbers and the output keeps only the real part; this is the diagonal S4D form the code uses. The cell integrates a three-mode system under a single impulse and plots the output.</p>
+<div id="bf3c21f0" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T12:24:27.479697Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T12:24:27.479538Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T12:24:28.417244Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T12:24:28.416874Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># three modes of a continuous linear system: a = Re + i*Im per channel.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Re&lt;0 sets the fade rate (how long the mode remembers); Im sets the frequency.</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>A_cont <span class="op">=</span> torch.tensor([<span class="op">-</span><span class="fl">0.5</span> <span class="op">+</span> <span class="ot">6.2832j</span>, <span class="op">-</span><span class="fl">0.8</span> <span class="op">+</span> <span class="ot">12.566j</span>, <span class="op">-</span><span class="fl">1.5</span> <span class="op">+</span> <span class="ot">3.1416j</span>], dtype<span class="op">=</span>torch.cfloat)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>B_cont <span class="op">=</span> torch.ones(<span class="dv">3</span>, dtype<span class="op">=</span>torch.cfloat)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>C_cont <span class="op">=</span> torch.tensor([<span class="fl">1.0</span>, <span class="fl">0.6</span>, <span class="fl">0.8</span>], dtype<span class="op">=</span>torch.cfloat)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># integrate h'(t) = A h(t) + B x(t) with small Euler steps; a unit impulse enters at t=0.</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>T, steps <span class="op">=</span> <span class="fl">3.0</span>, <span class="dv">3000</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>tau <span class="op">=</span> T <span class="op">/</span> steps</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>h <span class="op">=</span> torch.zeros(<span class="dv">3</span>, dtype<span class="op">=</span>torch.cfloat)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>ts, ys <span class="op">=</span> [], []</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> (<span class="fl">1.0</span> <span class="op">/</span> tau) <span class="cf">if</span> i <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="fl">0.0</span>        <span class="co"># unit impulse spread over one step</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> h <span class="op">+</span> tau <span class="op">*</span> (A_cont <span class="op">*</span> h <span class="op">+</span> B_cont <span class="op">*</span> x)   <span class="co"># one Euler step of the ODE</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    ts.append(i <span class="op">*</span> tau)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    ys.append((C_cont <span class="op">*</span> h).<span class="bu">sum</span>().real.item())</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">3</span>))</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>plt.plot(ts, ys)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"time t"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"y(t) = Re(C h(t))"</span>)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"impulse response of the continuous system  y(t) = C e^</span><span class="sc">{tA}</span><span class="st"> B"</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the state rings and decays: each mode of A adds a decaying oscillation to the output."</span>)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Re(a) sets how long a mode remembers; Im(a) sets its frequency."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ssm1-linear-state-space_files/figure-html/cell-2-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>the state rings and decays: each mode of A adds a decaying oscillation to the output.
+Re(a) sets how long a mode remembers; Im(a) sets its frequency.</code></pre>
+</div>
+</div>
+<p>The impulse response is a sum of decaying oscillations, one per mode, exactly <span class="math inline">\(C\,e^{tA}B\)</span>. Nothing about the input’s past is stored except through the state, and the state is fully determined by <span class="math inline">\(A\)</span>: change <span class="math inline">\(A\)</span> and you change how long the memory lasts and what it emphasizes. This is the object we want to feed discrete tokens, so the next step is to turn the continuous system into a step-by-step recurrence.</p>
+</section>
+<section id="discretize-zoh-to-a-recurrence" class="level2">
+<h2 data-anchor-id="discretize-zoh-to-a-recurrence">2. Discretize (ZOH) to a recurrence</h2>
+<p>Tokens arrive at discrete steps, so we need the state at times <span class="math inline">\(t=0,\Delta,2\Delta,\dots\)</span> rather than continuously. Zero-order hold makes the standard assumption that the input is constant across each step of width <span class="math inline">\(\Delta\)</span>, then integrates the ODE <em>exactly</em> over that step. The result is a linear recurrence (S4D §3.1):</p>
+<p><span class="math display">\[h_t=\bar A\,h_{t-1}+\bar B\,x_t,\qquad y_t=C\,h_t,\qquad \bar A=\exp(\Delta A),\quad \bar B=(\Delta A)^{-1}\big(\exp(\Delta A)-I\big)\,\Delta B.\]</span></p>
+<p>Read <span class="math inline">\(\bar A=\exp(\Delta A)\)</span> as the exact one-step propagator of the continuous system, and <span class="math inline">\(\bar B\)</span> as the matching input weight that accounts for the input acting throughout the step. For a diagonal <span class="math inline">\(A\)</span> these become per-channel scalars: with mode <span class="math inline">\(a_n\)</span>, the propagator is <span class="math inline">\(\bar A_n=\exp(\Delta a_n)\)</span>, and substituting the scalar case into the <span class="math inline">\(\bar B\)</span> formula gives <span class="math inline">\(\bar B_n=\dfrac{\exp(\Delta a_n)-1}{a_n}\,B_n\)</span> (my reduction of the S4D §3.1 formula to one channel). The recurrence is now elementwise: <span class="math inline">\(N\)</span> independent scalar modes, each a leaky, oscillating accumulator of the input.</p>
+<p>The gate is visible in <span class="math inline">\(\bar A\)</span>. M3’s recurrence multiplied the old state by <span class="math inline">\(1\)</span>; this one multiplies it by <span class="math inline">\(\bar A=\exp(\Delta A)\)</span>, a fixed per-channel decay set by <span class="math inline">\(A\)</span> and <span class="math inline">\(\Delta\)</span>. That is the dial turned. The cell discretizes a diagonal system and runs the recurrence on a random input.</p>
+<div id="0c4f4d1e" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T12:24:28.418624Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T12:24:28.418520Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T12:24:28.432916Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T12:24:28.432573Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> discretize(A, B, dt):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ZOH (S4D 3.1), diagonal case: Abar = exp(dt*A), Bbar = (exp(dt*A) - 1)/A * B</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    Abar <span class="op">=</span> torch.exp(dt <span class="op">*</span> A)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    Bbar <span class="op">=</span> (Abar <span class="op">-</span> <span class="fl">1.0</span>) <span class="op">/</span> A <span class="op">*</span> B</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Abar, Bbar</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_recurrence(Abar, Bbar, C, x):</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># h_t = Abar . h_{t-1} + Bbar . x_t ;  y_t = Re(C . h_t)   (elementwise, diagonal A)</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    h <span class="op">=</span> torch.zeros(Abar.shape[<span class="dv">0</span>], dtype<span class="op">=</span>torch.cfloat)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> []</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> xt <span class="kw">in</span> x:</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> Abar <span class="op">*</span> h <span class="op">+</span> Bbar <span class="op">*</span> xt          <span class="co"># gate the old state by Abar, add the new input</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        out.append((C <span class="op">*</span> h).<span class="bu">sum</span>().real)    <span class="co"># readout; real part, since the signal is real</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.stack(out)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span> <span class="op">+</span> <span class="ot">1j</span> <span class="op">*</span> np.pi <span class="op">*</span> torch.arange(N).to(torch.cfloat)   <span class="co"># a stable diagonal A (S4D-Lin, section 4)</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> torch.ones(N, dtype<span class="op">=</span>torch.cfloat)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>C <span class="op">=</span> torch.randn(N, dtype<span class="op">=</span>torch.cfloat)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> N</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>Abar, Bbar <span class="op">=</span> discretize(A, B, dt)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>L <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(L)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>y_rec <span class="op">=</span> run_recurrence(Abar, Bbar, C, x)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"state size N ="</span>, N, <span class="st">" sequence length L ="</span>, L)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"|Abar| per mode (the per-channel gate) in ["</span>, <span class="ss">f"</span><span class="sc">{</span>Abar<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">min</span>()<span class="sc">:.3f}</span><span class="ss">"</span>, <span class="st">","</span>, <span class="ss">f"</span><span class="sc">{</span>Abar<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.3f}</span><span class="ss">"</span>, <span class="st">"]  -- all &lt; 1, so the memory is stable"</span>)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"first outputs y_rec[:4] ="</span>, [<span class="ss">f"</span><span class="sc">{</span>v<span class="sc">:.3f}</span><span class="ss">"</span> <span class="cf">for</span> v <span class="kw">in</span> y_rec[:<span class="dv">4</span>].tolist()])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>state size N = 16  sequence length L = 64
+|Abar| per mode (the per-channel gate) in [ 0.969 , 0.969 ]  -- all &lt; 1, so the memory is stable
+first outputs y_rec[:4] = ['-0.287', '-0.253', '0.031', '0.510']</code></pre>
+</div>
+</div>
+<p>Every mode has <span class="math inline">\(|\bar A_n|&lt;1\)</span>, so each one fades and the recurrence is stable; a mode with <span class="math inline">\(|\bar A_n|\ge 1\)</span> would blow up as the sequence runs. The step is cheap and sequential: one elementwise multiply-add per token, carrying a fixed-size state with no growing cache, which is the inference-time win M3 also had. The next section shows the same recurrence has a second face that runs the whole sequence in parallel.</p>
+</section>
+<section id="the-recurrence-is-a-convolution" class="level2">
+<h2 data-anchor-id="the-recurrence-is-a-convolution">3. The recurrence is a convolution</h2>
+<p>Unroll the recurrence from <span class="math inline">\(h_{-1}=0\)</span>. Each step multiplies the running state by <span class="math inline">\(\bar A\)</span> and adds <span class="math inline">\(\bar B x_t\)</span>, so after <span class="math inline">\(t\)</span> steps</p>
+<p><span class="math display">\[h_t=\sum_{\ell=0}^{t}\bar A^{\,\ell}\,\bar B\,x_{t-\ell},\qquad y_t=C\,h_t=\sum_{\ell=0}^{t}\big(C\,\bar A^{\,\ell}\,\bar B\big)\,x_{t-\ell}.\]</span></p>
+<p>The bracket depends only on the lag <span class="math inline">\(\ell\)</span>, not on <span class="math inline">\(t\)</span>, so the whole output is a convolution of the input with a single fixed kernel (S4 Eqs. 4–5):</p>
+<p><span class="math display">\[y=\bar K * x,\qquad \bar K=\big(C\bar B,\ C\bar A\bar B,\ C\bar A^{2}\bar B,\dots\big),\qquad \bar K_\ell=C\,\bar A^{\,\ell}\,\bar B.\]</span></p>
+<p>For a diagonal <span class="math inline">\(A\)</span> the kernel is a sum over modes, <span class="math inline">\(\bar K_\ell=\sum_n C_n\bar A_n^{\,\ell}\bar B_n\)</span> (S4D Eq. 7). This is the same parallel-versus-recurrent duality as M3, in a new guise. During training the whole sequence is known, so you build <span class="math inline">\(\bar K\)</span> once and convolve, which parallelizes across all positions and runs by FFT in <span class="math inline">\(O(L\log L)\)</span>. During inference you generate one token at a time, so you carry the state and step the recurrence at <span class="math inline">\(O(1)\)</span> per token. Two schedules, one function. The cell builds the kernel, convolves, and checks it against the step-by-step recurrence from §2. Equality is exact up to floating point, so it is an assertion, not a plot.</p>
+<div id="9cdd43d2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T12:24:28.434119Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T12:24:28.434050Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T12:24:28.442826Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T12:24:28.442552Z&quot;}}" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ssm_kernel(Abar, Bbar, C, L):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Kbar_ell = sum_n C_n Abar_n^ell Bbar_n  (S4D Eq. 7); real part for a real output.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    ell <span class="op">=</span> torch.arange(L)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    powers <span class="op">=</span> Abar[<span class="va">None</span>, :] <span class="op">**</span> ell[:, <span class="va">None</span>]                 <span class="co"># (L, N): Abar_n^ell, a Vandermonde matrix</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (powers <span class="op">*</span> (Bbar <span class="op">*</span> C)[<span class="va">None</span>, :]).<span class="bu">sum</span>(<span class="op">-</span><span class="dv">1</span>).real     <span class="co"># (L,)</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> conv1d_causal(K, x):</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># y_t = sum_{l=0}^{t} K_l x_{t-l}</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> x.shape[<span class="dv">0</span>]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> torch.zeros(L)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(L):</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> <span class="bu">min</span>(t <span class="op">+</span> <span class="dv">1</span>, K.shape[<span class="dv">0</span>])</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        y[t] <span class="op">=</span> (K[:m] <span class="op">*</span> x[t <span class="op">-</span> torch.arange(m)]).<span class="bu">sum</span>()</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> y</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>K <span class="op">=</span> ssm_kernel(Abar, Bbar, C, L)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>y_conv <span class="op">=</span> conv1d_causal(K, x)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"recurrence output vs convolution output:"</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"  max |y_rec - y_conv| ="</span>, <span class="ss">f"</span><span class="sc">{</span>(y_rec <span class="op">-</span> y_conv)<span class="sc">.</span><span class="bu">abs</span>()<span class="sc">.</span><span class="bu">max</span>()<span class="sc">.</span>item()<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(y_rec, y_conv, atol<span class="op">=</span><span class="fl">1e-4</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"  torch.allclose -&gt; True: the two forms compute the identical function."</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"train as a convolution over the whole sequence; infer as a step-by-step recurrence."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>recurrence output vs convolution output:
+  max |y_rec - y_conv| = 9.54e-07
+  torch.allclose -&gt; True: the two forms compute the identical function.
+train as a convolution over the whole sequence; infer as a step-by-step recurrence.</code></pre>
+</div>
+</div>
+<p>The two outputs match to floating-point tolerance because they are the same sum grouped two ways, exactly as M3’s parallel and recurrent forms were. The kernel form is what makes an SSM trainable at scale: unlike a nonlinear RNN, whose per-step dependence blocks parallelism, the linear recurrence unrolls into one convolution and trains across all positions at once. This identity is the cheap part. S4’s real work is computing <span class="math inline">\(\bar K\)</span> efficiently for a structured <span class="math inline">\(A\)</span>, which the diagonal case in the next section reduces to a one-line Vandermonde product.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: If the two forms compute the same function, why keep both?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Because they cost differently, and training and inference have opposite shapes.</p>
+<ul>
+<li><strong>Training</strong> sees the whole sequence at once. The convolution builds one kernel <span class="math inline">\(\bar K\)</span> and applies it to every position in parallel, by FFT in <span class="math inline">\(O(L\log L)\)</span>, saturating a GPU with no step-by-step dependency to wait on. This is the form you differentiate through.</li>
+<li><strong>Inference</strong> generates one token at a time. The recurrence carries the fixed-size state <span class="math inline">\(h_t\)</span> and does one elementwise update per token, <span class="math inline">\(O(1)\)</span> time and memory per step, with no cache that grows in the sequence length.</li>
+</ul>
+<p>So you train as a convolution and decode as a recurrence, the same weights computing the same function on two schedules. This is M3’s parallel-versus-recurrent duality again, and it is the property the whole linear-time family is built on.</p>
+<p>The catch, and the reason there is a track after this module: the convolution exists only because <span class="math inline">\(\bar A,\bar B,C\)</span> are the <em>same</em> at every step, which makes the kernel depend on the lag <span class="math inline">\(\ell\)</span> alone. The moment those parameters depend on the input, as they will in SSM-2, the single global kernel is gone and the parallel form has to be recovered a different way, by a parallel scan (the <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-aside-parallel-scan.html">parallel-scan aside</a>).</p>
+</div>
+</div>
+</div>
+</section>
+<section id="why-a-structured-a-remembers" class="level2">
+<h2 data-anchor-id="why-a-structured-a-remembers">4. Why a structured <span class="math inline">\(A\)</span> remembers</h2>
+<p>The kernel is a sum of modes, <span class="math inline">\(\bar K_\ell=\sum_n C_n\bar A_n^{\,\ell}\bar B_n\)</span> with <span class="math inline">\(\bar A_n^{\,\ell}=e^{\Delta\ell\,\mathrm{Re}(a_n)}\,e^{i\Delta\ell\,\mathrm{Im}(a_n)}\)</span>. So the state is only ever as good a memory as this bank of modes allows. Pick <span class="math inline">\(A\)</span> at random and the modes scatter: some decay rates are so large that those modes are dead within a few steps, so their share of the history is gone, and the survivors cover the frequency axis unevenly. A fixed-size state built from a scattered bank cannot faithfully represent a signal from far back.</p>
+<p>HiPPO is the reason a <em>particular</em> <span class="math inline">\(A\)</span> avoids this. It frames memory as online function approximation: at each moment, compress the entire history of the input into the <span class="math inline">\(N\)</span>-dimensional state so that the state is the best degree-<span class="math inline">\(N\)</span> reconstruction of the past. HiPPO derives the <span class="math inline">\(A\)</span> for which the state is the optimal projection of the history onto Legendre polynomials, and its scaled version, HiPPO-LegS, remembers all of history without a prior on the timescale, so it stays accurate whether the relevant signal was recent or long ago (HiPPO, abstract and §2). S4 puts that structured <span class="math inline">\(A\)</span> inside a trainable SSM; S4D then shows a diagonal <span class="math inline">\(A\)</span> recovers almost all of it, and gives a clean initialization, S4D-Lin (Eq. 9): <span class="math inline">\(a_n=-\tfrac12+i\pi n\)</span>, a uniform decay of <span class="math inline">\(-\tfrac12\)</span> with evenly spaced frequencies. The toy keeps <span class="math inline">\(A\)</span> diagonal and compares this structured choice against a random stable one.</p>
+<p>The test is a delay task. Fix <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>, then solve in closed form for the readout <span class="math inline">\(C\)</span> whose kernel best matches a shifted impulse <span class="math inline">\(\bar K\approx e_D\)</span>, which is the SSM’s way of asking the state to reproduce the input from <span class="math inline">\(D\)</span> steps ago. A structured <span class="math inline">\(A\)</span> has the modes to represent that delay; a random one does not.</p>
+<div id="047e35c3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-23T12:24:28.443995Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-23T12:24:28.443946Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-23T12:24:28.525365Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-23T12:24:28.524937Z&quot;}}" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> s4d_lin(N):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># S4D-Lin initialization (S4D Eq. 9): Re = -1/2, evenly spaced imaginary parts.</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> torch.arange(N)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span><span class="fl">0.5</span> <span class="op">+</span> <span class="ot">1j</span> <span class="op">*</span> np.pi <span class="op">*</span> n.to(torch.cfloat)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> random_diag(N, seed):</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># a random but stable diagonal A: random fade rates (Re&lt;0) and random frequencies.</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    re <span class="op">=</span> <span class="op">-</span>torch.rand(N, generator<span class="op">=</span>g) <span class="op">-</span> <span class="fl">0.05</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    im <span class="op">=</span> (torch.rand(N, generator<span class="op">=</span>g) <span class="op">*</span> <span class="dv">2</span> <span class="op">-</span> <span class="dv">1</span>) <span class="op">*</span> np.pi <span class="op">*</span> (N <span class="op">-</span> <span class="dv">1</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> re <span class="op">+</span> <span class="ot">1j</span> <span class="op">*</span> im</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> fit_delay_readout(Abar, Bbar, L, D):</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># the kernel is linear in C; solve for the C whose real kernel best matches a delayed impulse e_D.</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    ell <span class="op">=</span> torch.arange(L)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    Psi <span class="op">=</span> (Abar[<span class="va">None</span>, :] <span class="op">**</span> ell[:, <span class="va">None</span>]) <span class="op">*</span> Bbar[<span class="va">None</span>, :]      <span class="co"># (L, N), fixed by A and B</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> torch.cat([Psi.real, <span class="op">-</span>Psi.imag], dim<span class="op">=</span><span class="dv">1</span>)               <span class="co"># real kernel = M @ [Re C; Im C]</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    target <span class="op">=</span> torch.zeros(L)<span class="op">;</span> target[D] <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    C_ri <span class="op">=</span> torch.linalg.lstsq(M, target).solution</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">@</span> C_ri                                           <span class="co"># the fitted (real) kernel</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>N, L, dt <span class="op">=</span> <span class="dv">16</span>, <span class="dv">64</span>, <span class="fl">1.0</span> <span class="op">/</span> <span class="dv">16</span>                                    <span class="co"># N modes, length L; state is a real compression</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>Abar_s, Bbar_s <span class="op">=</span> discretize(s4d_lin(N),   torch.ones(N, dtype<span class="op">=</span>torch.cfloat), dt)   <span class="co"># structured</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>Abar_r, Bbar_r <span class="op">=</span> discretize(random_diag(N, <span class="dv">1</span>), torch.ones(N, dtype<span class="op">=</span>torch.cfloat), dt)   <span class="co"># random</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>xtest <span class="op">=</span> torch.randn(L, generator<span class="op">=</span>torch.Generator().manual_seed(<span class="dv">101</span>))</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>delays <span class="op">=</span> [<span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">24</span>]</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>err_s, err_r <span class="op">=</span> [], []</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> D <span class="kw">in</span> delays:</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    Ks <span class="op">=</span> fit_delay_readout(Abar_s, Bbar_s, L, D)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    Kr <span class="op">=</span> fit_delay_readout(Abar_r, Bbar_r, L, D)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    tgt <span class="op">=</span> torch.zeros(L)<span class="op">;</span> tgt[D:] <span class="op">=</span> xtest[:L <span class="op">-</span> D]             <span class="co"># x delayed by D</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    err_s.append(((conv1d_causal(Ks, xtest) <span class="op">-</span> tgt).norm() <span class="op">/</span> tgt.norm()).item())</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    err_r.append(((conv1d_causal(Kr, xtest) <span class="op">-</span> tgt).norm() <span class="op">/</span> tgt.norm()).item())</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>D <span class="op">=</span> <span class="dv">24</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>Ks <span class="op">=</span> fit_delay_readout(Abar_s, Bbar_s, L, D)</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>Kr <span class="op">=</span> fit_delay_readout(Abar_r, Bbar_r, L, D)</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>tgt <span class="op">=</span> torch.zeros(L)<span class="op">;</span> tgt[D:] <span class="op">=</span> xtest[:L <span class="op">-</span> D]</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>y_struct, y_rand <span class="op">=</span> conv1d_causal(Ks, xtest), conv1d_causal(Kr, xtest)</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="fl">9.5</span>, <span class="fl">3.2</span>))</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(tgt, <span class="st">"k"</span>, lw<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="ss">f"target: x delayed by </span><span class="sc">{</span>D<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(y_struct, label<span class="op">=</span><span class="ss">f"structured A  (err </span><span class="sc">{</span>err_s[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss">)"</span>)</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(y_rand, <span class="st">"--"</span>, label<span class="op">=</span><span class="ss">f"random A  (err </span><span class="sc">{</span>err_r[<span class="op">-</span><span class="dv">1</span>]<span class="sc">:.2f}</span><span class="ss">)"</span>)</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(<span class="ss">f"recover the signal from </span><span class="sc">{</span>D<span class="sc">}</span><span class="ss"> steps back"</span>)<span class="op">;</span> ax[<span class="dv">0</span>].set_xlabel(<span class="st">"t"</span>)<span class="op">;</span> ax[<span class="dv">0</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(delays, err_s, <span class="st">"o-"</span>, label<span class="op">=</span><span class="st">"structured A"</span>)</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(delays, err_r, <span class="st">"s--"</span>, label<span class="op">=</span><span class="st">"random A"</span>)</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_title(<span class="st">"recovery error vs delay"</span>)<span class="op">;</span> ax[<span class="dv">1</span>].set_xlabel(<span class="st">"delay D"</span>)<span class="op">;</span> ax[<span class="dv">1</span>].set_ylabel(<span class="st">"relative error"</span>)<span class="op">;</span> ax[<span class="dv">1</span>].legend(fontsize<span class="op">=</span><span class="dv">8</span>)</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()<span class="op">;</span> plt.show()</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"delays         :"</span>, delays)</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"structured err :"</span>, [<span class="ss">f"</span><span class="sc">{</span>e<span class="sc">:.3f}</span><span class="ss">"</span> <span class="cf">for</span> e <span class="kw">in</span> err_s])</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"random err     :"</span>, [<span class="ss">f"</span><span class="sc">{</span>e<span class="sc">:.3f}</span><span class="ss">"</span> <span class="cf">for</span> e <span class="kw">in</span> err_r])</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"structured A: error stays low and roughly flat -- history from far back survives in the fixed-size state."</span>)</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"random A: error climbs with the delay -- the older the signal, the more a scattered mode bank has dropped it."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ssm1-linear-state-space_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>delays         : [4, 8, 16, 24]
+structured err : ['0.293', '0.298', '0.286', '0.285']
+random err     : ['0.295', '0.476', '0.549', '0.652']
+structured A: error stays low and roughly flat -- history from far back survives in the fixed-size state.
+random A: error climbs with the delay -- the older the signal, the more a scattered mode bank has dropped it.</code></pre>
+</div>
+</div>
+<p>The structured error is low and nearly flat as the delay grows, while the random one climbs: at a short lag the two are close, but by the longest delay the random state has lost most of the older signal and the structured state has not. That flatness is HiPPO’s timescale robustness showing up directly, the state staying a good summary whether the signal it must recover is recent or old. Both models have the same state size, the same <span class="math inline">\(B\)</span>, and the same fitted readout procedure; the only thing that differs is the shape of <span class="math inline">\(A\)</span>, which is the point.</p>
+<p><strong>Honest scope.</strong> This toy is a diagonal S4D model, not the full HiPPO operator: the structured <span class="math inline">\(A\)</span> is S4D-Lin’s evenly spaced diagonal (Eq. 9), which recovers most of S4 while skipping the HiPPO derivation that justifies it. The input is a single scalar channel and the sequences are short (length 64, state size 16), so the memory under test is small. And <span class="math inline">\(C\)</span> is fit in closed form to a fixed delay, which isolates whether the state <em>can</em> represent that delay rather than training the model end to end or standing in for a real task. Because <span class="math inline">\(C\)</span> enters the kernel linearly, the closed-form fit is the optimal readout for each <span class="math inline">\(A\)</span>, so the comparison judges both at their best. What it does settle is the one thing this section is about: with the state size held fixed, the shape of <span class="math inline">\(A\)</span> decides whether a signal from far back is still in the state or already gone.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Q: Why does the toy use a complex <span class="math inline">\(A\)</span>? Can a real diagonal remember?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>A real diagonal <span class="math inline">\(A\)</span> gives modes <span class="math inline">\(e^{-\lambda_n\ell}\)</span> that only decay, each largest at lag <span class="math inline">\(\ell=0\)</span> and shrinking from there. A sum of them can form a fading average of recent inputs, but it can never place a bump at a lag <span class="math inline">\(D&gt;0\)</span>, so a purely real diagonal SSM cannot place a bump at a chosen lag, which is what a delay line needs. The delay in this section needs oscillation, and oscillation is the imaginary part of <span class="math inline">\(a_n\)</span>: the mode <span class="math inline">\(e^{i\Delta\ell\,\mathrm{Im}(a_n)}\)</span> contributes a wave at frequency <span class="math inline">\(\Delta\,\mathrm{Im}(a_n)\)</span>, and a sum of waves at evenly spaced frequencies can build a shifted impulse the way a Fourier series does.</p>
+<p>This is why S4 and S4D use complex diagonal <span class="math inline">\(A\)</span>, in conjugate pairs so the output stays real (S4D §3). The toy takes the real part of a complex readout, which is the same thing as one real linear functional of the state, and keeps the code to one line. The takeaway is that a structured <span class="math inline">\(A\)</span> remembers not because it decays slowly but because its modes tile the frequency axis, giving the fixed-size state a basis rich enough to reconstruct the past.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Ready for SSM-2 when you can:</p>
+<ol type="1">
+<li>Write the continuous SSM <span class="math inline">\(h'(t)=Ah(t)+Bx(t)\)</span>, <span class="math inline">\(y=Ch(t)\)</span>, and say why its impulse response <span class="math inline">\(Ce^{tA}B\)</span> makes the state a fading summary of the input’s past.</li>
+<li>Discretize with ZOH to <span class="math inline">\(h_t=\bar A h_{t-1}+\bar B x_t\)</span>, and write <span class="math inline">\(\bar A=\exp(\Delta A)\)</span> and <span class="math inline">\(\bar B=(\Delta A)^{-1}(\exp(\Delta A)-I)\Delta B\)</span>, plus the per-channel diagonal form.</li>
+<li>Unroll the recurrence into the convolution <span class="math inline">\(y=\bar K*x\)</span> with <span class="math inline">\(\bar K_\ell=C\bar A^\ell\bar B\)</span>, and say which form trains, which infers, and why they compute the same function.</li>
+<li>Explain why a structured diagonal <span class="math inline">\(A\)</span> (S4D-Lin) keeps long-range history where a random one loses it, and give HiPPO’s one-line reason.</li>
+<li>State the dial setting: an additive write with the gate <span class="math inline">\(\alpha_t=\bar A\)</span> fixed and structured, against M3’s <span class="math inline">\(\alpha_t=1\)</span>, and say what a fixed <span class="math inline">\(\bar A\)</span> still cannot do.</li>
+</ol>
+<p><strong>Next →</strong> <a href="../../../../courses/continual-learning/tracks/state-space-models/ssm2-selectivity.html">SSM-2 — Selectivity</a>. A fixed <span class="math inline">\(\bar A\)</span> applies the same decay to every token, so the memory cannot spend more of itself on a token that matters and less on filler. SSM-2 makes <span class="math inline">\(\Delta\)</span>, <span class="math inline">\(B\)</span>, and <span class="math inline">\(C\)</span> depend on the input, which turns the gate from fixed-structured to input-dependent, and pays for it by giving up the single global convolution this module relied on.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
