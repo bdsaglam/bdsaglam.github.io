@@ -4,11 +4,8 @@ subtitle: "Memory, fast weights, and learning at many timescales — the mechani
 ---
 
 ::: {.pagelead}
-I made this course because I could not follow the [Nested Learning](https://arxiv.org/abs/2512.24695)
-paper as fully as I wanted to.
+I made this course because I could not follow the [Nested Learning](https://arxiv.org/abs/2512.24695) paper as fully as I wanted to. It's a great and dense paper, which sets out a unifying theory of memory and a new architecture built from it, resting on decades of work it can only compress into notation. Reading it straight through means reconstructing that work as you go.
 :::
-
-It is a great paper and a dense one — a unifying theory of memory, and a new architecture built from it, resting on decades of work it can only compress into notation. Reading it straight through means reconstructing that work as you go.
 
 So I rebuilt the pieces, one at a time, in notebooks you can run and change. They proved worth separating from the paper that sent me looking for them: the foundations stand on their own, and Nested Learning is one track on top. Each module introduces a single idea and cites the paper that first published it, and most open on something an earlier module left unresolved: M1 is where the chain starts, M7 is where it collapses. The order is conceptual, not chronological — the delta rule comes fourth but dates from 1960.
 
@@ -65,8 +62,6 @@ Each track names the dial it turns and follows one line of work as far as it goe
 |---|---|---|
 | [Nested Learning](tracks/nested-learning/index.qmd)<br>4 modules + 4 asides | All three — the write rule until it stops being a formula and becomes a learner, then the objective inside it | What if every memory in the model is a learner, and the only thing that separates them is how often they update? |
 | [State-Space Models](tracks/state-space-models/index.qmd)<br>4 modules + 2 asides | The gate $\alpha_t$, from none to input-dependent | What if you reach the same linear-time memory from a continuous state space, and where does that put Mamba on the map? |
-
-Adding a track renumbers nothing — the contract is in [M7](foundations/m7-three-dials.ipynb) §6 and spelled out in the [README](https://github.com/bdsaglam/bdsaglam.github.io/blob/main/courses/continual-learning/README.md).
 
 ## The spine in one breath
 

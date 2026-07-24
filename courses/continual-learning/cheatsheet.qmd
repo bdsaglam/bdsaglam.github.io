@@ -249,4 +249,4 @@ Three dials — **write rule** (what goes in) · **gate $\alpha_t$** (what stays
 | delta (DeltaNet) | $\mathbf{S}\mathrel{+}=\beta(\mathbf{v}-\mathbf{S}\phi(\mathbf{k}))\phi(\mathbf{k})^\top$ | targeted edit |
 | gated delta (GDN) | $\mathbf{S}=\alpha\mathbf{S}+\beta(\mathbf{v}-\mathbf{S}\phi(\mathbf{k}))\phi(\mathbf{k})^\top$ | edit + forget |
 
-[M7](foundations/m7-three-dials.ipynb) is the module: it derives the recurrence from M3, states every foundations module as a dial setting, runs the dial board, extends the zoo to the named models the course does not cover, and defines the contract tracks attach by. This section is the reminder; M7 is the argument.
+[M7](foundations/m7-three-dials.ipynb) derives the recurrence from M3, states every foundations module as a dial setting, runs the dial board, and extends the zoo to models the course does not otherwise cover. This section is the one-line summary; M7 is where it is built.
