@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../../site_libs/bootstrap/bootstrap-7392b282ce3a9936c446b3a9779df258.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -223,7 +223,7 @@ window.Quarto = {
 </figure>
 </div>
 <p><strong>The question:</strong> what do you get when you order <em>every</em> memory in a model by how often it updates?</p>
-<p>Second module of the Nested Learning track. Prerequisites: foundations M1–M7, and <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>.</p>
+<p>Prerequisites: foundations M1–M7, and <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>.</p>
 <p>By the end of this module you should be able to:</p>
 <ul>
 <li>Define a <strong>level</strong> by <strong>update frequency</strong> (Def. 2) and sort a model’s changing parts into an ordered ladder, including the dependency tiebreak and same-level parallel components.</li>
@@ -240,14 +240,14 @@ window.Quarto = {
 </blockquote>
 <section id="why-this-module-exists-we-have-a-pile-of-memories-now-order-them" class="level2">
 <h2 data-anchor-id="why-this-module-exists-we-have-a-pile-of-memories-now-order-them">Why this module exists — we have a pile of memories, now order them</h2>
-<p><a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> closed on a provocation: it put a real optimizer <em>inside</em> the memory, and <a href="../../../../courses/continual-learning/foundations/m6-optimizers-as-memory.html">M6</a> had already found a memory <em>inside</em> the optimizer. Between them there is no privileged number of learning loops in a model, so stop assuming and start counting.</p>
+<p><a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">Test-time training</a> closed on a provocation: it put a real optimizer <em>inside</em> the memory, and the <a href="../../../../courses/continual-learning/foundations/m6-optimizers-as-memory.html">optimizer-as-memory reading</a> had already found a memory <em>inside</em> the optimizer. Between them there is no privileged number of learning loops in a model, so stop assuming and start counting.</p>
 <p>Look back at what the foundations actually built. Every module added <em>a thing that changes over time</em>:</p>
 <ul>
 <li>the <strong>in-context memory</strong> <span class="math inline">\(\mathcal M_t\)</span> that rewrites itself every token (M1–M4, and NL-1’s test-time learner),</li>
 <li>the <strong>slow weights / projections</strong> <span class="math inline">\(W_\bullet\)</span> that move once per training step (M2),</li>
 <li>the <strong>momentum buffer</strong> <span class="math inline">\(\mathbf m_t\)</span> that compresses the gradient stream (M6).</li>
 </ul>
-<p>Classic deep learning files these under two headings, “architecture” and “optimizer,” as if they were different <em>kinds</em> of object. M6 already dissolved that split (the optimizer is a memory too). So what actually distinguishes these pieces? <strong>Only one thing: how often each updates.</strong> Sort them by update rate and the model’s hidden structure falls out as a clean ladder — that ordering <em>is</em> Nested Learning’s central object, and everything else (ICL, the Transformer’s limits, CMS, HOPE) is a consequence.</p>
+<p>Classic deep learning files these under two headings, “architecture” and “optimizer,” as if they were different <em>kinds</em> of object. The optimizer-as-memory view already dissolved that split (the optimizer is a memory too). So what actually distinguishes these pieces? <strong>Only one thing: how often each updates.</strong> Sort them by update rate and the model’s hidden structure falls out as a clean ladder — that ordering <em>is</em> Nested Learning’s central object, and everything else (ICL, the Transformer’s limits, CMS, HOPE) is a consequence.</p>
 </section>
 <section id="what-a-level-is-update-frequency-def.-2" class="level2">
 <h2 data-anchor-id="what-a-level-is-update-frequency-def.-2">1. What a level is — update frequency (Def. 2)</h2>
@@ -541,7 +541,7 @@ fast level churns every step (plastic, short-term store); slow level barely move
 </div>
 <p><strong>Why this helps continual learning (§7.1).</strong> Treat each block as a knowledge store. When you update a fast block, it can forget. The slow blocks, which update rarely, are what that forgotten knowledge falls back on. And because the blocks’ initial states are tied through backpropagation, a slow block can <strong>circle that knowledge back</strong> into a fast block later: “<em>a loop through time dimension, and so hardly forgetting important knowledge</em>”, in the paper’s words. The fast end gives plasticity; the slow end gives persistence; together they beat any single point on §3’s tradeoff curve.</p>
 <blockquote class="blockquote">
-<p><strong>Honest scope of the demo.</strong> The cells above show the two <em>ingredients</em> — the frequency ladder (§1, §4) and the stability–plasticity tradeoff it spans (§3) — with linear memories, where they are crisp. The <em>full</em> continual-learning win needs the <strong>nonlinear, nested</strong> CMS (MLP blocks, per-context re-initialization, the backprop circle-back); a linear head-wise sum can’t show it, because the fast level dominates the readout and re-forgets. That nonlinear assembly is exactly what <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a> puts together.</p>
+<p><strong>Scope of the demo.</strong> The cells above show the two <em>ingredients</em> — the frequency ladder (§1, §4) and the stability–plasticity tradeoff it spans (§3) — with linear memories, where they are crisp. The <em>full</em> continual-learning win needs the <strong>nonlinear, nested</strong> CMS (MLP blocks, per-context re-initialization, the backprop circle-back); a linear head-wise sum can’t show it, because the fast level dominates the readout and re-forgets. That nonlinear assembly is exactly what <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">HOPE</a> puts together.</p>
 </blockquote>
 </section>
 <section id="a-second-payoff-levels-are-a-new-axis-of-computational-depth" class="level2">
@@ -552,13 +552,13 @@ fast level churns every step (plastic, short-term store); slow level barely move
 <section id="the-ladder-in-one-breath" class="level2">
 <h2 data-anchor-id="the-ladder-in-one-breath">6. The ladder, in one breath</h2>
 <p>A model is a <strong>stack of memories sorted by update speed.</strong> Plain SGD on an MLP is one level; momentum makes the <em>optimizer</em> contribute a second; linear attention makes the <em>architecture</em> contribute a fast in-context level; a Transformer is just the two frequency extremes (<span class="math inline">\(\infty\)</span> and <span class="math inline">\(0\)</span>) with the middle empty. A single frequency can’t be both plastic and stable, so you fill the middle with a <strong>continuum</strong> of MLP memories (CMS) — fast levels adapt and forget, slow levels persist, and the loop between them resists catastrophic forgetting.</p>
-<p>Two consequences worth naming: <strong>in-context learning is demystified</strong> — it is simply “having more than one level,” a fast level adapting on top of a well-trained slow one; and <strong>computational depth</strong> gets a new knob: levels. What remains is to stack the <em>self-modifying</em> memory (M5’s SRWM, NL-1’s Titans) <strong>onto</strong> this continuum — a fast level that rewrites its own update rule, sitting in a spectrum of slower stores. That assembly is <strong>HOPE</strong>, and it is <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a>.</p>
+<p>Two consequences worth naming: <strong>in-context learning is demystified</strong> — it is simply “having more than one level,” a fast level adapting on top of a well-trained slow one; and <strong>computational depth</strong> gets a new knob: levels. What remains is to stack the <em>self-modifying</em> memory (M5’s SRWM, NL-1’s Titans) <strong>onto</strong> this continuum — a fast level that rewrites its own update rule, sitting in a spectrum of slower stores. That assembly is <strong>HOPE</strong> (<a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a>).</p>
 </section>
 <section id="code-walkthrough-where-this-lives" class="level2">
 <h2 data-anchor-id="code-walkthrough-where-this-lives">Code walkthrough — where this lives</h2>
 <ul>
 <li><a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/levels.py"><code>levels.py</code></a> — the level/frequency bookkeeping, made explicit: a <code>LevelSpec</code> carries each level’s update period, a <code>LevelClock</code> decides when each one fires, and <code>levels_in_frequency_order()</code> is the <span class="math inline">\(\succ\)</span> ordering turned into code.</li>
-<li><a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/cms.py"><code>cms.py</code></a> — the chain of Eq. 70: one residual MLP block per level, applied in sequence. Worth knowing what is <em>not</em> here — the chunked per-level updates of Eq. 71. <code>cms.py</code> only stacks the blocks; the accumulate-over-<span class="math inline">\(C^{(\ell)}\)</span>-tokens-then-step logic lives inside the forward pass in <a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/hope/block.py"><code>hope/block.py</code></a>, which <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a> walks through.</li>
+<li><a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/cms.py"><code>cms.py</code></a> — the chain of Eq. 70: one residual MLP block per level, applied in sequence. Worth knowing what is <em>not</em> here — the chunked per-level updates of Eq. 71. <code>cms.py</code> only stacks the blocks; the accumulate-over-<span class="math inline">\(C^{(\ell)}\)</span>-tokens-then-step logic lives inside the forward pass in <a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/hope/block.py"><code>hope/block.py</code></a>, which <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">HOPE</a> walks through.</li>
 <li><a href="https://github.com/obekt/HOPE-nested-learning">the from-scratch HOPE</a> — its stack of <code>ContinuumMemoryBlock</code>s is a genuine three-frequency CMS (<code>cms_tiers</code> sets update periods 1, 4 and 16, each with its own optimizer). Note it is <em>attention-free</em>: there the CMS chain <strong>is</strong> the feed-forward stack rather than a replacement for a Transformer’s MLP.</li>
 </ul>
 <p>The two repos are independent community reimplementations, not the authors’ code.</p>

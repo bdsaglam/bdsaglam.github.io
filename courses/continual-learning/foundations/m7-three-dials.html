@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-7392b282ce3a9936c446b3a9779df258.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -240,14 +240,14 @@ window.Quarto = {
 <li>Name the <strong>three dials</strong> — <em>write rule</em> (what goes in), <em>gate</em> <span class="math inline">\(\alpha_t\)</span> (what stays), <em>optimizer</em> (how the write is applied) — and say which module of the spine turns each.</li>
 <li>State <strong>any</strong> of M1–M6 as a setting of those dials, and read the table backwards: given a dial setting, say which mechanism you are looking at.</li>
 <li>Reproduce M1/M3 and M4 from <strong>one implementation</strong> by flipping a single argument, and predict when the two settings coincide and when they diverge.</li>
-<li>State a new method’s <strong>dial setting</strong> — the contract every track in this course binds to.</li>
+<li>State a new method’s <strong>dial setting</strong>: which of the three dials it turns, and from what to what.</li>
 </ul>
 </section>
 <section id="why-it-exists-the-role-it-plays" class="level2">
 <h2 data-anchor-id="why-it-exists-the-role-it-plays">Why it exists (the role it plays)</h2>
-<p>Every module before it repaired an earlier one; M7 does something different: it collapses the six into one recurrence. The repairs ran one into the next: M2 gave M1’s memory its keys, M3 named what M2 had built, M4 replaced its blind write, M5 asked who writes the writer, M6 reached back past M5 to find the same memory hiding inside the optimizer. Six mechanisms, each motivated by an earlier one’s failure.</p>
+<p>Every module before it repaired an earlier one; this one does something different: it collapses the six into one recurrence. The repairs ran one into the next: the fast-weight programmer gave the memory its keys, linear attention named what that built, the delta rule replaced its blind write, meta-learning asked who writes the writer, and the optimizer turned out to be the same memory hiding one level down. Six mechanisms, each motivated by an earlier one’s failure.</p>
 <p>Read that way the spine is a chain, and a chain is the wrong shape for what comes next. Every paper worth adding to this course would have to be bolted onto the end of it, inheriting five prerequisites it does not need.</p>
-<p>So the spine ends by collapsing. One recurrence, three dials, and the six mechanisms fall out as settings — not as a sequence of repairs but as points in a coordinate space you can now name. The rest of the course attaches here: a <strong>track</strong> is a paper (or a family) that picks a dial setting, states it against the table in §3, and departs from there. Tracks never depend on each other, and adding one renumbers nothing.</p>
+<p>So the spine ends by collapsing. One recurrence, three dials, and the six mechanisms fall out as settings — not as a sequence of repairs but as points in a coordinate space you can now name. The rest of the course attaches here: a <strong>track</strong> is a paper (or a family) that picks a dial setting, states it against the table in §3, and departs from there. Tracks never depend on each other.</p>
 <section id="reading" class="level3">
 <h3 data-anchor-id="reading">Reading</h3>
 <ul>
@@ -258,7 +258,7 @@ window.Quarto = {
 </section>
 <section id="the-master-recurrence" class="level2">
 <h2 data-anchor-id="the-master-recurrence">1. The master recurrence</h2>
-<p>Start where M3 left the memory. Deleting the softmax collapsed “attend to every past token” into a fixed-size matrix updated once per token (<a href="../../../courses/continual-learning/foundations/m3-linear-attention.html">M3</a> §3):</p>
+<p>Start where linear attention left the memory. Deleting the softmax collapsed “attend to every past token” into a fixed-size matrix updated once per token (<a href="../../../courses/continual-learning/foundations/m3-linear-attention.html">M3</a> §3):</p>
 <p><span class="math display">\[\mathbf{S}_t = \mathbf{S}_{t-1} + \mathbf{v}_t\,\phi(\mathbf{k}_t)^\top,\qquad \mathbf{o}_t\propto\mathbf{S}_t\,\phi(\mathbf{q}_t).\]</span></p>
 <p>Now read it as an <em>assertion</em> rather than a definition, and two free choices show up.</p>
 <p><strong>Nothing forces the added term to be <span class="math inline">\(\mathbf{v}_t\)</span>.</strong> The recurrence needs <em>some</em> vector to pair with <span class="math inline">\(\phi(\mathbf{k}_t)\)</span> in the outer product. M3 uses the raw value because its objective is dot-product similarity; M4 writes the residual <span class="math inline">\(\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span> because its objective is <span class="math inline">\(L_2\)</span> regression (M4 §3). Both are legal. Call whatever goes in <span class="math inline">\(\text{write}_t\in\mathbb{R}^{d_v}\)</span>, and give it a scalar strength <span class="math inline">\(\beta_t\)</span>: M4’s learned per-token write rate.</p>
@@ -454,7 +454,7 @@ alpha=0.5:  oldest key recalls 0.0625 x v_0   |   newest key recalls 1.0000 x v_
 the gate fades every association at once, by AGE -- a global forget, not a targeted edit</code></pre>
 </div>
 </div>
-<p>The gate lines are the honest version of the table’s flattest column. The fade is exactly <span class="math inline">\(\alpha^{\text{age}}\)</span>: at <span class="math inline">\(\alpha=1\)</span> being old costs an association nothing, and at <span class="math inline">\(\alpha=0.5\)</span> the first thing written comes back at <span class="math inline">\(1/16\)</span> of its size while the last comes back untouched — nothing about <em>which key</em> it was, only <em>how long ago</em>. That is the difference from M4’s erase factor in one line: the gate is indexed by age, the delta rule by key.</p>
+<p>The gate lines spell out the table’s flattest column. The fade is exactly <span class="math inline">\(\alpha^{\text{age}}\)</span>: at <span class="math inline">\(\alpha=1\)</span> being old costs an association nothing, and at <span class="math inline">\(\alpha=0.5\)</span> the first thing written comes back at <span class="math inline">\(1/16\)</span> of its size while the last comes back untouched — nothing about <em>which key</em> it was, only <em>how long ago</em>. That is the difference from M4’s erase factor in one line: the gate is indexed by age, the delta rule by key.</p>
 <p>Nothing in M1–M6 needed this dial, so the spine never turned it. But it is in the recurrence, and §5 is where the rest of the literature turns it.</p>
 </section>
 <section id="the-write-rule-zoo" class="level2">
@@ -582,10 +582,8 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 </section>
 <section id="how-tracks-attach" class="level2">
 <h2 data-anchor-id="how-tracks-attach">6. How tracks attach</h2>
-<p>The hub is now a contract, and it is short.</p>
-<p>A <strong>track</strong> is a self-contained spoke: one paper or one family, hanging off this module. To attach, a track states its <strong>dial setting</strong> relative to §3’s table (which of the three dials it turns, from what to what) and departs from there. That is the whole interface. A track may name foundations modules as prerequisites (its landing page says which); it may <strong>never</strong> depend on another track, because tracks are siblings, not a sequence.</p>
-<p>Numbering follows from that. Foundations are M1–M7 permanently; a track numbers its own modules in its own namespace. Adding a track renumbers nothing and invalidates no link, which is the property the chain M1→M6 could not have offered.</p>
-<p>Two consequences worth stating plainly. First, a paper that turns <em>no</em> dial in this table does not belong in this course: the table is the scope. Second, a paper that turns one is already half-explained by the time its landing page names it, because you have run that dial’s neighbours by hand.</p>
+<p>A <strong>track</strong> is a self-contained spoke — one paper or one family — hanging off this module. It states which of the three dials it turns, and from what to what, relative to §3’s table. A track may lean on foundations modules as prerequisites (its landing page says which), but never on another track: tracks are siblings, not a sequence, so you can read one, all, or none.</p>
+<p>Two things follow. A paper that turns <em>no</em> dial in this table is out of scope — the table is what the course covers. And a paper that turns one is already half-explained by the time its landing page names it, because you have turned that dial’s neighbours by hand.</p>
 </section>
 <section id="exit-check" class="level2">
 <h2 data-anchor-id="exit-check">Exit check</h2>
@@ -593,7 +591,7 @@ the gate fades every association at once, by AGE -- a global forget, not a targe
 <p><strong>1. State any model in this course as a setting of the three dials.</strong> Pick the recurrence <span class="math inline">\(\mathbf{S}_t=\alpha_t\mathbf{S}_{t-1}+\beta_t(\text{write}_t)\phi(\mathbf{k}_t)^\top\)</span> and fill three slots. <em>DeltaNet:</em> <span class="math inline">\(\text{write}_t=\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span>, <span class="math inline">\(\alpha_t=1\)</span>, one plain step at learned rate <span class="math inline">\(\beta_t\)</span>. <em>Linear attention:</em> <span class="math inline">\(\text{write}_t=\mathbf{v}_t\)</span>, <span class="math inline">\(\alpha_t=1\)</span>, one plain step at rate <span class="math inline">\(1\)</span>. M1 is the same setting with <span class="math inline">\(\phi=\text{identity}\)</span>, M2 the same setting with <span class="math inline">\(\mathbf{v}_t=W_v\mathbf{x}_t\)</span>. <em>SRWM:</em> the DeltaNet setting, with <span class="math inline">\(\mathbf{k},\mathbf{q},\beta\)</span> and both values read out of the memory itself. If you can say the three slots, you can say the model.</p>
 <p><strong>2. Which dial does M4 turn?</strong> The <strong>write rule</strong>, and only it: <span class="math inline">\(\mathbf{v}_t\to\mathbf{v}_t-\mathbf{S}_{t-1}\phi(\mathbf{k}_t)\)</span>. The gate stays at <span class="math inline">\(1\)</span> and the optimizer stays a single plain step. §4 ran the flip: identical to Hebbian on orthogonal keys, and the <em>only</em> thing that can recover the second value on a revisited one.</p>
 <p><strong>3. Which dial does M6 turn?</strong> The <strong>optimizer</strong>: one plain step <span class="math inline">\(\to\)</span> momentum, DGD, Adam, Muon. But M6’s content is what turning it means: an optimizer is <em>itself</em> a memory over a second stream (gradients, keyed by layer inputs, valued by output surprises), with its own write rule and its own gate. Turning the optimizer dial is setting the three dials again, one level down.</p>
-<p><strong>Next → the tracks.</strong> The foundations are done; the spine has no seventh mechanism waiting. From here the course goes wide: each track picks up the recurrence at this table, names its dial setting, and follows one line of work as far as it goes. The first is the <a href="../../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning track</a> — which turns all three dials, and the write dial so far that the memory stops being a matrix and becomes a whole model, trained at inference time.</p>
+<p><strong>Next → the tracks.</strong> The foundations are done; the spine has no seventh mechanism waiting. From here the course goes wide: each track picks up the recurrence at this table, names its dial setting, and follows one line of work as far as it goes. The first is the <a href="../../../courses/continual-learning/tracks/nested-learning/index.html">Nested Learning track</a> — which turns all three dials, and the write dial so far that the memory stops being a matrix and becomes a whole model, trained at inference time. The <a href="../../../courses/continual-learning/tracks/state-space-models/index.html">State-Space Models track</a> turns the gate dial instead, reaching the same linear-time memory from a continuous state space.</p>
 
 
 </section>

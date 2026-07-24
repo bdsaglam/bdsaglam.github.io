@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../../site_libs/bootstrap/bootstrap-7392b282ce3a9936c446b3a9779df258.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -184,7 +184,7 @@ window.Quarto = {
   <ul>
   <li><a href="#what-multi-frequency-means-here" id="toc-what-multi-frequency-means-here" class="nav-link active" data-scroll-target="#what-multi-frequency-means-here">1. What “multi-frequency” means here</a></li>
   <li><a href="#does-the-continuum-help-comparing-single-frequencies" id="toc-does-the-continuum-help-comparing-single-frequencies" class="nav-link" data-scroll-target="#does-the-continuum-help-comparing-single-frequencies">2. Does the continuum help? Comparing single frequencies</a></li>
-  <li><a href="#what-this-shows-and-the-honest-scope" id="toc-what-this-shows-and-the-honest-scope" class="nav-link" data-scroll-target="#what-this-shows-and-the-honest-scope">What this shows — and the honest scope</a></li>
+  <li><a href="#what-this-shows-and-the-scope" id="toc-what-this-shows-and-the-scope" class="nav-link" data-scroll-target="#what-this-shows-and-the-scope">What this shows — and the scope</a></li>
   </ul>
 </nav>
     </div>
@@ -229,7 +229,9 @@ window.Quarto = {
 </blockquote>
 <section id="what-multi-frequency-means-here" class="level2">
 <h2 data-anchor-id="what-multi-frequency-means-here">1. What “multi-frequency” means here</h2>
-<p>A CMS is a set of memories <span class="math inline">\(\mathcal M^{(f_1)},\dots,\mathcal M^{(f_k)}\)</span> at <span class="math inline">\(k\)</span> different frequencies. In the <strong>head-wise variant</strong> (Eq. 74) they run on the same input and their outputs are combined, <span class="math inline">\(\mathbf y_t=\text{Agg}\big(\mathcal M^{(f_k)}(\mathbf x_t),\dots,\mathcal M^{(f_1)}(\mathbf x_t)\big)\)</span>. The paper leaves <span class="math inline">\(\text{Agg}(\cdot)\)</span> arbitrary and suggests a learnable weighted sum; we use a plain sum. Level <span class="math inline">\(\ell\)</span>’s parameters update only <strong>every <span class="math inline">\(C^{(\ell)}\)</span> steps</strong>, accumulating their update over the chunk and applying it at the boundary (Eq. 71). <span class="math inline">\(C^{(\ell)}=1\)</span> is the fastest level (rewrites every step); a large <span class="math inline">\(C^{(\ell)}\)</span> is a slow, persistent level.</p>
+<p>A CMS is a set of memories <span class="math inline">\(\mathcal M^{(f_1)},\dots,\mathcal M^{(f_k)}\)</span> at <span class="math inline">\(k\)</span> different frequencies. In the <strong>head-wise variant</strong> (Eq. 74) they run on the same input and their outputs are combined:</p>
+<p><span class="math display">\[\mathbf y_t=\text{Agg}\big(\mathcal M^{(f_k)}(\mathbf x_t),\dots,\mathcal M^{(f_1)}(\mathbf x_t)\big)\]</span></p>
+<p>The paper leaves <span class="math inline">\(\text{Agg}(\cdot)\)</span> arbitrary and suggests a learnable weighted sum; we use a plain sum. Level <span class="math inline">\(\ell\)</span>’s parameters update only <strong>every <span class="math inline">\(C^{(\ell)}\)</span> steps</strong>, accumulating their update over the chunk and applying it at the boundary (Eq. 71). <span class="math inline">\(C^{(\ell)}=1\)</span> is the fastest level (rewrites every step); a large <span class="math inline">\(C^{(\ell)}\)</span> is a slow, persistent level.</p>
 <p>We learn <strong>online</strong> on a <em>non-stationary</em> target — a linear map <span class="math inline">\(W\)</span> that <strong>drifts a little every step</strong> — so there is something for a fast level to track and something for a slow level to stabilize. (We use a linear memory per level for clarity; the paper uses residual-MLP blocks (deep memories, NL-1), but the <em>frequency</em> structure is identical.)</p>
 <div id="f28af8e9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-28T11:01:13.771140Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-28T11:01:13.771075Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-28T11:01:14.307279Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-28T11:01:14.306886Z&quot;}}">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -288,7 +290,7 @@ window.Quarto = {
 mean tracking error over 2nd half: 0.320</code></pre>
 </div>
 </div>
-<p><strong>Read the counts:</strong> level 0 updates <strong>every step</strong> (600 updates) and its parameters move a lot (it is constantly rewriting itself to track the drift); level 2 updates only <strong>12 times</strong> and barely moves — a slow, persistent store. Three different frequencies, exactly as <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a> defines a level. Now plot the cumulative movement over time and the different cadences become a picture.</p>
+<p><strong>Read the counts:</strong> level 0 updates <strong>every step</strong> (600 updates) and its parameters move a lot (it is constantly rewriting itself to track the drift); level 2 updates only <strong>12 times</strong> and barely moves — a slow, persistent store. Three different frequencies, exactly <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a>’s definition of a level. Now plot the cumulative movement over time and the different cadences become a picture.</p>
 <div id="46eef8d8" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-28T11:01:14.308536Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-28T11:01:14.308439Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-28T11:01:14.541349Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-28T11:01:14.541031Z&quot;}}" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="fl">6.4</span>, <span class="fl">3.6</span>))</span>
@@ -335,13 +337,13 @@ the continuum [1,10,50] is best — fast level tracks the drift, slower levels a
 </div>
 </div>
 </section>
-<section id="what-this-shows-and-the-honest-scope" class="level2">
-<h2 data-anchor-id="what-this-shows-and-the-honest-scope">What this shows — and the honest scope</h2>
+<section id="what-this-shows-and-the-scope" class="level2">
+<h2 data-anchor-id="what-this-shows-and-the-scope">What this shows — and the scope</h2>
 <ul>
 <li><strong>This is a continuum</strong> (<span class="math inline">\(k\ge 2\)</span>), not the <span class="math inline">\(k\)</span>=1 MLP: three memories updating in-context at three different frequencies (Eq. 71), instrumented so you can see the fast level churn and the slow levels persist. That is precisely the “levels (frequencies)” that the <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-aside-training-hope.html">HOPE-training aside</a>’s block lacked.</li>
 <li><strong>It works and the continuum helps</strong> — on a non-stationary target the multi-frequency system tracks better than any single frequency, modestly.</li>
 </ul>
-<p><strong>Honest scope.</strong> The gain here is <em>modest</em>, and on a fast-drifting target the fast level does most of the work — adding levels is a small, consistent improvement, not a dramatic one. The <em>large</em> payoff CMS is built for — resisting <strong>catastrophic forgetting</strong> across many tasks over a long lifetime (§7.1) — is not something a small linear toy shows cleanly; it needs the full nonlinear, nested machinery, meta-learned initial states, and scale (the same caveat as <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a> §4 and <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a> §6). What this notebook <em>does</em> settle is the mechanical question: a CMS has multiple levels at multiple frequencies, and here they are, measured.</p>
+<p><strong>Scope.</strong> The gain here is <em>modest</em>, and on a fast-drifting target the fast level does most of the work — adding levels is a small, consistent improvement, not a dramatic one. The <em>large</em> payoff CMS is built for — resisting <strong>catastrophic forgetting</strong> across many tasks over a long lifetime (§7.1) — is not something a small linear toy shows cleanly; it needs the full nonlinear, nested machinery, meta-learned initial states, and scale (the same caveat as <a href="../../../../courses/continual-learning/tracks/nested-learning/nl2-levels-continuum-memory.html">NL-2</a> §4 and <a href="../../../../courses/continual-learning/tracks/nested-learning/nl3-hope.html">NL-3</a> §6). What this notebook <em>does</em> settle is the mechanical question: a CMS has multiple levels at multiple frequencies, and here they are, measured.</p>
 
 
 </section>

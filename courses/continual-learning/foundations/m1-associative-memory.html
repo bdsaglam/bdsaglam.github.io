@@ -72,7 +72,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-de63f62b328812d8e578a4d74e282472.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-867562e4e5dcf5a897e4f2d636012a8d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-7392b282ce3a9936c446b3a9779df258.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -230,7 +230,6 @@ window.Quarto = {
 </figure>
 </div>
 <p><strong>The question:</strong> what is the single primitive everything else is built from?</p>
-<p>First module of the foundations spine.</p>
 <p>Run it top to bottom, then start changing things (<code>d</code>, the number of pairs, <code>seed</code>, <code>beta</code>).</p>
 <blockquote class="blockquote">
 <p><strong>Prerequisite math</strong> — <em>orthonormal keys</em> and <em>effective rank</em> (memory capacity) are covered with runnable demos in the <a href="../../../courses/continual-learning/primers/linear-algebra.html">linear-algebra primer</a> §1, §3.</p>
@@ -247,7 +246,7 @@ window.Quarto = {
 </section>
 <section id="why-it-exists-the-role-it-plays" class="level2">
 <h2 data-anchor-id="why-it-exists-the-role-it-plays">Why it exists (the role it plays)</h2>
-<p>M1 is where the chain starts: the simplest memory that works, which every later module improves on. What it sets up (and later modules repair): we want a memory that stores many key→value pairs in a <strong>fixed-size</strong> object, recalls them, and is updated <strong>online</strong> (one token at a time) with no backprop-through-time. The simplest such object is one matrix you add outer products into. Everything after M1 is “the same idea, but the write is smarter."</p>
+<p>The associative memory is where the chain starts: the simplest memory that works, and everything later builds on it. What it sets up (and later modules repair): we want a memory that stores many key→value pairs in a <strong>fixed-size</strong> object, recalls them, and is updated <strong>online</strong> (one token at a time) with no backprop-through-time. The simplest such object is one matrix you add outer products into. Everything after M1 is “the same idea, but the write is smarter."</p>
 </section>
 <section id="core-idea" class="level2">
 <h2 data-anchor-id="core-idea">Core idea</h2>
@@ -271,7 +270,7 @@ window.Quarto = {
 <li><strong>Read:</strong> <code>y = M @ q</code> — query in, value out (<span class="math inline">\(\mathbf{y}=\mathcal{M}\mathbf{q}\)</span>).</li>
 <li><strong>Write</strong> the pair <code>(k, v)</code>: <code>M += v k^T</code> — add the outer product.</li>
 </ul>
-<p>Pure linear algebra, so numpy is all we need (torch arrives at M4, when we run the actual repo tensors).</p>
+<p>Pure linear algebra, so numpy is all we need (torch comes later, with the actual repo tensors).</p>
 <blockquote class="blockquote">
 <p><strong>Convention.</strong> This notebook uses column vectors: <span class="math inline">\(\mathbf{y}=\mathcal{M}\mathbf{q}\)</span>, write <span class="math inline">\(\mathcal{M}\mathrel{+}=\mathbf{v}\mathbf{k}^\top\)</span>. The reference code below (<a href="https://github.com/obekt/HOPE-nested-learning/blob/main/train_hope.py"><code>train_hope.py</code></a> → <code>SelfModifyingLayer</code>) uses the transposed row form <code>y = q @ M</code>, <code>M += k.T @ v</code>. Same object, transposed — don’t let it trip you.</p>
 </blockquote>
@@ -600,7 +599,7 @@ dL/dW1 == outer(delta1, x) ? True
 <li>Show why <span class="math inline">\(\mathcal{M}\mathrel{+}=\mathbf{v}\mathbf{k}^\top\)</span> <em>is</em> linear attention, and what softmax / normalization changes (§4’s callout).</li>
 <li>Explain why one SGD step on a linear layer is an outer-product (Hebbian) write — what plays the role of <em>key</em>, what plays the role of <em>value</em>, and why that value is <em>self-generated</em> (§5).</li>
 </ol>
-<p><strong>Next → M2, Fast Weight Programmers.</strong> So far <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> have been <em>given</em>. M2 asks <strong>who produces them</strong> — and “a slow network writes the fast network’s memory” is the seed of the whole nested / levels idea.</p>
+<p><strong>Next → <a href="../../../courses/continual-learning/foundations/m2-fast-weight-programmers.html">M2, Fast Weight Programmers</a>.</strong> So far <span class="math inline">\(\mathbf{k},\mathbf{v},\mathbf{q}\)</span> have been <em>given</em>. The next question is <strong>who produces them</strong> — and “a slow network writes the fast network’s memory” is the seed of the whole nested / levels idea.</p>
 
 
 </section>
