@@ -549,7 +549,7 @@ document-domain instance, with the twist that the code aims a second model's
 perception.
 
 The open question is about learning. Everything above uses the substrate at
-deployment, with frozen weights and the harness wrapped around them from the
+test time, with frozen weights and the harness wrapped around them from the
 outside. What if it were woven into how the model is trained instead, so that
 composing, computing, and aiming its own perception became a native faculty
 rather than a scaffold bolted on from outside? That is a sharper and more
@@ -567,7 +567,7 @@ signal a learning procedure exists to capture.
 We got these results by letting a frozen model write code to look more
 carefully. The question we want to answer next is whether a model trained to
 use the substrate, with neural and symbolic computation learned together,
-outgrows one that only borrows it at answer time.
+outgrows one that only borrows it at test time.
 
 
 ## References
