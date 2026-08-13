@@ -41,8 +41,8 @@ system gives a code-capable model a persistent Python REPL and an on-demand
 call to a vision-language model (VLM), which the model can point at any region
 of any page.
 
-A leaderboard score doesn't say which part of a system earned it, so we removed
-the parts one at a time on the validation set and measured. The gain comes from
+A leaderboard score doesn't say which part of a system earned it, so we ablated
+the harness on the validation set. The gain comes from
 the REPL and the perception call together; removing either collapses it, and
 the usual enrichments (a general sub-agent, trajectory-management tricks, an
 OCR pipeline) add nothing or cost accuracy. The ablations also say where to
@@ -205,9 +205,9 @@ than the trial-to-trial noise).
 ## Ablations
 
 The harness has a few moving parts: a Python REPL, a VLM that the agent calls
-as a perception tool, and the loop that ties them together. To find out which
-parts do the work, we remove one at a time and watch the score. Every run keeps
-the same answer-formatting rules; only the structure changes.
+as a perception tool, and the loop that ties them together. We ablate each in
+turn. Every run keeps the same answer-formatting rules; only the structure
+changes.
 
 Two configurations run the full loop, and they need names. **RLM**, the one our
 entry ran and the one every headline number in this post reports, is a direct
