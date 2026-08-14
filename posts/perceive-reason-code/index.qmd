@@ -17,7 +17,7 @@ toc: true
 We [jointly won the 8–35B tier](https://rrc.cvc.uab.es/?com=news&view=data&id=83)
 of the [ICDAR 2026 DocVQA challenge](https://rrc.cvc.uab.es/?ch=34). An open
 Qwen 3.5 27B beat the challenge's bare-model baselines, the much larger
-Gemini 3 Pro and GPT-5.2, on the held-out test set. The system is a Python REPL
+Gemini 3 Pro and GPT-5.2, on the held-out test set. Our system is a Python REPL
 plus one perception tool, a vision model the reasoner can point at any region
 of any page, so it decides where to look instead of reading whole pages at a
 fixed resolution. Ablations show the gain needs both parts together, and that
@@ -36,13 +36,13 @@ ablations behind every claim.
 We [jointly won the 8–35B tier](https://rrc.cvc.uab.es/?com=news&view=data&id=83)
 of the [ICDAR 2026 DocVQA challenge](https://rrc.cvc.uab.es/?ch=34) with
 Qwen 3.5 27B: on the held-out test set, our system beat the challenge's
-bare-model baselines, including the far larger Gemini 3 Pro and GPT-5.2. The
-system gives a code-capable model a persistent Python REPL and an on-demand
-call to a vision-language model (VLM), which the model can point at any region
-of any page.
+bare-model baselines, including the far larger Gemini 3 Pro and GPT-5.2. It
+gives a code-capable model a persistent Python REPL and an on-demand call to a
+vision-language model (VLM), which the model can point at any region of any
+page.
 
-A leaderboard score doesn't say which part of a system earned it, so we ablated
-the harness on the validation set. The gain comes from
+We wanted to understand which parts of the system earned the score, so we
+ablated the harness on the validation set. The gain comes from
 the REPL and the perception call together; removing either collapses it, and
 the usual enrichments (a general sub-agent, context compaction, an
 OCR pipeline) add nothing or cost accuracy. The ablations also say where to
