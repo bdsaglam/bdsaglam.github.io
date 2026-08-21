@@ -30,6 +30,8 @@
      text-transform:uppercase; color:var(--rust); margin:0 0 .7rem;}
   .line{font-size:var(--fs2); line-height:1.5; color:var(--ink-strong); margin:0;}
   .line em{color:var(--rust);}
+  .position-statement span{display:block;}
+  .position-statement .position-turn{margin-top:.45rem;}
   .aside{color:var(--muted); margin:.9rem 0 0;}
   /* hero */
   .hero{padding:clamp(3rem,7vh,5rem) clamp(1.2rem,4vw,3rem) 3rem;}
@@ -287,9 +289,14 @@
 
 <section class="band"><div class="rail">
 <div class="left"><p class="kicker">The proposal</p>
-<p class="line">Continual learning from experience should be a <em>capability of the model</em>:
-      the model should learn from feedback <em>in language</em>, control its learning <em>in language</em>,
-      and store what it learns in its own memory, <em>from context to weights</em>.</p>
+<p class="line position-statement">
+      <span>Continual learning from experience</span>
+      <span>should be a <em>capability of the model</em>:</span>
+      <span class="position-turn">the model should learn from feedback <em>in language</em>,</span>
+      <span>control its learning <em>in language</em>,</span>
+      <span>and store what it learns in its own memory,</span>
+      <span><em>from context to weights</em>.</span>
+    </p>
 <p class="aside">We call this the <em>language of learning</em>: feedback and the learner's
       control share language. The architecture supplies the update mechanism; the semantic content of
       the learner's <em>learning act</em> determines what is retained and where. The act may be a brief
