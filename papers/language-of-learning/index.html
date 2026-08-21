@@ -34,6 +34,19 @@
   /* hero */
   .hero{padding:clamp(3rem,7vh,5rem) clamp(1.2rem,4vw,3rem) 3rem;}
   .hero h1{font-size:var(--fs1); font-weight:700; line-height:1.08; color:var(--ink-strong); margin:0 0 1.2rem;}
+  .title-easter-egg{position:relative; display:inline-block; cursor:help; outline:none;}
+  .title-easter-quote{position:absolute; z-index:10; top:calc(100% + .65rem); left:50%;
+     width:min(28rem,88vw); padding:.65rem .85rem; border:1px solid var(--rule); border-radius:7px;
+     background:#fffdf9; box-shadow:0 10px 28px -18px rgba(0,0,0,.45);
+     color:var(--ink); font-family:var(--sans); font-size:var(--fs4); font-weight:400;
+     line-height:1.45; text-align:center; opacity:0; visibility:hidden; pointer-events:none;
+     transform:translate(-50%,-.25rem); transition:opacity .16s ease,transform .16s ease;}
+  .title-easter-quote span,.title-easter-quote cite{display:block;}
+  .title-easter-quote span + span{margin-top:.1rem; color:var(--muted); font-style:italic;}
+  .title-easter-quote cite{margin-top:.25rem; color:var(--rust); font-style:normal; font-weight:600;}
+  .title-easter-egg:hover .title-easter-quote,
+  .title-easter-egg:focus .title-easter-quote{opacity:1; visibility:visible; transform:translate(-50%,0);}
+  .title-easter-egg:focus-visible{outline:1px dotted var(--rust); outline-offset:.2rem;}
   .hero .statement{font-size:var(--fs2); line-height:1.55; font-weight:500; color:var(--ink-strong); margin:0 0 1.5rem;}
   .hero .statement i{color:var(--rust);}
   .authors{font-family:var(--sans); font-weight:600; margin:0 0 .1rem; color:var(--ink-strong);}
@@ -147,7 +160,7 @@
 </head>
 <body>
 
-<section class="hero"><h1>Language of Learning</h1>
+<section class="hero"><h1><span class="title-easter-egg" tabindex="0" aria-describedby="title-easter-quote">Language of Learning<span class="title-easter-quote" id="title-easter-quote" role="tooltip"><span lang="tr">“Çünkü her şey dile başlıyor abi.”</span><span>“Because it all starts with language.”</span><cite>— İlkkan Yedinci</cite></span></span></h1>
   <p class="statement">Continual learning from experience should be a <i>capability of the model</i>:
   the model should learn from feedback <i>in language</i>, control its learning <i>in language</i>,
   and store what it learns in its own memory, <i>from context to weights</i>.</p>
