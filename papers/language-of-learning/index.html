@@ -132,8 +132,7 @@
   .card b{display:block; font-family:var(--sans); font-size:var(--fs4); font-weight:700;
      letter-spacing:.06em; text-transform:uppercase; color:var(--rust); margin-bottom:.35rem;}
   .card .refs{display:block; font-family:var(--sans); font-size:var(--fs4); color:#a09786; margin-top:.4rem;}
-  /* deeper prose */
-  h3{font-family:var(--sans); font-size:var(--fs3); font-weight:700; color:var(--ink-strong); margin:1.8rem 0 .5rem;}
+  /* section prose */
   ul{padding-left:1.2rem; margin:.4rem 0 0;}
   ul li{margin-bottom:.45rem;}
   li b{color:var(--ink-strong); font-weight:600;}
@@ -150,7 +149,6 @@
      gap:clamp(2rem,5vw,4rem); max-width:1100px; margin:0 auto; align-items:start;}
   .rail .right > :first-child{margin-top:0;}
   .rail .right p{margin:.9rem 0 0;}
-  .rail .right > h3:first-child{margin-top:0;}
   @media (max-width:820px){ .rail{grid-template-columns:1fr; gap:1.2rem;} }
   .cards{display:grid; grid-template-columns:1fr; gap:1.1rem;}
   .hero{text-align:center;}
@@ -246,7 +244,7 @@
       <text x="75"  y="8">representations from</text><text x="75"  y="17">language modelling</text>
       <text x="163" y="8">outputs as</text><text x="163" y="17">generated text</text>
       <text x="251" y="8">adaptation from</text><text x="251" y="17">instruction</text>
-      <text x="339" y="8">reasoning by</text><text x="339" y="17">generating tokens</text>
+      <text x="339" y="8">reasoning as</text><text x="339" y="17">learned behavior</text>
       <text x="427" y="8"  fill="#9a3b2e" font-style="italic">learning by</text>
       <text x="427" y="17" fill="#9a3b2e" font-style="italic">generating tokens</text>
     </g>
@@ -280,7 +278,7 @@
       <text x="75"  y="71">representations</text><text x="75"  y="80">learned per task</text>
       <text x="163" y="71">outputs from</text><text x="163" y="80">task-specific heads</text>
       <text x="251" y="71">adaptation by</text><text x="251" y="80">fine-tuning per task</text>
-      <text x="339" y="71">reasoning by</text><text x="339" y="80">external search</text>
+      <text x="339" y="71">reasoning elicited by</text><text x="339" y="80">prompts and scaffolds</text>
       <text x="427" y="71">learning by</text><text x="427" y="80">training procedures</text>
     </g>
   </svg>
@@ -313,7 +311,7 @@
         <div><b>attempt</b><span>"Let u=e<sup>x</sup>. Then ∫ x·e<sup>x</sup> dx=xe<sup>x</sup>."</span></div>
         <div><b>feedback</b><span>"Differentiate your answer: it has an extra e<sup>x</sup>.
           Use integration by parts, and do not drop +C."</span></div>
-        <div class="lam"><b>act + observations</b><span class="steps">
+        <div class="lam"><b>learning act + observations</b><span class="steps">
           <span><u>learner</u>"I reached for substitution because I recognized e<sup>x</sup>, but it did not eliminate x.
             Does ‘use parts’ mean any product, or is one useful cue that a factor simplifies when differentiated?"</span>
           <span><u class="world">world</u>"The second is a useful heuristic, not a rule. A product alone is only a cue."</span>
@@ -382,7 +380,7 @@
 <div class="right"><div class="cards">
     <div class="card"><b>Prompted behavior</b>Prompted agents already reflect on failures
       in language and retain those reflections in external memory.<span class="refs">Reflexion</span></div>
-    <div class="card"><b>Forward-pass plasticity</b>Models can now update writable parametric
+    <div class="card"><b>Test-time plasticity</b>Models can now update writable parametric
       state during inference, and some systems retain changes across contexts.<span class="refs">SRWM · Titans · MesaNet · TTT-E2E · Nested Learning</span></div>
     <div class="card"><b>Meta-training</b>Learning from language feedback can be trained as
       a skill and has transferred across held-out domains, horizons, and environments in studied
@@ -391,15 +389,14 @@
 </div></section>
 
 <section><div class="rail">
-<div class="left"><p class="kicker">Go deeper</p></div>
+<div class="left"><p class="kicker">Recipe</p></div>
 <div class="right">
-    <h3>Recipe</h3>
     <p>Our position can be stated as five requirements:</p>
     <ul>
       <li><b>Learning as capability</b> — a general policy installed through training performs
       learning at test time and generalizes to learning situations not encountered during training.</li>
       <li><b>Parametric and non-parametric memory</b> — the learner combines in-context learning
-      with in-weight learning through forward-pass plasticity; non-parametric memory comprises
+      with in-weight learning through test-time plasticity; non-parametric memory comprises
       context and, when available, external memory.</li>
       <li><b>Feedback in language</b> — feedback of any type, including a binary or scalar
       outcome, reaches the learner as content through its language interface.</li>
@@ -407,23 +404,24 @@
       determines the content, scope, and memory destination of the resulting state change.</li>
       <li><b>Lifelong</b> — experience-induced changes remain available across later test-time
       episodes in a continuing stream without a prescribed reset at episode boundaries.</li>
-    </ul>
-
-    <h3>What would prove us wrong</h3>
-    <ul>
-      <li>If different learning decisions do not produce corresponding differences in retained
-      behavior, while paraphrases of the same decision behave inconsistently, the language is
-      narration rather than control.</li>
-      <li>If an equally open latent controller outperforms at matched model scale, training data,
-      and test-time compute, the strong case for linguistic control fails. A tie leaves language's
-      practical interface advantages, not a claim of unique expressivity.</li>
-      <li>If a comparably optimized frozen-weight agent with the same non-parametric interface and
-      matched resource budgets matches a plastic learner across representative lifetime streams,
-      the case for in-weights learning fails.</li>
-      <li>If scalar-only feedback matches natural-language feedback with the tasks, interactions,
-      evaluator, substrate, training data, and compute held constant, the additional linguistic
-      content was not useful in that regime.</li>
     </ul></div>
+</div></section>
+
+<section class="band"><div class="rail">
+<div class="left"><p class="kicker">Opportunities</p>
+  <p class="line">Learning throughout deployment could change not only what an agent knows,
+    but how it develops over its lifetime.</p></div>
+<div class="right"><div class="cards">
+    <div class="card"><b>Compounding learning</b>An agent may improve not only what it can do,
+      but how efficiently it acquires new capabilities&mdash;requiring fewer interactions, less
+      feedback, or less computation as its lifetime progresses.</div>
+    <div class="card"><b>Personalization, specialization, and expertise</b>Models beginning from
+      the same checkpoint could develop different skills, judgment, and strategies through work
+      with a person, organization, or domain, reducing dependence on provider-run retraining.</div>
+    <div class="card"><b>Open-ended discovery</b>Agents shaped by different experience streams
+      could exchange discoveries and learning strategies, turning divergent expertise into
+      stepping stones for further learning.</div>
+  </div></div>
 </div></section>
 
 <section class="cta"><p class="kicker">Cite</p>
