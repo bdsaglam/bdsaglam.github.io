@@ -92,26 +92,25 @@
   /* episode card */
   .figblock{margin-top:1.6rem;}
   .ep{background:#fff; border:1px solid var(--rule); border-radius:10px;
-     padding:1.4rem 1.6rem 1.2rem; box-shadow:0 10px 30px -24px rgba(0,0,0,.35);}
-  .ep-chain{display:flex; flex-wrap:wrap; align-items:center; gap:.5rem;
-     font-family:var(--sans); margin-bottom:1rem;}
-  .ep-part{border:1px solid #d8d0c2; border-radius:6px; padding:.12rem .55rem; background:var(--bg);}
-  .ep-part.accent{border-color:var(--rust); color:var(--rust); font-weight:600; background:#faf1ee;}
-  .ep-chain i{font-style:normal; color:#b0a89a;}
-  .ep-ex{line-height:1.55;}
-  .ep-ex > div{display:flex; gap:.8rem; padding:.15rem 0;}
-  .ep-ex b{flex:0 0 4.4rem; text-align:right; font-family:var(--sans); font-size:var(--fs4);
+     overflow:hidden; box-shadow:0 10px 30px -24px rgba(0,0,0,.35);}
+  .ep-phase{padding:.42rem 1.2rem .32rem; background:#faf1ee; border-top:1px solid #eee2dc;
+     font-family:var(--sans); font-size:var(--fs4); font-weight:600; letter-spacing:.05em;
+     text-transform:uppercase; color:var(--muted);}
+  .ep-phase:first-child{border-top:0;}
+  .ep-row{display:grid; grid-template-columns:4.5rem 1fr; gap:.8rem;
+     padding:.42rem 1.2rem; line-height:1.5;}
+  .ep-row b{text-align:right; font-family:var(--sans); font-size:var(--fs4);
      font-weight:600; color:var(--muted); padding-top:.15rem;}
-  .ep-ex .lam b{color:var(--rust);}
-  .ep-ex .steps{display:flex; flex-direction:column; gap:.15rem;}
-  .ep-ex .steps u{font-family:var(--sans); font-size:var(--fs4); text-decoration:none;
-     color:var(--rust); font-weight:600; margin-right:.5rem;}
-  .ep-ex .steps u.world{color:var(--blue);}
-  .ep-ex .lam{border-top:1px dashed var(--rule); margin-top:.45rem; padding-top:.5rem;}
+  .ep-row.world b{color:var(--blue);}
+  .ep-row.agent b{color:var(--rust);}
+  .ep-action{font-style:italic;}
+  .ep-row.learning{background:#faf1ee; padding-top:.55rem; padding-bottom:.55rem;}
+  .ep-row code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+     font-size:.86em; color:var(--rust);}
   @media (max-width:560px){
-    .ep{padding:1.1rem 1rem 1rem;}
-    .ep-ex > div{flex-direction:column; gap:.1rem;}
-    .ep-ex b{flex:none; text-align:left;}
+    .ep-row{grid-template-columns:1fr; gap:.1rem; padding:.5rem 1rem;}
+    .ep-row b{text-align:left;}
+    .ep-phase{padding-left:1rem; padding-right:1rem;}
   }
   /* scaling panels */
   .scale{display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(.9rem,2vw,1.6rem);}
@@ -299,31 +298,26 @@
       control share language. The architecture supplies the update mechanism; the semantic content of
       the learner's <em>learning act</em> determines what is retained and where. The act may be a brief
       reflection or a longer trajectory, and its <em>learning tokens</em> may interleave with task work.</p></div>
-<div class="right"><div class="figblock"><div class="ep">
-      <div class="ep-chain">
-        <span class="ep-part">task</span><i>→</i>
-        <span class="ep-part">attempt</span><i>→</i>
-        <span class="ep-part">feedback</span><i>→</i>
-        <span class="ep-part accent">learning act ℓ</span>
-      </div>
-      <div class="ep-ex">
-        <div><b>task</b><span>evaluate ∫ x·e<sup>x</sup> dx</span></div>
-        <div><b>attempt</b><span>"Let u=e<sup>x</sup>. Then ∫ x·e<sup>x</sup> dx=xe<sup>x</sup>."</span></div>
-        <div><b>feedback</b><span>"Differentiate your answer: it has an extra e<sup>x</sup>.
-          Use integration by parts, and do not drop +C."</span></div>
-        <div class="lam"><b>learning act + observations</b><span class="steps">
-          <span><u>learner</u>"I reached for substitution because I recognized e<sup>x</sup>, but it did not eliminate x.
-            Does ‘use parts’ mean any product, or is one useful cue that a factor simplifies when differentiated?"</span>
-          <span><u class="world">world</u>"The second is a useful heuristic, not a rule. A product alone is only a cue."</span>
-          <span><u>learner</u>looks up the derivation from the product rule, retries to obtain
-            xe<sup>x</sup>−e<sup>x</sup>+C, and verifies it by differentiation</span>
-          <span><u>learner</u>solves ∫ x·cos(x) dx as a second test; the check succeeds</span>
-          <span><u>learner</u>"I should internalize two habits: consider parts when one factor
-            simplifies under differentiation; verify an antiderivative and include +C. No
-            problem-specific note is needed."</span>
-        </span></div>
-      </div>
-    </div></div></div>
+<div class="right"><div class="figblock"><figure class="ep" aria-label="A hypothetical learning episode">
+      <div class="ep-phase">world observation and agent response</div>
+      <div class="ep-row world"><b>world</b><span>“Evaluate ∫ x e<sup>x</sup> dx.”</span></div>
+      <div class="ep-row agent"><b>agent</b><span>“Let u=e<sup>x</sup>. Then ∫ x e<sup>x</sup> dx=xe<sup>x</sup>.”</span></div>
+      <div class="ep-phase">world feedback</div>
+      <div class="ep-row world"><b>world</b><span>“That answer is incorrect. Use integration by parts.”</span></div>
+      <div class="ep-phase">continuing agent–world interaction</div>
+      <div class="ep-row agent"><b>agent</b><span>“My substitution left x unresolved. What should have suggested
+        integration by parts: merely that the integrand is a product, or that one factor simplifies
+        when differentiated?”</span></div>
+      <div class="ep-row world"><b>world</b><span>“The latter. A product alone is only a cue.”</span></div>
+      <div class="ep-row agent"><b>agent</b><span><span class="ep-action">Looks up the derivation from the product rule,
+        then retries with u=x and dv=e<sup>x</sup> dx:</span> ∫ x e<sup>x</sup> dx=xe<sup>x</sup>−e<sup>x</sup>+C.</span></div>
+      <div class="ep-row agent"><b>agent</b><span><span class="ep-action">Differentiates the result, then solves
+        ∫ x cos(x) dx as a second test.</span> Both checks succeed.</span></div>
+      <div class="ep-row agent learning"><b>agent</b><span><code>&lt;learn&gt;</code> I chose a method from a familiar
+        symbol instead of the expression’s structure. I should internalize two habits: consider
+        integration by parts when one factor simplifies under differentiation; verify an
+        antiderivative and include +C. <code>... &lt;/learn&gt;</code></span></div>
+    </figure></div></div>
 </div></section>
 
 <section><div class="rail">
