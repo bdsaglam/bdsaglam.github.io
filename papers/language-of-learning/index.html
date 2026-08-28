@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Language of Learning</title>
-<meta name="description" content="A position paper arguing that models should learn from feedback in language, control their learning in language, and retain what they learn in parametric and non-parametric memory.">
+<meta name="description" content="A position paper arguing that learning signals should reach models through language, models should control learning through language, and what they learn should persist in memory, from context to weights.">
 <link rel="canonical" href="https://barisdeniz.is-a.dev/papers/language-of-learning/">
 <meta property="og:title" content="Language of Learning">
 <meta property="og:description" content="Continual learning from experience should become a model capability.">
@@ -161,8 +161,8 @@
 
 <section class="hero"><h1><span class="title-easter-egg" tabindex="0" aria-describedby="title-easter-quote">Language of Learning<span class="title-easter-quote" id="title-easter-quote" role="tooltip"><span lang="tr">“Çünkü her şey dilde başlıyor.”</span><span>“Because it all begins in language.”</span><cite>— İlkkan Yedinci</cite></span></span></h1>
   <p class="statement">Continual learning from experience should be a <i>capability of the model</i>:
-  the model should learn from feedback <i>in language</i>, control its learning <i>in language</i>,
-  and store what it learns in its own memory, <i>from context to weights</i>.</p>
+  learning signals should reach the model <i>through language</i>, the model should control learning
+  <i>through language</i>, and what it learns should persist in its own memory, <i>from context to weights</i>.</p>
   <p class="authors">Barış Deniz Sağlam · Duygu Ataman<sup>†</sup> · Altan Koçyiğit<sup>†</sup></p>
   <p class="affiliation">Informatics Institute, Middle East Technical University · <sup>†</sup>Joint supervision</p>
   <div class="btns">
@@ -194,17 +194,17 @@
   <a href="https://arxiv.org/abs/2601.16621">RPEval</a> measures the opposite failure: models
   overuse irrelevant memories and distort the user's intent. Across thirteen memory-system
   configurations, <a href="https://arxiv.org/abs/2606.17328">MemTrace</a> finds that when systems
-  fail, the evidence was retrievable about ten times more often than it was missing. Storage and
+  fail, the relevant information was retrievable about ten times more often than it was missing. Storage and
   retrieval do not decide whether a memory applies, how strongly it should shape an answer, or
   when it should be ignored.</p>
   <p class="problem-pivot">What is missing is not more storage alone, but an agent that
-  <a href="https://storage.googleapis.com/deepmind-media/Era-of-Experience%20/The%20Era%20of%20Experience%20Paper.pdf">continually learns from experience</a>&mdash;deciding what a lesson means, whether it should persist,
-  and how it should change future behavior.</p>
+  <a href="https://storage.googleapis.com/deepmind-media/Era-of-Experience%20/The%20Era%20of%20Experience%20Paper.pdf">continually learns from experience</a>&mdash;interpreting the available evidence, deciding what should persist,
+  and determining how it should change future behavior.</p>
 
   <p class="problem-signal">AI assistants already reach
   <a href="https://www.nber.org/papers/w34255">hundreds of millions of people</a>. Across those
   sessions, failures, tool outputs, corrections, preferences, and successful attempts form a vast
-  potential learning signal. Today, those signals usually affect only the current context or
+  stream of potential learning signals. Today, those signals usually affect only the current context or
   external memory&mdash;the model's parameters stay frozen.</p></div>
 </div></section>
 
@@ -289,26 +289,26 @@
 <p class="line position-statement">
       <span>Continual learning from experience</span>
       <span>should be a <em>capability of the model</em>:</span>
-      <span class="position-turn">the model should learn from feedback <em>in language</em>,</span>
-      <span>control its learning <em>in language</em>,</span>
-      <span>and store what it learns in its own memory,</span>
+      <span class="position-turn">learning signals should reach the model <em>through language</em>,</span>
+      <span>the model should control learning <em>through language</em>,</span>
+      <span>and what it learns should persist in its own memory,</span>
       <span><em>from context to weights</em>.</span>
     </p>
-<p class="aside">We call this the <em>language of learning</em>: feedback and the learner's
-      control share language. The architecture supplies the update mechanism; the semantic content of
-      the learner's <em>learning act</em> determines what is retained and where. The act may be a brief
-      reflection or a longer trajectory, and its <em>learning tokens</em> may interleave with task work.</p></div>
+<p class="aside">We call this the <em>language of learning</em>: language is the shared medium for
+      learning signals and control. A <em>learning act</em> is generated behavior directed at deciding
+      or enacting how an experience should change future behavior. Its semantic content determines
+      what is retained, while memory interfaces and the plastic architecture execute that decision.
+      Learning acts may be brief reflections or longer trajectories, and their <em>learning tokens</em>
+      may interleave with reasoning, tool use, and action.</p></div>
 <div class="right"><div class="figblock"><figure class="ep" aria-label="A hypothetical learning episode">
       <div class="ep-phase">world observation and agent response</div>
       <div class="ep-row world"><b>world</b><span>“Evaluate ∫ x e<sup>x</sup> dx.”</span></div>
       <div class="ep-row agent"><b>agent</b><span>“Let u=e<sup>x</sup>. Then ∫ x e<sup>x</sup> dx=xe<sup>x</sup>.”</span></div>
       <div class="ep-phase">world feedback</div>
-      <div class="ep-row world"><b>world</b><span>“That answer is incorrect. Use integration by parts.”</span></div>
+      <div class="ep-row world"><b>world</b><span>“That answer is incorrect. Substitution is not the right method here.”</span></div>
       <div class="ep-phase">continuing agent–world interaction</div>
-      <div class="ep-row agent"><b>agent</b><span>“My substitution left x unresolved. What should have suggested
-        integration by parts: merely that the integrand is a product, or that one factor simplifies
-        when differentiated?”</span></div>
-      <div class="ep-row world"><b>world</b><span>“The latter. A product alone is only a cue.”</span></div>
+      <div class="ep-row agent"><b>agent</b><span>“I see—the substitution leaves x unresolved. Which method should I use instead?”</span></div>
+      <div class="ep-row world"><b>world</b><span>“Use integration by parts.”</span></div>
       <div class="ep-row agent"><b>agent</b><span><span class="ep-action">Looks up the derivation from the product rule,
         then retries with u=x and dv=e<sup>x</sup> dx:</span> ∫ x e<sup>x</sup> dx=xe<sup>x</sup>−e<sup>x</sup>+C.</span></div>
       <div class="ep-row agent"><b>agent</b><span><span class="ep-action">Differentiates the result, then solves
@@ -323,11 +323,12 @@
 <section><div class="rail">
 <div class="left"><p class="kicker">The prediction</p>
 <p class="line"><em>Learning tokens</em> can create a new scaling axis: just as reasoning tokens let
-      a model spend more computation on a difficult problem, learning tokens let it spend more
-      computation for learning.</p>
-<p class="aside">At matched substrate, training data, available evidence, and objective, we predict
-      that a larger learning-token budget will improve later transfer on held-out learning situations
-      that require diagnosis or integration, until gains saturate or interference dominates.</p></div>
+      a model spend more computation on a difficult problem, learning tokens let it devote more
+      computation to learning.</p>
+<p class="aside">Holding the trained agent, initial learning situation, and evaluation criteria fixed,
+      we predict that increasing the available learning-token budget will improve later transfer on
+      held-out learning situations that require diagnosis or evidence integration, until gains
+      saturate or interference dominates.</p></div>
 <div class="right"><div class="figblock"><div class="scale">
       <div class="sp">
         <div class="sp-title">pretraining</div>
@@ -375,7 +376,7 @@
     <div class="card"><b>Prompted behavior</b>Prompted agents already reflect on failures
       in language and retain those reflections in external memory.<span class="refs">Reflexion</span></div>
     <div class="card"><b>Test-time plasticity</b>Models can now update writable parametric
-      state during inference, and some systems retain changes across contexts.<span class="refs">SRWM · Titans · MesaNet · TTT-E2E · Nested Learning</span></div>
+      state during inference, and some systems retain changes across contexts.<span class="refs">SRWM · Titans · MesaNet · TTT-E2E · In-Place TTT · Nested Learning</span></div>
     <div class="card"><b>Meta-training</b>Meta-training can shape self-referential updates for
       immediate acquisition, backward transfer, and forward transfer. Separately, learning from
       language feedback can be trained as a
@@ -385,21 +386,22 @@
 </div></section>
 
 <section><div class="rail">
-<div class="left"><p class="kicker">Recipe</p></div>
+<div class="left"><p class="kicker">Requirements</p></div>
 <div class="right">
     <p>Our position can be stated as five requirements:</p>
     <ul>
-      <li><b>Learning as capability</b> — a general policy installed through training performs
-      learning at test time and generalizes to learning situations not encountered during training.</li>
-      <li><b>Parametric and non-parametric memory</b> — the learner combines in-context learning
-      with in-weight learning through test-time plasticity; non-parametric memory comprises
-      context and, when available, external memory.</li>
-      <li><b>Feedback in language</b> — feedback of any type, including a binary or scalar
-      outcome, reaches the learner as content through its language interface.</li>
-      <li><b>Control in language</b> — the model's own open language semantically and causally
-      determines the content, scope, and memory destination of the resulting state change.</li>
-      <li><b>Lifelong</b> — experience-induced changes remain available across later test-time
-      episodes in a continuing stream without a prescribed reset at episode boundaries.</li>
+      <li><b>Learning as capability</b> — at test time, learning is performed by the agent itself
+      rather than by a separate training procedure applied to it.</li>
+      <li><b>Parametric and non-parametric memory</b> — the agent combines in-context learning
+      with in-weight learning; external memory may extend its non-parametric memory.</li>
+      <li><b>Learning signals in language</b> — information available for learning, including
+      instructions, demonstrations, feedback, and binary or scalar outcomes, reaches the agent as
+      content through its language interface.</li>
+      <li><b>Control in language</b> — the agent uses generated language to determine what is
+      retained and, when the substrate exposes these choices, its scope and placement in memory.
+      The architecture may prescribe how that decision is executed.</li>
+      <li><b>Lifelong</b> — the effects of learning persist across a continuing test-time stream
+      without prescribed reset boundaries.</li>
     </ul></div>
 </div></section>
 
@@ -411,9 +413,9 @@
     <div class="card"><b>Compounding learning</b>An agent may improve not only what it can do,
       but how efficiently it acquires new capabilities&mdash;requiring fewer interactions, less
       feedback, or less computation as its lifetime progresses.</div>
-    <div class="card"><b>Personalization, specialization, and expertise</b>Models beginning from
-      the same checkpoint could develop different skills, judgment, and strategies through work
-      with a person, organization, or domain, reducing dependence on provider-run retraining.</div>
+    <div class="card"><b>Personalization, specialization, and expertise</b>Agents initialized from
+      the same checkpoint could acquire distinct knowledge, skills, judgment, and strategies through
+      work with people, organizations, or domains.</div>
     <div class="card"><b>Open-ended discovery</b>Agents shaped by different experience streams
       could exchange discoveries and learning strategies, turning divergent expertise into
       stepping stones for further learning.</div>
