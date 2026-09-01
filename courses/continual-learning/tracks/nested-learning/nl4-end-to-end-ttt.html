@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>NL-4 — End-to-end TTT: was the proxy ever necessary? – Barış Deniz Sağlam</title>
+<title>NL-4 — End-to-end test-time training – Barış Deniz Sağlam</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -185,17 +185,29 @@ window.Quarto = {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
-  <li><a href="#why-it-exists-the-assumption-it-removes" id="toc-why-it-exists-the-assumption-it-removes" class="nav-link" data-scroll-target="#why-it-exists-the-assumption-it-removes">Why it exists (the assumption it removes)</a>
+  <li><a href="#what-the-paper-contributes" id="toc-what-the-paper-contributes" class="nav-link active" data-scroll-target="#what-the-paper-contributes">What the paper contributes</a></li>
+  <li><a href="#learning-goals" id="toc-learning-goals" class="nav-link" data-scroll-target="#learning-goals">Learning goals</a></li>
+  <li><a href="#notation-two-different-batch-sizes" id="toc-notation-two-different-batch-sizes" class="nav-link" data-scroll-target="#notation-two-different-batch-sizes">Notation: two different batch sizes</a></li>
+  <li><a href="#from-kv-binding-to-the-real-task-loss" id="toc-from-kv-binding-to-the-real-task-loss" class="nav-link" data-scroll-target="#from-kv-binding-to-the-real-task-loss">1. From KV Binding to the real task loss</a>
   <ul class="collapse">
-  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  <li><a href="#a-small-objective-check" id="toc-a-small-objective-check" class="nav-link" data-scroll-target="#a-small-objective-check">A small objective check</a></li>
   </ul></li>
-  <li><a href="#ttt-kvb-the-bucket-named-from-outside" id="toc-ttt-kvb-the-bucket-named-from-outside" class="nav-link" data-scroll-target="#ttt-kvb-the-bucket-named-from-outside">1. TTT-KVB — the bucket, named from outside</a></li>
-  <li><a href="#the-key-step-e2e-at-test-time" id="toc-the-key-step-e2e-at-test-time" class="nav-link" data-scroll-target="#the-key-step-e2e-at-test-time">2. The key step — E2E at test time</a></li>
-  <li><a href="#e2e-at-training-time-the-initialization-is-the-other-half" id="toc-e2e-at-training-time-the-initialization-is-the-other-half" class="nav-link" data-scroll-target="#e2e-at-training-time-the-initialization-is-the-other-half">3. E2E at training time — the initialization is the other half</a></li>
-  <li><a href="#mini-batching-and-where-short-term-memory-went" id="toc-mini-batching-and-where-short-term-memory-went" class="nav-link" data-scroll-target="#mini-batching-and-where-short-term-memory-went">4. Mini-batching, and where short-term memory went</a></li>
-  <li><a href="#what-it-buys-and-what-it-costs" id="toc-what-it-buys-and-what-it-costs" class="nav-link" data-scroll-target="#what-it-buys-and-what-it-costs">5. What it buys, and what it costs</a></li>
-  <li><a href="#synthesis-what-this-does-to-the-track" id="toc-synthesis-what-this-does-to-the-track" class="nav-link" data-scroll-target="#synthesis-what-this-does-to-the-track">6. Synthesis — what this does to the track</a></li>
+  <li><a href="#what-is-actually-plastic" id="toc-what-is-actually-plastic" class="nav-link" data-scroll-target="#what-is-actually-plastic">2. What is actually plastic?</a></li>
+  <li><a href="#the-inner-loop-in-the-released-implementation" id="toc-the-inner-loop-in-the-released-implementation" class="nav-link" data-scroll-target="#the-inner-loop-in-the-released-implementation">3. The inner loop in the released implementation</a>
+  <ul class="collapse">
+  <li><a href="#where-this-appears-in-the-code" id="toc-where-this-appears-in-the-code" class="nav-link" data-scroll-target="#where-this-appears-in-the-code">Where this appears in the code</a></li>
+  </ul></li>
+  <li><a href="#how-k-and-b-interact" id="toc-how-k-and-b-interact" class="nav-link" data-scroll-target="#how-k-and-b-interact">4. How <span class="math inline">\(k\)</span> and <span class="math inline">\(b\)</span> interact</a>
+  <ul class="collapse">
+  <li><a href="#a-concrete-timeline" id="toc-a-concrete-timeline" class="nav-link" data-scroll-target="#a-concrete-timeline">A concrete timeline</a></li>
+  <li><a href="#practical-consequences" id="toc-practical-consequences" class="nav-link" data-scroll-target="#practical-consequences">Practical consequences</a></li>
+  </ul></li>
+  <li><a href="#why-the-outer-loop-must-include-the-inner-loop" id="toc-why-the-outer-loop-must-include-the-inner-loop" class="nav-link" data-scroll-target="#why-the-outer-loop-must-include-the-inner-loop">5. Why the outer loop must include the inner loop</a>
+  <ul class="collapse">
+  <li><a href="#changing-b-after-meta-training" id="toc-changing-b-after-meta-training" class="nav-link" data-scroll-target="#changing-b-after-meta-training">Changing <span class="math inline">\(b\)</span> after meta-training</a></li>
+  </ul></li>
+  <li><a href="#what-the-method-buysand-what-it-does-not" id="toc-what-the-method-buysand-what-it-does-not" class="nav-link" data-scroll-target="#what-the-method-buysand-what-it-does-not">6. What the method buys—and what it does not</a></li>
+  <li><a href="#synthesis" id="toc-synthesis" class="nav-link" data-scroll-target="#synthesis">7. Synthesis</a></li>
   <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
   </ul>
 </nav>
@@ -205,7 +217,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">NL-4 — End-to-end TTT: was the proxy ever necessary?</h1>
+<h1 class="title">NL-4 — End-to-end test-time training</h1>
 </div>
 
 
@@ -228,287 +240,557 @@ window.Quarto = {
 <figcaption>Open In Colab</figcaption>
 </figure>
 </div>
-<p><strong>The question:</strong> every memory in this track learns to predict a value from a key. What if it trained on the real task instead?</p>
-<p>Prerequisites: foundations M1–M7 and <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>.</p>
-<p>Across this track the write dial turned until the memory became a learner: TTT trains <span class="math inline">\(f_W\)</span> at inference, Titans gives that training an optimizer, Miras makes its objective an explicit axis, HOPE stacks the result on a continuum of timescales.</p>
-<p>They also share something none of them argues for; from inside the lineage the assumption is never even visible, never posed as a choice at all. Every memory you have built in this track learns the same thing: <strong>predict this token’s value from its key</strong>, <span class="math inline">\(\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2\)</span>. The keys and values are minted by projections the outer loop trains, the loss is local to a layer, and it looks inevitable because it was reverse-engineered from self-attention, which stores exactly those pairs.</p>
-<p><a href="https://arxiv.org/abs/2512.23675">TTT-E2E</a> (Tandon et al., Dec 2025) names that assumption from outside, calls it <strong>KV Binding</strong>, files this whole track under it, and then argues the binding was never the point. Its inner loop trains on the loss the model is actually graded on: the next token. This module is that argument, run.</p>
-<section id="objective" class="level2">
-<h2 data-anchor-id="objective">Objective</h2>
-<p>After this module you should be able to:</p>
+<section id="what-the-paper-contributes" class="level2">
+<h2 data-anchor-id="what-the-paper-contributes">What the paper contributes</h2>
+<p>Full attention can use long contexts well, but its cost grows with the context length. Efficient alternatives such as sliding-window attention have bounded cost, but lose direct access to older tokens. TTT-E2E reframes this as a continual-learning problem: instead of retaining the entire context in an attention cache, the model compresses what it reads into selected MLP weights.</p>
+<p>The method is <em>end-to-end</em> in two senses. At test time, it updates those MLP weights using the model’s real next-token loss rather than a layer-local proxy. At training time, it meta-learns an initialization that is optimized for the sequence of updates the model will perform at test time. The resulting model combines sliding-window attention for recent context with plastic MLP weights for compressed longer-term context.</p>
+<p>The paper’s main empirical claim is that this combination keeps improving with longer language-modeling contexts like full attention, while keeping the bounded per-token cost of SWA. The trade-off is lossy recall and a more expensive meta-training procedure.</p>
+<p>This notebook explains how that proposal becomes an actual loop. The key implementation detail is that the model does <strong>not</strong> update after every token. It predicts a chunk of <span class="math inline">\(b\)</span> tokens with one version of the fast weights, averages their losses, and then takes one SGD step. Sliding-window attention (SWA), with window size <span class="math inline">\(k\)</span>, supplies the recent context that those temporarily stale weights do not yet contain.</p>
+<p>We develop this mechanism from the objective to the actual loop used in the released JAX code. Prerequisites: foundations M1–M7 and <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a>.</p>
+</section>
+<section id="learning-goals" class="level2">
+<h2 data-anchor-id="learning-goals">Learning goals</h2>
+<p>After this module, you should be able to:</p>
 <ul>
-<li>Name the objective <strong>every</strong> memory in NL-1–NL-3 shares (<strong>KV Binding</strong>, <span class="math inline">\(\ell_t^{(l)}(W)=\lVert g(\theta_K^{(l)}\mathbf{x}_t^{(l)};W)-\theta_V^{(l)}\mathbf{x}_t^{(l)}\rVert^2\)</span>) and say why it is a <em>proxy</em> rather than the task.</li>
-<li>State the <strong>two</strong> senses of “end-to-end” TTT-E2E claims, and which loop each one fixes: the <strong>inner</strong> loop on the real next-token loss (test time), the <strong>outer</strong> loop on the loss <em>after</em> TTT (training time).</li>
-<li>Show that a KVB write and an E2E write are <strong>different writes</strong> (the proxy write is provably blind to the next token) and say what that costs and buys.</li>
-<li>Explain why the naive training objective <span class="math inline">\(\mathcal{L}_{\texttt{naive}}\)</span> is a <em>mismatch</em>, and demonstrate that an initialization meta-learned <strong>through</strong> the inner steps beats one that never took any.</li>
-<li>Say where this leaves the track’s dial setting: the write rule’s <strong>objective</strong> was a dial all along, and Miras’ axis was pointing at it.</li>
+<li>distinguish the layer-local <strong>KV Binding</strong> objective from TTT-E2E’s next-token objective;</li>
+<li>trace one inner-loop chunk in the correct order: forward pass, loss, gradient, update;</li>
+<li>distinguish the TTT mini-batch size <span class="math inline">\(b\)</span> from the outer training batch size <span class="math inline">\(B\)</span>;</li>
+<li>explain why the paper chooses <span class="math inline">\(k \ge b\)</span>, and what fails when <span class="math inline">\(k &lt; b\)</span>;</li>
+<li>identify exactly which parameters and states are carried across chunks; and</li>
+<li>explain why the outer loop must differentiate through the inner updates.</li>
 </ul>
 </section>
-<section id="why-it-exists-the-assumption-it-removes" class="level2">
-<h2 data-anchor-id="why-it-exists-the-assumption-it-removes">Why it exists (the assumption it removes)</h2>
-<p>Every module in this track fixed a mechanism. This one questions an objective, so it is worth being precise about what is and is not under attack.</p>
-<p>Nothing in NL-1–NL-3 is wrong. TTT-MLP does store more than a matrix; Titans’ momentum does help; HOPE does assemble. The question is narrower and sharper: <strong>all of them optimize a loss the model is not graded on.</strong> The user does not care whether <span class="math inline">\(f_W(\mathbf{k}_t)\)</span> lands on <span class="math inline">\(\mathbf{v}_t\)</span>. The user cares about the next token. KV Binding is a stand-in — chosen because self-attention’s cache is a key–value store, so a memory that <em>replaces</em> attention was assumed to need attention’s bookkeeping.</p>
-<p>TTT-E2E’s claim is that the assumption was inherited rather than earned, and that once you drop it the design gets <em>simpler</em>: no <span class="math inline">\(\theta_K\)</span>, no <span class="math inline">\(\theta_V\)</span>, no per-layer loss, no multi-head split, no LoRA on the state. What remains is a Transformer with sliding-window attention that keeps training on its own context. <em>“our method is derived purely under the formulation of a continual learning problem, with minimal changes to the architecture”</em> (§4.2).</p>
-<section id="reading" class="level3">
-<h3 data-anchor-id="reading">Reading</h3>
-<ul>
-<li><a href="https://arxiv.org/abs/2512.23675">TTT-E2E</a>: §2.1–2.2 (the method and the meta-learning), §2.3 (mini-batch + window), §2.4 (the derivation <em>from</em> TTT-KVB, which is the one to read if you have finished NL-1).</li>
-<li>Behind you: <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> §1 (the objective this module names), <a href="../../../../courses/continual-learning/foundations/m5-meta-learning-self-reference.html">M5</a> §2 (MAML: meta-learning an initialization through a gradient step), <a href="../../../../courses/continual-learning/foundations/m6-optimizers-as-memory.html">M6</a> (test-time GD), <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> §3 (the dial table this lands on).</li>
-</ul>
+<section id="notation-two-different-batch-sizes" class="level2">
+<h2 data-anchor-id="notation-two-different-batch-sizes">Notation: two different batch sizes</h2>
+<p>The word <em>batch</em> refers to two unrelated axes in this method. Keeping them separate removes much of the confusion.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>symbol</th>
+<th>meaning</th>
+<th>released configuration</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(T\)</span></td>
+<td>tokens in one sequence</td>
+<td>8K during pre-training; up to 128K in extension runs</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(b\)</span></td>
+<td><strong>inner-loop</strong> TTT mini-batch, or chunk; one SGD update per <span class="math inline">\(b\)</span> tokens</td>
+<td>1K</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(k\)</span></td>
+<td>SWA window and per-layer KV-cache length</td>
+<td>8K</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(B\)</span></td>
+<td><strong>outer-loop</strong> batch of independent sequences used for an AdamW update</td>
+<td>configured separately as <code>global_batch_size</code></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(W_i\)</span></td>
+<td>per-sequence fast MLP weights after chunk <span class="math inline">\(i\)</span></td>
+<td>reset to <span class="math inline">\(W_0\)</span> for every sequence</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\theta\)</span></td>
+<td>all slow, outer-loop parameters, including the initialization <span class="math inline">\(W_0\)</span></td>
+<td>shared across sequences</td>
+</tr>
+</tbody>
+</table>
+<p>Changing <span class="math inline">\(B\)</span> changes the variance and cost of the meta-gradient. Changing <span class="math inline">\(b\)</span> changes the model’s computation and predictions. They are not interchangeable.</p>
 </section>
-</section>
-<section id="ttt-kvb-the-bucket-named-from-outside" class="level2">
-<h2 data-anchor-id="ttt-kvb-the-bucket-named-from-outside">1. TTT-KVB — the bucket, named from outside</h2>
-<p>TTT-E2E’s §2.4.1 gives the family a name and a formula. Given input embeddings <span class="math inline">\(\mathbf{x}_t^{(l)}\)</span> at layer <span class="math inline">\(l\)</span>, a TTT-KVB layer takes a gradient step on its <strong>Eq. 7</strong>:</p>
-<p><span class="math display">\[\ell_t^{(l)}\big(W_{t-1}^{(l)}\big)=\big\lVert g\big(\theta_K^{(l)}\mathbf{x}_t^{(l)};W_{t-1}^{(l)}\big)-\theta_V^{(l)}\mathbf{x}_t^{(l)}\big\rVert^2\]</span></p>
-<p>where <span class="math inline">\(g\)</span> is usually an MLP and <span class="math inline">\(\theta_K,\theta_V\)</span> are outer-loop parameters. That is <a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> §1’s <span class="math inline">\(\lVert f_W(\mathbf{k}_t)-\mathbf{v}_t\rVert^2\)</span> with the projections written out. The paper’s own list of what sits in this bucket (<em>“This learning objective, later known as KV Binding, has been the core component in many popular variants of TTT”</em>) runs MesaNet, <strong>Titans</strong>, and <strong>Nested Learning</strong> (§2.4.1), and elsewhere it notes that Titans and Nested Learning follow the same construction (§3.1). This track has been inside one bucket for three modules.</p>
-<p>Before pulling on it, notice what the bucket contains. TTT-E2E’s footnote 1 collects, crediting <a href="https://arxiv.org/abs/2407.04620">TTT</a> (Sun et al., 2024) for the result:</p>
-<blockquote class="blockquote">
-<p><em>“when <span class="math inline">\(g\)</span> is a linear model, TTT-KVB recovers DeltaNet; when the gradient in Equation 7 is taken w.r.t. <span class="math inline">\(W_0^{(l)}\)</span> instead of <span class="math inline">\(W_{t-1}^{(l)}\)</span>, TTT-KVB recovers linear attention; and when <span class="math inline">\(\ell_t^{(l)}\)</span> is learned using a non-parametric kernel estimator instead of a parametric model, TTT-KVB recovers self-attention.”</em></p>
-</blockquote>
-<p>Read that against <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> §3’s table. One construction, three knobs (<em>how expressive is <span class="math inline">\(g\)</span></em>, <em>which weights the gradient is taken at</em>, <em>parametric or not</em>): out fall the delta rule (<a href="../../../../courses/continual-learning/foundations/m4-delta-rule.html">M4</a>), linear attention (<a href="../../../../courses/continual-learning/foundations/m3-linear-attention.html">M3</a>), and the softmax attention of M3 §1. The three-dials view argued the modern literature is one recurrence with dials; here a paper from outside the Nested Learning group reaches for the same move to situate itself. It is the frame’s best outside evidence — and also the setup for the punchline, because the very next thing TTT-E2E does is leave the construction that generated all three.</p>
-</section>
-<section id="the-key-step-e2e-at-test-time" class="level2">
-<h2 data-anchor-id="the-key-step-e2e-at-test-time">2. The key step — E2E at test time</h2>
-<blockquote class="blockquote">
-<p><em>“The key step is to replace their layer-wise reconstruction loss with the standard next-token prediction loss”</em> (§2.4).</p>
-</blockquote>
-<p>The replacement is its <strong>Eqs. 1–2</strong>, and it has nothing in it:</p>
-<p><span class="math display">\[\ell_t(W)=\texttt{CE}\big(f(x_{t-1};W),\,x_t\big),\qquad W_t=W_{t-1}-\eta\,\nabla\ell_t(W_{t-1})\]</span></p>
-<p>No key. No value. No <span class="math inline">\(\theta_K\)</span>, no <span class="math inline">\(\theta_V\)</span>, no per-layer target. <em>“Our inner loop directly optimizes the next-token prediction loss at the end of the network”</em> (§1). One loss, at the end of the whole network, on the token that actually comes next. Deleting the projections falls out for free: without a layer-local reconstruction there is nothing for <span class="math inline">\(\theta_K\)</span> and <span class="math inline">\(\theta_V\)</span> to be <em>for</em>.</p>
-<p>The demo below is the difference in its smallest form. Same memory, same weights, same context token — two objectives, and the question is only whether the resulting writes differ. The discriminating test is the one the word “end-to-end” actually names: <strong>change the next token and see which write notices.</strong></p>
-<div id="87b284a1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-17T13:55:27.868223Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-17T13:55:27.868040Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-17T13:55:28.569763Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-17T13:55:28.569408Z&quot;}}" data-execution_count="1">
+<section id="from-kv-binding-to-the-real-task-loss" class="level2">
+<h2 data-anchor-id="from-kv-binding-to-the-real-task-loss">1. From KV Binding to the real task loss</h2>
+<p>Earlier TTT-style memories use a layer-local reconstruction objective. At layer <span class="math inline">\(l\)</span>, the basic KV Binding (KVB) loss is</p>
+<p><span class="math display">\[
+\ell_t^{(l)}\!\left(W_{t-1}^{(l)}\right)
+=\left\lVert
+g\!\left(\theta_K^{(l)}\mathbf{x}_t^{(l)};W_{t-1}^{(l)}\right)
+-\theta_V^{(l)}\mathbf{x}_t^{(l)}
+\right\rVert^2.
+\]</span></p>
+<p>The outer loop learns the key and value projections, so this proxy can be useful. But it is not the language-model loss: each layer trains its memory to reconstruct a projected value, rather than training the complete network to predict the next token.</p>
+<p>TTT-E2E replaces all of those local objectives with one cross-entropy loss at the output of the network:</p>
+<p><span class="math display">\[
+\ell_t(W)=\operatorname{CE}\!\left(f(x_{t-1};W),x_t\right).
+\]</span></p>
+<p>For online updates (<span class="math inline">\(b=1\)</span>), the update is <span class="math inline">\(W_t=W_{t-1}-\eta\nabla\ell_t(W_{t-1})\)</span>. The scalable implementation uses chunks instead. For chunk <span class="math inline">\(i\)</span>,</p>
+<p><span class="math display">\[
+L_i(W_{i-1})
+=\frac{1}{b}\sum_{t=(i-1)b+1}^{ib}\ell_t(W_{i-1}),
+\qquad
+W_i=W_{i-1}-\eta\nabla L_i(W_{i-1}).
+\]</span></p>
+<p>Every prediction in chunk <span class="math inline">\(i\)</span> is scored with <span class="math inline">\(W_{i-1}\)</span>. The update to <span class="math inline">\(W_i\)</span> happens <strong>after</strong> those predictions, so the target tokens do not leak into their own predictions. <span class="math inline">\(W_i\)</span> is used by the next chunk.</p>
+<section id="a-small-objective-check" class="level3">
+<h3 data-anchor-id="a-small-objective-check">A small objective check</h3>
+<p>The following toy model isolates the difference between the two losses. Hold the current representation fixed and consider two possible successor tokens. The KVB gradient is determined by the current representation and its learned projections. The E2E gradient changes when the observed successor changes.</p>
+<p>This is not an argument that KVB is useless. It shows precisely where the supervision enters: indirectly through outer-learned projections in KVB, and directly through the next-token label in E2E.</p>
+<div id="4b918bbe-e81b-41df-ade3-c10157186fc1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-09-01T19:07:01.310902Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-09-01T19:07:01.310787Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-09-01T19:07:02.037534Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-09-01T19:07:02.037321Z&quot;}}" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>V, D, H, T <span class="op">=</span> <span class="dv">16</span>, <span class="dv">32</span>, <span class="dv">64</span>, <span class="dv">64</span>      <span class="co"># vocab, embedding dim, memory hidden dim, context length</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>ETA <span class="op">=</span> <span class="fl">1.0</span>                        <span class="co"># inner-loop step size</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>V, D, H, T <span class="op">=</span> <span class="dv">16</span>, <span class="dv">32</span>, <span class="dv">64</span>, <span class="dv">64</span>      <span class="co"># vocabulary, embedding, hidden width, sequence length</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>ETA <span class="op">=</span> <span class="fl">1.0</span>                        <span class="co"># inner-loop learning rate</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> suffix_mlp(W, e):</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""The memory: an MLP over token embeddings, its weights batched one-per-sequence.</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">    This is the paper's hidden state -- 'our hidden state takes the form of regular MLP</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">    layers' (Sec 3.7). Reading it is just the forward pass; there is no key-value interface.</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    W1, b1, W2, b2 <span class="op">=</span> W</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.relu(torch.bmm(e, W1) <span class="op">+</span> b1[:, <span class="va">None</span>]) <span class="op">@</span> W2 <span class="op">+</span> b2[:, <span class="va">None</span>]</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> per_sequence(W0, n):</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""One private copy of the memory per sequence -- TTT is per test instance."""</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [w.unsqueeze(<span class="dv">0</span>).expand(n, <span class="op">*</span>w.shape) <span class="cf">for</span> w <span class="kw">in</span> W0]</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> init_memory(gen):</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [(torch.randn(D, H, generator<span class="op">=</span>gen) <span class="op">/</span> D <span class="op">**</span> <span class="fl">0.5</span>).requires_grad_(),</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>            torch.zeros(H, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>            (torch.randn(H, V, generator<span class="op">=</span>gen) <span class="op">/</span> H <span class="op">**</span> <span class="fl">0.5</span>).requires_grad_(),</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>            torch.zeros(V, requires_grad<span class="op">=</span><span class="va">True</span>)]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""A tiny stand-in for the plastic MLPs. W is batched by sequence."""</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    W1, b1, W2, b2 <span class="op">=</span> W</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    hidden <span class="op">=</span> torch.relu(torch.bmm(e, W1) <span class="op">+</span> b1[:, <span class="va">None</span>])</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.bmm(hidden, W2) <span class="op">+</span> b2[:, <span class="va">None</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> per_sequence(W0, n):</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Create n logical fast-weight copies, one for each independent sequence."""</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [w.unsqueeze(<span class="dv">0</span>).expand(n, <span class="op">*</span>w.shape) <span class="cf">for</span> w <span class="kw">in</span> W0]</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> init_memory(gen):</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        (torch.randn(D, H, generator<span class="op">=</span>gen) <span class="op">/</span> D<span class="op">**</span><span class="fl">0.5</span>).requires_grad_(),</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        torch.zeros(H, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        (torch.randn(H, V, generator<span class="op">=</span>gen) <span class="op">/</span> H<span class="op">**</span><span class="fl">0.5</span>).requires_grad_(),</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        torch.zeros(V, requires_grad<span class="op">=</span><span class="va">True</span>),</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>gen <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">1</span>)</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>emb <span class="op">=</span> torch.randn(V, D, generator<span class="op">=</span>gen) <span class="op">*</span> <span class="fl">0.5</span></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>W0 <span class="op">=</span> init_memory(gen)</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>theta_K <span class="op">=</span> torch.randn(D, D, generator<span class="op">=</span>gen) <span class="op">/</span> D <span class="op">**</span> <span class="fl">0.5</span>     <span class="co"># KVB's key projection   (Eq. 7)</span></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>theta_V <span class="op">=</span> torch.randn(D, V, generator<span class="op">=</span>gen) <span class="op">/</span> D <span class="op">**</span> <span class="fl">0.5</span>     <span class="co"># KVB's value projection (Eq. 7)</span></span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>e_prev <span class="op">=</span> emb[torch.tensor([<span class="dv">3</span>])][:, <span class="va">None</span>]                  <span class="co"># x_{t-1}: the token we condition on</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>gen <span class="op">=</span> torch.Generator().manual_seed(<span class="dv">1</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>emb <span class="op">=</span> torch.randn(V, D, generator<span class="op">=</span>gen) <span class="op">*</span> <span class="fl">0.5</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>W0 <span class="op">=</span> init_memory(gen)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>theta_K <span class="op">=</span> torch.randn(D, D, generator<span class="op">=</span>gen) <span class="op">/</span> D<span class="op">**</span><span class="fl">0.5</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>theta_V <span class="op">=</span> torch.randn(D, V, generator<span class="op">=</span>gen) <span class="op">/</span> D<span class="op">**</span><span class="fl">0.5</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>e_prev <span class="op">=</span> emb[torch.tensor([<span class="dv">3</span>])][:, <span class="va">None</span>]  <span class="co"># representation at the current position</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> e2e_write(next_token):</span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""TTT-E2E (Eq. 1): one step on the real next-token loss at the </span><span class="re">END</span><span class="co"> of the network."""</span></span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> per_sequence(W0, <span class="dv">1</span>)</span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> F.cross_entropy(suffix_mlp(W, e_prev).reshape(<span class="dv">1</span>, V), torch.tensor([next_token]))</span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.autograd.grad(loss, W)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> e2e_gradient(next_token):</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> per_sequence(W0, <span class="dv">1</span>)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    logits <span class="op">=</span> suffix_mlp(W, e_prev).reshape(<span class="dv">1</span>, V)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> F.cross_entropy(logits, torch.tensor([next_token]))</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.autograd.grad(loss, W)</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kvb_write(next_token):</span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""TTT-KVB (Eq. 7): one step on a LAYER-LOCAL reconstruction loss.</span></span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="co">    Note the signature takes next_token -- and the body never uses it. That is not an</span></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="co">    oversight in the demo; it is the objective.</span></span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> per_sequence(W0, <span class="dv">1</span>)</span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    k, v <span class="op">=</span> e_prev <span class="op">@</span> theta_K, e_prev <span class="op">@</span> theta_V</span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> ((suffix_mlp(W, k) <span class="op">-</span> v) <span class="op">**</span> <span class="dv">2</span>).<span class="bu">sum</span>()</span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.autograd.grad(loss, W)</span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>flat <span class="op">=</span> <span class="kw">lambda</span> g: torch.cat([t.reshape(<span class="op">-</span><span class="dv">1</span>) <span class="cf">for</span> t <span class="kw">in</span> g])</span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>a, b <span class="op">=</span> <span class="dv">5</span>, <span class="dv">11</span>                                              <span class="co"># two candidate next tokens</span></span>
-<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>kvb_a, kvb_b <span class="op">=</span> kvb_write(a), kvb_write(b)</span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>e2e_a, e2e_b <span class="op">=</span> e2e_write(a), e2e_write(b)</span>
-<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="co"># "End-to-end at test time", as two asserts.</span></span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.equal(flat(kvb_a), flat(kvb_b)), <span class="st">"the proxy write must be blind to the next token"</span></span>
-<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> torch.allclose(flat(e2e_a), flat(e2e_b)), <span class="st">"the E2E write must depend on it"</span></span>
-<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"next token = </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">  vs  next token = </span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">:"</span>)</span>
-<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  KVB proxy write moves by  </span><span class="sc">{</span>(flat(kvb_a) <span class="op">-</span> flat(kvb_b))<span class="sc">.</span>norm()<span class="sc">:.2e}</span><span class="ss">   &lt;- bit-identical"</span>)</span>
-<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  TTT-E2E   write moves by  </span><span class="sc">{</span>(flat(e2e_a) <span class="op">-</span> flat(e2e_b))<span class="sc">.</span>norm()<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">cos(E2E write, KVB write) = "</span></span>
-<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"</span><span class="sc">{</span>F<span class="sc">.</span>cosine_similarity(flat(e2e_a), flat(kvb_a), dim<span class="op">=</span><span class="dv">0</span>)<span class="sc">.</span>item()<span class="sc">:+.4f}</span><span class="ss">"</span></span>
-<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>      <span class="st">"   -- near-orthogonal: two different writes into the same weights"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> kvb_gradient():</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    <span class="co"># There is intentionally no next-token argument: Eq. 7 uses the current</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    <span class="co"># layer representation, projected once as a key and once as a value.</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> per_sequence(W0, <span class="dv">1</span>)</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>    key, value <span class="op">=</span> e_prev <span class="op">@</span> theta_K, e_prev <span class="op">@</span> theta_V</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>    loss <span class="op">=</span> (suffix_mlp(W, key) <span class="op">-</span> value).square().<span class="bu">sum</span>()</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.autograd.grad(loss, W)</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>flat <span class="op">=</span> <span class="kw">lambda</span> trees: torch.cat([x.reshape(<span class="op">-</span><span class="dv">1</span>) <span class="cf">for</span> x <span class="kw">in</span> trees])</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>target_a, target_b <span class="op">=</span> <span class="dv">5</span>, <span class="dv">11</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>g_kvb <span class="op">=</span> flat(kvb_gradient())</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>g_e2e_a <span class="op">=</span> flat(e2e_gradient(target_a))</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>g_e2e_b <span class="op">=</span> flat(e2e_gradient(target_b))</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> torch.allclose(g_e2e_a, g_e2e_b)</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"KVB gradient norm (same current representation): </span><span class="sc">{</span>g_kvb<span class="sc">.</span>norm()<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"distance between E2E gradients for targets </span><span class="sc">{</span>target_a<span class="sc">}</span><span class="ss"> and </span><span class="sc">{</span>target_b<span class="sc">}</span><span class="ss">: "</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"</span><span class="sc">{</span>(g_e2e_a <span class="op">-</span> g_e2e_b)<span class="sc">.</span>norm()<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>next token = 5  vs  next token = 11:
-  KVB proxy write moves by  0.00e+00   &lt;- bit-identical
-  TTT-E2E   write moves by  6.3737
-
-cos(E2E write, KVB write) = +0.0076   -- near-orthogonal: two different writes into the same weights</code></pre>
+<pre><code>KVB gradient norm (same current representation): 30.4396
+distance between E2E gradients for targets 5 and 11: 6.3737</code></pre>
 </div>
 </div>
-<p>The first number is the module in one line. The KVB write is <strong>bit-identical</strong> whichever token comes next, because <span class="math inline">\(x_t\)</span> does not appear anywhere in Eq. 7: the objective is built entirely from <span class="math inline">\(\mathbf{x}_t^{(l)}\)</span>, the <em>current</em> token’s own embedding, projected two ways. A KVB memory writes what a token <em>is</em>. An E2E memory writes what a token <em>predicts</em>.</p>
-<p>The cosine says the same thing structurally: the two gradients are near-orthogonal, so this is not a matter of degree. They are unrelated directions in weight space.</p>
-<p>Now, the honest half — because “blind to the next token” is not by itself an indictment. Self-supervision is <em>supposed</em> to be label-free; that is the trick meta-learning and test-time training both turn, and a KVB write is not useless. It is useful <strong>exactly to the extent the outer loop has arranged for it to be</strong>: <span class="math inline">\(\theta_K\)</span> and <span class="math inline">\(\theta_V\)</span> are trained, so the outer loop can shape the proxy until stepping on it happens to help the real loss. That indirection is the whole design. TTT-E2E’s bet is that a proxy the outer loop must be taught to make useful is worse than an objective that was the real one to begin with — and, per its Table 1, replacing the loss <em>“significantly improves performance in language modeling”</em> (§2.4.3).</p>
+<p>For the prediction of <span class="math inline">\(x_t\)</span>, a KVB layer at position <span class="math inline">\(t-1\)</span> constructs its update from the representation of <span class="math inline">\(x_{t-1}\)</span>; changing the candidate label <span class="math inline">\(x_t\)</span> does not change that update. TTT-E2E first scores <span class="math inline">\(x_t\)</span>, then uses the observed <span class="math inline">\(x_t\)</span> in cross-entropy to construct an update for future predictions.</p>
+<p>The distinction is about the training signal, not merely the optimizer. Both methods can use gradient descent and both can be meta-learned.</p>
 </section>
-<section id="e2e-at-training-time-the-initialization-is-the-other-half" class="level2">
-<h2 data-anchor-id="e2e-at-training-time-the-initialization-is-the-other-half">3. E2E at training time — the initialization is the other half</h2>
-<p>The inner loop is fixed now, and it is still not enough. Ask where <span class="math inline">\(W_0\)</span> (the weights TTT starts from) comes from.</p>
-<p>The obvious answer is “pre-training”, and it is the wrong one. Pre-training optimizes the loss of the model <strong>as it stands</strong>, but the model will not stand still; it will be trained on the context before it is asked anything. So there are two candidate training objectives (its <strong>Eqs. 3 and 4</strong>) and they differ in exactly one place:</p>
-<p><span class="math display">\[\mathcal{L}(W_0;X)=\frac1T\sum_{t=1}^{T}\ell_t(W_{t-1})\qquad\text{vs.}\qquad \mathcal{L}_{\texttt{naive}}(W_0;X)=\frac1T\sum_{t=1}^{T}\ell_t(W_0)\]</span></p>
-<p><span class="math inline">\(W_{t-1}\)</span> versus <span class="math inline">\(W_0\)</span>. The first scores the model <em>after</em> TTT, so it must differentiate <strong>through</strong> the inner gradient steps: <a href="../../../../courses/continual-learning/foundations/m5-meta-learning-self-reference.html">M5</a>’s MAML move, <code>create_graph=True</code>, gradients of gradients. The second pretends the inner steps will not happen. TTT-E2E’s argument against it is a lack of guarantee rather than a proof of failure: <em>“we can provide little guarantee that a minimizer of <span class="math inline">\(\mathcal{L}_{\texttt{naive}}\)</span> will also produce low test loss”</em> (§2.2), and it notes this has been the mainstream approach in dynamic evaluation (<a href="https://arxiv.org/abs/1709.07432">Krause et al.</a>) — train normally, then adapt at test time and hope.</p>
-<p>The task below is built to isolate the claim, the way the paper’s own toy example strips the attention layers out to <em>“understand the effect of TTT in isolation”</em> (§2.1). Each sequence walks its <strong>own</strong> random permutation, <span class="math inline">\(x_t=\pi(x_{t-1})\)</span>, with <span class="math inline">\(\pi\)</span> redrawn per sequence. So every fact worth knowing is in the context and none of it is in the weights: no static model can beat chance, and the only way to score is to compress the context into <span class="math inline">\(W\)</span> as you read. That is a harsher world than language (where <span class="math inline">\(W_0\)</span> carries most of the load) and it is harsh on purpose, so that what TTT contributes is the entire signal.</p>
-<div id="8af22037" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-17T13:55:28.571004Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-17T13:55:28.570924Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-17T13:55:36.654635Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-17T13:55:36.654187Z&quot;}}" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_batch(n, gen):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Each sequence walks its OWN random permutation: x_t = pi(x_{t-1}). Nothing is shared,</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">    so pi is knowable only from the context -- and knowable perfectly."""</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> torch.argsort(torch.rand(n, V, generator<span class="op">=</span>gen), dim<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> torch.zeros(n, T <span class="op">+</span> <span class="dv">1</span>, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    x[:, <span class="dv">0</span>] <span class="op">=</span> torch.randint(V, (n,), generator<span class="op">=</span>gen)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(T):</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        x[:, t <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> pi.gather(<span class="dv">1</span>, x[:, t:t <span class="op">+</span> <span class="dv">1</span>]).squeeze(<span class="dv">1</span>)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> token_losses(emb, W0, x, b, create_graph<span class="op">=</span><span class="va">False</span>):</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Per-token NTP loss under mini-batched TTT: one SGD step per b tokens (Eq. 5)."""</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> x.shape[<span class="dv">0</span>]</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    e, y <span class="op">=</span> emb[x[:, :<span class="op">-</span><span class="dv">1</span>]], x[:, <span class="dv">1</span>:]</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    W, out <span class="op">=</span> per_sequence(W0, n), []</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, T, b):</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> suffix_mlp(W, e[:, i:i <span class="op">+</span> b])</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        l <span class="op">=</span> F.cross_entropy(logits.reshape(<span class="op">-</span><span class="dv">1</span>, V), y[:, i:i <span class="op">+</span> b].reshape(<span class="op">-</span><span class="dv">1</span>),</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                            reduction<span class="op">=</span><span class="st">"none"</span>).reshape(n, <span class="op">-</span><span class="dv">1</span>)</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        out.append(l)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">+</span> b <span class="op">&lt;</span> T:</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>            <span class="co"># .mean(1) is Eq. 5's (1/b) sum over the mini-batch. .sum() over sequences keeps</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>            <span class="co"># each sequence's write its own: d(sum_s L_s)/dW[s] = dL_s/dW[s], since sequences</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>            <span class="co"># share no weights after per_sequence(). TTT is per test instance or it is nothing.</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>            g <span class="op">=</span> torch.autograd.grad(l.mean(<span class="dv">1</span>).<span class="bu">sum</span>(), W, create_graph<span class="op">=</span>create_graph)</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>            W <span class="op">=</span> [w <span class="op">-</span> ETA <span class="op">*</span> gi <span class="cf">for</span> w, gi <span class="kw">in</span> <span class="bu">zip</span>(W, g)]</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.cat(out, <span class="dv">1</span>)</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_init(objective, b<span class="op">=</span><span class="dv">4</span>, steps<span class="op">=</span><span class="dv">300</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Learn (emb, W0). 'e2e' backprops THROUGH the inner steps; 'naive' never takes one."""</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    gen <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    emb <span class="op">=</span> (torch.randn(V, D, generator<span class="op">=</span>gen) <span class="op">*</span> <span class="fl">0.5</span>).requires_grad_()</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    W0 <span class="op">=</span> init_memory(gen)</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    opt <span class="op">=</span> torch.optim.Adam([emb] <span class="op">+</span> W0, lr<span class="op">=</span><span class="fl">3e-3</span>)</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> make_batch(<span class="dv">64</span>, gen)</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> objective <span class="op">==</span> <span class="st">"e2e"</span>:</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> token_losses(emb, W0, x, b, create_graph<span class="op">=</span><span class="va">True</span>).mean()   <span class="co"># Eq. 6</span></span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> token_losses(emb, W0, x, T).mean()                      <span class="co"># Eq. 4: no inner step</span></span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>        opt.zero_grad()<span class="op">;</span> loss.backward()<span class="op">;</span> opt.step()</span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> emb.detach(), [w.detach() <span class="cf">for</span> w <span class="kw">in</span> W0]</span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evaluate(emb, W0, b, n<span class="op">=</span><span class="dv">256</span>, seed<span class="op">=</span><span class="dv">999</span>):</span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> make_batch(n, torch.Generator().manual_seed(seed))</span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>    W0 <span class="op">=</span> [w.clone().requires_grad_() <span class="cf">for</span> w <span class="kw">in</span> W0]</span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> token_losses(emb, W0, x, b).detach().mean(<span class="dv">0</span>)</span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>emb_naive, W_naive <span class="op">=</span> train_init(<span class="st">"naive"</span>)</span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>emb_e2e, W_e2e <span class="op">=</span> train_init(<span class="st">"e2e"</span>)</span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>chance <span class="op">=</span> math.log(V)</span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>static <span class="op">=</span> evaluate(emb_e2e, W_e2e, T).mean().item()      <span class="co"># b = T: one batch, zero inner steps</span></span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>naive <span class="op">=</span> evaluate(emb_naive, W_naive, <span class="dv">4</span>)</span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>e2e <span class="op">=</span> evaluate(emb_e2e, W_e2e, <span class="dv">4</span>)</span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"chance (ln </span><span class="sc">{</span>V<span class="sc">}</span><span class="ss">)                       </span><span class="sc">{</span>chance<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"no TTT                               </span><span class="sc">{</span>static<span class="sc">:.3f}</span><span class="ss">   &lt;- no static W can do this task"</span>)</span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TTT from the naive init   (Eq. 4)    </span><span class="sc">{</span>naive<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TTT from the E2E init     (Eq. 6)    </span><span class="sc">{</span>e2e<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">loss by token index          first 8    last 8"</span>)</span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  TTT, naive init            </span><span class="sc">{</span>naive[:<span class="dv">8</span>]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">   </span><span class="sc">{</span>naive[<span class="op">-</span><span class="dv">8</span>:]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">"</span>)</span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  TTT, E2E init              </span><span class="sc">{</span>e2e[:<span class="dv">8</span>]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">   </span><span class="sc">{</span>e2e[<span class="op">-</span><span class="dv">8</span>:]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">"</span>)</span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">abs</span>(static <span class="op">-</span> chance) <span class="op">&lt;</span> <span class="fl">0.02</span>, <span class="st">"without TTT this task is exactly chance"</span></span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> e2e.mean() <span class="op">&lt;</span> <span class="fl">0.6</span> <span class="op">*</span> naive.mean(), <span class="st">"the meta-learned init must beat the naive one"</span></span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> e2e[<span class="op">-</span><span class="dv">8</span>:].mean() <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="st">"by the end of the context, pi is in the weights"</span></span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> e2e[:<span class="dv">8</span>].mean() <span class="op">&gt;</span> <span class="dv">4</span> <span class="op">*</span> e2e[<span class="op">-</span><span class="dv">8</span>:].mean(), <span class="st">"the loss must FALL with context, not sit flat"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="what-is-actually-plastic" class="level2">
+<h2 data-anchor-id="what-is-actually-plastic">2. What is actually plastic?</h2>
+<p>The released model is a Transformer with SWA in every block. Its inner loop does not update the whole Transformer.</p>
+<ul>
+<li>Only the last quarter of the blocks are plastic: 3 of 12 blocks in the 125M model and 8 of 32 in the 3B model.</li>
+<li>A plastic block contains two MLPs. The added <code>feed_forward_prime</code> MLP is updated by TTT; the ordinary MLP remains static as a protected store of pre-trained knowledge.</li>
+<li>Embeddings, attention projections, normalization parameters, the language-model head, and all earlier blocks remain fixed during the inner loop.</li>
+<li>The plastic weights start from the meta-learned <span class="math inline">\(W_0\)</span> at the beginning of every sequence. They are not carried between independent documents.</li>
+<li>Inner optimization is plain SGD with gradient clipping in the reported configurations. The outer optimizer is AdamW.</li>
+</ul>
+<p>The model therefore has three kinds of state while reading one sequence: plastic MLP weights <span class="math inline">\(W_i\)</span>, per-layer SWA KV caches, and the inner optimizer state. Plain SGD has no momentum buffer, but the code still carries the optimizer state through the scan.</p>
+</section>
+<section id="the-inner-loop-in-the-released-implementation" class="level2">
+<h2 data-anchor-id="the-inner-loop-in-the-released-implementation">3. The inner loop in the released implementation</h2>
+<p>The first three quarters of the Transformer never change inside a sequence. The code therefore evaluates this frozen prefix over the full sequence once, using causal SWA, and then splits its hidden states into chunks of length <span class="math inline">\(b\)</span>. It scans the plastic suffix one chunk at a time. This is a safe optimization because the prefix is causal and has no fast weights.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Code-aligned pseudocode; one independent sequence</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>prefix <span class="op">=</span> frozen_prefix(full_sequence)       <span class="co"># causal SWA, computed once</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>chunks <span class="op">=</span> split((sequence, prefix), size<span class="op">=</span>b)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>W <span class="op">=</span> copy(meta_learned_W0)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>opt_state <span class="op">=</span> inner_sgd.init(W)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>suffix_cache <span class="op">=</span> empty_kv_caches(length<span class="op">=</span>k)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>losses <span class="op">=</span> []</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> token_chunk, prefix_chunk <span class="kw">in</span> chunks:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># All b logits use the same pre-update W. The forward pass also</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># consumes the old cache and produces the cache for the next chunk.</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    logits, suffix_cache <span class="op">=</span> plastic_suffix(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        prefix_chunk, W, suffix_cache</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    loss_i <span class="op">=</span> mean_cross_entropy(logits, token_chunk.targets)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    grad_W <span class="op">=</span> grad(loss_i, W)                <span class="co"># only feed_forward_prime</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    W, opt_state <span class="op">=</span> inner_sgd.step(W, grad_W, opt_state)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    losses.append(loss_i)                   <span class="co"># loss was measured before update</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>outer_loss_for_sequence <span class="op">=</span> mean(losses)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Before each chunk, the implementation combines the carried plastic parameters with a fresh view of the unchanged outer parameters. This is how it enforces that only the selected MLP weights persist as fast state.</p>
+<p>At training time, the outer objective includes the complete sequence of inner updates. At evaluation time, the same scan adapts <span class="math inline">\(W\)</span>, but no outer update is taken. The scan also computes an SGD step after the final chunk. That step cannot change an already-recorded loss. A streaming decoder would retain it for a continuation; <code>loss_for_sequence</code> discards the final carry because this evaluation API returns only losses and metrics.</p>
+<section id="where-this-appears-in-the-code" class="level3">
+<h3 data-anchor-id="where-this-appears-in-the-code">Where this appears in the code</h3>
+<p>The pseudocode above is a direct simplification of commit <code>a4fc478</code> in the paper repository:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>operation</th>
+<th>implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>compute frozen prefix, reshape to <span class="math inline">\(b\)</span>-token chunks, scan suffix</td>
+<td><a href="https://github.com/test-time-training/e2e/blob/a4fc4788ace38e29b5067916d4f4be33da894085/ttt/model/transformer.py#L647-L720"><code>MetaModel.loss_for_sequence</code></a></td>
+</tr>
+<tr class="even">
+<td>forward, cross-entropy gradient, inner SGD update</td>
+<td><a href="https://github.com/test-time-training/e2e/blob/a4fc4788ace38e29b5067916d4f4be33da894085/ttt/model/transformer.py#L593-L629"><code>MetaModel.inner_loop_step</code></a></td>
+</tr>
+<tr class="odd">
+<td>concatenate a <span class="math inline">\(k\)</span>-entry cache with the current <span class="math inline">\(b\)</span> keys/values and build a causal mask</td>
+<td><a href="https://github.com/test-time-training/e2e/blob/a4fc4788ace38e29b5067916d4f4be33da894085/ttt/model/attention.py#L322-L365"><code>SWA.__call__</code></a></td>
+</tr>
+<tr class="even">
+<td>select only <code>suffix_blocks.feed_forward_prime</code> for inner updates</td>
+<td><a href="https://github.com/test-time-training/e2e/blob/a4fc4788ace38e29b5067916d4f4be33da894085/configs/experiment/125m/pretrain/pretrain-125m-e2e.yaml">125M E2E configuration</a></td>
+</tr>
+</tbody>
+</table>
+<p>Inside each suffix SWA layer, the current query tensor has shape <span class="math inline">\([b,h,d]\)</span>. The code concatenates the previous cache and current keys/values to obtain <span class="math inline">\([k+b,h,d]\)</span>, applies a <span class="math inline">\([b,k+b]\)</span> causal sliding-window mask, and retains the newest <span class="math inline">\(k\)</span> keys and values. The cache produced by the forward pass is carried as-is; it is not recomputed after the subsequent MLP update.</p>
+</section>
+</section>
+<section id="how-k-and-b-interact" class="level2">
+<h2 data-anchor-id="how-k-and-b-interact">4. How <span class="math inline">\(k\)</span> and <span class="math inline">\(b\)</span> interact</h2>
+<p><span class="math inline">\(b\)</span> and <span class="math inline">\(k\)</span> control different mechanisms:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>knob</th>
+<th>directly controls</th>
+<th>increasing it does what?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TTT chunk <span class="math inline">\(b\)</span></td>
+<td>number of losses averaged per inner SGD step</td>
+<td>fewer sequential updates and better hardware utilization, but fast weights remain stale for longer</td>
+</tr>
+<tr class="even">
+<td>SWA window <span class="math inline">\(k\)</span></td>
+<td>direct attention span and KV-cache length at each layer</td>
+<td>gives each layer a longer local path, but increases attention/cache cost; it does not make SGD more frequent</td>
+</tr>
+</tbody>
+</table>
+<p>While chunk <span class="math inline">\(i\)</span> is being scored, <span class="math inline">\(W_{i-1}\)</span> contains information only from completed chunks. Tokens already seen inside the current chunk cannot enter the fast weights until the chunk ends. SWA must cover this delay. At the final prediction in a chunk, as many as <span class="math inline">\(b-1\)</span> newly observed tokens from that chunk may be needed. A window of <span class="math inline">\(k\ge b\)</span> keeps all of them on a direct attention path.</p>
+<p>The released code does not assert <span class="math inline">\(k\ge b\)</span>; it can construct a mask for <span class="math inline">\(k&lt;b\)</span>. The inequality is a design condition from §2.3 of the paper. If <span class="math inline">\(k&lt;b\)</span>, an early token in the current chunk can leave the attention window before the SGD update that could consolidate it. That creates a recurring coverage gap.</p>
+<section id="a-concrete-timeline" class="level3">
+<h3 data-anchor-id="a-concrete-timeline">A concrete timeline</h3>
+<p>Let <span class="math inline">\(b=4\)</span>. Chunk 1 scores targets <span class="math inline">\(x_1,\ldots,x_4\)</span> with <span class="math inline">\(W_0\)</span>, then produces <span class="math inline">\(W_1\)</span>. Chunk 2 scores <span class="math inline">\(x_5,\ldots,x_8\)</span> with <span class="math inline">\(W_1\)</span>, then produces <span class="math inline">\(W_2\)</span>. Consider the last prediction in chunk 2: the model is at input <span class="math inline">\(x_7\)</span> and predicts <span class="math inline">\(x_8\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>source of context for predicting <span class="math inline">\(x_8\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_1\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_2\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_3\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_4\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_5\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_6\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(x_7\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>eligible to be compressed in <span class="math inline">\(W_1\)</span></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr class="even">
+<td>direct SWA path when <span class="math inline">\(k=4\)</span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+</tr>
+<tr class="odd">
+<td>direct SWA path when <span class="math inline">\(k=2\)</span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"><strong>gap</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+</tr>
+</tbody>
+</table>
+<p>With <span class="math inline">\(k=b=4\)</span>, <span class="math inline">\(x_5\)</span> is still directly visible when the chunk’s last prediction is made. With <span class="math inline">\(k=2&lt;b\)</span>, <span class="math inline">\(x_5\)</span> is too new to be in <span class="math inline">\(W_1\)</span> and too old to be in the local window. The next update <span class="math inline">\(W_2\)</span> comes too late to help the prediction of <span class="math inline">\(x_8\)</span>.</p>
+<section id="the-update-clock" class="level4">
+<h4 data-anchor-id="the-update-clock">The update clock</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>phase</th>
+<th>operation</th>
+<th>fast weights used for the logits</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>score chunk 1</td>
+<td>predict <span class="math inline">\(x_1, x_2, x_3, x_4\)</span> and collect their losses</td>
+<td><span class="math inline">\(W_0\)</span> for all four predictions</td>
+</tr>
+<tr class="even">
+<td>boundary after <span class="math inline">\(x_4\)</span></td>
+<td>average the four losses and take one SGD step</td>
+<td><span class="math inline">\(W_0 \rightarrow W_1\)</span></td>
+</tr>
+<tr class="odd">
+<td>score chunk 2</td>
+<td>predict <span class="math inline">\(x_5, x_6, x_7, x_8\)</span> and collect their losses</td>
+<td><span class="math inline">\(W_1\)</span> for all four predictions</td>
+</tr>
+<tr class="even">
+<td>boundary after <span class="math inline">\(x_8\)</span></td>
+<td>average the four losses and take one SGD step</td>
+<td><span class="math inline">\(W_1 \rightarrow W_2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The weights change at the <strong>chunk boundary</strong>, not between tokens. SWA is what lets the four predictions inside a chunk use one another while they are all sharing the same version of <span class="math inline">\(W\)</span>.</p>
+<p>For the paper’s defaults, <span class="math inline">\(k/b=8192/1024=8\)</span>: the attention buffer spans roughly eight chunk lengths. The extra overlap is useful; <span class="math inline">\(k\)</span> does not have to equal <span class="math inline">\(b\)</span>. Also, <span class="math inline">\(k\)</span> is a <strong>per-layer</strong> direct window, not a strict end-to-end receptive-field cutoff. Information can propagate farther through a stack of SWA layers, even without TTT.</p>
+</section>
+</section>
+<section id="practical-consequences" class="level3">
+<h3 data-anchor-id="practical-consequences">Practical consequences</h3>
+<ul>
+<li><strong>Larger <span class="math inline">\(b\)</span>:</strong> more tokens are processed in parallel and each gradient is averaged over more examples, but there are fewer chances to consolidate context. If <span class="math inline">\(b=T\)</span>, an update is still taken after the sequence, but no token in that sequence benefits from it.</li>
+<li><strong>Smaller <span class="math inline">\(b\)</span>:</strong> the fast weights are fresher, but there are more sequential gradient steps. The learning rate and initialization are coupled to this update schedule; changing <span class="math inline">\(b\)</span> only at test time is a distribution shift.</li>
+<li><strong>Larger <span class="math inline">\(k\)</span>:</strong> local context improves independently of TTT. It also increases the cache and attention work. In the paper’s ablation, larger windows helped SWA, Gated DeltaNet, and TTT-E2E.</li>
+<li><strong>Outer batch <span class="math inline">\(B\)</span>:</strong> each sequence in <span class="math inline">\(B\)</span> has its own <span class="math inline">\(W_i\)</span> and caches. Gradients are averaged only for the outer AdamW update. Increasing <span class="math inline">\(B\)</span> does not change the inner timeline above.</li>
+<li><strong>Long decoding:</strong> in the procedure described in §2.3.2, the model waits until <span class="math inline">\(b\)</span> generated tokens have accumulated, then takes one TTT step on those self-generated tokens before continuing. Before the chunk fills, decoding is ordinary SWA decoding with the current <span class="math inline">\(W_i\)</span>.</li>
+</ul>
+</section>
+</section>
+<section id="why-the-outer-loop-must-include-the-inner-loop" class="level2">
+<h2 data-anchor-id="why-the-outer-loop-must-include-the-inner-loop">5. Why the outer loop must include the inner loop</h2>
+<p>The fast weights need a good starting point. Ordinary pre-training minimizes the loss of a model that never changes:</p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{naive}}(W_0;X)
+=\frac{1}{T}\sum_{t=1}^{T}\ell_t(W_0).
+\]</span></p>
+<p>TTT-E2E instead minimizes the losses produced along the adaptation trajectory:</p>
+<p><span class="math display">\[
+\mathcal{L}(W_0;X)
+=\frac{1}{T}\sum_{i=1}^{T/b}\sum_{t=(i-1)b+1}^{ib}\ell_t(W_{i-1}).
+\]</span></p>
+<p>Because every <span class="math inline">\(W_i\)</span> depends on <span class="math inline">\(W_0\)</span> through the earlier updates, this objective trains the initialization for two jobs: making good immediate predictions and producing useful future weights after SGD. This is the meta-learning step. See the <a href="../../../../courses/continual-learning/primers/backpropagation.html">backpropagation primer</a> for the differentiation machinery.</p>
+<p>The toy task below isolates this distinction. Every sequence follows its own random permutation <span class="math inline">\(x_t=\pi(x_{t-1})\)</span>. Since <span class="math inline">\(\pi\)</span> is redrawn for each sequence, a static model cannot learn it across sequences. It must infer the mapping from the current context and store it in its fast weights.</p>
+<div id="e3a9885e-00bf-4e08-bc82-15cdb524a452" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-09-01T19:07:02.038743Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-09-01T19:07:02.038633Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-09-01T19:07:17.245725Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-09-01T19:07:17.245413Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> make_batch(n, gen):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Generate n sequences, each with its own random transition permutation."""</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    pi <span class="op">=</span> torch.argsort(torch.rand(n, V, generator<span class="op">=</span>gen), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> torch.zeros(n, T <span class="op">+</span> <span class="dv">1</span>, dtype<span class="op">=</span>torch.<span class="bu">long</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    x[:, <span class="dv">0</span>] <span class="op">=</span> torch.randint(V, (n,), generator<span class="op">=</span>gen)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(T):</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        x[:, t <span class="op">+</span> <span class="dv">1</span>] <span class="op">=</span> pi.gather(<span class="dv">1</span>, x[:, t:t <span class="op">+</span> <span class="dv">1</span>]).squeeze(<span class="dv">1</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> inner_chunk_objective(W, inputs, targets):</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Mean chunk loss per sequence, summed across independent sequences."""</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> inputs.shape[<span class="dv">0</span>]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    logits <span class="op">=</span> suffix_mlp(W, inputs)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    per_token <span class="op">=</span> F.cross_entropy(</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        logits.reshape(<span class="op">-</span><span class="dv">1</span>, V), targets.reshape(<span class="op">-</span><span class="dv">1</span>), reduction<span class="op">=</span><span class="st">"none"</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    ).reshape(n, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> per_token.mean(<span class="dv">1</span>).<span class="bu">sum</span>()</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> token_losses(emb, W0, x, b):</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Token losses with one inner SGD update per b tokens."""</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> x.shape[<span class="dv">0</span>]</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    inputs, targets <span class="op">=</span> emb[x[:, :<span class="op">-</span><span class="dv">1</span>]], x[:, <span class="dv">1</span>:]</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    W, losses <span class="op">=</span> per_sequence(W0, n), []</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> start <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, T, b):</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> suffix_mlp(W, inputs[:, start:start <span class="op">+</span> b])</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        chunk_loss <span class="op">=</span> F.cross_entropy(</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>            logits.reshape(<span class="op">-</span><span class="dv">1</span>, V),</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>            targets[:, start:start <span class="op">+</span> b].reshape(<span class="op">-</span><span class="dv">1</span>),</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            reduction<span class="op">=</span><span class="st">"none"</span>,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        ).reshape(n, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        losses.append(chunk_loss)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> start <span class="op">+</span> b <span class="op">&lt;</span> T:</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Average within each sequence. Summing over sequences is safe because</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>            <span class="co"># W has a separate leading slice for every sequence.</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>            grad_W <span class="op">=</span> torch.func.grad(inner_chunk_objective)(</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>                W, inputs[:, start:start <span class="op">+</span> b], targets[:, start:start <span class="op">+</span> b]</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>            W <span class="op">=</span> [w <span class="op">-</span> ETA <span class="op">*</span> g <span class="cf">for</span> w, g <span class="kw">in</span> <span class="bu">zip</span>(W, grad_W)]</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The repository's scan computes a final update too, although loss_for_sequence</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="co"># discards that carry. We omit the unused update in this finite-loss demo.</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.cat(losses, dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> train_init(objective, b<span class="op">=</span><span class="dv">4</span>, steps<span class="op">=</span><span class="dv">300</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    gen <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    learned_emb <span class="op">=</span> (torch.randn(V, D, generator<span class="op">=</span>gen) <span class="op">*</span> <span class="fl">0.5</span>).requires_grad_()</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    learned_W0 <span class="op">=</span> init_memory(gen)</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    optimizer <span class="op">=</span> torch.optim.Adam([learned_emb] <span class="op">+</span> learned_W0, lr<span class="op">=</span><span class="fl">3e-3</span>)</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(steps):</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> make_batch(<span class="dv">64</span>, gen)</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> objective <span class="op">==</span> <span class="st">"e2e"</span>:</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> token_losses(learned_emb, learned_W0, x, b).mean()</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>            <span class="co"># One T-token chunk: no scored token sees adapted weights.</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>            loss <span class="op">=</span> token_losses(learned_emb, learned_W0, x, T).mean()</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> learned_emb.detach(), [w.detach() <span class="cf">for</span> w <span class="kw">in</span> learned_W0]</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> evaluate(emb, W0, b, n<span class="op">=</span><span class="dv">256</span>, seed<span class="op">=</span><span class="dv">999</span>):</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> make_batch(n, torch.Generator().manual_seed(seed))</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>    W0 <span class="op">=</span> [w.clone().requires_grad_() <span class="cf">for</span> w <span class="kw">in</span> W0]</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> token_losses(emb, W0, x, b).detach().mean(<span class="dv">0</span>)</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>emb_naive, W_naive <span class="op">=</span> train_init(<span class="st">"naive"</span>)</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>emb_e2e, W_e2e <span class="op">=</span> train_init(<span class="st">"e2e"</span>)</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>chance <span class="op">=</span> math.log(V)</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>static <span class="op">=</span> evaluate(emb_e2e, W_e2e, T).mean().item()</span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>naive <span class="op">=</span> evaluate(emb_naive, W_naive, <span class="dv">4</span>)</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>e2e <span class="op">=</span> evaluate(emb_e2e, W_e2e, <span class="dv">4</span>)</span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"chance (ln </span><span class="sc">{</span>V<span class="sc">}</span><span class="ss">)                       </span><span class="sc">{</span>chance<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"no scored token sees an update       </span><span class="sc">{</span>static<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TTT from the naive init              </span><span class="sc">{</span>naive<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"TTT from the E2E init                </span><span class="sc">{</span>e2e<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">loss by token index          first 8    last 8"</span>)</span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  TTT, naive init            </span><span class="sc">{</span>naive[:<span class="dv">8</span>]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">   </span><span class="sc">{</span>naive[<span class="op">-</span><span class="dv">8</span>:]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">"</span>)</span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  TTT, E2E init              </span><span class="sc">{</span>e2e[:<span class="dv">8</span>]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">   </span><span class="sc">{</span>e2e[<span class="op">-</span><span class="dv">8</span>:]<span class="sc">.</span>mean()<span class="sc">:7.3f}</span><span class="ss">"</span>)</span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">abs</span>(static <span class="op">-</span> chance) <span class="op">&lt;</span> <span class="fl">0.02</span></span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> e2e.mean() <span class="op">&lt;</span> <span class="fl">0.6</span> <span class="op">*</span> naive.mean()</span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> e2e[<span class="op">-</span><span class="dv">8</span>:].mean() <span class="op">&lt;</span> <span class="fl">0.05</span></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> e2e[:<span class="dv">8</span>].mean() <span class="op">&gt;</span> <span class="dv">4</span> <span class="op">*</span> e2e[<span class="op">-</span><span class="dv">8</span>:].mean()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>chance (ln 16)                       2.773
-no TTT                               2.778   &lt;- no static W can do this task
-TTT from the naive init   (Eq. 4)    0.888
-TTT from the E2E init     (Eq. 6)    0.374
+no scored token sees an update       2.778
+TTT from the naive init              0.888
+TTT from the E2E init                0.374
 
 loss by token index          first 8    last 8
   TTT, naive init              2.566     0.104
   TTT, E2E init                2.267     0.000</code></pre>
 </div>
 </div>
-<p>Three readings, in order of what they cost you to believe.</p>
-<p><strong>The task is what it says it is.</strong> Without TTT the loss is <span class="math inline">\(\ln 16\)</span> to three decimals — not approximately chance, chance. The memory has no way to know <span class="math inline">\(\pi\)</span> and does not pretend to.</p>
-<p><strong>TTT works, from either init.</strong> Both curves fall with token index: the permutation goes into the weights as the context is read, and by the last eight tokens the E2E model has it exactly (loss <span class="math inline">\(\approx 0\)</span>). This is the track’s thesis with the KVB objective removed, and it still holds. The write did not need the binding.</p>
-<p><strong>The init is not a detail.</strong> Same architecture, same inner loop, same <span class="math inline">\(\eta\)</span>, same <span class="math inline">\(b\)</span>: only the <em>outer</em> objective differs, and TTT from the naive init costs you more than twice the loss. And the naive init is not lazy or under-trained: it converged, on an objective that is blind to a fact about its own future. It is <span class="math inline">\(\mathcal{L}_{\texttt{naive}}\)</span>’s minimizer. That is what “mismatch” means.</p>
-<p>A footnote worth having: this notebook <em>cannot</em> be written the naive way and still be E2E. Drop <code>create_graph=True</code> and the outer backward does not merely get worse — it raises, because the graph it needs was never built. Gradients of gradients are not a refinement of the meta-learned init; they are the mechanism (M5 §2). The paper pays for this in wall-clock: <em>“our training latency is 1.2× faster than full attention at 128K context length, but 3.4× slower at 8K”</em> (§3.7), since FlashAttention’s kernel has no gradient-of-gradient support.</p>
-</section>
-<section id="mini-batching-and-where-short-term-memory-went" class="level2">
-<h2 data-anchor-id="mini-batching-and-where-short-term-memory-went">4. Mini-batching, and where short-term memory went</h2>
-<p>Eq. 2 updates <span class="math inline">\(W\)</span> every token, which is both slow (no parallelism across a sequence) and fragile — <em>“each gradient step in the inner loop depends on only a single token, which can easily lead to gradient explosion by chance”</em> (§2.2). The fix is the standard one: take a step per <strong>mini-batch</strong> of <span class="math inline">\(b\)</span> tokens (Eq. 5), with the outer loss generalized to match (Eq. 6).</p>
-<p>That buys stability and costs freshness, and the sweep below shows both walls. Read it as a statement about the <em>procedure</em>, not just a hyper-parameter: the init here was meta-learned at <span class="math inline">\(b=4\)</span>, and the outer loop shaped <span class="math inline">\(W_0\)</span> for <strong>that</strong> inner loop. Move <span class="math inline">\(b\)</span> at test time and you are running someone else’s launchpad.</p>
-<div id="dac5ac9d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-07-17T13:55:36.655715Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-07-17T13:55:36.655630Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-07-17T13:55:37.047812Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-07-17T13:55:37.047393Z&quot;}}" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"test-time b    mean loss"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> b <span class="kw">in</span> (<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">64</span>):</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    L <span class="op">=</span> evaluate(emb_e2e, W_e2e, b).mean().item()</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    note <span class="op">=</span> {<span class="dv">1</span>: <span class="st">"  &lt;- single-token steps explode (Sec 2.2's stability problem)"</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>            <span class="dv">4</span>: <span class="st">"  &lt;- the b this init was meta-learned at"</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>            <span class="dv">64</span>: <span class="st">"  &lt;- b = T: one batch, no TTT at all"</span>}.get(b, <span class="st">""</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>b<span class="sc">:&gt;10}</span><span class="ss">    </span><span class="sc">{</span>L<span class="sc">:10.3f}{</span>note<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>L <span class="op">=</span> {b: evaluate(emb_e2e, W_e2e, b).mean().item() <span class="cf">for</span> b <span class="kw">in</span> (<span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">16</span>, <span class="dv">64</span>)}</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> L[<span class="dv">4</span>] <span class="op">&lt;</span> L[<span class="dv">16</span>] <span class="op">&lt;</span> L[<span class="dv">64</span>], <span class="st">"staleness: a bigger b means a longer-stale memory, so worse loss"</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> L[<span class="dv">1</span>] <span class="op">&gt;</span> <span class="dv">10</span>, <span class="st">"b=1 is unstable here -- the instability Sec 2.2 names"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The static loss is at chance because the transition rule is private to each sequence. Both adapted models improve later in the sequence, which means the inner updates are storing the permutation. The E2E initialization is substantially better because it was trained for the trajectory it will actually follow.</p>
+<p>This toy model has no attention. Its purpose is to isolate the fast-weight and meta-learning mechanism, not to reproduce the paper’s architecture or reported losses.</p>
+<section id="changing-b-after-meta-training" class="level3">
+<h3 data-anchor-id="changing-b-after-meta-training">Changing <span class="math inline">\(b\)</span> after meta-training</h3>
+<p>The initialization above was trained with <span class="math inline">\(b=4\)</span>. Evaluating it with another <span class="math inline">\(b\)</span> changes both the update frequency and the scale/variance of the inner gradients. The following sweep demonstrates that coupling in the toy problem.</p>
+<div id="334e8892-b5ec-4b1c-ada8-48a0399a7e73" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-09-01T19:07:17.247163Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-09-01T19:07:17.247045Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-09-01T19:07:17.841139Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-09-01T19:07:17.840816Z&quot;}}" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"test-time b    mean loss"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> b <span class="kw">in</span> (<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">64</span>):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> evaluate(emb_e2e, W_e2e, b).mean().item()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    note <span class="op">=</span> {</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span>: <span class="st">"  &lt;- unstable with this learning rate"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="dv">4</span>: <span class="st">"  &lt;- meta-training value"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="dv">64</span>: <span class="st">"  &lt;- no scored token benefits from the update"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    }.get(b, <span class="st">""</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>b<span class="sc">:&gt;10}</span><span class="ss">    </span><span class="sc">{</span>value<span class="sc">:10.3f}{</span>note<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>sweep <span class="op">=</span> {b: evaluate(emb_e2e, W_e2e, b).mean().item() <span class="cf">for</span> b <span class="kw">in</span> (<span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">16</span>, <span class="dv">64</span>)}</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> sweep[<span class="dv">4</span>] <span class="op">&lt;</span> sweep[<span class="dv">16</span>] <span class="op">&lt;</span> sweep[<span class="dv">64</span>]</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> sweep[<span class="dv">1</span>] <span class="op">&gt;</span> <span class="dv">10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>test-time b    mean loss
-         1     67234.594  &lt;- single-token steps explode (Sec 2.2's stability problem)
+         1     53944.078  &lt;- unstable with this learning rate
          2         0.372
-         4         0.374  &lt;- the b this init was meta-learned at
+         4         0.374  &lt;- meta-training value
          8         0.455
         16         0.781
-        64         2.778  &lt;- b = T: one batch, no TTT at all</code></pre>
+        64         2.778  &lt;- no scored token benefits from the update</code></pre>
 </div>
 </div>
-<p>Both failure modes are real, and they pin <span class="math inline">\(b\)</span> from opposite sides. At <span class="math inline">\(b=1\)</span> the loss is not merely worse, it is five digits: a single-token gradient, taken with a step size the outer loop tuned for the average of four, diverges, §2.2’s “gradient explosion by chance”, reproduced. At the other end, <span class="math inline">\(b=64=T\)</span> is one batch and zero inner steps, so the model is back to chance. In between, the cost of a larger <span class="math inline">\(b\)</span> is <strong>staleness</strong>: predictions in a mini-batch are all made with weights that stopped learning at the batch boundary. The paper reads the same trade-off off its own ablation and lands at <span class="math inline">\(b=1\)</span>K (§3.2).</p>
-<p>Which leaves the hole this module has been ignoring. If <span class="math inline">\(W\)</span> only updates every <span class="math inline">\(b\)</span> tokens, the model is <em>“a bigram again within each batch”</em> (§2.3): inside a mini-batch it has no memory of the tokens it just read. The paper’s answer is not a better write rule. It is to stop asking the write rule to do this job at all:</p>
-<blockquote class="blockquote">
-<p><em>“It is important to set <span class="math inline">\(k\geq b\)</span> so our model can remember the context within each mini-batch before TTT has a chance to update its weights”</em> (§2.3)</p>
-</blockquote>
-<p><span class="math inline">\(k\)</span> is the <strong>sliding-window attention</strong> size. The architecture is a Transformer whose attention is windowed to <span class="math inline">\(k=8\)</span>K, with TTT running on the MLPs of the last quarter of the blocks at <span class="math inline">\(b=1\)</span>K (§2.3, §3.2). So the labour is split, and the conclusion says so plainly: <em>“the weights updated at test time can be interpreted as long-term memory and the sliding window as short-term memory”</em> (§5). Recent tokens are recalled exactly, by attention, within the window; older context is compressed into weights, lossily, by gradient descent.</p>
-<p>That is worth holding against <a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a> §3’s flattest column. The gate <span class="math inline">\(\alpha_t\)</span> is still <span class="math inline">\(1\)</span> here — nothing decays <span class="math inline">\(W\)</span>, and Eq. 5 has no decay term. TTT-E2E does not forget by turning the gate; it forgets by letting tokens fall out of the window. Titans put forgetting <em>in the write rule</em> (NL-1 §2); this design puts it in the architecture and leaves the rule alone.</p>
+<p>Two effects are visible. Large chunks postpone useful updates, so performance approaches the static baseline. At <span class="math inline">\(b=1\)</span>, this particular initialization and learning rate are unstable because they were tuned for gradients averaged over four tokens. That is an illustration of hyper-parameter coupling, not a claim that single-token TTT must always diverge.</p>
+<p>The paper reports the same qualitative pressure at scale: larger <span class="math inline">\(b\)</span> significantly hurts loss, while values below 1K make hardware utilization and stability poor. It therefore uses <span class="math inline">\(b=1\)</span>K. The paper separately chooses <span class="math inline">\(k=8\)</span>K because larger SWA windows helped and smaller ones did not substantially improve runtime.</p>
 </section>
-<section id="what-it-buys-and-what-it-costs" class="level2">
-<h2 data-anchor-id="what-it-buys-and-what-it-costs">5. What it buys, and what it costs</h2>
-<p>The results are about <strong>scaling</strong>, not about winning a benchmark, and the summary has a loss in it.</p>
-<p><strong>What it buys.</strong> For 3B models trained on 164B tokens, TTT-E2E <em>“scales with context length in the same way as Transformer with full attention”</em> while Mamba 2 and Gated DeltaNet do not (abstract, §3.4) — and it keeps an RNN’s constant per-token cost, <em>“making it 2.7× faster than full attention for 128K context”</em> (abstract). That is the trade the whole track has been chasing: attention’s context scaling at an RNN’s inference cost.</p>
-<p><strong>What it costs.</strong> On Needle-in-a-Haystack, <em>“Transformer with full attention dramatically outperforms the other methods, including ours, especially in long context”</em> (§3.5). That is the mechanism, not a caveat: compression discards detail, and NIAH is built to demand exactly the detail a compressor throws away. The paper’s own framing is that recall and compression are different goods, and it is buying one.</p>
-<p><strong>Two things it doesn’t hide, worth copying.</strong></p>
-<p><em>The architecture is not doing the work.</em> Set <span class="math inline">\(b=8\)</span>K at the 8K pre-training length and TTT never fires; the modified architecture then scores 2.825 against full attention’s 2.827: <em>“architecture design plays a minor, supporting role in our method”</em> (§3.2). The gain is the training procedure, not the block diagram. Contrast NL-1–NL-3, where the block diagram is the contribution.</p>
-<p><em>It is not the first.</em> <a href="https://arxiv.org/abs/2212.02475">Clark et al., 2022</a> already added an MLP as fast weights, meta-learned its initialization as slow weights, and <em>“update[d] the fast weights by taking a gradient step on the next-token prediction loss computed over each chunk (mini-batch) of tokens”</em>. TTT-E2E calls it <em>“the most relevant to ours in methodology”</em> and <em>“a valuable inspiration”</em> (§4.3). Both halves of “end-to-end” are there in 2022. What was missing was linear complexity — Clark et al.&nbsp;<em>“does not improve efficiency, since their combined architecture does not have linear complexity”</em>, and interleaving the fast weights through the stack rather than bolting them on the end. The 2025 contribution is the sliding window, the scale, and the evidence.</p>
 </section>
-<section id="synthesis-what-this-does-to-the-track" class="level2">
-<h2 data-anchor-id="synthesis-what-this-does-to-the-track">6. Synthesis — what this does to the track</h2>
-<p>The write dial had something inside it, and Miras was pointing at it the whole time.</p>
-<p>Miras’ four axes (<a href="../../../../courses/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">NL-1</a> §3) were <em>memory architecture · attentional bias (the inner objective) · retention gate · optimizer</em>, and its second axis is precisely this module’s subject. But Miras varies the <em>shape</em> of the binding loss: <span class="math inline">\(\ell_2\)</span>, Huber, <span class="math inline">\(\ell_p\)</span>, robust to outliers. It never asks whether the thing being bound should be a key and a value at all. The axis was drawn; the far end of it was not visited. TTT-E2E goes there, and finds the objective the axis was a proxy for.</p>
-<p>So the track’s dial setting holds and gains a floor. Write rule, gate, optimizer — and inside the write rule, the <em>objective</em>, which four papers treated as fixed and a fifth treated as the variable. Read the two designs side by side:</p>
+<section id="what-the-method-buysand-what-it-does-not" class="level2">
+<h2 data-anchor-id="what-the-method-buysand-what-it-does-not">6. What the method buys—and what it does not</h2>
+<p>For 3B models trained on 164B tokens, TTT-E2E’s language-model loss continues to improve with longer context in a way that the efficient baselines in the paper do not. With fixed <span class="math inline">\(k\)</span> and <span class="math inline">\(b\)</span>, prefill is linear in sequence length and decode has constant cost per token apart from the periodic TTT step; the paper reports 2.7× faster inference than full attention at 128K.</p>
+<p>The updated weights are a lossy compressor, not an exact archive. On Needle-in-a-Haystack, full attention is much better, especially at long context. SWA offers a direct path to recent tokens; older information can influence the model through updated weights, but the method does not guarantee verbatim recall.</p>
+<p>Training is also expensive. The outer loop differentiates through inner gradients and a long recurrent scan. The reported implementation is 3.4× slower than full-attention training at 8K, although it becomes 1.2× faster at 128K. Gradient checkpointing through time controls memory use at the cost of recomputation.</p>
+<p>Finally, the architecture alone is not the result. In the 8K pre-training ablation, setting <span class="math inline">\(b=8\)</span>K means no scored token benefits from TTT; that modified architecture performs almost identically to full attention. The gain comes from the adaptation procedure and the initialization trained for it.</p>
+</section>
+<section id="synthesis" class="level2">
+<h2 data-anchor-id="synthesis">7. Synthesis</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -518,60 +800,60 @@ loss by token index          first 8    last 8
 <thead>
 <tr class="header">
 <th></th>
-<th>NL-1 → NL-3 (TTT-KVB)</th>
-<th>NL-4 (TTT-E2E)</th>
+<th>TTT with KV Binding</th>
+<th>TTT-E2E</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>inner objective</td>
-<td><span class="math inline">\(\lVert g(\theta_K\mathbf{x}_t)-\theta_V\mathbf{x}_t\rVert^2\)</span>, per layer</td>
-<td><span class="math inline">\(\texttt{CE}(f(x_{t-1};W),x_t)\)</span>, once, at the end</td>
+<td>layer-local key-to-value reconstruction</td>
+<td>one next-token cross-entropy at the network output</td>
 </tr>
 <tr class="even">
-<td>what the memory stores</td>
-<td>key → value associations</td>
-<td>whatever lowers next-token loss</td>
+<td>fast state</td>
+<td>weights of a memory module</td>
+<td>added MLP weights in the last quarter of Transformer blocks</td>
 </tr>
 <tr class="odd">
-<td>the memory</td>
-<td>a state <span class="math inline">\(\mathcal{M}\)</span> replacing an attention layer</td>
-<td>the MLP weights already in the block</td>
+<td>update schedule</td>
+<td>often token-wise or mini-batched</td>
+<td>one plain-SGD step per <span class="math inline">\(b\)</span> tokens</td>
 </tr>
 <tr class="even">
-<td>reading it</td>
-<td>a query <span class="math inline">\(\mathbf{q}_t\)</span> against the store</td>
-<td>the forward pass</td>
+<td>short-range path</td>
+<td>depends on the hybrid architecture</td>
+<td>SWA with per-layer window/cache <span class="math inline">\(k\)</span></td>
 </tr>
 <tr class="odd">
-<td>inner optimizer</td>
-<td>momentum, DGD, Muon (Titans, HOPE)</td>
-<td>plain SGD, one step per mini-batch</td>
+<td>long-range path</td>
+<td>compressed in memory weights</td>
+<td>compressed in plastic MLP weights</td>
 </tr>
 <tr class="even">
-<td>forgetting</td>
-<td>the gate <span class="math inline">\(\alpha_t\)</span>, in the write rule</td>
-<td>the sliding window, in the architecture</td>
-</tr>
-<tr class="odd">
-<td>short-term memory</td>
-<td>the fast level of the hierarchy</td>
-<td>attention, over the last <span class="math inline">\(k\)</span> tokens</td>
+<td>outer learning</td>
+<td>learns projections and initialization through the memory process</td>
+<td>learns all slow parameters and <span class="math inline">\(W_0\)</span> through the complete inner scan</td>
 </tr>
 </tbody>
 </table>
-<p>The right column is <em>simpler in every row</em>. This track’s arc was toward richer write rules: momentum, then orthogonalization, then self-modification. TTT-E2E turns the optimizer dial back to M1’s setting, one plain step, and spends the complexity budget somewhere the recurrence in M7 §3 never had a column for: <strong><span class="math inline">\(W_0\)</span></strong>, the value the memory starts at. Every foundations demo starts its memory at zeros. Here that starting point is the meta-learned artifact, and the inner loop is deliberately dumb.</p>
-<p>Both directions are live. HOPE’s bet is that the write rule should be expressive and learned; TTT-E2E’s is that the write rule should be trivial and the <em>initialization</em> should carry everything. Nothing here settles it: the two are not even evaluated against each other, and the papers are a month apart. What this module settles is narrower: the KV binding was a choice, not a fact, and it is now on the list of things you are allowed to turn.</p>
+<p>The clean mental model is <strong>local buffer plus periodic consolidation</strong>. SWA supplies a direct, finite-span path. The plastic MLPs are a recurrent, lossy state updated every <span class="math inline">\(b\)</span> tokens. The condition <span class="math inline">\(k\ge b\)</span> aligns the buffer with the consolidation interval so that newly read information does not fall between them.</p>
+<p>There is no explicit decay gate on <span class="math inline">\(W\)</span>. Old KV entries leave each layer’s sliding cache, while old information in <span class="math inline">\(W\)</span> can be overwritten indirectly by later SGD updates. That is interference, not a programmed forgetting rate.</p>
 </section>
 <section id="exit-check" class="level2">
 <h2 data-anchor-id="exit-check">Exit check</h2>
-<p>Self-test:</p>
-<p><strong>1. What is KV Binding, and what makes it a proxy?</strong> The inner objective <span class="math inline">\(\ell_t^{(l)}(W)=\lVert g(\theta_K^{(l)}\mathbf{x}_t^{(l)};W)-\theta_V^{(l)}\mathbf{x}_t^{(l)}\rVert^2\)</span> (TTT-E2E Eq. 7): learn to predict each token’s value from its key, shared by TTT, Titans, Miras, Atlas and HOPE, and inherited from self-attention’s key–value cache. It is a proxy because it is not the loss the model is graded on: it is built from the <em>current</em> token alone and never sees the next one. §2’s demo is that fact as an assert — the KVB write is bit-identical whichever token comes next, while the E2E write is not.</p>
-<p><strong>2. In what two senses is TTT-E2E “end-to-end”, and which is which?</strong> <em>At test time</em>, the inner loop optimizes the real next-token loss at the end of the network (Eq. 1) rather than a layer-local reconstruction: that is what §2.4’s “key step” replaces. <em>At training time</em>, the outer loop optimizes the loss <strong>after</strong> TTT, <span class="math inline">\(\mathcal{L}(W_0;X)=\frac1T\sum_t\ell_t(W_{t-1})\)</span> (Eq. 3), rather than <span class="math inline">\(\mathcal{L}_{\texttt{naive}}\)</span>’s loss of the un-adapted model (Eq. 4), differentiating through the inner steps, M5’s MAML. Drop either and the method is one of its own baselines: drop the first and you are TTT-KVB, drop the second and you are dynamic evaluation.</p>
-<p><strong>3. If the gate is still 1 and the optimizer is plain SGD, where did forgetting and short-term memory go?</strong> Into the architecture. Sliding-window attention holds the last <span class="math inline">\(k=8\)</span>K tokens exactly and drops them by construction: <em>“the weights updated at test time can be interpreted as long-term memory and the sliding window as short-term memory”</em> (§5), and <span class="math inline">\(k\geq b\)</span> is required so the model can see within a mini-batch before TTT updates on it (§2.3). Titans put forgetting in the write rule; this puts it in the block diagram and leaves the rule alone.</p>
-<p><strong>4. What is the strongest case <em>against</em> reading this as the track’s refutation?</strong> Three things. It does not beat full attention on recall (§3.5): it is buying context scaling, not memory. Its own ablation says <em>“architecture design plays a minor, supporting role”</em> (§3.2), so it is not a comparison of block designs and HOPE is; they are answering different questions. And both halves of its idea are in <a href="https://arxiv.org/abs/2212.02475">Clark et al., 2022</a>, which it credits as <em>“the most relevant to ours in methodology”</em> (§4.3): what is new is linear complexity and the scaling evidence, not the objective. This module removes an assumption from the track; it does not close it.</p>
-<hr>
-<p><strong>Track complete.</strong> Four modules: the write rule became a learner (NL-1), every memory became a level (NL-2), the pieces assembled into HOPE (NL-3), and the objective they all shared turned out to be a dial too (NL-4). The three-dials view (<a href="../../../../courses/continual-learning/foundations/m7-three-dials.html">M7</a>) holds the map, and the open questions are the ones the last two modules disagree about — expressive write rules versus meta-learned initializations, and whether a compressor should ever have been asked to do recall.</p>
+<p><strong>1. When are the <span class="math inline">\(b\)</span> predictions in a chunk made relative to the SGD update?</strong><br>
+All are made with <span class="math inline">\(W_{i-1}\)</span>. Their mean next-token loss produces one gradient, and only then is <span class="math inline">\(W_i\)</span> created. Therefore, the write from chunk <span class="math inline">\(i\)</span> first helps chunk <span class="math inline">\(i+1\)</span>.</p>
+<p><strong>2. Why does the paper choose <span class="math inline">\(k\ge b\)</span>?</strong><br>
+The fast weights do not yet contain tokens from the current chunk. A direct SWA window at least as long as the chunk keeps those tokens reachable until the boundary update can consolidate them. If <span class="math inline">\(k&lt;b\)</span>, an early current-chunk token can be outside both stores for later predictions in that chunk.</p>
+<p><strong>3. Does <span class="math inline">\(k=8\)</span>K mean the whole network has a hard 8K receptive field?</strong><br>
+No.&nbsp;It is the direct window of each attention layer and the length of each layer’s cache. Stacked SWA layers can propagate information farther, and TTT adds a separate path through updated weights.</p>
+<p><strong>4. Which weights change at test time?</strong><br>
+Only the added <code>feed_forward_prime</code> MLPs in the last quarter of blocks. Attention, embeddings, normalization, the language-model head, and the ordinary MLPs stay fixed in the inner loop.</p>
+<p><strong>5. What are the two meanings of “end-to-end”?</strong><br>
+At test time, the inner objective is the final next-token loss rather than a layer-local proxy. At training time, the outer loss is differentiated through the actual sequence of inner updates, so <span class="math inline">\(W_0\)</span> and the rest of the model are optimized for post-update behavior.</p>
+<p><strong>6. What resets between documents?</strong><br>
+The plastic weights return to the shared meta-learned <span class="math inline">\(W_0\)</span>, and the SWA caches and inner optimizer state are reinitialized. The released training loop does not carry memory across independent sequences.</p>
 
 
 </section>
