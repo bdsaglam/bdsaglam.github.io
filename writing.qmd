@@ -20,9 +20,28 @@ listing:
 
 ## Publications
 
+<!-- One entry per publication, newest first: title, authors (own name in
+bold), then year and links. The title links to the project page if there
+is one, otherwise to the document. Link names, in this order: the document
+as preprint, paper (published version) or thesis; then code, slides,
+poster, video. -->
+
 ::: {.pub}
-**MSc Thesis** — *Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language
-Models*. METU, 2024. [Open archive](https://open.metu.edu.tr/handle/11511/111317)
+[Language of Learning](papers/language-of-learning/){.ptitle}
+[**Barış Deniz Sağlam**, Duygu Ataman, Altan Koçyiğit]{.pauthors}
+[2026 [preprint](https://doi.org/10.2139/ssrn.7552418)]{.plinks}
+:::
+
+::: {.pub}
+[ArgGYM: A Procedural, Engine-Verified Benchmark for Structured Defeasible Reasoning](https://arxiv.org/abs/2609.38409){.ptitle}
+[İbrahim Ethem Deveci, Funda Tan Çalık, **Barış Deniz Sağlam**, Duygu Ataman]{.pauthors}
+[2026 [preprint](https://arxiv.org/abs/2609.38409) [code](https://github.com/ieddeveci/ArgGYM)]{.plinks}
+:::
+
+::: {.pub}
+[Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language Models](https://open.metu.edu.tr/handle/11511/111317){.ptitle}
+[**Barış Deniz Sağlam**]{.pauthors}
+[2024 [thesis](https://open.metu.edu.tr/handle/11511/111317)]{.plinks}
 :::
 
 ## Posts

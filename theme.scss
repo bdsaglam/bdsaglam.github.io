@@ -176,7 +176,13 @@ figure + p, p:has(> img.img-fluid) + p {
 .pagelead { color: #3d4046; font-size: 1.06rem; margin: 0 0 0.6rem; max-width: 62ch; }
 
 /* writing page: publications + post list */
-.pub { margin: 0 0 0.6rem; }
+.pub { margin: 0 0 1.1rem; }
+.pub .ptitle { display: block; font-weight: 500; color: var(--ink); text-decoration: none; }
+.pub .ptitle:hover { color: var(--blue); }
+.pub .pauthors { display: block; color: var(--dim); font-size: .9rem; line-height: 1.5; }
+.pub .pauthors strong { color: var(--ink); font-weight: 600; }
+.pub .plinks { display: block; margin-top: .1rem; font-family: var(--mono); font-size: .8rem; color: var(--dim); }
+.pub .plinks a { margin-left: .5rem; }
 .postlist ul { list-style: none; padding: 0; margin: 0.4rem 0; }
 .postlist li { display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 1rem; align-items: baseline; padding: 0.55rem 0; }
 .postlist .pt { grid-column: 1; grid-row: 1; font-weight: 500; color: var(--ink); text-decoration: none; }
