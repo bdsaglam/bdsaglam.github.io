@@ -7,6 +7,7 @@ project:
     - "!workspace/**"
   resources:
     - CNAME
+    - fonts/**
     - papers/**
     - slides/**
 
@@ -28,11 +29,13 @@ website:
         href: projects.html
       - text: CV
         href: cv.html
-  google-analytics: "G-498T1C2SN2"
+  page-footer:
+    center: "[privacy](/privacy.html) · [cookie preferences](#cookie-preferences)"
 
 format:
   html:
     theme: theme.scss
+    include-in-header: _consent.html
     toc: false
     grid:
       body-width: 720px

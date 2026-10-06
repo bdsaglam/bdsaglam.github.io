@@ -1,5 +1,5 @@
 /*-- scss:defaults --*/
-@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('/fonts/fonts.css');  // self-hosted: no font request leaves the site
 // Both families cover Turkish and Greek: posts use θ, η, Σ as plain text.
 $font-family-sans-serif: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 $font-family-monospace:  "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -66,6 +66,10 @@ main.content .card h3::before { content: none; }
   .navbar > .navbar-container, .navbar > .container-fluid { padding: .8rem .75rem; }
   .navbar .navbar-container > .navbar-nav { column-gap: .9rem; } .navbar .nav-link { font-size: .8rem; }
 }
+
+/* footer: same voice as the navbar */
+.nav-footer { background: var(--paper); border-top: 1px solid var(--rule); font-family: var(--mono); font-size: .78rem; color: var(--dim); }
+.nav-footer a { color: var(--dim); text-decoration: none; } .nav-footer a:hover { color: var(--blue); }
 
 /* table of contents (course pages) */
 #TOC, .sidebar nav[role="doc-toc"] { font-size: .86rem; }
