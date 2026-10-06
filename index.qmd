@@ -4,7 +4,8 @@ pagetitle: "Barış Deniz Sağlam"
 
 ```{=html}
 <header class="hero">
-  <img class="avatar" src="profile.jpg" alt="Barış Deniz Sağlam">
+  <h1>Barış Deniz Sağlam</h1>
+  <div class="bio">
   <div class="hero-text">
     <p>I'm a senior AI engineer and PhD researcher. For eight-plus years I've designed and
     shipped production AI systems — owning architecture, system design, and tech-stack
@@ -19,6 +20,8 @@ pagetitle: "Barış Deniz Sağlam"
       </span>
       <a class="cvlink" href="cv.html"><i class="bi bi-file-earmark-arrow-down"></i> CV</a>
     </div>
+  </div>
+  <img class="avatar" src="profile.jpg" alt="Barış Deniz Sağlam">
   </div>
 </header>
 ```
