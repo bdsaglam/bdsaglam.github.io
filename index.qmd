@@ -53,7 +53,7 @@ pagetitle: "Barış Deniz Sağlam"
 [2025–present · Bosch Legends Lab, Novee AI, Genie AI · Remote]{.rmeta}
 :::
 ::: {.cvrole}
-[AI Software Engineer — Peppy Health]{.rh}
+[Senior AI Engineer — Peppy Health]{.rh}
 [2023–2025 · London, UK (remote)]{.rmeta}
 :::
 ::: {.cvrole}
