@@ -910,11 +910,18 @@
     "text": "Recent\n\n\nJun 2026Won the DocVQA challenge at ICDAR 2026.\nSep 2025Started a PhD in Information Systems at METU.\nOct 2024Completed an MSc in Data Informatics at METU."
   },
   {
-    "objectID": "index.html#writing",
-    "href": "index.html#writing",
+    "objectID": "index.html#publications",
+    "href": "index.html#publications",
     "title": "Barış Deniz Sağlam",
-    "section": "Writing",
-    "text": "Writing\n\nLanguage of Learning Barış Deniz Sağlam, Duygu Ataman, Altan Koçyiğit 2026 preprint\n\n\nArgGYM: A Procedural, Engine-Verified Benchmark for Structured Defeasible Reasoning İbrahim Ethem Deveci, Funda Tan Çalık, Barış Deniz Sağlam, Duygu Ataman 2026 preprint code\n\n\n\nPerceive-Reason-Code: Active Perception for Document VQAJul 2026How a code REPL plus on-demand VLM perception let an open 27B win a document-QA challenge, and which parts carry it.\nFine-tuning vs. PromptingFeb 2025When adapting weights beats prompting, and what it costs.\nIs Everything an Abstraction?Jan 2025Physics, Kant, and the layers we build to grasp reality.\n\n\nAll writing →"
+    "section": "Publications",
+    "text": "Publications\n\nLanguage of Learning Barış Deniz Sağlam, Duygu Ataman, Altan Koçyiğit 2026 preprint\n\n\nArgGYM: A Procedural, Engine-Verified Benchmark for Structured Defeasible Reasoning İbrahim Ethem Deveci, Funda Tan Çalık, Barış Deniz Sağlam, Duygu Ataman 2026 preprint code\n\nAll publications →"
+  },
+  {
+    "objectID": "index.html#posts",
+    "href": "index.html#posts",
+    "title": "Barış Deniz Sağlam",
+    "section": "Posts",
+    "text": "Posts\n\n\nPerceive-Reason-Code: Active Perception for Document VQAJul 2026How a code REPL plus on-demand VLM perception let an open 27B win a document-QA challenge, and which parts carry it.\nFine-tuning vs. PromptingFeb 2025When adapting weights beats prompting, and what it costs.\nIs Everything an Abstraction?Jan 2025Physics, Kant, and the layers we build to grasp reality.\n\n\nAll posts →"
   },
   {
     "objectID": "index.html#experience",
