@@ -160,7 +160,6 @@ figure + p, p:has(> img.img-fluid) + p {
 .posts li a, .projlist li a { color: var(--ink); text-decoration: none; font-weight: 500; }
 .posts li a:hover, .projlist li a:hover { color: var(--blue); }
 .roles li { margin: 0.45rem 0; }
-.thesis { margin: 0 0 0.4rem; }
 .contact { font-size: 1.05rem; }
 
 /* projects: flat entries in one column, no boxes */

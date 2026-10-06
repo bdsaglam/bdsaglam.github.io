@@ -36,7 +36,17 @@ pagetitle: "Barış Deniz Sağlam"
 
 ## Writing
 
-[**MSc Thesis** — *Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language Models*. METU, 2024. [Open archive](https://open.metu.edu.tr/handle/11511/111317)]{.thesis}
+::: {.pub}
+[Language of Learning](papers/language-of-learning/){.ptitle}
+[**Barış Deniz Sağlam**, Duygu Ataman, Altan Koçyiğit]{.pauthors}
+[2026 [preprint](https://doi.org/10.2139/ssrn.7552418)]{.plinks}
+:::
+
+::: {.pub}
+[ArgGYM: A Procedural, Engine-Verified Benchmark for Structured Defeasible Reasoning](https://arxiv.org/abs/2609.38409){.ptitle}
+[İbrahim Ethem Deveci, Funda Tan Çalık, **Barış Deniz Sağlam**, Duygu Ataman]{.pauthors}
+[2026 [preprint](https://arxiv.org/abs/2609.38409) [code](https://github.com/ieddeveci/ArgGYM)]{.plinks}
+:::
 
 ::: {.postlist}
 - [Perceive-Reason-Code: Active Perception for Document VQA](posts/perceive-reason-code/index.html){.pt}[Jul 2026]{.pd}[How a code REPL plus on-demand VLM perception let an open 27B win a document-QA challenge, and which parts carry it.]{.pdesc}
