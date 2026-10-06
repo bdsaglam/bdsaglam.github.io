@@ -75,7 +75,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../../../site_libs/quarto-html/quarto-syntax-highlighting-0ae380b0d76ea21f7f587c312230f992.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../../site_libs/bootstrap/bootstrap-df08472fd9fa7027c8b39c6c3f70199a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../../../site_libs/bootstrap/bootstrap-faad304f7f4a87010507120eaae9efbd.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -91,14 +91,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-498T1C2SN2"></script>
-
-<script type="text/javascript">
-
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-498T1C2SN2', { 'anonymize_ip': true});
+<!-- Opt-in analytics. Google Analytics loads only after the visitor accepts;
+     the choice lives in one cookie, and the footer's "cookie preferences"
+     link (any href ending in #cookie-preferences) reopens the banner. The Language of
+     Learning page carries a copy of this file; keep the two in step. -->
+<style>
+#consent{position:fixed;left:0;right:0;bottom:0;z-index:1000;display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;
+  align-items:center;justify-content:center;padding:.75rem 1rem;background:#fbf9f4;border-top:1px solid #e4dfd3;
+  font:.8rem/1.5 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;color:#1c1e21;}
+#consent[hidden]{display:none;}
+#consent a{color:#2346a0;}
+#consent button{font:inherit;padding:.22rem .8rem;border:1.5px solid #2346a0;border-radius:4px;background:none;color:#2346a0;cursor:pointer;}
+#consent button:hover{background:#2346a0;color:#fff;}
+</style>
+<script>
+(function () {
+  var ID = 'G-498T1C2SN2', NAME = 'analytics_consent', DAYS = 182;
+  function choice() { var m = document.cookie.match('(?:^|; )' + NAME + '=([^;]*)'); return m && m[1]; }
+  function remember(v) { document.cookie = NAME + '=' + v + '; max-age=' + DAYS * 86400 + '; path=/; SameSite=Lax'; }
+  function loadAnalytics() {
+    if (window.gtag) return;
+    var s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    gtag('js', new Date()); gtag('config', ID);
+  }
+  function dropAnalyticsCookies() {
+    document.cookie.split('; ').forEach(function (c) {
+      var n = c.split('=')[0];
+      if (/^_ga/.test(n)) ['', '; domain=' + location.hostname, '; domain=.' + location.hostname].forEach(function (d) {
+        document.cookie = n + '=; max-age=0; path=/' + d;
+      });
+    });
+  }
+  function showBanner() {
+    var b = document.getElementById('consent');
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'consent'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Cookie consent');
+      b.innerHTML = '<span>This site uses Google Analytics cookies to count visits, only if you accept. <a href="/privacy.html">privacy</a></span>'
+                  + '<span><button type="button" data-v="granted">accept</button> <button type="button" data-v="denied">decline</button></span>';
+      b.addEventListener('click', function (e) {
+        var v = e.target.getAttribute && e.target.getAttribute('data-v');
+        if (!v) return;
+        var was = choice();
+        remember(v); b.hidden = true;
+        if (v === 'granted') loadAnalytics();
+        else {
+          window['ga-disable-' + ID] = true;  // Google's opt-out flag: the running tag sends nothing more
+          dropAnalyticsCookies();
+          if (was === 'granted') location.reload();  // unload the tag itself
+        }
+      });
+      document.body.appendChild(b);
+    }
+    b.hidden = false;
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var c = choice();
+    if (c === 'granted') loadAnalytics(); else if (c !== 'denied') showBanner();
+  });
+  // Quarto rewrites footer hrefs to absolute URLs, so match the fragment, on click.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a');
+    if (a && /#cookie-preferences$/.test(a.getAttribute('href') || '')) { e.preventDefault(); showBanner(); }
+  });
+})();
 </script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
@@ -959,6 +1019,19 @@ fast level churns every step (plastic, short-term store); slow level barely move
   });
   </script>
 </div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p><a href="../../../../privacy.html">privacy</a> · <a href="#cookie-preferences">cookie preferences</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
 
 
 
