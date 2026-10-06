@@ -15,9 +15,11 @@ website:
   site-url: https://barisdeniz.is-a.dev
   search: false
   navbar:
+    title: false
+    collapse: false
     pinned: false
     background: light
-    right:
+    left:
       - text: Home
         href: index.html
       - text: Writing

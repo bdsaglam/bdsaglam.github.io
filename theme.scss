@@ -57,8 +57,15 @@ main.content .card h3::before { content: none; }
 .navbar .nav-link { font-family: var(--mono); font-size: .85rem; color: var(--dim) !important; padding: 0 !important; text-transform: lowercase; }
 .navbar .nav-link:hover, .navbar .nav-link.active { color: var(--blue) !important; }
 .navbar .navbar-toggler { border: 0; }
-/* monospace is wide: keep the full name on one line on a phone */
-@media (max-width: 991.98px) { .navbar-brand { font-size: .8rem; letter-spacing: -.03em; } }
+/* no brand: the links alone, centered, wrapping rather than collapsing.
+   With `collapse: false` the list sits directly in the container, and
+   Bootstrap's `me-auto` would push it left. */
+.navbar .navbar-brand-container { display: none; }
+.navbar .navbar-container > .navbar-nav { margin: 0 auto !important; flex-direction: row; flex-wrap: wrap; justify-content: center; column-gap: 1.2rem; }
+@media (max-width: 575.98px) {
+  .navbar > .navbar-container, .navbar > .container-fluid { padding: .8rem .75rem; }
+  .navbar .navbar-container > .navbar-nav { column-gap: .9rem; } .navbar .nav-link { font-size: .8rem; }
+}
 
 /* table of contents (course pages) */
 #TOC, .sidebar nav[role="doc-toc"] { font-size: .86rem; }
