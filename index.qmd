@@ -34,7 +34,7 @@ pagetitle: "Barış Deniz Sağlam"
 - [Oct 2024]{.when}[Completed an **MSc in Data Informatics** at METU.]{.what}
 :::
 
-## Writing
+## Publications
 
 ::: {.pub}
 [Language of Learning](papers/language-of-learning/){.ptitle}
@@ -48,13 +48,17 @@ pagetitle: "Barış Deniz Sağlam"
 [2026 [preprint](https://arxiv.org/abs/2609.38409) [code](https://github.com/ieddeveci/ArgGYM)]{.plinks}
 :::
 
+[All publications →](writing.html#publications){.more}
+
+## Posts
+
 ::: {.postlist}
 - [Perceive-Reason-Code: Active Perception for Document VQA](posts/perceive-reason-code/index.html){.pt}[Jul 2026]{.pd}[How a code REPL plus on-demand VLM perception let an open 27B win a document-QA challenge, and which parts carry it.]{.pdesc}
 - [Fine-tuning vs. Prompting](posts/fine-tuning-vs-prompting/index.html){.pt}[Feb 2025]{.pd}[When adapting weights beats prompting, and what it costs.]{.pdesc}
 - [Is Everything an Abstraction?](posts/is-everything-an-abstraction/index.html){.pt}[Jan 2025]{.pd}[Physics, Kant, and the layers we build to grasp reality.]{.pdesc}
 :::
 
-[All writing →](writing.html){.more}
+[All posts →](writing.html#posts){.more}
 
 ## Experience
 

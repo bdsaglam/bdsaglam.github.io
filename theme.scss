@@ -182,13 +182,14 @@ figure + p, p:has(> img.img-fluid) + p {
 .pub .pauthors strong { color: var(--ink); font-weight: 600; }
 .pub .plinks { display: block; margin-top: .1rem; font-family: var(--mono); font-size: .8rem; color: var(--dim); }
 .pub .plinks a { margin-left: .5rem; }
-.postlist ul { list-style: none; padding: 0; margin: 0.4rem 0; }
-.postlist li { display: grid; grid-template-columns: 1fr auto; gap: 0.1rem 1rem; align-items: baseline; padding: 0.55rem 0; }
-.postlist .pt { grid-column: 1; grid-row: 1; font-weight: 500; color: var(--ink); text-decoration: none; }
+.postlist ul { list-style: none; padding: 0; margin: 0.4rem 0 0.8rem; }
+/* Posts take a publication's three lines: title, a dim line, then the date.
+   The markup lists the date second, so flex order puts it last. */
+.postlist li { display: flex; flex-direction: column; margin: 0 0 1.1rem; }
+.postlist .pt { order: 1; font-weight: 500; color: var(--ink); text-decoration: none; }
 .postlist .pt:hover { color: var(--blue); }
-.postlist .pd { grid-column: 2; grid-row: 1; text-align: right; font-family: var(--mono); font-size: 0.76rem; color: var(--dim); white-space: nowrap; }
-.postlist .pdesc { grid-column: 1 / -1; grid-row: 2; color: var(--dim); margin: 0; }
-.postlist .pcats { font-family: var(--mono); font-size: 0.74rem; text-transform: lowercase; }
+.postlist .pdesc { order: 2; color: var(--dim); font-size: .9rem; line-height: 1.5; margin: 0; }
+.postlist .pd { order: 3; margin-top: .1rem; font-family: var(--mono); font-size: .8rem; color: var(--dim); }
 .dlcv { display: inline-flex; align-items: center; gap: 0.35rem; font-family: var(--mono); font-size: 0.82rem;
         color: var(--blue); margin: 0.4rem 0 0.9rem; }
 .cvhead { position: relative; }
