@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gün A — Salı</title>
+<link rel="stylesheet" href="../../components/fit.css">
+<script src="../../components/exercise-data.js"></script>
+<script src="../../lib/youtube.js"></script>
+<script src="../../components/exercise.js"></script>
+<script src="../../components/session-timeline.js"></script>
+<script src="../../components/block-picker.js"></script>
+</head>
+<body class="fit" data-session="sali">
+<header class="fit-head">
+  <h1>Gün A — İtiş &amp; ön bacak</h1>
+  <span class="fit-when" id="when">Salı</span>
+  <span class="fit-note">Çizimler şematiktir. İlk setleri hafif tut, hareketi öğren; ana hareketlerden önce 1-2 ısınma seti yap.</span>
+</header>
+<fl-block-picker style="margin:-4px 0 12px"></fl-block-picker>
+
+<fl-session-timeline session="sali"></fl-session-timeline>
+
+<h2 class="fit-sec">Hareketler</h2>
+<section class="fit-grid">
+  <fl-exercise session="sali" step="goblet-squat" index="1"></fl-exercise>
+  <fl-exercise session="sali" step="db-bench-press" index="2"></fl-exercise>
+  <fl-exercise session="sali" step="one-arm-db-row" index="3"></fl-exercise>
+  <fl-exercise session="sali" step="db-rdl" index="4"></fl-exercise>
+  <fl-exercise session="sali" step="plank" index="5"></fl-exercise>
+</section>
+<script>
+  // header length follows the timeline's total for the active block
+  (function () {
+    function upd() {
+      var s = window.FIT_sessionSteps && FIT_sessionSteps('sali');
+      if (!s) return;
+      var t = s.reduce(function (a, x) { return a + x.min; }, 0);
+      document.getElementById('when').textContent = 'Salı · ~' + Math.round(t) + ' dk';
+    }
+    upd();
+    if (window.FIT_onBlockChange) FIT_onBlockChange(upd);
+  })();
+</script>
+</body>
+</html>

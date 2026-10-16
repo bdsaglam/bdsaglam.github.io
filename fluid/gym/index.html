@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fluid</title>
+  <link rel="stylesheet" href="viewer/board.css">
+</head>
+<body>
+  <div id="app">
+    <main id="stage">
+      <div id="world"></div>
+      <div id="empty">No views yet. Ask the agent in the terminal; its views appear here.</div>
+      <div id="zoom">
+        <button data-zoom="out" title="Zoom out">−</button>
+        <button data-zoom="reset" id="zoom-level" title="Zoom to 100%">100%</button>
+        <button data-zoom="in" title="Zoom in">+</button>
+        <button data-zoom="fit" title="Fit all views">fit</button>
+        <button data-zoom="export" title="Export the open views">export</button>
+        <div id="export-menu" hidden>
+          <button data-export="page" title="A static copy of the open views that any web host can serve; the views keep working">interactive page</button>
+          <button data-export="png" title="One high-resolution image of the open views, laid out as on the board">image (PNG)</button>
+        </div>
+      </div>
+      <button id="follow" hidden>Follow</button>
+      <div id="toast" hidden></div>
+      <div id="comment" hidden>
+        <div class="what"></div>
+        <textarea rows="2" placeholder="What should change here?" aria-label="Comment for the agent"></textarea>
+        <div class="hint">Enter sends · Shift+Enter new line · Esc cancels</div>
+      </div>
+    </main>
+    <aside id="side">
+      <div id="side-grip" title="Drag to resize · double-click for the default width"></div>
+      <button id="side-toggle" title="Collapse"></button>
+      <header>
+        <span id="dot" title="Disconnected"></span>
+        <span id="project"></span>
+        <span id="count"></span>
+      </header>
+      <input id="filter" type="search" placeholder="Filter views" aria-label="Filter views by title, group, or description" hidden>
+      <ul id="list"></ul>
+      <footer>Alt-click anything in a view to comment on it, or to point at it and talk in the terminal.</footer>
+    </aside>
+  </div>
+  <script src="viewer/stage.js"></script>
+  <script src="viewer/board.js"></script>
+</body>
+</html>
