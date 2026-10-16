@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gün B — Cuma</title>
+<link rel="stylesheet" href="../../components/fit.css">
+<script src="../../components/exercise-data.js"></script>
+<script src="../../lib/youtube.js"></script>
+<script src="../../components/exercise.js"></script>
+<script src="../../components/session-timeline.js"></script>
+<script src="../../components/block-picker.js"></script>
+</head>
+<body class="fit" data-session="cuma">
+<header class="fit-head">
+  <h1>Gün B — Çekiş &amp; arka zincir</h1>
+  <span class="fit-when" id="when">Cuma</span>
+  <span class="fit-note">Çizimler şematiktir. İlk setleri hafif tut, hareketi öğren; ana hareketlerden önce 1-2 ısınma seti yap.</span>
+</header>
+<fl-block-picker style="margin:-4px 0 12px"></fl-block-picker>
+
+<fl-session-timeline session="cuma"></fl-session-timeline>
+
+<h2 class="fit-sec">Hareketler</h2>
+<section class="fit-grid">
+  <fl-exercise session="cuma" step="barbell-deadlift" index="1"></fl-exercise>
+  <fl-exercise session="cuma" step="lat-pulldown" index="2"></fl-exercise>
+  <fl-exercise session="cuma" step="barbell-ohp" index="3"></fl-exercise>
+  <fl-exercise session="cuma" step="leg-press" index="4"></fl-exercise>
+  <fl-exercise session="cuma" step="seated-leg-curl" index="5"></fl-exercise>
+  <fl-exercise session="cuma" step="push-up" index="6"></fl-exercise>
+  <fl-exercise session="cuma" step="face-pull" index="7"></fl-exercise>
+  <fl-exercise session="cuma" step="plank" index="8"></fl-exercise>
+</section>
+<script>
+  // header length follows the timeline's total for the active block
+  (function () {
+    function upd() {
+      var s = window.FIT_sessionSteps && FIT_sessionSteps('cuma');
+      if (!s) return;
+      var t = s.reduce(function (a, x) { return a + x.min; }, 0);
+      document.getElementById('when').textContent = 'Cuma · ~' + Math.round(t) + ' dk';
+    }
+    upd();
+    if (window.FIT_onBlockChange) FIT_onBlockChange(upd);
+  })();
+</script>
+</body>
+</html>

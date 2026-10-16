@@ -156,3 +156,6 @@ _site/
 _freeze/
 .superpowers/
 workspace/
+
+# Fluid canvases (fluid/<name>/) carry their own lib/ folder
+!fluid/**/lib/

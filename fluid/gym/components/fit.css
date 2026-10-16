@@ -1,0 +1,38 @@
+/* fit.css: the shared page look of the workout views (Gün A, Gün B, Isınma & Soğuma, Genel kurallar,
+   antrenman modu). Link it, then set data-session on <body> to pick the accent:
+     <link rel="stylesheet" href="../components/fit.css">
+     <body class="fit" data-session="sali">     sali | cuma | warm
+   Classes: .fit-head (h1, .fit-when, .fit-note), h2.fit-sec, .fit-grid, .fit-box, .fit-muted.
+   Components read --fit-accent, --fit-warm and --fit-m1..3 (muscle colours) from here. */
+:root {
+  --fit-sali: #4f6bed;   /* Salı / Gün A */
+  --fit-cuma: #0d9488;   /* Cuma / Gün B */
+  --fit-warm: #f59e0b;   /* ısınma ve soğuma */
+  --fit-m1: #e5484d;     /* birincil kas */
+  --fit-m2: #f59e0b;     /* ikincil kas */
+  --fit-m3: #8b5cf6;     /* sabitleyici kas */
+  --fit-accent: var(--fl-accent, #4f6bed);
+}
+body[data-session="sali"] { --fit-accent: var(--fit-sali); }
+body[data-session="cuma"] { --fit-accent: var(--fit-cuma); }
+body[data-session="warm"] { --fit-accent: var(--fit-warm); }
+
+html, body.fit { margin: 0; height: 100%; }
+body.fit {
+  box-sizing: border-box; overflow-x: hidden; overflow-y: auto; padding: 14px 16px 24px;
+  background: var(--fl-bg, #ffffff); color: var(--fl-fg, #1d2433);
+  font-family: var(--fl-font, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+  font-size: 13px; line-height: 1.45;
+}
+body.fit *, body.fit *::before, body.fit *::after { box-sizing: border-box; }
+.fit-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 12px;
+  padding-left: 10px; border-left: 4px solid var(--fit-accent); }
+.fit-head h1 { font-size: 18px; margin: 0; font-weight: 650; }
+.fit-when { color: var(--fit-accent); font-weight: 600; }
+.fit-note { color: var(--fl-muted, #6b7280); font-size: 12px; flex: 1 1 320px; overflow-wrap: anywhere; }
+h2.fit-sec { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 12px; font-weight: 650;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--fl-muted, #6b7280); margin: 18px 0 8px; }
+h2.fit-sec .fit-dur { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--fit-accent); }
+.fit-grid { display: grid; gap: var(--fl-gap, 12px); grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); align-items: start; }
+.fit-box { background: var(--fl-surface, #f5f7fa); border: 1px solid var(--fl-border, #e4e7ec); border-radius: var(--fl-radius, 10px); padding: 12px; }
+.fit-muted { color: var(--fl-muted, #6b7280); font-size: 12px; }
