@@ -11,6 +11,9 @@
  *   video    string   YouTube URL or 11-character video id
  *   start    number   seconds to start at; change it to jump the player there
  *   clock    string   the clock name the flow's anchors use; default "video"
+ *   lazy     boolean  show the video's thumbnail until the user presses play. A player costs about
+ *                     100 MB in Safari, and a phone reloads a page that runs out of memory, so a
+ *                     view with more than one video should use it. .player is null until then.
  *
  * To answer about the video, fetch its transcript (the youtube-transcript skill) into
  * .fluid/sources/youtube-<id>.md; the agent's canvas context names that file.
@@ -59,7 +62,7 @@
     }
 
     attributeChangedCallback(name, old, now) {
-      if (!this.isConnected || old === now) return;
+      if (!this.isConnected || !this.firstElementChild || old === now) return;  // not built yet
       if (name === 'video') this.build();
       else if (name === 'start' && this.player?.seekTo) this.player.seekTo(Number(now) || 0, true);
     }
@@ -69,13 +72,24 @@
       const box = this.firstElementChild;
       if (!id) { box.textContent = 'fl-youtube: no video id'; return; }
       this.player?.destroy?.();
+      this.player = null;
+      if (this.hasAttribute('lazy') && !this._pressed) {
+        box.innerHTML = `<button type="button" aria-label="Play the video" style="position:absolute;inset:0;width:100%;height:100%;`
+          + `padding:0;border:0;cursor:pointer;background:#000 center/cover url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)">`
+          + '<span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:44px;border-radius:12px;'
+          + 'background:rgba(230,0,0,.9);display:flex;align-items:center;justify-content:center">'
+          + '<span style="border-style:solid;border-width:10px 0 10px 17px;border-color:transparent transparent transparent #fff"></span></span></button>';
+        box.firstElementChild.addEventListener('click', () => { this._pressed = true; this.build(); }, { once: true });
+        return;
+      }
       await loadApi();
       const mount = document.createElement('div');
       box.replaceChildren(mount);
       this._id = id;
       this.player = new YT.Player(mount, {
         width: '100%', height: '100%', videoId: id,
-        playerVars: { start: Math.floor(Number(this.getAttribute('start')) || 0), rel: 0, playsinline: 1, origin: location.origin },
+        playerVars: { start: Math.floor(Number(this.getAttribute('start')) || 0), rel: 0, playsinline: 1, origin: location.origin,
+                      autoplay: this._pressed ? 1 : 0 },
         events: { onStateChange: (e) => this.changed(e.data) },
       });
       clearInterval(this._clock);

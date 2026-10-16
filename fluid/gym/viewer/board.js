@@ -79,6 +79,13 @@
   // fullscreen view, and a view playing media (it publishes a clock), stay awake. Waking reloads
   // the page, and the stage sends its cue again. Dozens of live pages would otherwise all run.
   const KEEP_AWAKE = 6;
+  // A phone or tablet has far less memory per tab, and iOS reloads a page that runs out, again and
+  // again. There a view runs once the user opens it (a tap on it, or its name in the list) and
+  // while it is on screen, at most TOUCH_AWAKE at a time, the latest opened first. The others
+  // show their title; a tap flies there and opens the view.
+  const TOUCH = matchMedia('(pointer: coarse)').matches;
+  const TOUCH_AWAKE = 2;
+  const opened = new Map();  // id -> when the user last opened it
   const seen = new Map();   // id -> when it was last on screen
   const ticking = {};       // id -> when it last published a clock
   const viewUrl = (id, fresh) => `views/${encodeURIComponent(id)}/index.html${fresh ? `?t=${Date.now()}` : ''}`;
@@ -88,6 +95,13 @@
     const W = stage.clientWidth, H = stage.clientHeight, m = 0.5;  // half a screen of margin
     const x = g.x * vp.zoom + vp.x, y = g.y * vp.zoom + vp.y, w = g.w * sc(g) * vp.zoom, h = g.h * sc(g) * vp.zoom;
     return x < W * (1 + m) && x + w > -W * m && y < H * (1 + m) && y + h > -H * m;
+  }
+  function inView(id) {  // any part of it on the stage, no margin
+    const g = geo(id);
+    if (!g || g.hidden) return false;
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const x = g.x * vp.zoom + vp.x, y = g.y * vp.zoom + vp.y, w = g.w * sc(g) * vp.zoom, h = g.h * sc(g) * vp.zoom;
+    return x < W && x + w > 0 && y < H && y + h > 0;
   }
   function setAwake(id, on) {
     const c = cards.get(id);
@@ -104,6 +118,14 @@
   }
   function sleepCheck() {
     const now = Date.now(), rest = [];
+    if (TOUCH && !EXPORT) {
+      const must = (id) => full?.id === id || now - (ticking[id] || 0) < 15000;
+      const ranked = [...cards.keys()].filter((id) => must(id) || (opened.has(id) && inView(id)))
+        .sort((a, b) => must(b) - must(a) || opened.get(b) - opened.get(a));
+      const awake = new Set(ranked.slice(0, TOUCH_AWAKE));
+      for (const id of cards.keys()) setAwake(id, awake.has(id));
+      return;
+    }
     for (const id of cards.keys()) {
       const g = geo(id);
       if (EXPORT || full?.id === id || now - (ticking[id] || 0) < 15000 || (g && !g.hidden && (g.pinned || onScreen(id)))) {
@@ -124,6 +146,7 @@
   // ---- viewport -------------------------------------------------------------------------
   function applyViewport() {
     world.style.transform = `translate(${vp.x}px, ${vp.y}px) scale(${vp.zoom})`;
+    world.style.setProperty('--zoom', vp.zoom);
     stage.style.backgroundSize = `${20 * vp.zoom}px ${20 * vp.zoom}px`;
     stage.style.backgroundPosition = `${vp.x}px ${vp.y}px`;
     $('#zoom-level').textContent = `${Math.round(vp.zoom * 100)}%`;
@@ -148,18 +171,21 @@
   }
   const shown = () => Object.keys(views).map(geo).filter((g) => g && !g.hidden);
 
-  // Pan: drag empty space, or scroll (two fingers, wheel; Shift+wheel sideways). Zoom: pinch or Ctrl/Cmd+wheel
-  // (trackpad pinch arrives as ctrl+wheel; Safari's as gesture events).
+  // Pan: drag empty space or a sleeping view, or scroll (two fingers, wheel; Shift+wheel sideways).
+  // Zoom: pinch or Ctrl/Cmd+wheel (trackpad pinch arrives as ctrl+wheel; Safari's as gesture events).
+  // A tap on a sleeping view flies to it.
   stage.addEventListener('pointerdown', (e) => {
-    if (full || e.button !== 0 || (e.target !== stage && e.target !== world)) return;
+    const sleeper = e.target.closest?.('.card.asleep .body') && e.target.closest('.card').dataset.id;
+    if (full || e.button !== 0 || (e.target !== stage && e.target !== world && !sleeper)) return;
     const start = { px: e.clientX, py: e.clientY, x: vp.x, y: vp.y };
     stage.setPointerCapture(e.pointerId);
     stage.classList.add('panning');
     interacting(true);
     const move = (m) => { cameraMoved(); vp.x = start.x + m.clientX - start.px; vp.y = start.y + m.clientY - start.py; applyViewport(); };
-    const up = () => {
+    const up = (u) => {
       stage.classList.remove('panning');
       interacting(false);
+      if (sleeper && u.type === 'pointerup' && Math.hypot(u.clientX - start.px, u.clientY - start.py) < 8) goTo(sleeper);
       stage.removeEventListener('pointermove', move);
       stage.removeEventListener('pointerup', up);
       stage.removeEventListener('pointercancel', up);
@@ -223,6 +249,7 @@
     c.el.classList.toggle('hidden', !!b.hidden);
     c.el.classList.toggle('full', isFull);
     c.title.textContent = v.title;
+    c.el.querySelector('.body').dataset.title = v.title;
     const g = groupOf(id);
     c.el.classList.toggle('grouped', !!g);
     if (g) c.el.style.setProperty('--gh', hue(g));
@@ -527,6 +554,7 @@
   $('#filter').addEventListener('input', (e) => { filterText = e.target.value; renderList(); });
   function goTo(id) {
     if (!views[id]?.board) return;
+    opened.set(id, Date.now());
     cameraMoved();
     const b = views[id].board;
     if (full && full.id !== id) toggleFull(full.id);
