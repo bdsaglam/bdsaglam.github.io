@@ -104,6 +104,10 @@ body.static #dot { display: none; }
 /* A sleeping view (off screen, its page unloaded) wakes as it comes into view. */
 .card.asleep .body { background: repeating-linear-gradient(135deg, #fafafa 0 12px, #f3f3f5 12px 24px); }
 .card.asleep .body iframe { visibility: hidden; }
+.card.asleep .body { cursor: pointer; }
+.card.asleep .body::after { content: attr(data-title); position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; text-align: center; padding: calc(8px / var(--zoom, 1)); color: #666;
+  font: 600 calc(13px / var(--zoom, 1)) / 1.3 system-ui, -apple-system, sans-serif; overflow: hidden; }
 
 /* Groups: a hue per group, on the title bar's left edge, its tag, and its sidebar section. */
 .card.grouped .bar { box-shadow: inset 4px 0 0 hsl(var(--gh) 62% 52%); }

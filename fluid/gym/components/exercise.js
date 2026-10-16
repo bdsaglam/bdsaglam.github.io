@@ -372,7 +372,7 @@
       box.dataset.loaded = '1';
       const v = this._vid;
       if (v.embeddable === false) { box.innerHTML = `<div class="vmsg">Bu video gömülemiyor; aşağıdaki "YouTube'da aç" bağlantısını kullan.</div>`; return; }
-      if (customElements.get('fl-youtube')) box.innerHTML = `<div class="vid"><fl-youtube video="${esc(v.id)}" start="${v.start || 0}"></fl-youtube></div>`;
+      if (customElements.get('fl-youtube')) box.innerHTML = `<div class="vid"><fl-youtube video="${esc(v.id)}" start="${v.start || 0}" lazy></fl-youtube></div>`;
       else box.innerHTML = `<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(v.id)}?start=${v.start || 0}&rel=0" title="${esc(this._e.name)} videosu" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
     }
     attributeChangedCallback(name, _o, v) {
