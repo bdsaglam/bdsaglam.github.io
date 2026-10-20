@@ -11,6 +11,7 @@ project:
     - papers/**
     - slides/**
     - fluid/**
+    - gym/**
 
 website:
   title: "Barış Deniz Sağlam"

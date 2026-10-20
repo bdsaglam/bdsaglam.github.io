@@ -1,0 +1,703 @@
+/* app.js: the Antrenman PWA. Tabs (Bugün, Program, Geçmiş, Kurallar) and the full-screen workout mode,
+ * ported from the Fluid canvas view "Antrenman modu" (.fluid/views/workout).
+ *
+ * Storage (localStorage):
+ *   fit-log           JSON array of set records, the same shape as antrenman-log.jsonl:
+ *                     {date, session, block, exercise, set, kg, reps, form, perSide?}
+ *   fluid-workout-v1  the in-progress workout (step, sets, timers), same key as the Fluid view, plus `open`
+ *   fit-block, fit-start   the program block / start date (read and written by exercise-data.js)
+ */
+(function () {
+  'use strict';
+  var SESS = window.FIT_SESSIONS || {}, EX = window.FIT_EXERCISES || {}, META = window.FIT_SESSION_META || {};
+  var KEY = 'fluid-workout-v1', LOGKEY = 'fit-log';
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+  var mmss = function (s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + pad(s % 60); };
+  var iso = function (d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+  var today = function () { return iso(new Date()); };
+  var GUN = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+  var AY = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  var parseDay = function (s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+  var dayTxt = function (s, withDow) { var d = parseDay(s); return d ? d.getDate() + ' ' + AY[d.getMonth()] + (withDow ? ' ' + GUN[d.getDay()] : '') : s; };
+  var SES_NAME = { sali: 'Gün A', cuma: 'Gün B' };
+  var num = function (v) { if (v === '' || v == null) return null; var n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+  var fmt = function (n) { return n == null ? '' : String(Math.round(n * 100) / 100).replace('.', ','); };
+
+  /* ---------- log (localStorage 'fit-log') ---------- */
+  function readLog() { try { var a = JSON.parse(localStorage.getItem(LOGKEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function writeLog(a) { try { localStorage.setItem(LOGKEY, JSON.stringify(a)); return true; } catch (e) { return false; } }
+  var hist = {}; // slug -> {date, sets: [record]}: the last day before today (or today if that is all)
+  function buildHistory() {
+    var by = {}, out = {}, t = today();
+    readLog().forEach(function (r) { if (r && r.exercise && r.date) (by[r.exercise] = by[r.exercise] || []).push(r); });
+    Object.keys(by).forEach(function (slug) {
+      var recs = by[slug], dates = recs.map(function (r) { return r.date; }).sort();
+      var past = dates.filter(function (d) { return d !== t; });
+      var d = past.length ? past[past.length - 1] : dates[dates.length - 1];
+      out[slug] = { date: d, sets: recs.filter(function (r) { return r.date === d; }).sort(function (a, b) { return a.set - b.set; }) };
+    });
+    hist = out;
+  }
+
+  /* ---------- workout state (same shape as the Fluid view) ---------- */
+  var ROOT;
+  function load() {
+    try { ROOT = JSON.parse(localStorage.getItem(KEY)); } catch (e) { ROOT = null; }
+    if (!ROOT || ROOT.date !== today()) ROOT = { date: today(), session: null, last: ROOT && ROOT.last || null, open: false, s: {} };
+    if (!ROOT.session || !SESS[ROOT.session]) ROOT.session = 'sali';
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(ROOT)); } catch (e) {} }
+  function S(k) {
+    k = k || ROOT.session;
+    if (!ROOT.s[k]) ROOT.s[k] = { step: 0, t0: 0, t1: 0, ex: {}, list: {}, cardio: {}, hold: null, rest: null, saved: 0 };
+    return ROOT.s[k];
+  }
+  function block() { return window.FIT_currentBlock ? FIT_currentBlock() : 1; }
+  function steps(k) { k = k || ROOT.session; return window.FIT_sessionSteps ? FIT_sessionSteps(k) : (SESS[k] || []); }
+  function cur() { return steps()[S().step]; }
+  function exState(st) {
+    var s = S();
+    if (!s.ex[st.id]) {
+      var w = [], n = st.sets || 1, i;
+      for (i = 0; i < n; i++) w.push({ done: 0, kg: '', reps: '' });
+      var wu = []; for (i = 0; i < (st.warmupSets || 0); i++) wu.push(0);
+      s.ex[st.id] = { warm: wu, work: w, form: true };
+    }
+    var ex = s.ex[st.id];
+    if (st.perSide) ex.work.forEach(function (x) { if (!x.sides) x.sides = [x.done, x.done]; });
+    return ex;
+  }
+  function touch() { var s = S(); if (!s.t0) s.t0 = Date.now(); }
+  function inProgress(k) { var s = ROOT.s[k]; return !!(s && s.t0 && !s.t1); }
+
+  // completed sets of one session as log records
+  function records(k) {
+    k = k || ROOT.session;
+    var out = [], s = ROOT.s[k]; if (!s) return out;
+    steps(k).forEach(function (st) {
+      if (st.type !== 'exercise') return;
+      var e = s.ex[st.id]; if (!e) return;
+      e.work.forEach(function (w, i) {
+        if (!w.done) return;
+        var r = { date: ROOT.date, session: k, block: st.block || block(), exercise: st.slug, set: i + 1,
+          kg: num(w.kg), reps: num(w.reps), form: e.form !== false };
+        if (st.perSide) r.perSide = true;
+        out.push(r);
+      });
+    });
+    return out;
+  }
+  // write this session's sets into the log, replacing the same date + session (as the Fluid view does)
+  function saveLog() {
+    var k = ROOT.session, recs = records(k);
+    var keep = readLog().filter(function (r) { return !(r.date === ROOT.date && r.session === k); });
+    if (writeLog(keep.concat(recs))) { S().saved = Date.now(); save(); }
+  }
+
+  /* ---------- sound, vibration, wake lock ---------- */
+  var AC = null;
+  function unlock() {
+    try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {}
+  }
+  function beep(n) {
+    n = n || 2;
+    try { if (navigator.vibrate) navigator.vibrate(n === 1 ? 200 : [200, 100, 200, 100, 300]); } catch (e) {}
+    try {
+      if (!AC) return;
+      for (var i = 0; i < n; i++) {
+        var o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + i * 0.28;
+        o.type = 'sine'; o.frequency.value = 880; o.connect(g); g.connect(AC.destination);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+        o.start(t); o.stop(t + 0.25);
+      }
+    } catch (e) {}
+  }
+  var wakeLock = null;
+  function lockOn() {
+    if (!('wakeLock' in navigator) || wakeLock || document.visibilityState !== 'visible' || !ROOT.open) return;
+    navigator.wakeLock.request('screen').then(function (l) { wakeLock = l; l.addEventListener('release', function () { wakeLock = null; }); }).catch(function () {});
+  }
+  function lockOff() { if (wakeLock) { wakeLock.release().catch(function () {}); wakeLock = null; } }
+
+  /* ---------- targets and last time ---------- */
+  function repHi(st) { var m = String(st.reps || '').match(/^\s*(\d+)(?:\s*[–-]\s*(\d+))?/); return m ? +(m[2] || m[1]) : (st.holdSec ? st.holdSec[1] : 0); }
+  function repLo(st) { var m = String(st.reps || '').match(/^\s*(\d+)/); return m ? +m[1] : (st.holdSec ? st.holdSec[0] : 8); }
+  function amountTxt(st) {
+    if (st.holdSec) return st.holdSec[0] + '–' + st.holdSec[1] + ' sn' + (st.perSide ? ' / taraf' : '');
+    var r = String(st.reps || ''), m = r.match(/^([\d–\-\s]+)(.*)$/);
+    return m ? m[1].trim() + ' tekrar' + (m[2].trim() ? ' ' + m[2].trim() : '') : r;
+  }
+  function lastInfo(st) {
+    var h = hist[st.slug]; if (!h || !h.sets.length) return null;
+    var sets = h.sets, reps = sets.map(function (x) { return +x.reps || 0; });
+    var kg = Math.max.apply(null, sets.map(function (x) { return +x.kg || 0; }));
+    var same = reps.every(function (r) { return r === reps[0]; });
+    var txt = (same ? sets.length + '×' + reps[0] : reps.join(' / ')) + (st.holdSec ? ' sn' : '') + (kg ? ' @ ' + fmt(kg) + ' kg' : '');
+    var hi = repHi(st), good = sets.every(function (x) { return x.form !== false; });
+    var up = !st.holdSec && hi > 0 && sets.length >= (st.sets || 1) && reps.every(function (r) { return r >= hi; }) && good;
+    return { txt: txt, up: up, kg: kg, date: h.date };
+  }
+  function kgStep(slug) { var e = EX[slug] || {}; return (e.equipment || []).some(function (q) { return /dambıl/.test(q); }) ? 1 : 2.5; }
+  // the value shown for set i: typed, else the previous set's, else last time's same set
+  function suggest(st, e, i, f) {
+    var w = e.work[i]; if (w[f] !== '' && w[f] != null) return String(w[f]);
+    for (var j = i - 1; j >= 0; j--) if (e.work[j][f] !== '' && e.work[j][f] != null) return String(e.work[j][f]);
+    var h = hist[st.slug]; if (h && h.sets.length) { var r = h.sets[Math.min(i, h.sets.length - 1)]; if (r && r[f] != null) return fmt(r[f]); }
+    return '';
+  }
+  function setTxt(st, w) {
+    var r = num(w.reps), k = num(w.kg);
+    if (r == null && k == null) return '✓';
+    return (k ? fmt(k) + '×' : '') + (r == null ? '—' : fmt(r)) + (st.holdSec ? ' sn' : '');
+  }
+
+  /* ---------- workout navigation ---------- */
+  var cardKey = '', sel = -1;
+  function go(i) {
+    var n = steps().length, s = S();
+    i = Math.max(0, Math.min(n, i));
+    if (i === s.step) return;
+    touch();
+    s.step = i; s.hold = null; s.rest = null; sel = -1; save(); renderWk();
+    if (i >= n) finish();
+  }
+  function finish() { var s = S(); if (!s.t1) { s.t1 = Date.now(); } saveLog(); save(); renderWk(); }
+  function listIdx(st) { return S().list[st.id] || 0; }
+  function nextListItem(st) {
+    var s = S(), i = listIdx(st);
+    s.hold = null;
+    if (i + 1 >= st.items.length) { go(s.step + 1); return; }
+    s.list[st.id] = i + 1; save(); renderWk();
+  }
+  function prevListItem(st) { var s = S(), i = listIdx(st); s.hold = null; s.list[st.id] = Math.max(0, i - 1); save(); renderWk(); }
+  function cardioState(st) {
+    var s = S();
+    if (!s.cardio[st.id]) s.cardio[st.id] = { min: st.lo || st.min, total: 0, endAt: 0, left: 0, running: false, beeped: false };
+    return s.cardio[st.id];
+  }
+  function cardioLeft(c) { return c.running ? (c.endAt - Date.now()) / 1000 : (c.total ? c.left / 1000 : c.min * 60); }
+  function cardioToggle(st) {
+    var c = cardioState(st); touch();
+    if (c.running) { c.left = c.endAt - Date.now(); c.running = false; }
+    else {
+      if (!c.total) { c.total = c.min * 60000; c.left = c.total; c.beeped = false; }
+      c.endAt = Date.now() + c.left; c.running = true;
+    }
+    save(); renderWk();
+  }
+  function cardioAdj(st, d) {
+    var c = cardioState(st);
+    if (c.total || c.running) { var add = d * 60000; if (c.running) c.endAt += add; else c.left += add; c.min = Math.max(1, c.min + d); }
+    else c.min = Math.max(1, Math.min(60, c.min + d));
+    save(); renderWk();
+  }
+  function cardioReset(st) { var c = cardioState(st); c.total = 0; c.running = false; c.beeped = false; save(); renderWk(); }
+  function holdStart(st, sec) {
+    var s = S(); touch();
+    s.hold = s.hold ? null : { start: Date.now(), sec: sec, beeped: false };
+    save(); renderWk();
+  }
+  function nextWork(e) { for (var i = 0; i < e.work.length; i++) if (!e.work[i].done) return i; return -1; }
+  function selIdx(e) { if (sel >= 0 && sel < e.work.length) return sel; var n = nextWork(e); return n >= 0 ? n : e.work.length - 1; }
+  function setDone(st, i) {
+    var e = exState(st), w = e.work[i], s = S(); touch();
+    if (st.perSide && !w.sides[0]) { w.sides[0] = 1; s.rest = null; save(); renderCtl(); return; }
+    if (w.kg === '') w.kg = suggest(st, e, i, 'kg');
+    if (w.reps === '') w.reps = suggest(st, e, i, 'reps');
+    if (w.sides) w.sides = [1, 1];
+    w.done = 1;
+    if (nextWork(e) >= 0 && st.restSec) s.rest = { start: Date.now(), lo: st.restSec[0], hi: st.restSec[1], beeped: 0 };
+    else s.rest = null;
+    sel = nextWork(e);
+    saveLog(); save(); renderCtl();
+  }
+  function undoSet(st, i) {
+    var e = exState(st), w = e.work[i];
+    w.done = 0; if (w.sides) w.sides = [0, 0];
+    S().rest = null; sel = i; saveLog(); save(); renderCtl();
+  }
+  function primary() {
+    var st = cur(), s = S(); unlock();
+    if (!st) { closeWk(); return; }
+    if (st.type === 'cardio') cardioToggle(st);
+    else if (st.type === 'list') {
+      var it = st.items[listIdx(st)];
+      if (it.holdSec) holdStart(st, it.holdSec); else nextListItem(st);
+    } else {
+      var e = exState(st), i = selIdx(e);
+      if (!e.work[i].done) setDone(st, i);
+      else if (nextWork(e) >= 0) { sel = nextWork(e); renderCtl(); }
+      else go(s.step + 1);
+    }
+  }
+  function next() {
+    var st = cur(), s = S(); unlock();
+    if (st && st.type === 'list' && listIdx(st) + 1 < st.items.length) { nextListItem(st); return; }
+    go(s.step + 1);
+  }
+  function back() {
+    var st = cur(), s = S(); unlock();
+    if (st && st.type === 'list' && listIdx(st) > 0) { prevListItem(st); return; }
+    go(s.step - 1);
+  }
+
+  /* ---------- workout render ---------- */
+  function cardHtml(st) {
+    if (st.type === 'cardio') return '<fl-exercise slug="' + esc(st.slug || 'bike') + '" bare compact media="photo,anim" size="m"></fl-exercise>';
+    if (st.type === 'list') {
+      var it = st.items[listIdx(st)];
+      return '<fl-exercise slug="' + esc(it.slug) + '" bare compact media="photo,anim" size="m"></fl-exercise>';
+    }
+    return '<fl-exercise slug="' + esc(st.slug) + '" bare compact media="photo,anim" size="m"></fl-exercise>';
+  }
+  function cuesHtml(slug) {
+    var e = EX[slug]; if (!e || !((e.cues || []).length || e.avoid)) return '';
+    return '<details class="cues"><summary>Püf noktaları</summary><ul>' +
+      (e.cues || []).map(function (c) { return '<li><b>Doğru:</b> ' + esc(c) + '</li>'; }).join('') +
+      (e.avoid ? '<li><b>Kaçın:</b> ' + esc(e.avoid) + '</li>' : '') + '</ul></details>';
+  }
+  function primLabel(st) {
+    if (!st) return ['Kapat', ''];
+    if (st.type === 'cardio') { var c = cardioState(st); return [c.running ? '❚❚ Duraklat' : c.total ? '▶ Devam' : '▶ Başlat', '']; }
+    if (st.type === 'list') {
+      var it = st.items[listIdx(st)], last = listIdx(st) + 1 >= st.items.length;
+      if (it.holdSec) return [S().hold ? '❚❚ Durdur' : '▶ ' + it.holdSec + ' sn başlat', ''];
+      return [last ? 'Sonraki adım →' : 'Sonraki hareket →', ''];
+    }
+    var e = exState(st), i = selIdx(e), w = e.work[i];
+    if (!w.done) return [st.perSide ? (w.sides[0] ? 'Sağ taraf bitti ✓' : 'Sol taraf bitti ✓') : 'Set ' + (i + 1) + ' bitti ✓', 'good'];
+    if (nextWork(e) >= 0) return ['Sıradaki set →', 'alt'];
+    return [S().step >= steps().length - 1 ? 'Seansı bitir ✓' : 'Sonraki hareket →', ''];
+  }
+  function stepper(f, label, sub, val, ph) {
+    return '<div class="stp"><span class="l">' + label + (sub ? '<small>' + sub + '</small>' : '') + '</span>' +
+      '<button type="button" data-act="dec" data-f="' + f + '" aria-label="' + label + ' azalt">−</button>' +
+      '<input data-f="' + f + '" inputmode="' + (f === 'kg' ? 'decimal' : 'numeric') + '" enterkeyhint="done" autocomplete="off" value="' + esc(val) + '" placeholder="' + esc(ph) + '" aria-label="' + label + '">' +
+      '<button type="button" data-act="inc" data-f="' + f + '" aria-label="' + label + ' artır">+</button></div>';
+  }
+  function ctlHtml(st) {
+    var s = S();
+    if (!st) {
+      var recs = records(), by = {};
+      recs.forEach(function (r) { (by[r.exercise] = by[r.exercise] || []).push(r); });
+      return '<div class="done"><h2>Seans bitti</h2><p>' + recs.length + ' set tamamladın. Toplam süre ' +
+        mmss(((s.t1 || Date.now()) - (s.t0 || Date.now())) / 1000) + '.</p><p class="msg ok">Kaydedildi (Geçmiş sekmesinde).</p>' +
+        (recs.length ? '<ul>' + Object.keys(by).map(function (slug) {
+          var st0 = steps().filter(function (x) { return x.slug === slug; })[0] || {};
+          return '<li><span>' + esc((EX[slug] || {}).name || slug) + '</span><span>' + by[slug].map(function (r) { return setTxt(st0, r); }).join(', ') + '</span></li>';
+        }).join('') + '</ul>' : '') + '</div>';
+    }
+    if (st.type === 'cardio') {
+      var c = cardioState(st), left = cardioLeft(c), started = c.total > 0;
+      return '<div class="target"><div class="t2">' + esc(st.detail || '') + '</div></div>' +
+        '<div class="timer"><div class="tv' + (left < 0 ? ' over' : '') + '" id="cardioT">' + (left < 0 ? '+' : '') + mmss(Math.abs(left)) + '</div>' +
+        '<div class="tl" id="cardioL">' + (left < 0 ? 'Süre doldu, bırakabilirsin' : started ? (c.running ? 'Sürüyor' : 'Duraklatıldı') : 'Hedef ' + (st.lo || st.min) + '–' + st.hi + ' dk') + '</div>' +
+        '<div class="adj"><button class="btn" data-act="cm" type="button" aria-label="1 dk azalt">−1</button><span>' + c.min + ' dk</span><button class="btn" data-act="cp" type="button" aria-label="1 dk artır">+1</button></div></div>' +
+        (started ? '<button class="btn" data-act="cr" type="button">Sıfırla</button>' : '');
+    }
+    if (st.type === 'list') {
+      var i = listIdx(st), it = st.items[i], h = s.hold, out = '', ent = EX[it.slug] || {};
+      out += '<div class="listn">' + esc(ent.name || it.name || it.slug) + ' · ' + (i + 1) + ' / ' + st.items.length + '</div>';
+      if (it.holdSec) {
+        var el = h ? (Date.now() - h.start) / 1000 : 0, rem = h ? Math.max(0, h.sec - el) : it.holdSec;
+        out += '<div class="timer"><div class="tv" id="holdT">' + Math.ceil(rem) + '</div><div class="tl">saniye' + (/taraf/.test(it.dose || '') ? ' · her taraf için tekrarla' : '') + '</div></div>';
+      } else {
+        out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">Yavaş ve kontrollü yap.</div></div>';
+      }
+      if (it.holdSec) out += '<button class="btn" data-act="lnext" type="button">' + (i + 1 >= st.items.length ? 'Sonraki adım →' : 'Sonraki hareket →') + '</button>';
+      return out + cuesHtml(it.slug);
+    }
+    // exercise
+    var e = exState(st), si = selIdx(e), w = e.work[si], li = lastInfo(st), ex = EX[st.slug] || {}, o = '';
+    o += '<div class="target"><div class="t1">' + st.sets + ' set × ' + esc(amountTxt(st)) + '</div>' +
+      (ex.rir ? '<div class="t2">' + esc(ex.rir) + '</div>' : '') +
+      '<div class="t3">Dinlenme: ' + (st.restSec ? (st.restSec[0] === st.restSec[1] ? mmss(st.restSec[0]) : mmss(st.restSec[0]) + '–' + mmss(st.restSec[1])) + ' dk' : '—') + '</div>' +
+      (li ? '<div class="last' + (li.up ? ' up' : '') + '">Geçen sefer: ' + esc(li.txt) + '</div>' + (li.up ? '<span class="hint">Ağırlığı artır ↑</span>' : '')
+        : '<div class="last none">Geçen sefer: kayıt yok</div>') + '</div>';
+    if (e.warm.length) {
+      o += '<div><p class="sec">Isınma setleri</p><div class="chips">' + e.warm.map(function (d, k) {
+        return '<button type="button" class="chip' + (d ? ' on' : '') + '" data-act="warm" data-i="' + k + '" aria-pressed="' + !!d + '">Isınma ' + (k + 1) + (d ? ' ✓' : '') + '</button>';
+      }).join('') + '</div></div>';
+    }
+    var nw = nextWork(e);
+    o += '<div><p class="sec">Çalışma setleri</p><div class="setgrid" style="--n:' + e.work.length + '">' + e.work.map(function (x, k) {
+      var cls = 'setc' + (x.done ? ' on' : k === nw ? ' cur' : '') + (k === si ? ' sel' : '');
+      var sub = x.done ? setTxt(st, x) : st.perSide && x.sides && x.sides[0] ? 'sol ✓' : k === nw ? 'sıradaki' : '';
+      return '<button type="button" class="' + cls + '" data-act="sel" data-i="' + k + '" aria-pressed="' + (k === si) + '">Set ' + (k + 1) + '<small>' + esc(sub) + '</small></button>';
+    }).join('') + '</div></div>';
+    var hs = hist[st.slug] && hist[st.slug].sets[si];
+    o += '<div class="editor">' +
+      stepper('kg', 'kg', '±' + fmt(kgStep(st.slug)), w.kg !== '' ? w.kg : suggest(st, e, si, 'kg'), hs && hs.kg != null ? fmt(hs.kg) : '—') +
+      stepper('reps', st.holdSec ? 'saniye' : 'tekrar', st.perSide ? '/ taraf' : '', w.reps !== '' ? w.reps : suggest(st, e, si, 'reps'), hs && hs.reps != null ? fmt(hs.reps) : String(repLo(st))) +
+      '<div class="edhint"><span>' + (w.done ? 'Set ' + (si + 1) + ' kayıtlı; değeri düzeltebilirsin.' : 'Set ' + (si + 1) + (st.perSide ? ': önce sol, sonra sağ; dinlenme iki taraf bitince başlar.' : '')) + '</span>' +
+      (w.done ? '<button type="button" class="btn" data-act="undo" data-i="' + si + '">Geri al</button>' : '') + '</div></div>';
+    o += '<label class="formrow"><input type="checkbox" data-act="form"' + (e.form !== false ? ' checked' : '') + '> Formum iyiydi</label>';
+    return o + cuesHtml(st.slug);
+  }
+  function renderTopWk() {
+    var k = ROOT.session, s = S(), st = steps(), c = cur(), info = window.FIT_blockInfo ? FIT_blockInfo() : { block: 1 };
+    $('wk').dataset.session = k;
+    $('wkSes').textContent = ((META[k] && META[k].label) || k) + ' · ' + (SES_NAME[k] || '');
+    $('wkBlk').textContent = 'Blok ' + info.block + (info.week ? ' · ' + info.week + '. hafta' : '');
+    $('prog').innerHTML = st.map(function (x, i) {
+      return '<button type="button" data-go="' + i + '" class="' + (i < s.step ? 'done' : i === s.step ? 'cur' : '') + '" aria-label="' + esc((i + 1) + '. ' + x.name) + '"></button>';
+    }).join('');
+    $('stepTitle').textContent = c ? c.name : 'Seans bitti';
+    $('stepCount').textContent = c ? (s.step + 1) + ' / ' + st.length : '';
+    $('backBtn').disabled = s.step === 0 && !(c && c.type === 'list' && listIdx(c) > 0);
+    $('nextBtn').disabled = !c;
+  }
+  function renderPrim() {
+    var p = primLabel(cur()), b = $('primBtn');
+    b.textContent = p[0]; b.className = p[1];
+  }
+  function renderCtl() {
+    var st = cur();
+    $('ctl').innerHTML = ctlHtml(st);
+    renderPrim(); tick();
+  }
+  function renderWk() {
+    if (!ROOT.open) return;
+    renderTopWk();
+    var st = cur(), key = ROOT.session + '|' + block() + '|' + S().step + '|' + (st && st.type === 'list' ? listIdx(st) : '');
+    if (key !== cardKey) {
+      cardKey = key;
+      $('card').innerHTML = st ? cardHtml(st) : '';
+      $('wkMain').scrollTop = 0;
+    }
+    renderCtl();
+  }
+
+  /* ---------- timers ---------- */
+  function tick() {
+    if (!ROOT.open) return;
+    var s = S(), now = Date.now(), c;
+    $('clock').textContent = s.t0 ? mmss(((s.t1 || now) - s.t0) / 1000) : '0:00';
+    var st = cur(), box = $('restBox');
+    if (st && st.type === 'exercise' && s.rest) {
+      var r = s.rest, el = (now - r.start) / 1000, cls, label, val;
+      if (el < r.lo) { cls = 'rest'; label = 'Dinlen'; val = mmss(Math.ceil(r.lo - el)); }
+      else if (el < r.hi) { cls = 'rest over'; label = 'Hazırsan başla (en geç ' + mmss(r.hi) + ')'; val = '+' + mmss(el - r.lo); }
+      else { cls = 'rest ready'; label = 'Dinlenme bitti, sıradaki sete!'; val = '+' + mmss(el - r.lo); }
+      if (el >= r.lo && !r.beeped) { r.beeped = 1; save(); beep(2); }
+      if (el >= r.hi && r.beeped < 2) { r.beeped = 2; save(); beep(1); }
+      if (box.dataset.h !== cls + label) {
+        box.dataset.h = cls + label;
+        box.innerHTML = '<div class="' + cls + '"><div class="rx"><div class="rl">' + label + '</div><div class="rt">' + val + '</div></div><button class="rs" data-act="skip" type="button">Atla</button></div>';
+      } else box.querySelector('.rt').textContent = val;
+    } else if (box.innerHTML) { box.innerHTML = ''; box.dataset.h = ''; }
+    if (!st) return;
+    if (st.type === 'cardio') {
+      c = cardioState(st);
+      var left = cardioLeft(c), t = $('cardioT');
+      if (c.running && t) {
+        t.textContent = (left < 0 ? '+' : '') + mmss(Math.abs(left)); t.className = 'tv' + (left < 0 ? ' over' : '');
+        if (left < 0 && !c.beeped) { c.beeped = true; save(); beep(3); var l = $('cardioL'); if (l) l.textContent = 'Süre doldu, bırakabilirsin'; }
+      }
+    } else if (st.type === 'list' && s.hold) {
+      var rem = s.hold.sec - (now - s.hold.start) / 1000, ht = $('holdT');
+      if (rem <= 0) { beep(2); nextListItem(st); }
+      else if (ht) ht.textContent = Math.ceil(rem);
+    }
+  }
+
+  /* ---------- open / close workout ---------- */
+  function openWk(k) {
+    unlock();
+    if (k && SESS[k]) { ROOT.session = k; ROOT.last = k; }
+    ROOT.open = true; save();
+    cardKey = ''; sel = -1;
+    buildHistory();
+    $('wk').hidden = false; document.body.classList.add('wk-open');
+    renderWk(); lockOn();
+  }
+  function closeWk() {
+    ROOT.open = false; save();
+    $('wk').hidden = true; document.body.classList.remove('wk-open');
+    $('card').innerHTML = ''; cardKey = '';
+    lockOff(); renderToday(); renderHistory();
+  }
+
+  /* ---------- Bugün ---------- */
+  function sesMin(k) { return Math.round(steps(k).reduce(function (a, x) { return a + x.min; }, 0)); }
+  function blockLine() {
+    var i = window.FIT_blockInfo ? FIT_blockInfo() : { block: 1 }, b = (window.FIT_BLOCKS || [])[i.block - 1] || { name: 'Blok ' + i.block, weeks: '' };
+    var wk = i.week == null ? 'Başlangıç tarihi yok' : i.week === 0 ? 'Program ' + dayTxt(i.start) + ' başlıyor' : i.week > 12 ? i.week + '. hafta: 12 hafta bitti' : i.week + '. hafta';
+    return '<div class="card blkline"><div><b>' + esc(b.name) + '</b> <span class="muted">· hf ' + esc(b.weeks) + '</span><div class="muted">' + esc(wk) + (i.source === 'manual' ? ' · blok elle seçildi' : '') + '</div></div>' +
+      '<button type="button" class="btn" data-goto="program">Değiştir</button></div>';
+  }
+  function sessionCard(k, lead, cta) {
+    var m = META[k] || {}, st = steps(k), s = ROOT.s[k], prog = inProgress(k), fin = s && s.t1;
+    var label = prog ? 'Devam et (' + (Math.min(s.step, st.length - 1) + 1) + '/' + st.length + ')' : fin ? 'Seansı aç' : cta;
+    return '<div class="card hero" data-session="' + k + '">' + (lead ? '<div class="muted">' + esc(lead) + '</div>' : '') +
+      '<h2>' + esc(SES_NAME[k]) + ' — ' + esc((m.title || '').replace(/^Gün [AB] — /, '')) + '</h2>' +
+      '<div class="when">' + esc(m.label || k) + ' · ~' + sesMin(k) + ' dk</div>' +
+      (fin ? '<p><span class="ok-badge">Bugün tamamlandı ✓</span> <span class="muted">' + records(k).length + ' set · ' + mmss((s.t1 - s.t0) / 1000) + '</span></p>' : '') +
+      '<ul class="steps-mini">' + st.map(function (x) {
+        return '<li class="' + (x.phase === 'main' ? 'main' : 'warm') + '"><span>' + esc(x.name) + '</span><span>' + (x.sets ? x.sets + '×' + esc(x.holdSec ? x.holdSec[0] + '–' + x.holdSec[1] + ' sn' : x.reps || '') : '~' + Math.round(x.min) + ' dk') + '</span></li>';
+      }).join('') + '</ul>' +
+      '<button type="button" class="big" data-start="' + k + '">' + esc(label) + '</button></div>';
+  }
+  function lastSessionLine() {
+    var log = readLog(); if (!log.length) return '';
+    var r = log.reduce(function (a, b) { return !a || b.date > a.date ? b : a; }, null);
+    return '<p class="muted">Son antrenman: ' + esc(dayTxt(r.date, true)) + ' · ' + esc(SES_NAME[r.session] || r.session || '') + '</p>';
+  }
+  function renderToday() {
+    var d = new Date(), dow = d.getDay(), out = '';
+    out += '<div class="date">' + GUN[dow] + ', ' + d.getDate() + ' ' + AY[d.getMonth()] + '</div>';
+    var running = Object.keys(SESS).filter(inProgress)[0];
+    var todayKey = dow === 2 ? 'sali' : dow === 5 ? 'cuma' : null;
+    if (running && running !== todayKey) {
+      out += '<h1 class="title">Devam eden seans</h1><div class="stack">' + sessionCard(running, '', 'Devam et');
+    } else if (todayKey) {
+      out += '<h1 class="title">Bugün: ' + SES_NAME[todayKey] + '</h1><div class="stack">' + sessionCard(todayKey, '', 'Antrenmanı başlat');
+    } else if (dow === 0) {
+      out += '<h1 class="title">Bugün: Pazar</h1><div class="stack"><div class="card hero" data-session="warm"><h2>Zone 2 + esneme</h2>' +
+        '<ul class="steps-mini"><li class="warm"><span>Zone 2 kardiyo: konuşabildiğin tempo</span><span>30-40 dk</span></li>' +
+        '<li class="warm"><span>Esneme: Isınma &amp; Soğuma bölümündeki esnemeler</span><span>~10 dk</span></li></ul>' +
+        '<button type="button" class="big" data-goto="program/warm">Esnemeleri göster</button></div>';
+    } else {
+      var n = 1, nd; for (; n <= 7; n++) { nd = (dow + n) % 7; if (nd === 2 || nd === 5) break; }
+      var nk = nd === 2 ? 'sali' : 'cuma';
+      out += '<h1 class="title">Bugün dinlenme</h1><div class="stack">' + sessionCard(nk, 'Sıradaki: ' + GUN[nd] + ', ' + (n === 1 ? 'yarın' : n + ' gün sonra'), 'Yine de başlat');
+    }
+    out += blockLine();
+    out += '<div><p class="sec">Yine de başlat</p><div class="anyway">' + Object.keys(SESS).map(function (k) {
+      return '<button type="button" class="btn" data-start="' + k + '" data-ses="' + k + '">' + esc(SES_NAME[k]) + ' <span class="muted">· ' + esc((META[k] || {}).label || k) + '</span></button>';
+    }).join('') + '</div></div>' + lastSessionLine() + '</div>';
+    $('v-bugun').innerHTML = out;
+    $('v-bugun').dataset.session = todayKey || (running) || 'sali';
+  }
+
+  /* ---------- Program ---------- */
+  var progSec = 'sali', openSlots = {};
+  function exRow(attrs, idx, name, dose, blk, key) {
+    return '<details class="exd" data-key="' + esc(key) + '"' + (openSlots[key] ? ' open' : '') + '><summary><span class="n">' + idx + '</span><span class="nm"><b>' + esc(name) + '</b><small>' + esc(dose || '') +
+      (blk ? ' · <i>' + esc(blk) + '</i>' : '') + '</small></span></summary><div class="body" data-attrs="' + esc(attrs) + '"></div></details>';
+  }
+  function renderProgram() {
+    var sec = progSec, out = '';
+    $('v-program').dataset.session = sec;
+    document.querySelectorAll('.segctl button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.sec === sec)); });
+    $('v-program').querySelector('.picker').hidden = sec === 'warm';
+    if (sec === 'warm') {
+      var A = ['bike', 'leg-swing', 'worlds-greatest-stretch', 'arm-circles', 'stick-pass-through', 'bodyweight-squat', 'cat-cow'];
+      var B = ['pancake-stretch', 'figure-4-stretch', 'hip-flexor-reach', 'lat-stretch-rail', 'quad-stretch', 'chest-doorway-stretch'];
+      var row = function (slug, i, grp) { var e = EX[slug] || {}; return exRow('slug="' + slug + '" index="' + (i + 1) + '"', i + 1, e.name || slug, e.dose, '', grp + slug); };
+      out += '<div class="shead"><h2>Isınma &amp; Soğuma</h2><span class="when">Her seans</span>' +
+        '<p>Gün A ve Gün B için ortak rutin. Başta dinamik, sonda statik esneme; seansa ~20 dk ekler. Uzun statik esneme ağırlıktan hemen önce kuvveti biraz düşürebilir. Soğuma esnetmelerinin bir kısmı <a href="https://www.youtube.com/shorts/gcv9Hj-Bud8" target="_blank" rel="noopener">MovementbyDavid</a> kısa videosundan (The ONLY Stretches you need!).</p></div>' +
+        '<h2 class="fit-sec">Başlangıç</h2><div class="exlist">' + A.map(function (s, i) { return row(s, i, 'w:'); }).join('') + '</div>' +
+        '<p class="muted">Her ana hareketten önce ısınma setleri yap; sayısı ve ağırlığı seansa göre ayarla.</p>' +
+        '<h2 class="fit-sec">Soğuma</h2><div class="exlist">' + B.map(function (s, i) { return row(s, i, 'c:'); }).join('') + '</div>' +
+        '<p class="muted">Nefes rahat, ağrı değil hafif gerginlik. Zıplama yok.</p>';
+    } else {
+      var m = META[sec] || {}, st = steps(sec), n = 0;
+      out += '<div class="shead"><h2>' + esc(m.title || '') + '</h2><span class="when">' + esc(m.label || sec) + ' · ~' + sesMin(sec) + ' dk</span>' +
+        '<p>Çizimler şematiktir. İlk setleri hafif tut, hareketi öğren; ana hareketlerden önce 1-2 ısınma seti yap.</p></div>' +
+        '<fl-session-timeline session="' + sec + '"></fl-session-timeline>' +
+        '<h2 class="fit-sec">Hareketler</h2><div class="exlist">' + st.filter(function (x) { return x.type === 'exercise'; }).map(function (x) {
+          n++;
+          var b = x.variants && (window.FIT_BLOCKS || [])[x.block - 1];
+          return exRow('session="' + sec + '" step="' + x.slot + '" index="' + n + '"', n, x.name, x.dose || (EX[x.slug] || {}).dose, b ? b.name + ' · hf ' + b.weeks : '', sec + ':' + x.slot);
+        }).join('') + '</div>' +
+        '<button type="button" class="big" style="margin-top:16px" data-start="' + sec + '">' + esc(SES_NAME[sec]) + ' antrenmanını başlat</button>';
+    }
+    $('progBody').innerHTML = out;
+    $('progBody').querySelectorAll('details.exd[open]').forEach(fillEx);
+    var tl = $('progBody').querySelector('fl-session-timeline');
+    if (tl) tl.addEventListener('stepclick', function (ev) {
+      var s = ev.detail.step, d = $('progBody').querySelector('details[data-key="' + sec + ':' + s.slot + '"]');
+      if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+  }
+  function fillEx(d) {
+    var body = d.querySelector('.body');
+    if (!body.firstChild) body.innerHTML = '<fl-exercise ' + body.dataset.attrs + ' media="photo,video,anim"></fl-exercise>';
+  }
+  document.addEventListener('toggle', function (ev) {
+    var d = ev.target; if (!d.classList || !d.classList.contains('exd')) return;
+    openSlots[d.dataset.key] = d.open;
+    if (d.open) fillEx(d);
+  }, true);
+
+  /* ---------- Geçmiş ---------- */
+  var ORDER = [];
+  Object.keys(SESS).forEach(function (k) { [1, 2, 3].forEach(function (b) { (window.FIT_sessionSteps ? FIT_sessionSteps(k, b) : []).forEach(function (s) { if (s.type === 'exercise' && ORDER.indexOf(s.slug) < 0) ORDER.push(s.slug); }); }); });
+  function stepFor(slug) {
+    var found = null;
+    Object.keys(SESS).some(function (k) { return [1, 2, 3].some(function (b) { return FIT_sessionSteps(k, b).some(function (s) { if (s.slug === slug && s.type === 'exercise') { found = s; return true; } return false; }); }); });
+    return found || {};
+  }
+  function renderHistory() {
+    buildHistory();
+    var log = readLog(), out = '';
+    if (!log.length) { $('histBody').innerHTML = '<div class="empty">Henüz kayıt yok. Antrenman modunda tamamladığın setler buraya kaydedilir.</div>'; return; }
+    var slugs = Object.keys(hist).sort(function (a, b) { return (ORDER.indexOf(a) + 1 || 999) - (ORDER.indexOf(b) + 1 || 999); });
+    out += '<h2 class="fit-sec">Son değerler</h2><div class="card lastlist">' + slugs.map(function (slug) {
+      var li = lastInfo(stepFor(slug)), h = hist[slug];
+      return '<div class="row"><div><b>' + esc((EX[slug] || {}).name || slug) + '</b><small>' + esc(dayTxt(h.date, true)) + '</small></div><div class="val">' + esc(li ? li.txt : '') +
+        (li && li.up ? '<span class="up">Ağırlığı artır ↑</span>' : '') + '</div></div>';
+    }).join('') + '</div>';
+    var groups = {};
+    log.forEach(function (r) { var k = r.date + '|' + (r.session || ''); (groups[k] = groups[k] || []).push(r); });
+    var keys = Object.keys(groups).sort().reverse();
+    out += '<h2 class="fit-sec">Seanslar <span class="fit-dur">' + keys.length + '</span></h2>' + keys.map(function (k) {
+      var g = groups[k], r0 = g[0], by = {}, order = [];
+      g.forEach(function (r) { if (!by[r.exercise]) { by[r.exercise] = []; order.push(r.exercise); } by[r.exercise].push(r); });
+      var live = r0.date === ROOT.date && inProgress(r0.session);
+      return '<details class="ses" data-session="' + esc(r0.session || 'sali') + '"><summary><span class="nm"><b>' + esc(dayTxt(r0.date, true)) + ' · ' + esc(SES_NAME[r0.session] || r0.session || '') + '</b>' +
+        '<small>' + (r0.block ? 'Blok ' + esc(r0.block) + ' · ' : '') + order.length + ' hareket · ' + g.length + ' set' + (live ? ' · devam ediyor' : '') + '</small></span></summary><div class="body">' +
+        order.map(function (slug) {
+          var st = stepFor(slug), sets = by[slug].sort(function (a, b) { return a.set - b.set; });
+          return '<p><b>' + esc((EX[slug] || {}).name || slug) + '</b><br><span class="sets">' + sets.map(function (r) { return setTxt(st, r); }).join(', ') +
+            (sets.some(function (r) { return r.form === false; }) ? ' · form iyi değildi' : '') + '</span></p>';
+        }).join('') + '</div></details>';
+    }).join('');
+    $('histBody').innerHTML = out;
+    var bk = localStorage.getItem('fit-backup'), days = bk ? Math.floor((Date.now() - Date.parse(bk)) / 864e5) : null;
+    if (days === null || days >= 14) histMsg(days === null ? 'Hiç yedek alınmadı. Kayıtlar sadece bu telefonda; "Dışa aktar" ile yedekle.' : 'Son yedek ' + days + ' gün önce. "Dışa aktar" ile yeni yedek al.', 'err');
+  }
+  function histMsg(t, cls) { var m = $('histMsg'); m.textContent = t; m.className = 'msg ' + (cls || ''); }
+  $('exportBtn').addEventListener('click', function () {
+    var log = readLog();
+    if (!log.length) { histMsg('Dışa aktarılacak kayıt yok.', 'err'); return; }
+    var text = '[\n' + log.map(function (r) { return JSON.stringify(r); }).join(',\n') + '\n]\n';
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    a.download = 'antrenman-log-' + today() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    localStorage.setItem('fit-backup', new Date().toISOString());
+    histMsg(log.length + ' set dışa aktarıldı.', 'ok');
+  });
+  $('importBtn').addEventListener('click', function () { $('importFile').click(); });
+  $('importFile').addEventListener('change', function (ev) {
+    var f = ev.target.files && ev.target.files[0]; if (!f) return;
+    f.text().then(function (t) {
+      var recs = null;
+      try { var j = JSON.parse(t); recs = Array.isArray(j) ? j : j && Array.isArray(j.log) ? j.log : null; } catch (e) { recs = null; }
+      if (!recs) recs = String(t).split('\n').map(function (l) { try { return JSON.parse(l); } catch (e) { return null; } }); // JSONL (antrenman-log.jsonl)
+      recs = recs.filter(function (r) { return r && typeof r === 'object' && r.date && r.exercise && parseDay(r.date); });
+      if (!recs.length) { histMsg('Dosyada kayıt bulunamadı.', 'err'); return; }
+      var key = function (r) { return r.date + '|' + r.session + '|' + r.exercise + '|' + r.set; }, map = {};
+      readLog().forEach(function (r) { map[key(r)] = r; });
+      recs.forEach(function (r) { map[key(r)] = r; });
+      var all = Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+      writeLog(all);
+      if (!localStorage.getItem('fit-start')) { // same rule as exercise-data.js: first Tuesday on or after the first session
+        var d = parseDay(all[0].date); while (d.getDay() !== 2) d.setDate(d.getDate() + 1);
+        if (window.FIT_setStart) FIT_setStart(iso(d));
+      }
+      histMsg(recs.length + ' set içe aktarıldı.', 'ok');
+      renderHistory(); renderToday();
+    }).catch(function (e) { histMsg('Okunamadı: ' + (e && e.message || e), 'err'); });
+    ev.target.value = '';
+  });
+
+  /* ---------- Kurallar ---------- */
+  function renderRules() {
+    var i = window.FIT_blockInfo ? FIT_blockInfo() : { block: 1 };
+    document.querySelectorAll('#planBlocks .blk').forEach(function (el) {
+      var on = +el.dataset.b === i.block, h = el.querySelector('h3'), tag = h.querySelector('.now');
+      el.classList.toggle('on', on);
+      if (on && !tag) h.insertAdjacentHTML('beforeend', '<span class="now">şu an</span>'); else if (!on && tag) tag.remove();
+    });
+    $('nowBlock').textContent = 'şu an Blok ' + i.block + (i.week ? ' · ' + Math.min(i.week, 99) + '. hafta' : '');
+  }
+
+  /* ---------- tabs and routing ---------- */
+  var TABS = ['bugun', 'program', 'gecmis', 'kurallar'];
+  function route() {
+    var h = (location.hash || '').replace(/^#/, '').split('/'), t = TABS.indexOf(h[0]) >= 0 ? h[0] : 'bugun';
+    if (t === 'program' && h[1] && /^(sali|cuma|warm)$/.test(h[1]) && h[1] !== progSec) { progSec = h[1]; renderProgram(); }
+    document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.dataset.view !== t; });
+    document.querySelectorAll('.tabbar button').forEach(function (b) { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+    if (t === 'bugun') renderToday();
+    if (t === 'gecmis') renderHistory();
+    window.scrollTo(0, 0);
+  }
+  function goto(h) { if (location.hash === '#' + h) route(); else location.hash = h; }
+  window.addEventListener('hashchange', route);
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', function (ev) {
+    var t = ev.target.closest('[data-tab],[data-start],[data-goto],[data-sec],[data-go],[data-act]'); if (!t) return;
+    if (t.dataset.tab) return goto(t.dataset.tab);
+    if (t.dataset.start) return openWk(t.dataset.start);
+    if (t.dataset.goto) { var p = t.dataset.goto.split('/'); if (p[1]) { progSec = p[1]; renderProgram(); } return goto(p[0]); }
+    if (t.dataset.sec) { progSec = t.dataset.sec; renderProgram(); window.history.replaceState(null, '', '#program/' + progSec); return; }
+    if (!ROOT.open) return;
+    unlock();
+    var st = cur(), s = S();
+    if (t.dataset.go != null) return go(+t.dataset.go);
+    var a = t.dataset.act, i = +t.dataset.i;
+    if (a === 'lnext') nextListItem(st);
+    else if (a === 'cm') cardioAdj(st, -1);
+    else if (a === 'cp') cardioAdj(st, 1);
+    else if (a === 'cr') cardioReset(st);
+    else if (a === 'skip') { s.rest = null; save(); tick(); }
+    else if (a === 'warm') { touch(); var e = exState(st); e.warm[i] = e.warm[i] ? 0 : 1; save(); renderCtl(); }
+    else if (a === 'sel') { sel = i; renderCtl(); }
+    else if (a === 'undo') undoSet(st, i);
+    else if (a === 'form') { exState(st).form = t.checked; saveLog(); save(); }
+    else if (a === 'inc' || a === 'dec') {
+      var ex = exState(st), k = selIdx(ex), f = t.dataset.f, w = ex.work[k];
+      var v = num(w[f] !== '' ? w[f] : suggest(st, ex, k, f)), step = f === 'kg' ? kgStep(st.slug) : st.holdSec ? 5 : 1;
+      if (v == null) v = a === 'inc' ? (f === 'kg' ? 0 : repLo(st) - step) : (f === 'kg' ? 0 : repLo(st) + step);
+      v = Math.max(0, Math.round((v + (a === 'inc' ? step : -step)) * 100) / 100);
+      w[f] = fmt(v); touch();
+      var inp = $('ctl').querySelector('input[data-f="' + f + '"]'); if (inp) inp.value = w[f];
+      if (w.done) saveLog();
+      save(); var sc = $('ctl').querySelectorAll('.setc')[k]; if (sc && w.done) sc.querySelector('small').textContent = setTxt(st, w);
+    }
+  });
+  document.addEventListener('input', function (ev) {
+    var el = ev.target; if (!ROOT.open || !el.dataset || !el.dataset.f) return;
+    var st = cur(); if (!st || st.type !== 'exercise') return;
+    var e = exState(st), k = selIdx(e); e.work[k][el.dataset.f] = el.value.trim(); touch();
+    if (e.work[k].done) saveLog();
+    save();
+  });
+  $('primBtn').addEventListener('click', primary);
+  $('nextBtn').addEventListener('click', next);
+  $('backBtn').addEventListener('click', back);
+  $('wkClose').addEventListener('click', closeWk);
+  document.addEventListener('keydown', function (ev) {
+    if (!ROOT.open) return;
+    var tg = ev.target && ev.target.tagName;
+    if (tg === 'INPUT' || tg === 'TEXTAREA' || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    if (ev.key === ' ') { ev.preventDefault(); primary(); }
+    else if (ev.key === 'ArrowRight') { ev.preventDefault(); next(); }
+    else if (ev.key === 'ArrowLeft') { ev.preventDefault(); back(); }
+    else if (ev.key === 'Escape') closeWk();
+  });
+  // swipe left / right between steps
+  var sw = null;
+  $('wkMain').addEventListener('touchstart', function (ev) {
+    var t = ev.touches[0]; sw = ev.touches.length === 1 && !ev.target.closest('input,.stp') ? { x: t.clientX, y: t.clientY, t: Date.now() } : null;
+  }, { passive: true });
+  $('wkMain').addEventListener('touchend', function (ev) {
+    if (!sw) return; var t = ev.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y, dt = Date.now() - sw.t; sw = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > 1.8 * Math.abs(dy) && dt < 700) { if (dx < 0) { if (cur()) next(); } else if (!$('backBtn').disabled) back(); }
+  }, { passive: true });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { tick(); lockOn(); } });
+  window.addEventListener('storage', function (e) { if (e.key === LOGKEY) { buildHistory(); renderHistory(); } });
+
+  /* ---------- start ---------- */
+  load(); save(); buildHistory();
+  renderToday(); renderProgram(); renderRules(); route();
+  if (window.FIT_onBlockChange) FIT_onBlockChange(function () {
+    S().rest = null; renderProgram(); renderRules(); renderToday(); if (ROOT.open) { cardKey = ''; renderWk(); }
+  });
+  if (ROOT.open) openWk(ROOT.session); // the workout survives reload or app kill
+  setInterval(tick, 500);
+
+  // ask the browser not to clear the log under storage pressure
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+  if ('serviceWorker' in navigator) { // needs HTTPS or localhost
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+})();
