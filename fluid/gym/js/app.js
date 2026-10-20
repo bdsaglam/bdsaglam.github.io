@@ -598,15 +598,28 @@
   });
 
   /* ---------- Kurallar ---------- */
+  // 3-month plan: one block at a time, each day's exercises; rotating ones bold, "yeni" when they change
+  var planB = 0;
   function renderRules() {
-    var i = window.FIT_blockInfo ? FIT_blockInfo() : { block: 1 };
-    document.querySelectorAll('#planBlocks .blk').forEach(function (el) {
-      var on = +el.dataset.b === i.block, h = el.querySelector('h3'), tag = h.querySelector('.now');
-      el.classList.toggle('on', on);
-      if (on && !tag) h.insertAdjacentHTML('beforeend', '<span class="now">şu an</span>'); else if (!on && tag) tag.remove();
-    });
+    var i = window.FIT_blockInfo ? FIT_blockInfo() : { block: 1 }, b = planB || i.block;
     $('nowBlock').textContent = 'şu an Blok ' + i.block + (i.week ? ' · ' + Math.min(i.week, 99) + '. hafta' : '');
+    document.querySelectorAll('#planSeg button').forEach(function (el) {
+      el.setAttribute('aria-selected', String(+el.dataset.b === b));
+      el.classList.toggle('cur', +el.dataset.b === i.block);
+    });
+    $('planBody').innerHTML = ['sali', 'cuma'].map(function (k) {
+      var prev = b > 1 ? FIT_sessionSteps(k, b - 1) : null;
+      return '<div class="plan-day" style="--fit-accent:var(--fit-' + k + ')"><h3>' + (k === 'sali' ? 'Salı' : 'Cuma') + ' · ' + esc(SES_NAME[k]) + '</h3><ul>' +
+        FIT_sessionSteps(k, b).filter(function (s) { return s.type === 'exercise'; }).map(function (s) {
+          var rot = !!(FIT_SESSIONS[k].filter(function (o) { return o.id === s.slot; })[0] || {}).variants,
+            isNew = prev && prev.some(function (p) { return p.slot === s.slot && p.id !== s.id; });
+          return '<li class="' + (rot ? 'rot' : 'fix') + '">' + esc(s.name) + (isNew ? '<span class="new">yeni</span>' : '') + '</li>';
+        }).join('') + '</ul></div>';
+    }).join('') + '<p class="plan-key"><b>Kalın</b>: blokla değişen · soluk: 12 hafta sabit</p>';
   }
+  document.querySelectorAll('#planSeg button').forEach(function (el) {
+    el.addEventListener('click', function () { planB = +el.dataset.b; renderRules(); });
+  });
 
   /* ---------- tabs and routing ---------- */
   var TABS = ['bugun', 'program', 'gecmis', 'kurallar'];
