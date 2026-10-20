@@ -1,49 +1,169 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fluid</title>
-  <link rel="stylesheet" href="viewer/board.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Antrenman</title>
+<meta name="description" content="Yeni başlayan için 12 haftalık ağırlık planı: Gün A, Gün B, ısınma ve kayıt.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Antrenman">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="css/fit.css">
+<link rel="stylesheet" href="css/app.css">
+<script src="js/exercise-data.js"></script>
+<script src="js/exercise.js"></script>
+<script src="js/session-timeline.js"></script>
+<script src="js/block-picker.js"></script>
 </head>
-<body>
-  <div id="app">
-    <main id="stage">
-      <div id="world"></div>
-      <div id="empty">No views yet. Ask the agent in the terminal; its views appear here.</div>
-      <div id="zoom">
-        <button data-zoom="out" title="Zoom out">−</button>
-        <button data-zoom="reset" id="zoom-level" title="Zoom to 100%">100%</button>
-        <button data-zoom="in" title="Zoom in">+</button>
-        <button data-zoom="fit" title="Fit all views">fit</button>
-        <button data-zoom="export" title="Export the open views">export</button>
-        <div id="export-menu" hidden>
-          <button data-export="page" title="A static copy of the open views that any web host can serve; the views keep working">interactive page</button>
-          <button data-export="png" title="One high-resolution image of the open views, laid out as on the board">image (PNG)</button>
-        </div>
-      </div>
-      <button id="follow" hidden>Follow</button>
-      <div id="toast" hidden></div>
-      <div id="comment" hidden>
-        <div class="what"></div>
-        <textarea rows="2" placeholder="What should change here?" aria-label="Comment for the agent"></textarea>
-        <div class="hint">Enter sends · Shift+Enter new line · Esc cancels</div>
-      </div>
-    </main>
-    <aside id="side">
-      <div id="side-grip" title="Drag to resize · double-click for the default width"></div>
-      <button id="side-toggle" title="Collapse"></button>
-      <header>
-        <span id="dot" title="Disconnected"></span>
-        <span id="project"></span>
-        <span id="count"></span>
-      </header>
-      <input id="filter" type="search" placeholder="Filter views" aria-label="Filter views by title, group, or description" hidden>
-      <ul id="list"></ul>
-      <footer>Alt-click anything in a view to comment on it, or to point at it and talk in the terminal.</footer>
-    </aside>
-  </div>
-  <script src="viewer/stage.js"></script>
-  <script src="viewer/board.js"></script>
+<body class="fit app" data-session="sali">
+
+<main>
+  <!-- Bugün -->
+  <section class="view" id="v-bugun" data-view="bugun"></section>
+
+  <!-- Program -->
+  <section class="view" id="v-program" data-view="program" hidden>
+    <h1 class="title">Program</h1>
+    <div class="segctl" role="tablist" aria-label="Bölüm">
+      <button type="button" role="tab" data-sec="sali">Gün A</button>
+      <button type="button" role="tab" data-sec="cuma">Gün B</button>
+      <button type="button" role="tab" data-sec="warm">Isınma &amp; Soğuma</button>
+    </div>
+    <fl-block-picker class="picker"></fl-block-picker>
+    <div id="progBody"></div>
+  </section>
+
+  <!-- Geçmiş -->
+  <section class="view" id="v-gecmis" data-view="gecmis" hidden>
+    <h1 class="title">Geçmiş</h1>
+    <div class="btnrow">
+      <button type="button" class="btn" id="exportBtn">Dışa aktar</button>
+      <button type="button" class="btn" id="importBtn">İçe aktar</button>
+      <input type="file" id="importFile" accept=".json,.jsonl,application/json,text/plain" hidden>
+    </div>
+    <p class="msg" id="histMsg"></p>
+    <div id="histBody"></div>
+  </section>
+
+  <!-- Kurallar (Genel kurallar) -->
+  <section class="view" id="v-kurallar" data-view="kurallar" hidden data-session="warm">
+    <h1 class="title">Kurallar</h1>
+    <p class="lead muted">Ağırsağlam planına göre. Gün ayrıntıları Program sekmesinde.</p>
+
+    <h2 class="fit-sec">Salon saatleri</h2>
+    <div class="box">
+      <b>Devlet Bahçeli Aile Yaşam ve Eğitim Merkezi</b>
+      <p>Erkek: Salı ve Cuma 09:00–14:45, 16:00–21:45 (15:00–16:00 temizlik).</p>
+      <p>Karma: Cumartesi ve Pazar 13:00–21:45. Çarşamba kapalı, Pazartesi ve Perşembe kadınlara ayrılmış.</p>
+      <p><a class="lnk" href="https://www.etimesgut.bel.tr/storage/app/media/tesisler%20kullan%C4%B1m%20saatleri%20ve%20abonelik%20%C3%BCcretleri/devlet-bahceli-tesisleri-girisi.png" target="_blank" rel="noopener">Güncel saat tablosu (Etimesgut Belediyesi)</a></p>
+      <p class="muted">Saatler dönemsel değişebilir.</p>
+    </div>
+
+    <h2 class="fit-sec">Seans akışı</h2>
+    <div class="box">
+      <div class="flow"><span>Isınma</span><i>→</i><span>Çalışma setleri</span><i>→</i><span>Soğuma</span></div>
+      <ul>
+        <li><b>Isınma:</b> 5-10 dk kardiyo, sonra dinamik esneme.</li>
+        <li><b>Çalışma:</b> her ana hareketten önce 1-2 hafif ısınma seti (çalışma setine sayılmaz).</li>
+        <li><b>Soğuma:</b> statik esneme, her kas 30 sn.</li>
+      </ul>
+      <p class="muted">Ayrıntı: Program sekmesinde "Gün A", "Gün B" ve "Isınma &amp; Soğuma".</p>
+    </div>
+
+    <h2 class="fit-sec">3 aylık plan <span class="fit-dur" id="nowBlock"></span></h2>
+    <div class="box">
+      <p><b>Her 4 haftada yardımcı hareketler değişir.</b> Ana hareketler 12 hafta aynı: goblet squat, dambıl bench, dambıl RDL, deadlift 1×5, barbell omuz presi.</p>
+    </div>
+    <div class="segctl seg3" role="tablist" aria-label="Blok" id="planSeg">
+      <button type="button" role="tab" data-b="1">Blok 1 <small>hf 1-4</small></button>
+      <button type="button" role="tab" data-b="2">Blok 2 <small>hf 5-8</small></button>
+      <button type="button" role="tab" data-b="3">Blok 3 <small>hf 9-12</small></button>
+    </div>
+    <div id="planBody"></div>
+    <div class="box">
+      <p class="muted">Neden 4 hafta: Ağırsağlam yardımcı hareketleri en az 4 hafta değiştirmemeyi öneriyor. Planlı değişim sorun değil; rastgele ve sık değişim gelişimi yavaşlatabilir (Kassiano 2022).</p>
+      <p><b>3 ay sonra:</b> lateral raise, kol ve baldır eklenebilir.</p>
+      <p class="muted">Aktif blok Program sekmesindeki seçiciden değişir.</p>
+    </div>
+
+    <h2 class="fit-sec">Ne kadar zorlamalı</h2>
+    <div class="box">
+      <ul>
+        <li><b>Squat, deadlift, RDL:</b> 2 tekrar kala bırak (RIR 2)</li>
+        <li><b>Bench, row, omuz presi:</b> 1-2 tekrar kala bırak (RIR 1-2)</li>
+        <li><b>Makine ve hafif hareketler</b> (lat pulldown, leg press, leg curl, face pull): son sette 0-1 tekrar kalabilir</li>
+        <li><b>Şınav:</b> tükenişe 2 tekrar kala bırak</li>
+      </ul>
+      <p class="muted">RIR = setin sonunda yedekte kalan tekrar; RPE 8 = 2 tekrar kala.</p>
+      <p class="muted">Ağırsağlam: "RPE 9'u geçme, tükenişe gitme."</p>
+    </div>
+
+    <h2 class="fit-sec">Ağırlık artışı</h2>
+    <div class="box">
+      <div class="flow"><span>3×8</span><i>→</i><span>3×9</span><i>→</i><span>3×10</span><i>→</i><span>3×11</span><i>→</i><span>3×12</span><i>→</i><span class="fill">+kg</span><i>→</i><span>3×8</span></div>
+      <ul>
+        <li>Önce tekrarı artır: 3×8'den 3×12'ye.</li>
+        <li>3×12 olunca ağırlığı biraz artır, 3×8'e dön.</li>
+        <li>Deadlift 1×5 tamamlanınca, sonraki hafta +5 kg.</li>
+        <li>Seans RPE 9'dan zor geçtiyse artırma.</li>
+        <li>3 seans üst üste takılırsan ağırlığı ~%10 düşür, yeniden çık.</li>
+      </ul>
+    </div>
+
+    <h2 class="fit-sec">Dinlenme</h2>
+    <div class="box">
+      <ul>
+        <li><b>Büyük hareketler</b> (squat, deadlift, bench): 2-3 dk</li>
+        <li><b>Diğerleri:</b> 60-90 sn</li>
+      </ul>
+    </div>
+
+    <h2 class="fit-sec">İlk 2-3 hafta</h2>
+    <div class="box">
+      <p>Ağırlığı değil hareketi öğren. Başlangıç ağırlığı, 12 tekrarı rahat yapabileceğin kadar hafif olsun.</p>
+    </div>
+
+    <h2 class="fit-sec">Pazar</h2>
+    <div class="box">
+      <ul>
+        <li><b>Zone 2 kardiyo</b> 30-40 dk: konuşabildiğin tempo.</li>
+        <li><b>Esneme</b> ~10 dk: <a class="lnk" href="#program/warm">Isınma &amp; Soğuma</a> bölümündeki esnemeler.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="Sekmeler">
+  <button type="button" data-tab="bugun"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span>Bugün</span></button>
+  <button type="button" data-tab="program"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Program</span></button>
+  <button type="button" data-tab="gecmis"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>Geçmiş</span></button>
+  <button type="button" data-tab="kurallar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M8.5 11h7M8.5 14.5h7"/></svg><span>Kurallar</span></button>
+</nav>
+
+<!-- Antrenman modu (full screen) -->
+<div class="wk" id="wk" hidden>
+  <header class="wk-top">
+    <button type="button" class="icon" id="wkClose" aria-label="Antrenman modunu kapat">✕</button>
+    <div class="wk-t"><b id="wkSes"></b><small id="wkBlk"></small></div>
+    <div class="clock"><small>Süre</small><span id="clock">0:00</span></div>
+  </header>
+  <div class="prog" id="prog" role="group" aria-label="Seans adımları"></div>
+  <div class="stepname"><b id="stepTitle"></b><span id="stepCount"></span></div>
+  <div class="wk-main" id="wkMain"><div id="restBox"></div><div id="card"></div><div id="ctl"></div></div>
+  <footer class="wk-nav">
+    <button type="button" id="backBtn" aria-label="Önceki adım">‹</button>
+    <button type="button" id="primBtn">Başlat</button>
+    <button type="button" id="nextBtn" aria-label="Sonraki adım">›</button>
+  </footer>
+</div>
+
+<script src="js/app.js"></script>
 </body>
 </html>
