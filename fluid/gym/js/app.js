@@ -165,15 +165,13 @@
     if (!on && window.speechSynthesis) speechSynthesis.cancel();
     var b = $('wkSound'); if (b) { b.textContent = on ? '🔊' : '🔇'; b.setAttribute('aria-label', on ? 'Sesi kapat' : 'Sesi aç'); }
   }
-  // what to say when a move comes up: name, then the dose in words
-  function spoken(t) { return String(t || '').replace(/×/g, ' kere ').replace(/[–-]/g, ' ile ').replace(/\//g, ' her ').replace(/sn\b/g, 'saniye').replace(/dk\b/g, 'dakika'); }
   var saidKey = '';
   function announce(st, key) {
     if (key === saidKey) return; saidKey = key;
-    if (!st) { say('Bitti. Eline sağlık.'); return; }
-    if (st.type === 'list') { var it = itemOf(st), e = EX[it.slug] || {}; say((it.name || e.name || '') + '. ' + spoken(it.dose) + (it.perSide ? '. Önce sol taraf, sonra sağ.' : '')); }
-    else if (st.type === 'exercise') { var x = EX[st.slug] || {}; say((st.name || x.name || '') + '. ' + spoken(st.dose || x.dose)); }
-    else if (st.type === 'cardio') say((st.name || 'Kardiyo') + '.');
+    // voice only names the move; everything else (start, side switch, rest over, done) is a tone
+    if (!st) return;
+    if (st.type === 'list') { var it = itemOf(st), e = EX[it.slug] || {}; say(it.name || e.name || ''); }
+    else if (st.type === 'exercise') { var x = EX[st.slug] || {}; say(st.name || x.name || ''); }
   }
   var wakeLock = null;
   function lockOn() {
@@ -474,7 +472,7 @@
       if (el < r.lo) { cls = 'rest'; label = 'Dinlen'; val = mmss(Math.ceil(r.lo - el)); }
       else if (el < r.hi) { cls = 'rest over'; label = 'Hazırsan başla (en geç ' + mmss(r.hi) + ')'; val = '+' + mmss(el - r.lo); }
       else { cls = 'rest ready'; label = 'Dinlenme bitti, sıradaki sete!'; val = '+' + mmss(el - r.lo); }
-      if (el >= r.lo && !r.beeped) { r.beeped = 1; save(); beep(2); say('Dinlenme bitti. Sıradaki set.'); }
+      if (el >= r.lo && !r.beeped) { r.beeped = 1; save(); beep(2); }
       if (el >= r.hi && r.beeped < 2) { r.beeped = 2; save(); beep(1); }
       if (box.dataset.h !== cls + label) {
         box.dataset.h = cls + label;
@@ -495,7 +493,7 @@
       if (secLeft <= 3 && secLeft >= 1 && h.ticked !== (v.prep ? -secLeft : secLeft)) { h.ticked = v.prep ? -secLeft : secLeft; cue('tick'); }
       if (!v.prep && !h.go) { h.go = 1; save(); cue('go'); renderCtl(); }                  // "Hazırlan" is over
       else if (!v.prep && v.left <= 0) {
-        if ((h.side || 0) + 1 < (h.sides || 1)) { h.side = (h.side || 0) + 1; h.start = now + SIDE_PREP * 1000; h.go = 0; save(); cue('side'); say('Sağ taraf'); renderCtl(); }
+        if ((h.side || 0) + 1 < (h.sides || 1)) { h.side = (h.side || 0) + 1; h.start = now + SIDE_PREP * 1000; h.go = 0; save(); cue('side'); renderCtl(); }
         else { cue('done'); nextListItem(st); }
       } else if (ht) ht.textContent = secLeft;
     }
