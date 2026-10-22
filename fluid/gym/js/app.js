@@ -1,13 +1,14 @@
-/* app.js: the Antrenman PWA. Tabs (Bugün, Program, Geçmiş, Kurallar) and the full-screen workout mode,
+/* app.js: the Antrenman PWA. Tabs (Bugün, Program, Kurallar) and the full-screen workout mode,
  * ported from the Fluid canvas view "Antrenman modu" (.fluid/views/workout).
  *
  * Storage (localStorage):
  *   fit-log           JSON array of set records, the same shape as antrenman-log.jsonl:
- *                     {date, session, block, exercise, set, kg, reps, form, perSide?}
+ *                     {date, session, block, exercise, set, kg, reps, form, perSide?}; the workout reads it for
+ *                     "Geçen sefer" and the add-weight hint
  *   fluid-workout-v1  the in-progress workout (step, sets, timers), same key as the Fluid view, plus `open`
  *   fit-block, fit-start   the program block / start date (read and written by exercise-data.js)
  *   fit-mobility      daily routines done: {"YYYY-MM-DD": {"sabah": ms, "aksam": ms}}; kept out of fit-log so
- *                     the lift history and "Son değerler" stay lift-only
+ *                     the log stays lift-only
  *
  * The daily routines (FIT_SESSION_META[k].routine: sabah, aksam) run through the same workout mode: one-item
  * list steps, a hold timer per side, and auto-advance with a short "Hazırlan" pause between moves.
@@ -43,7 +44,7 @@
   /* ---------- log (localStorage 'fit-log') ---------- */
   function readLog() { try { var a = JSON.parse(localStorage.getItem(LOGKEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
   function writeLog(a) { try { localStorage.setItem(LOGKEY, JSON.stringify(a)); return true; } catch (e) { return false; } }
-  var hist = {}; // slug -> {date, sets: [record]}: the last day before today (or today if that is all)
+  var hist = {}; // slug -> {date, sets: [record]}: the last day before today (or today if that is all), for "Geçen sefer"
   function buildHistory() {
     var by = {}, out = {}, t = today();
     readLog().forEach(function (r) { if (r && r.exercise && r.date) (by[r.exercise] = by[r.exercise] || []).push(r); });
@@ -403,8 +404,6 @@
       } else {
         out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">' + (it.perSide ? T('lrSide') : '') + T('slow') + '</div></div>';
       }
-      var lastStep = S().step >= steps().length - 1 && i + 1 >= st.items.length;
-      if (it.holdSec) out += '<button class="btn" data-act="lnext" type="button">' + T(rt ? (lastStep ? 'b.finish' : 'b.nextMove') : i + 1 >= st.items.length ? 'b.nextStep' : 'b.nextMove') + '</button>';
       return out + cuesHtml(it.slug);
     }
     // exercise
@@ -528,7 +527,7 @@
     ROOT.open = false; save();
     $('wk').hidden = true; document.body.classList.remove('wk-open');
     $('card').innerHTML = ''; cardKey = '';
-    lockOff(); renderToday(); renderHistory(); if (progSec === 'gunluk') renderProgram();
+    lockOff(); renderToday(); if (progSec === 'gunluk') renderProgram();
   }
 
   /* ---------- Bugün ---------- */
@@ -657,83 +656,6 @@
     if (d.open) fillEx(d);
   }, true);
 
-  /* ---------- Geçmiş ---------- */
-  var ORDER = [];
-  Object.keys(SESS).forEach(function (k) { [1, 2, 3].forEach(function (b) { (window.FIT_sessionSteps ? FIT_sessionSteps(k, b) : []).forEach(function (s) { if (s.type === 'exercise' && ORDER.indexOf(s.slug) < 0) ORDER.push(s.slug); }); }); });
-  function stepFor(slug) {
-    var found = null;
-    Object.keys(SESS).some(function (k) { return [1, 2, 3].some(function (b) { return FIT_sessionSteps(k, b).some(function (s) { if (s.slug === slug && s.type === 'exercise') { found = s; return true; } return false; }); }); });
-    return found || {};
-  }
-  function renderHistory() {
-    buildHistory();
-    var log = readLog(), out = '';
-    var mob = '<div class="card mobweek"><b>' + T('mob') + '</b><span>' + esc(mobWeekTxt()) + '</span></div>';
-    if (!log.length) { $('histBody').innerHTML = mob + '<div class="empty">' + T('h.empty') + '</div>'; return; }
-    out += mob;
-    var slugs = Object.keys(hist).sort(function (a, b) { return (ORDER.indexOf(a) + 1 || 999) - (ORDER.indexOf(b) + 1 || 999); });
-    out += '<h2 class="fit-sec">' + T('h.last') + '</h2><div class="card lastlist">' + slugs.map(function (slug) {
-      var li = lastInfo(stepFor(slug)), h = hist[slug];
-      return '<div class="row"><div><b>' + esc(X(slug).name || slug) + '</b><small>' + esc(dayTxt(h.date, true)) + '</small></div><div class="val">' + esc(li ? li.txt : '') +
-        (li && li.up ? '<span class="up">' + T('up') + '</span>' : '') + '</div></div>';
-    }).join('') + '</div>';
-    var groups = {};
-    log.forEach(function (r) { var k = r.date + '|' + (r.session || ''); (groups[k] = groups[k] || []).push(r); });
-    var keys = Object.keys(groups).sort().reverse();
-    out += '<h2 class="fit-sec">' + T('h.ses') + ' <span class="fit-dur">' + keys.length + '</span></h2>' + keys.map(function (k) {
-      var g = groups[k], r0 = g[0], by = {}, order = [];
-      g.forEach(function (r) { if (!by[r.exercise]) { by[r.exercise] = []; order.push(r.exercise); } by[r.exercise].push(r); });
-      var live = r0.date === ROOT.date && inProgress(r0.session);
-      return '<details class="ses" data-session="' + esc(r0.session || 'sali') + '"><summary><span class="nm"><b>' + esc(dayTxt(r0.date, true)) + ' · ' + esc(sesName(r0.session) || r0.session || '') + '</b>' +
-        '<small>' + (r0.block ? esc(T('block', r0.block)) + ' · ' : '') + esc(T('h.count', order.length, g.length)) + (live ? T('h.live') : '') + '</small></span></summary><div class="body">' +
-        order.map(function (slug) {
-          var st = stepFor(slug), sets = by[slug].sort(function (a, b) { return a.set - b.set; });
-          return '<p><b>' + esc(X(slug).name || slug) + '</b><br><span class="sets">' + sets.map(function (r) { return setTxt(st, r); }).join(', ') +
-            (sets.some(function (r) { return r.form === false; }) ? T('h.badForm') : '') + '</span></p>';
-        }).join('') + '</div></details>';
-    }).join('');
-    $('histBody').innerHTML = out;
-    var bk = localStorage.getItem('fit-backup'), days = bk ? Math.floor((Date.now() - Date.parse(bk)) / 864e5) : null;
-    if (days === null || days >= 14) histMsg(days === null ? T('h.noBackup') : T('h.oldBackup', days), 'err');
-    else histMsg('', '');
-  }
-  function histMsg(t, cls) { var m = $('histMsg'); m.textContent = t; m.className = 'msg ' + (cls || ''); }
-  $('exportBtn').addEventListener('click', function () {
-    var log = readLog();
-    if (!log.length) { histMsg(T('h.noExport'), 'err'); return; }
-    var text = '[\n' + log.map(function (r) { return JSON.stringify(r); }).join(',\n') + '\n]\n';
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-    a.download = 'antrenman-log-' + today() + '.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
-    localStorage.setItem('fit-backup', new Date().toISOString());
-    histMsg(T('h.exported', log.length), 'ok');
-  });
-  $('importBtn').addEventListener('click', function () { $('importFile').click(); });
-  $('importFile').addEventListener('change', function (ev) {
-    var f = ev.target.files && ev.target.files[0]; if (!f) return;
-    f.text().then(function (t) {
-      var recs = null;
-      try { var j = JSON.parse(t); recs = Array.isArray(j) ? j : j && Array.isArray(j.log) ? j.log : null; } catch (e) { recs = null; }
-      if (!recs) recs = String(t).split('\n').map(function (l) { try { return JSON.parse(l); } catch (e) { return null; } }); // JSONL (antrenman-log.jsonl)
-      recs = recs.filter(function (r) { return r && typeof r === 'object' && r.date && r.exercise && parseDay(r.date); });
-      if (!recs.length) { histMsg(T('h.noRec'), 'err'); return; }
-      var key = function (r) { return r.date + '|' + r.session + '|' + r.exercise + '|' + r.set; }, map = {};
-      readLog().forEach(function (r) { map[key(r)] = r; });
-      recs.forEach(function (r) { map[key(r)] = r; });
-      var all = Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
-      writeLog(all);
-      if (!localStorage.getItem('fit-start')) { // same rule as exercise-data.js: first Tuesday on or after the first session
-        var d = parseDay(all[0].date); while (d.getDay() !== 2) d.setDate(d.getDate() + 1);
-        if (window.FIT_setStart) FIT_setStart(iso(d));
-      }
-      histMsg(T('h.imported', recs.length), 'ok');
-      renderHistory(); renderToday();
-    }).catch(function (e) { histMsg(T('h.readErr', e && e.message || e), 'err'); });
-    ev.target.value = '';
-  });
-
   /* ---------- Kurallar ---------- */
   // 3-month plan: one block at a time, each day's exercises; rotating ones bold, "yeni" when they change
   var planB = 0;
@@ -759,14 +681,13 @@
   });
 
   /* ---------- tabs and routing ---------- */
-  var TABS = ['bugun', 'program', 'gecmis', 'kurallar'];
+  var TABS = ['bugun', 'program', 'kurallar'];
   function route() {
     var h = (location.hash || '').replace(/^#/, '').split('/'), t = TABS.indexOf(h[0]) >= 0 ? h[0] : 'bugun';
     if (t === 'program' && h[1] && /^(sali|cuma|warm|gunluk)$/.test(h[1]) && h[1] !== progSec) { progSec = h[1]; renderProgram(); }
     document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.dataset.view !== t; });
     document.querySelectorAll('.tabbar button').forEach(function (b) { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     if (t === 'bugun') renderToday();
-    if (t === 'gecmis') renderHistory();
     window.scrollTo(0, 0);
   }
   function goto(h) { if (location.hash === '#' + h) route(); else location.hash = h; }
@@ -784,8 +705,7 @@
     var st = cur(), s = S();
     if (t.dataset.go != null) return go(+t.dataset.go);
     var a = t.dataset.act, i = +t.dataset.i;
-    if (a === 'lnext') nextListItem(st);
-    else if (a === 'cm') cardioAdj(st, -1);
+    if (a === 'cm') cardioAdj(st, -1);
     else if (a === 'cp') cardioAdj(st, 1);
     else if (a === 'cr') cardioReset(st);
     else if (a === 'skip') { s.rest = null; save(); tick(); }
@@ -837,8 +757,8 @@
   }, { passive: true });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { tick(); lockOn(); } });
   window.addEventListener('storage', function (e) {
-    if (e.key === LOGKEY) { buildHistory(); renderHistory(); }
-    if (e.key === MOBKEY) { renderToday(); renderHistory(); }
+    if (e.key === LOGKEY) buildHistory();
+    if (e.key === MOBKEY) renderToday();
   });
 
   /* ---------- language ---------- */
@@ -846,7 +766,7 @@
   function fillSlots() { document.querySelectorAll('.langslot').forEach(function (el) { el.innerHTML = I18N.switchHtml(); }); }
   I18N.on(function () {
     pickVoice(); fillSlots(); setSound(soundOn);
-    renderToday(); renderProgram(); renderRules(); renderHistory();
+    renderToday(); renderProgram(); renderRules();
     if (ROOT.open) renderWk(); // the card (fl-exercise) re-renders itself; the step, sets and timers stay as they are
   });
 

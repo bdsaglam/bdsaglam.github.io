@@ -44,7 +44,7 @@ h1.title { font-size: 30px; font-weight: 750; margin: 6px 0 12px; letter-spacing
 .langslot { flex: none; display: flex; }
 .wk-top .langsw { align-self: center; }
 .wk-top .langsw button { min-width: 30px; min-height: 38px; padding: 0 4px; font-size: 12.5px; }
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: grid; grid-template-columns: repeat(4, 1fr);
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: grid; grid-template-columns: repeat(3, 1fr);
   padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid var(--fl-border);
   background: color-mix(in srgb, var(--fl-bg) 92%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .tabbar button { min-height: var(--tabh); border: 0; background: none; display: flex; flex-direction: column; align-items: center;
@@ -63,8 +63,6 @@ h2.fit-sec { font-size: 13px; margin: 22px 0 8px; }
 .btn.acc { border-color: var(--fit-accent); color: var(--fit-accent); }
 .big { display: block; width: 100%; min-height: 60px; font-size: 20px; font-weight: 750; border-radius: 16px; border: 0;
   background: var(--fit-accent); color: #fff; }
-.btnrow { display: flex; gap: 10px; flex-wrap: wrap; }
-.btnrow .btn { flex: 1 1 140px; }
 .msg { min-height: 1.2em; margin: 8px 0; font-size: 14px; color: var(--fl-muted); }
 .msg.ok { color: var(--fl-good); } .msg.err { color: var(--fl-bad); }
 .lnk { font-weight: 600; display: inline-block; padding: 6px 0; }
@@ -119,24 +117,6 @@ details.exd[open] > summary::after { transform: rotate(-135deg); margin-bottom: 
 .exd .body { padding: 0 8px 8px; }
 .exd .body fl-exercise { --fl-surface: var(--fl-bg); }
 
-/* ---------- Geçmiş ---------- */
-.lastlist { display: flex; flex-direction: column; }
-.lastlist .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--fl-border); }
-.lastlist .row:last-child { border-bottom: 0; }
-.lastlist .row b { font-weight: 650; }
-.lastlist .row small { display: block; color: var(--fl-muted); font-size: 13px; }
-.lastlist .val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.lastlist .val .up { display: block; font-size: 12px; color: var(--fl-good); font-weight: 700; }
-details.ses { border: 1px solid var(--fl-border); border-radius: 14px; background: var(--fl-surface); margin-bottom: 8px; }
-details.ses > summary { list-style: none; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 14px; cursor: pointer; border-left: 5px solid var(--fit-accent); border-radius: 14px; }
-details.ses > summary::-webkit-details-marker { display: none; }
-details.ses .nm { flex: 1; }
-details.ses .nm b { display: block; }
-details.ses .nm small { color: var(--fl-muted); font-size: 13.5px; }
-details.ses .body { padding: 2px 14px 12px; font-size: 15px; }
-details.ses .body p { margin: 6px 0; }
-details.ses .body .sets { color: var(--fl-muted); font-variant-numeric: tabular-nums; }
-.empty { text-align: center; padding: 26px 10px; color: var(--fl-muted); }
 
 /* ---------- Kurallar ---------- */
 .blocks { display: grid; gap: 10px; margin-top: 10px; margin-bottom: 10px; }
@@ -256,7 +236,7 @@ details.cues li + li { margin-top: 4px; }
 .done li span:last-child { color: var(--fl-muted); text-align: right; font-variant-numeric: tabular-nums; }
 .segctl.seg3 button[aria-selected="true"] { color: var(--fl-fg); }
 
-/* Günlük esneme: Bugün card, Program section, Geçmiş line, routine timer */
+/* Günlük esneme: Bugün card, Program section, routine timer */
 .mob { border-left: 5px solid var(--fit-sabah); }
 .mobh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .mobh h2 { margin: 0; font-size: 19px; font-weight: 750; }
@@ -271,6 +251,5 @@ details.cues li + li { margin-top: 4px; }
 .mob > p { margin: 10px 0 0; font-size: 14px; }
 .rtn { margin-top: 6px; }
 .rtn .big { margin-top: 12px; }
-.mobweek { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; border-left: 5px solid var(--fit-sabah); }
 .timer.prep .tv { color: var(--fl-muted); }
 .timer.paused .tv { opacity: .55; }

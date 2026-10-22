@@ -14,13 +14,14 @@
  *     .ex(slug | entry)    entry copy: name, sub, dose, rest, rir, rirTag, cues, avoid, alt, note, video.note, anim labels
  *     .step(step, key), .steps(key, block)   resolved steps (FIT_sessionSteps) with name, detail, dose, items[].dose/.tip,
  *                          plus repsText for display (st.reps stays Turkish: the app parses it)
- *     .meta(key), .block(b), .muscle(trName), .photoNote(slug, tr), .phrase(s)
+ *     .meta(key), .block(b), .muscle(trName), .joint(tr), .tissue(tr), .photoNote(slug, tr), .phrase(s)
  *     .missing()           list of Turkish strings without English (the test suite fails on any)
  *   FIT_EN     the English overlay itself:
  *     exercises[slug] = {name, sub, cues: [...], avoid, alt, note, vnote}   (sub '' hides a Turkish sub that is already English)
  *     sessions[key][stepId] = {name, detail, variants: {2: {detail}}}; meta[key] = {label, title, note}
  *     phrases   short repeated strings: doses, rests, reps, effort lines, routine tips, animation labels
- *     muscles   body map names, keyed by the Turkish `tr`;  photoNotes[slug]  for data/media.json
+ *     muscles   body map names, keyed by the Turkish `tr`;  joints, tissue  the same for an entry's joints / tissue
+ *     photoNotes[slug]  for data/media.json
  *     html[key] English markup for the data-i18n elements of index.html
  * Any English string that is missing falls back to the Turkish one.
  * Proper names stay as they are in both languages: the gym, Etimesgut Belediyesi, YouTube channels and video titles.
@@ -30,7 +31,7 @@
   const LS = 'fit-lang';
   const get = () => { try { return localStorage.getItem(LS); } catch { return null; } };
   const saved = get();
-  let lang = saved === 'tr' || saved === 'en' ? saved : /^tr/i.test(navigator.language || '') ? 'tr' : 'en';
+  let lang = saved === 'tr' || saved === 'en' ? saved : 'en'; // English until the user picks; a saved choice wins
   const LOC = { tr: 'tr-TR', en: 'en-GB' };
   const fill = (s, a) => String(s).replace(/\{(\d)\}/g, (_, i) => (a[i] == null ? '' : a[i]));
 
@@ -58,12 +59,12 @@
     'b.startSec': ['▶ {0} sn başlat', '▶ Start {0} s'], 'b.nextStep': ['Sonraki adım →', 'Next step →'], 'b.nextMove': ['Sonraki hareket →', 'Next move →'],
     'b.rightDone': ['Sağ taraf bitti ✓', 'Right side done ✓'], 'b.leftDone': ['Sol taraf bitti ✓', 'Left side done ✓'],
     'b.setDone': ['Set {0} bitti ✓', 'Set {0} done ✓'], 'b.nextSet': ['Sıradaki set →', 'Next set →'], 'b.finishSes': ['Seansı bitir ✓', 'Finish session ✓'],
-    'b.finish': ['Bitir ✓', 'Finish ✓'], 'b.reset': ['Sıfırla', 'Reset'], 'b.undo': ['Geri al', 'Undo'], 'b.skip': ['Atla', 'Skip'],
+    'b.reset': ['Sıfırla', 'Reset'], 'b.undo': ['Geri al', 'Undo'], 'b.skip': ['Atla', 'Skip'],
     'dec': ['{0} azalt', 'Decrease {0}'], 'inc': ['{0} artır', 'Increase {0}'],
     'rt.done': ['{0} bitti ✓', '{0} done ✓'], 'time': ['Süre {0}.', 'Time {0}.'], 'rt.marked': ['Bugün için işaretlendi.', 'Marked as done for today.'],
     'ses.done': ['Seans bitti', 'Session done'],
     'ses.sum': [(n, t) => n + ' set tamamladın. Toplam süre ' + t + '.', (n, t) => 'You completed ' + pl(n, 'set', 'sets') + '. Total time ' + t + '.'],
-    'ses.saved': ['Kaydedildi (Geçmiş sekmesinde).', 'Saved (see the History tab).'],
+    'ses.saved': ['Kaydedildi.', 'Saved.'],
     'c.over': ['Süre doldu, bırakabilirsin', 'Time’s up, you can stop'], 'c.run': ['Sürüyor', 'Running'], 'c.paused': ['Duraklatıldı', 'Paused'],
     'c.target': ['Hedef {0}–{1} dk', 'Target {0}–{1} min'], 'c.minus': ['1 dk azalt', '1 min less'], 'c.plus': ['1 dk artır', '1 min more'],
     'k.dyn': ['Yavaş ve kontrollü; tutup bekleme.', 'Slow and controlled; no holding.'],
@@ -109,16 +110,6 @@
     's.p': ['Çizimler şematiktir. İlk setleri hafif tut, hareketi öğren; ana hareketlerden önce 1-2 ısınma seti yap.',
       'The drawings are schematic. Keep the first sets light and learn the movement; do 1-2 warm-up sets before the main lifts.'],
     's.ex': ['Hareketler', 'Exercises'], 's.start': ['{0} antrenmanını başlat', 'Start {0}'],
-    // Geçmiş
-    'h.empty': ['Henüz kayıt yok. Antrenman modunda tamamladığın setler buraya kaydedilir.', 'No records yet. The sets you complete in workout mode are saved here.'],
-    'h.last': ['Son değerler', 'Latest numbers'], 'h.ses': ['Seanslar', 'Sessions'],
-    'h.count': [(m, s) => m + ' hareket · ' + s + ' set', (m, s) => pl(m, 'exercise', 'exercises') + ' · ' + pl(s, 'set', 'sets')],
-    'h.live': [' · devam ediyor', ' · in progress'], 'h.badForm': [' · form iyi değildi', ' · form was off'],
-    'h.noBackup': ['Hiç yedek alınmadı. Kayıtlar sadece bu telefonda; "Dışa aktar" ile yedekle.', 'No backup yet. Your records live only on this phone; back them up with "Export".'],
-    'h.oldBackup': ['Son yedek {0} gün önce. "Dışa aktar" ile yeni yedek al.', 'Last backup {0} days ago. Make a new one with "Export".'],
-    'h.noExport': ['Dışa aktarılacak kayıt yok.', 'Nothing to export.'], 'h.exported': ['{0} set dışa aktarıldı.', '{0} sets exported.'],
-    'h.noRec': ['Dosyada kayıt bulunamadı.', 'No records found in the file.'], 'h.imported': ['{0} set içe aktarıldı.', '{0} sets imported.'],
-    'h.readErr': ['Okunamadı: {0}', 'Could not read the file: {0}'],
     // Kurallar
     'k.now': ['şu an Blok {0}', 'now Block {0}'], 'k.new': ['yeni', 'new'],
     'k.key': ['<b>Kalın</b>: blokla değişen · soluk: 12 hafta sabit', '<b>Bold</b>: changes with the block · faded: same for 12 weeks'],
@@ -133,7 +124,7 @@
     'x.yt': ['▶ YouTube\'da aç', '▶ Open on YouTube'], 'x.page': ['Ağırsağlam yazısı', 'Ağırsağlam article'],
     'x.animLabel': ['{0} hareket animasyonu', '{0} movement animation'], 'x.speed': ['Hız', 'Speed'],
     'x.alt0': ['{0} başlangıç pozisyonu', '{0} start position'], 'x.alt1': ['{0} bitiş pozisyonu', '{0} end position'],
-    'x.startEnd': ['Başlangıç ↔ Bitiş', 'Start ↔ End'], 'x.noImg': ['Görsel yok.', 'No image.'], 'x.rest': ['Dinlenme {0}', 'Rest {0}'],
+    'x.noImg': ['Görsel yok.', 'No image.'], 'x.rest': ['Dinlenme {0}', 'Rest {0}'],
     'x.blkTip': ['Bu hareket bloğa göre değişir', 'This exercise changes with the block'], 'x.effort': ['Efor', 'Effort'],
     'x.do': ['Doğru', 'Do'], 'x.avoid': ['Kaçın', 'Avoid'], 'x.alt': ['Alternatif:', 'Alternative:'], 'x.vnote': ['Video: {0}', 'Video: {0}'],
     // fl-session-timeline
@@ -152,6 +143,7 @@
     'bp.aria': ['Program bloğu', 'Program block'], 'bp.start': ['Başlangıç', 'Start'], 'bp.startAria': ['Program başlangıç tarihi', 'Program start date'],
     // body map
     'bm.front': ['ÖN', 'FRONT'], 'bm.back': ['ARKA', 'BACK'], 'bm.str': ['Esneyen kaslar', 'Muscles stretched'], 'bm.work': ['Çalışan kaslar', 'Muscles worked'],
+    'bm.joints': ['Eklemler', 'Joints'], 'bm.tissue': ['Bağ dokusu', 'Connective tissue'],
     'bm.key': ['koyu: ana kas · açık: yardımcı', 'dark: main · light: helper'], 'bm.off': [' · halka: haritada yok', ' · ring: not on the map'],
   };
 
@@ -365,12 +357,25 @@
       'Arka bacak (hamstring)': 'Hamstrings', 'Yan karın (oblik)': 'Obliques', 'Omuz (ön ve yan deltoid)': 'Shoulders (front and side delts)', 'Üst trapez': 'Upper traps',
       'Karın (sabitler)': 'Abs (bracing)', 'Rotator manşet': 'Rotator cuff', 'Baldır (gastroknemius)': 'Calves (gastrocnemius)',
       'Bel yanı (kuadratus lumborum)': 'Quadratus lumborum', 'Kalça yanı (gluteus medius)': 'Glute medius', 'Omuz': 'Shoulders', 'Baldır': 'Calves',
-      'Kalça fleksörü (iliopsoas)': 'Hip flexors (iliopsoas)', 'Göğüs omurgası (eklem)': 'Thoracic spine (joint)', 'Omuz (deltoid)': 'Shoulders (delts)', 'Trapez': 'Traps',
-      'Ayak bileği (eklem)': 'Ankle (joint)', 'Omurga (eklemler)': 'Spine (joints)', 'Piriformis (derin kalça)': 'Piriformis (deep hip)',
-      'Ön bacak (rektus femoris)': 'Quads (rectus femoris)', 'Omuz (eklem)': 'Shoulder (joint)', 'Baldır (soleus)': 'Calves (soleus)', 'Bel': 'Lower back',
-      'Boyun yanı (SKM, skalen)': 'Side of the neck (SCM, scalenes)', 'Boyun omurları (eklem)': 'Neck vertebrae (joints)',
-      'Soleus ve aşil (diz bükülünce)': 'Soleus and Achilles (knee bent)', 'Yan gövde (oblik)': 'Side of the trunk (obliques)', 'Diyafram': 'Diaphragm',
+      'Kalça fleksörü (iliopsoas)': 'Hip flexors (iliopsoas)', 'Omuz (deltoid)': 'Shoulders (delts)', 'Trapez': 'Traps',
+      'Piriformis (derin kalça)': 'Piriformis (deep hip)',
+      'Ön bacak (rektus femoris)': 'Quads (rectus femoris)', 'Baldır (soleus)': 'Calves (soleus)', 'Bel': 'Lower back',
+      'Boyun yanı (SKM, skalen)': 'Side of the neck (SCM, scalenes)',
+      'Soleus (diz bükülünce)': 'Soleus (knee bent)', 'Yan gövde (oblik)': 'Side of the trunk (obliques)', 'Diyafram': 'Diaphragm',
       'Karın (nefes verirken)': 'Abs (on the exhale)',
+    },
+    joints: {
+      'Kalça (öne açılma / ekstansiyon)': 'Hip (extension)', 'Kalça (bükülme / fleksiyon)': 'Hip (flexion)',
+      'Kalça (öne-arkaya / fleksiyon, ekstansiyon)': 'Hip (flexion, extension)', 'Kalça (yana açılma / abdüksiyon)': 'Hip (abduction)',
+      'Kalça (dışa dönme / dış rotasyon)': 'Hip (external rotation)', 'Diz (bükülme / fleksiyon)': 'Knee (flexion)', 'Diz (düzleşme / ekstansiyon)': 'Knee (extension)',
+      'Ayak bileği (bükülme / dorsifleksiyon)': 'Ankle (dorsiflexion)', 'Göğüs omurgası (dönme / rotasyon)': 'Thoracic spine (rotation)',
+      'Omurga (yuvarlama ve kavis / fleksiyon, ekstansiyon)': 'Spine (flexion, extension)', 'Omurga (yana eğilme / lateral fleksiyon)': 'Spine (side bend)',
+      'Boyun (yana eğilme ve dönme)': 'Neck (side bend, rotation)', 'Omuz (dairesel / sirkümdüksiyon)': 'Shoulder (circumduction)',
+      'Omuz (baş üstüne kaldırma / fleksiyon)': 'Shoulder (flexion, overhead)', 'Omuz (baş üstünden arkaya / fleksiyon, ekstansiyon)': 'Shoulder (flexion, then extension)',
+      'Omuz (arkaya açılma / yatay abdüksiyon, dış rotasyon)': 'Shoulder (horizontal abduction, external rotation)',
+    },
+    tissue: {
+      'Aşil tendonu': 'Achilles tendon', 'Hamstring tendonları': 'Hamstring tendons', 'Kalça eklem kapsülü (ön)': 'Anterior hip joint capsule', 'Torakolomber fasya': 'Thoracolumbar fascia',
     },
     photoNotes: {
       'goblet-squat': 'The photo shows a kettlebell; hold a dumbbell the same way.',
@@ -388,9 +393,8 @@
     },
     html: {
       'title': 'Antrenman',
-      'tab.bugun': 'Today', 'tab.program': 'Program', 'tab.gecmis': 'History', 'tab.kurallar': 'Rules', 'tabs': 'Tabs',
+      'tab.bugun': 'Today', 'tab.program': 'Program', 'tab.kurallar': 'Rules', 'tabs': 'Tabs',
       'p.sec': 'Section', 'p.sali': 'Day A', 'p.cuma': 'Day B', 'p.warm': 'Warm-up &amp; cool-down', 'p.gunluk': 'Daily stretching',
-      'h.title': 'History', 'h.export': 'Export', 'h.import': 'Import',
       'wk.close': 'Close workout mode', 'wk.time': 'Time', 'wk.steps': 'Session steps', 'wk.back': 'Previous step', 'wk.next': 'Next step', 'wk.prim': 'Start',
       'k.title': 'Rules', 'k.lead': 'Based on the Ağırsağlam plan. Day details are in the Program tab.',
       'k.hours': 'Gym hours',
@@ -445,6 +449,7 @@
       </ul>`,
       'k.mob': 'Daily stretching',
       'k.mobBox': `<p>Two short routines every day, on top of training. <b>Morning (~6 min), dynamic:</b> opens up the joints with slow movement, no holding. <b>Evening (~8 min), static:</b> hold 30 s per side, a light stretch, not pain, breathe easy. Ağırsağlam also recommends dynamic stretching before training and static stretching after. According to ACSM, holding a static stretch for 10-30 s is enough, and doing it daily works best. Stretching doesn’t replace lifting: strength training through the full range of motion improves flexibility as much as stretching does (Afonso 2021).</p>
+      <p>Stretching lengthens muscles and their tendons. Ligaments hold the joints stable and are not meant to be stretched, so stop at a mild stretch and back off if you feel pain in a joint.</p>
       <p><a class="lnk" href="https://web.archive.org/web/20240225082911/https://www.acsm.org/blog-detail/acsm-certified-blog/2021/03/18/stretching-and-flexibility-guidelines-update" target="_blank" rel="noopener">ACSM stretching guidelines (2021)</a> · <a class="lnk" href="https://doi.org/10.3390/healthcare9040427" target="_blank" rel="noopener">Afonso 2021</a></p>`,
       'k.src': 'Sources',
       'k.srcBox': '<p class="muted">Muscle map drawings: <a class="lnk" href="https://github.com/GV79/react-body-highlighter" target="_blank" rel="noopener">react-body-highlighter</a> (GV79, MIT license).</p>',
@@ -523,6 +528,8 @@
   const X = {
     phrase: P,
     muscle: (tr) => (lang === 'en' && has(EN.muscles, tr) ? EN.muscles[tr] : tr),
+    joint: (tr) => (lang === 'en' && has(EN.joints, tr) ? EN.joints[tr] : tr),
+    tissue: (tr) => (lang === 'en' && has(EN.tissue, tr) ? EN.tissue[tr] : tr),
     photoNote: (slug, tr) => (lang === 'en' && has(EN.photoNotes, slug) ? EN.photoNotes[slug] : tr),
     ex(x) {
       const e = typeof x === 'string' ? (window.FIT_EXERCISES || {})[x] : x;
@@ -584,6 +591,8 @@
         if (e.video && e.video.note && !has(en, 'vnote')) out.push(slug + ': no vnote');
         for (const k of ['dose', 'rest', 'rir', 'rirTag']) need(e[k], slug + '.' + k);
         for (const m of [...((e.work || {}).main || []), ...((e.work || {}).help || [])]) if (!has(EN.muscles, m.tr)) out.push(slug + ': muscle ' + m.tr);
+        for (const j of e.joints || []) if (!has(EN.joints, j)) out.push(slug + ': joint ' + j);
+        for (const t of e.tissue || []) if (!has(EN.tissue, t)) out.push(slug + ': tissue ' + t);
         if (e.anim) { (e.anim.phases || []).forEach((p) => need(p[0], slug + ' phase')); if (e.anim.guide) need(e.anim.guide.label, slug + ' guide'); }
       }
       const SES = window.FIT_SESSIONS || {};

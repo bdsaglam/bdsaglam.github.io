@@ -44,18 +44,6 @@
     <div id="progBody"></div>
   </section>
 
-  <!-- Geçmiş -->
-  <section class="view" id="v-gecmis" data-view="gecmis" hidden>
-    <div class="titlerow"><h1 class="title" data-i18n="h.title">Geçmiş</h1><div class="langslot"></div></div>
-    <div class="btnrow">
-      <button type="button" class="btn" id="exportBtn" data-i18n="h.export">Dışa aktar</button>
-      <button type="button" class="btn" id="importBtn" data-i18n="h.import">İçe aktar</button>
-      <input type="file" id="importFile" accept=".json,.jsonl,application/json,text/plain" hidden>
-    </div>
-    <p class="msg" id="histMsg"></p>
-    <div id="histBody"></div>
-  </section>
-
   <!-- Kurallar (Genel kurallar) -->
   <section class="view" id="v-kurallar" data-view="kurallar" hidden data-session="warm">
     <div class="titlerow"><h1 class="title" data-i18n="k.title">Kurallar</h1><div class="langslot"></div></div>
@@ -145,6 +133,7 @@
     <h2 class="fit-sec" data-i18n="k.mob">Günlük esneme</h2>
     <div class="box" data-i18n="k.mobBox">
       <p>Her gün iki kısa rutin, antrenmana ek. <b>Sabah (~6 dk) dinamik:</b> eklemleri yavaş hareketle açar, tutup beklemek yok. <b>Akşam (~8 dk) statik:</b> her taraf 30 sn tut, ağrı değil hafif gerginlik, nefes rahat. Ağırsağlam da antrenmandan önce dinamik, sonra statik esnemeyi öneriyor. ACSM'ye göre statik esnemede 10-30 sn tutmak yeterli, her gün yapmak en etkilisi. Esneme ağırlığın yerini tutmaz: tam hareket açıklığında kuvvet çalışması da esnekliği esneme kadar artırıyor (Afonso 2021).</p>
+      <p>Esneme kasları ve tendonlarını uzatır. Eklem bağları (ligamentler) eklemi sabit tutar, esnetilmeleri istenmez: hafif gerginlikte dur, eklemde ağrı hissedersen geri çık.</p>
       <p><a class="lnk" href="https://web.archive.org/web/20240225082911/https://www.acsm.org/blog-detail/acsm-certified-blog/2021/03/18/stretching-and-flexibility-guidelines-update" target="_blank" rel="noopener">ACSM esneme önerileri (2021)</a> · <a class="lnk" href="https://doi.org/10.3390/healthcare9040427" target="_blank" rel="noopener">Afonso 2021</a></p>
     </div>
 
@@ -158,7 +147,6 @@
 <nav class="tabbar" aria-label="Sekmeler" data-i18n-aria="tabs">
   <button type="button" data-tab="bugun"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg><span data-i18n="tab.bugun">Bugün</span></button>
   <button type="button" data-tab="program"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span data-i18n="tab.program">Program</span></button>
-  <button type="button" data-tab="gecmis"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span data-i18n="tab.gecmis">Geçmiş</span></button>
   <button type="button" data-tab="kurallar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h10.5L19 8v11.5H5z"/><path d="M8.5 11h7M8.5 14.5h7"/></svg><span data-i18n="tab.kurallar">Kurallar</span></button>
 </nav>
 
