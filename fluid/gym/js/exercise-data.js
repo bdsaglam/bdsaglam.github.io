@@ -5,8 +5,9 @@
  *   FIT_GEOM          the one skeleton and coordinate system every figure uses
  *   FIT_SVG           helpers that draw equipment (benches, cables, walls, dumbbells)
  *   FIT_EXERCISES     {<slug>: ENTRY}   every exercise, drawn by <fl-exercise slug="...">
- *   FIT_SESSIONS      {sali: [STEP...], cuma: [STEP...]}   session order and minute estimates
- *   FIT_SESSION_META  {sali: {label, title, accent, note}, ...}
+ *   FIT_SESSIONS      {sali: [STEP...], cuma: [STEP...], sabah: [...], aksam: [...]}   session order and minute estimates
+ *   FIT_SESSION_META  {sali: {label, title, accent, note}, ...}; the daily routines (sabah, aksam) carry
+ *                     routine: true and min, and use one-item list steps (phase 'mob'), one move per step
  *   FIT_BLOCKS        [{n: 1, weeks: '1-4', name: 'Blok 1', from: 1, to: 4}, ...]   the 12-week plan
  *   FIT_currentBlock() active block 1..3; FIT_blockInfo() {block, source, week, start}
  *   FIT_setBlock(n | null), FIT_setStart('YYYY-MM-DD' | null), FIT_onBlockChange(fn) -> off()
@@ -77,9 +78,10 @@
  *   {id, name, phase: 'warm'|'main'|'cool', type: 'cardio'|'list'|'exercise',
  *    min (planned minutes), lo, hi (range; default min), detail (one line),
  *    slug (exercise steps), sets, reps, holdSec: [30, 45], warmupSets, workSec, restSec: [lo, hi],
- *    items: [{slug, name?, dose, holdSec?}] (list steps), video (optional),
+ *    items: [{slug, name?, dose, holdSec?, perSide?, optional?, tip?}] (list steps; perSide: the timer runs
+ *    holdSec once per side; tip: a short hint shown with the dose), video (optional),
  *    perSide (each set is done on both sides), dose (card text when it differs from the entry),
- *    variants: {2: VARIANT, 3: VARIANT}}
+ *    variants: {2: VARIANT, 3: VARIANT}}   (phase 'mob' = a daily routine move)
  *   The step itself is the block-1 choice. VARIANT is a slug ('seated-cable-row': same sets, reps,
  *   rest and minutes) or an object of fields that replace the step's for that block, e.g.
  *   {slug: 'db-split-squat', reps: '8–12 / bacak', perSide: true, workSec: 80, min, hi, detail}.
@@ -785,7 +787,111 @@
     /* Listed in the cool-downs, no drawing yet (the card shows the text and the video). */
     'hamstring-stretch': { name: 'Hamstring esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Arka bacak (hamstring)']], cues: [] },
     'hip-flexor-stretch': { name: 'Kalça fleksörü esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Kalça fleksörü']], cues: [] },
-    'childs-pose-lat-stretch': { name: 'Çocuk pozu + lat esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Lat, sırt']], cues: [] },
+
+    /* ================= Günlük esneme (sabah dinamik, akşam statik) ================= */
+    'thoracic-rotation': {
+      name: 'Dört ayakta sırt rotasyonu', sub: 'Göğüs omurgası (T-spine) rotasyonu', kind: 'dynamic', dose: '6 tekrar/taraf',
+      legend: [[1, 'Üst sırt (göğüs omurgası), omuz']],
+      cues: ['Dört ayak dur; kalçayı biraz topuklara doğru geri al, bel sabit kalsın.', 'Bir elini ensene koy; dirseği karşı kolun altına indir, sonra tavana aç.', 'Bakışın dirseği izlesin; nefes verirken aç.'],
+      avoid: 'Dönüşü belden ya da kalçadan yapmak; hızlı savurmak.',
+      alt: 'Yan yatarak açık kitap (open book): dizler bükülü, üstteki kolu yay çizerek arkaya aç.',
+      note: 'Yandan çizim: dönüş kolun aşağı-yukarı yayı olarak görünür.',
+      anim: Object.assign(WT({ ul: 0, ll: -90, hh2: 0, hdx2: 0, t1: 70, t2: 75 },
+        [[0, { ua: 0, fa: 0, h: 85 }], [0.4, { ua: 0, fa: 0, h: 85 }], [2.0, { ua: -40, fa: -30, t2: 85, h: 115 }], [2.6, { ua: -40, fa: -30, t2: 85, h: 115 }], [4.6, { ua: 175, fa: 180, t2: 66, h: 45 }], [5.4, { ua: 175, fa: 180, t2: 66, h: 45 }], [7.0, { ua: 0, fa: 0, h: 85 }]]), {
+        anchor: { j: 'sho', x: mx(128), ground: true }, far: 'both', noFoot: true, still: 4900, muscles: HL(['back', 'arm']),
+      }),
+    },
+    'ankle-rock': {
+      name: 'Duvara diz değdirme', sub: 'Ayak bileği mobilitesi (knee-to-wall)', kind: 'dynamic', dose: '10 tekrar/taraf',
+      legend: [[1, 'Baldır, ayak bileği'], [2, 'Ön uyluk']],
+      cues: ['Öndeki ayak duvardan bir karış uzakta, arka ayak geride.', 'Topuk yerde kalsın; dizi ikinci parmak yönünde duvara doğru it, 1-2 sn bekle, geri gel.', 'Diz duvara kolay değiyorsa ayağı biraz geri al.'],
+      avoid: 'Topuğun kalkması; dizin içe çökmesi.',
+      alt: 'Duvar yoksa yarım diz çök; öndeki dizi ayak ucunun ötesine it.',
+      anim: {
+        anchor: { j: 'hip', x: 136, y: 112 }, far: 'leg',
+        keys: [
+          { ax: 0, ay: 0, to: -88, fx: 176, fy: FLOOR - 4, fb: -1, ft: 0, fx2: 96, fy2: FLOOR - 4, fb2: -1, ft2: 5, ua: 85, fa: 85 },
+          { ax: 26, ay: 14, to: -84, fx: 176, fy: FLOOR - 4, fb: -1, ft: 0, fx2: 96, fy2: FLOOR - 4, fb2: -1, ft2: 25, ua: 80, fa: 80 },
+        ],
+        phases: [['Dizi duvara it · 2 sn', 2000, 1, 'con'], ['Bekle', 1000, null, 'hold'], ['Geri gel · 2 sn', 2000, 0, 'ecc'], ['', 400, null, 'hold']],
+        still: 2600,
+        muscles: [{ a: 'knee', b: 'ankle', f0: 0.1, f1: 0.7, off: [-3, 0], w: 11, c: 1 }, { a: 'hip', b: 'knee', w: 12, c: 2 }],
+        equip: { stat: () => S.wall(212, 0, FLOOR) },
+      },
+    },
+    'deep-squat-hold': {
+      name: 'Derin squat bekleme', sub: 'Kapı kasasına tutunarak', kind: 'static', dose: '30–45 sn',
+      legend: [[1, 'Kalça, iç bacak'], [2, 'Ayak bileği'], [3, 'Alt sırt (gevşek)']],
+      cues: ['Kapı kasasını iki elle tut; ayaklar omuz genişliğinde, uçlar hafif dışa.', 'Yavaşça en aşağı otur; topuklar yerde, dizleri dirseklerle hafifçe dışa it.', 'Göğüs açık, rahat nefes al; zorlanırsan ellerle daha çok destek al.'],
+      avoid: 'Topukların kalkması; ağrıya kadar zorlamak.',
+      alt: 'Topuklar kalkıyorsa altına ince bir kitap veya plaka koy.',
+      note: 'Ağırsağlam: çömelme zor geliyorsa bir yere tutunarak squat pozisyonunda esnemeyi öneriyor.',
+      anim: {
+        anchor: { j: 'ankle', x: 150, y: FLOOR - 3 }, hand: false,
+        keys: [
+          { th: 88, sh: 92, to: -88, ft: 0, hx: 214, hy: 92, hb: 1, hx2: 214, hy2: 92, hb2: 1 },
+          { th: -12, sh: 122, to: -66, hd: -78, ft: 0, hx: 214, hy: 118, hb: 1, hx2: 214, hy2: 118, hb2: 1 },
+        ],
+        phases: [['Yavaşça in', 2500, 1, 'in'], ['Altta bekle', 45000, null, 'static'], ['Kalk', 2500, 0, 'out']],
+        still: 20000, ring: { sec: 45, mode: 'down' },
+        muscles: [{ a: 'hip', b: 'hip', off: [-6, 2], w: 22, c: 1 }, { a: 'knee', b: 'ankle', f0: 0.5, f1: 1, w: 10, c: 2 }, { a: 'hip', b: 'sho', f0: 0, f1: 0.4, w: 9, c: 3 }],
+        equip: { stat: () => S.rect(218, 0, 12, FLOOR, 'eqf', 0) + S.line([218, 0], [218, FLOOR], 'eq', 'stroke-width:3') },
+      },
+    },
+    'neck-tilt-turn': {
+      name: 'Boyun eğme ve çevirme', sub: 'Yavaş, dinamik', kind: 'dynamic', dose: '5 tekrar/yön',
+      legend: [[1, 'Boyun yanı, üst trapez']],
+      cues: ['Dik otur veya dur, omuzlar aşağıda.', 'Kulağı omza doğru yavaşça eğ, ortaya dön, diğer tarafa eğ.', 'Sonra başı sağa ve sola çevir; çene yere paralel kalsın.'],
+      avoid: 'Başı çember çizerek geriye atmak; ağrılı noktaya zorlamak.',
+      alt: 'Masada çene geri çekme (chin tuck): başı duvara yasla, çeneyi hafifçe içeri çek, 5 sn tut.',
+      note: 'Önden yapılan bir hareket; çizim yok.',
+    },
+    'calf-stretch-wall': {
+      name: 'Duvarda baldır esnetme', sub: 'Arka bacak düz, topuk yerde', kind: 'static', dose: '30 sn/taraf',
+      legend: [[1, 'Baldır (gastroknemius)'], [2, 'Aşil tendonu']],
+      cues: ['Ellerini duvara koy, bir bacağı geriye uzat; arka ayak ucu ileri baksın.', 'Arka topuğu yere bastır, dizi düz tut; kalçayı duvara doğru it.', 'Sonra arka dizi hafifçe bük: gerginlik aşağı, aşile iner.'],
+      avoid: 'Arka topuğun kalkması; ayağın dışa dönmesi.',
+      alt: 'Basamakta topuk sarkıtma: ayak ucu basamakta, topuğu yavaşça aşağı bırak.',
+      anim: Object.assign({}, STATIC, {
+        anchor: { j: 'hip', x: 146, y: 100 }, far: 'leg',
+        keys: [
+          { ax: -6, ay: 0, to: -78, fx: 176, fy: FLOOR - 4, fb: 1, ft: 0, fx2: 90, fy2: FLOOR - 4, fb2: -1, ft2: 0, hx: 222, hy: 52, hb: 1, hx2: 222, hy2: 52, hb2: 1 },
+          { ax: 8, ay: 4, to: -70, fx: 176, fy: FLOOR - 4, fb: 1, ft: 0, fx2: 90, fy2: FLOOR - 4, fb2: -1, ft2: 0, hx: 222, hy: 56, hb: 1, hx2: 222, hy2: 56, hb2: 1 },
+        ],
+        muscles: [{ a: 'knee2', b: 'ankle2', f0: 0.05, f1: 0.55, w: 11, c: 1 }, { a: 'knee2', b: 'ankle2', f0: 0.75, f1: 1, w: 7, c: 2 }],
+        equip: { stat: () => S.wall(226, 0, FLOOR) },
+      }),
+    },
+    'childs-pose-lat-stretch': {
+      name: 'Çocuk pozu + yana uzanma', sub: 'Yerde lat esnetme', kind: 'static', dose: '30 sn/taraf',
+      legend: [[1, 'Lat, yan gövde'], [2, 'Alt sırt']],
+      cues: ['Dizler kalça genişliğinde açık, kalça topuklara otursun; kollar önde.', 'İki eli birlikte sağa yürüt: sol yan esner. 30 sn sonra sola yürüt.', 'Nefes verirken kalçayı geriye, elleri ileri it.'],
+      avoid: 'Kalçayı topuklardan kaldırmak; omzu zorlamak.',
+      alt: 'Bench, rack veya çit varsa ayakta lat esnetmesi.',
+      note: 'Yandan çizim; yana uzanma görünmez.',
+      anim: Object.assign({}, STATIC, {
+        anchor: { j: 'hip', x: 112, y: 158 }, far: 'leg', noFoot: true,
+        keys: [
+          { th: 30, sh: 180, lt: 4, ut: 8, hd: -5, hx: 226, hy: FLOOR - 4, hb: -1, hx2: 226, hy2: FLOOR - 4, hb2: -1 },
+          { th: 30, sh: 180, lt: 18, ut: 22, hd: 0, hx: 232, hy: FLOOR - 4, hb: -1, hx2: 232, hy2: FLOOR - 4, hb2: -1 },
+        ],
+        muscles: [{ a: 'hip', b: 'sho', f0: 0.3, f1: 1, off: [0, -5], w: 13, c: 1 }, { a: 'hip', b: 'sho', f0: 0, f1: 0.35, w: 10, c: 2 }],
+      }),
+    },
+    'supine-breathing': {
+      name: 'Sırtüstü nefes', sub: 'Burundan al, uzun ver', kind: 'hold', dose: '1 dk',
+      legend: [[1, 'Diyafram, karın']],
+      cues: ['Sırtüstü yat, dizler bükülü; bir el göğüste, bir el karında.', 'Burundan ~4 sn al: karın kalksın, göğüs az oynasın.', 'Ağızdan veya burundan ~6-8 sn yavaşça ver; omuzları ve çeneyi gevşet.'],
+      avoid: 'Nefesi zorlamak ya da tutmak; göğüsten hızlı solumak.',
+      alt: 'Baldırları bir sandalyeye koy (90/90) veya yüzüstü yatıp alnını ellere koy.',
+      anim: {
+        anchor: { j: 'hip', x: 150, y: FLOOR - 6 }, breath: true, far: 'leg', hand: false,
+        keys: [{ to: 180, hd: 186, fx: 196, fy: FLOOR - 4, fb: -1, ft: 0, hj: 'hip', hdx: -16, hdy: -8, hb: 1 }],
+        phases: [['Burundan al · 4 sn', 4000, null, 'iso'], ['Yavaşça ver · 6 sn', 6000, null, 'iso']],
+        still: 0, ring: { sec: 60, mode: 'down' },
+        muscles: [{ a: 'hip', b: 'sho', f0: 0.1, f1: 0.55, off: [0, -4], w: 15, c: 1, breath: 1 }],
+      },
+    },
   };
 
   /* ---------- shared drawings ---------- */
@@ -824,6 +930,12 @@
     'hamstring-stretch': { url: 'https://www.youtube.com/watch?v=6u-5ajM58O4', title: 'Hangi Kas Nasıl Esnetilir | Bütün Kaslar için Egzersizler | AĞIRSAĞLAM', channel: 'AĞIRSAĞLAM', source: 'agirsaglam', note: "arka bacak esnetme 3:24'te" },
     'chest-doorway-stretch': { url: 'https://www.youtube.com/watch?v=6u-5ajM58O4', title: 'Hangi Kas Nasıl Esnetilir | Bütün Kaslar için Egzersizler | AĞIRSAĞLAM', channel: 'AĞIRSAĞLAM', source: 'agirsaglam', note: 'göğüs esnetme 1:11-2:18; kapı çerçevesi versiyonu doğrulanmadı' },
     'childs-pose-lat-stretch': { url: 'https://www.youtube.com/watch?v=2pkLUbN34GI', title: 'Childs Pose with Lat Stretch', channel: 'Functional Bodybuilding', source: 'fallback' },
+    'thoracic-rotation': { url: 'https://www.youtube.com/watch?v=snzLuyYgbVI', title: 'Thoracic Rotation in Quadruped - Ask Doctor Jo', channel: 'AskDoctorJo', source: 'fallback', note: 'fizyoterapist; Ağırsağlam kanalında bu hareketin videosu yok' },
+    'ankle-rock': { url: 'https://www.youtube.com/watch?v=ElrpduJn92Y', title: 'Knee To Wall Exercise for Ankle Mobility', channel: 'Dr. Jess Harvey, Osteopath & Health Coach', source: 'fallback' },
+    'deep-squat-hold': { url: 'https://www.youtube.com/watch?v=qQwZbF3lWyI', title: '[AER] #5 - Çömelme ve Squat Nasıl Yapılır?', channel: 'AĞIRSAĞLAM', source: 'agirsaglam', start: 109, note: "tutunarak çömelip esneme 1:49-2:14" },
+    'neck-tilt-turn': { url: 'https://www.youtube.com/watch?v=iTdJ9phzBZk', title: 'Boyun Ağrısı, Tutulmalar ve Boyundaki Kas Dengesizlikleri', channel: 'AĞIRSAĞLAM', source: 'agirsaglam', start: 244, note: 'boyun yanı esnetme 4:04-5:40 (statik); sabah yavaş ve dinamik yap' },
+    'calf-stretch-wall': { url: 'https://www.youtube.com/watch?v=mafo7o7OnFo', title: 'Standing Calf Stretch (HSS)', channel: 'Hospital for Special Surgery', source: 'fallback' },
+    'supine-breathing': { url: 'https://www.youtube.com/watch?v=WEqcbzeQdnA', title: '90/90 Supine Breathing', channel: 'Movement As Medicine', source: 'fallback', note: 'baldırlar sandalyede (90/90) versiyonu' },
     'general-warmup': { url: 'https://www.youtube.com/watch?v=CaG7FKLtgSw', title: 'Antrenman Öncesi Isınma ve Mobilite Egzersizleri (TEK VİDEO!)', channel: 'AĞIRSAĞLAM', source: 'agirsaglam', note: 'tam vücut ısınma ve mobilite rutini, 6:27. Kısa alternatif: 4Mxup_XtmLk' },
     'stick-pass-through': { url: 'https://www.youtube.com/shorts/gcv9Hj-Bud8', title: 'The ONLY Stretches you need! #stayflexy', channel: 'MovementbyDavid', source: 'user', note: "kullanıcının paylaştığı short, hareket 0:22'te" },
     'lat-stretch-rail': { url: 'https://www.youtube.com/shorts/gcv9Hj-Bud8', title: 'The ONLY Stretches you need! #stayflexy', channel: 'MovementbyDavid', source: 'user', note: "kullanıcının paylaştığı short, hareket 0:34'te" },
@@ -852,6 +964,20 @@
   window.FIT_SESSION_META = {
     sali: { label: 'Salı', title: 'Gün A — İtiş & ön bacak', accent: 'var(--fit-sali)', note: 'Tahmin: set başına ~40 sn iş + dinlenme; hareketler arası ~1 dk geçiş. Ağırsağlam yeni başlayan için ~40 dk ağırlığı yeterli buluyor.' },
     cuma: { label: 'Cuma', title: 'Gün B — Çekiş & arka zincir', accent: 'var(--fit-cuma)', note: 'Tahmin: set başına ~40 sn iş + dinlenme; hareketler arası ~1 dk geçiş. Ağırsağlam yeni başlayan için ~40 dk ağırlığı yeterli buluyor.' },
+    sabah: { label: 'Sabah', title: 'Sabah mobilite', accent: 'var(--fit-sabah)', routine: true,
+      note: 'Her gün, kalkınca. Dinamik: tutup beklemek yok, yavaş ve kontrollü hareket. Süre hareket başına; zamanlayıcı kendisi ilerler.' },
+    aksam: { label: 'Akşam', title: 'Akşam esneme', accent: 'var(--fit-aksam)', routine: true,
+      note: 'Her gün, yatmadan önce. Statik: her taraf 30 sn, ağrı değil hafif gerginlik; zıplama yok, nefes rahat.' },
+  };
+  // A daily routine step: one move per step (a one-item list), so the workout mode shows one move per
+  // screen. holdSec = timer seconds per side (dynamic moves get a time budget for their reps);
+  // min counts both sides plus ROUTINE_PREP seconds to get into position before each side.
+  const ROUTINE_PREP = 5;
+  window.FIT_ROUTINE_PREP = ROUTINE_PREP;
+  const MOVE = (slug, dose, sec, o = {}) => {
+    const sides = o.perSide ? 2 : 1;
+    return { id: slug, type: 'list', phase: 'mob', name: EX[slug].name, min: sides * (sec + ROUTINE_PREP) / 60, detail: dose + (o.optional ? ' · isteğe bağlı' : '') + (o.tip ? ' · ' + o.tip : ''),
+      items: [Object.assign({ slug, dose, holdSec: sec }, o)] };
   };
   // Minutes: warm-up sets + sets × work + (sets − 1) × rest + 1 min to switch. `min` uses ~40 s per set
   // and the middle of the rest range; `hi` uses ~45 s and the top of the range (per-side moves: both sides).
@@ -914,7 +1040,31 @@
         detail: '30 sn/taraf: pancake, figure-4, kalça fleksörü + uzanma, lat, ön bacak. ' + ANIM_NOTE,
         items: [{ slug: 'pancake-stretch', dose: '30 sn', holdSec: 30 }, { slug: 'figure-4-stretch', dose: '30 sn/taraf', holdSec: 30 }, { slug: 'hip-flexor-reach', dose: '30 sn/taraf', holdSec: 30 }, { slug: 'lat-stretch-rail', dose: '30 sn', holdSec: 30 }, { slug: 'quad-stretch', dose: '30 sn/taraf', holdSec: 30 }] },
     ],
+    // daily routines (FIT_SESSION_META[k].routine): morning dynamic ~6 min, evening static ~8 min
+    sabah: [
+      MOVE('cat-cow', '8 yavaş tekrar', 45),
+      MOVE('thoracic-rotation', '6 tekrar/taraf', 30, { perSide: true }),
+      MOVE('worlds-greatest-stretch', '4 tekrar/taraf', 30, { perSide: true }),
+      MOVE('arm-circles', '10 tekrar/yön', 30),
+      MOVE('stick-pass-through', '10 tekrar', 30, { tip: 'sopa yoksa havlu' }),
+      MOVE('ankle-rock', '10 tekrar/taraf', 30, { perSide: true }),
+      MOVE('deep-squat-hold', '30–45 sn', 45),
+      MOVE('neck-tilt-turn', '5 tekrar/yön', 30, { optional: true }),
+    ],
+    aksam: [
+      MOVE('hip-flexor-reach', '30 sn/taraf', 30, { perSide: true }),
+      MOVE('figure-4-stretch', '30 sn/taraf', 30, { perSide: true }),
+      MOVE('pancake-stretch', '30 sn', 30),
+      MOVE('chest-doorway-stretch', '30 sn/taraf', 30, { perSide: true }),
+      MOVE('childs-pose-lat-stretch', '30 sn/taraf', 30, { perSide: true }),
+      MOVE('calf-stretch-wall', '30 sn/taraf', 30, { perSide: true }),
+      MOVE('supine-breathing', '1 dk', 60),
+    ],
   };
+  // routine length in minutes without the optional moves (Bugün shows "Sabah ~6 dk")
+  for (const k of ['sabah', 'aksam']) {
+    window.FIT_SESSION_META[k].min = Math.round(window.FIT_SESSIONS[k].reduce((a, s) => a + (s.items[0].optional ? 0 : s.min), 0));
+  }
 
   /* ---------- 12 weeks in three 4-week blocks ---------- */
   window.FIT_BLOCKS = [

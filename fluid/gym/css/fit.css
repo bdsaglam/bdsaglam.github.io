@@ -1,13 +1,15 @@
-/* fit.css: the shared page look of the workout views (Gün A, Gün B, Isınma & Soğuma, Genel kurallar,
+/* fit.css: the shared page look of the workout views (Gün A, Gün B, Isınma & Soğuma, Günlük esneme, Genel kurallar,
    antrenman modu). Link it, then set data-session on <body> to pick the accent:
      <link rel="stylesheet" href="/components/fit.css">
-     <body class="fit" data-session="sali">     sali | cuma | warm
+     <body class="fit" data-session="sali">     sali | cuma | warm | sabah | aksam
    Classes: .fit-head (h1, .fit-when, .fit-note), h2.fit-sec, .fit-grid, .fit-box, .fit-muted.
    Components read --fit-accent, --fit-warm and --fit-m1..3 (muscle colours) from here. */
 :root {
   --fit-sali: #4f6bed;   /* Salı / Gün A */
   --fit-cuma: #0d9488;   /* Cuma / Gün B */
   --fit-warm: #f59e0b;   /* ısınma ve soğuma */
+  --fit-sabah: #f59e0b;  /* sabah mobilite (ısınma rengi) */
+  --fit-aksam: #7a6ab8;  /* akşam esneme */
   --fit-m1: #e5484d;     /* birincil kas */
   --fit-m2: #f59e0b;     /* ikincil kas */
   --fit-m3: #8b5cf6;     /* sabitleyici kas */
@@ -16,6 +18,8 @@
 body[data-session="sali"] { --fit-accent: var(--fit-sali); }
 body[data-session="cuma"] { --fit-accent: var(--fit-cuma); }
 body[data-session="warm"] { --fit-accent: var(--fit-warm); }
+body[data-session="sabah"] { --fit-accent: var(--fit-sabah); }
+body[data-session="aksam"] { --fit-accent: var(--fit-aksam); }
 
 html, body.fit { margin: 0; height: 100%; }
 body.fit {

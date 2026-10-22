@@ -9,13 +9,15 @@
   :root {
     --fl-bg: #0f1115; --fl-fg: #e7e9ee; --fl-muted: #9aa3b2; --fl-surface: #191c23; --fl-border: #2b303a;
     --fl-good: #22a355; --fl-bad: #ef4444;
-    --fit-sali: #6f87f5; --fit-cuma: #14b8a6;
+    --fit-sali: #6f87f5; --fit-cuma: #14b8a6; --fit-aksam: #9d8fdc;
   }
 }
 /* fit.css keys the accent on body; the app also sets it on sections and the workout screen */
 [data-session="sali"] { --fit-accent: var(--fit-sali); }
 [data-session="cuma"] { --fit-accent: var(--fit-cuma); }
 [data-session="warm"] { --fit-accent: var(--fit-warm); }
+[data-session="sabah"] { --fit-accent: var(--fit-sabah); }
+[data-session="aksam"] { --fit-accent: var(--fit-aksam); }
 
 html { height: auto; -webkit-text-size-adjust: 100%; }
 body.fit.app { height: auto; min-height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; font-size: 16px; line-height: 1.45;
@@ -83,9 +85,9 @@ h2.fit-sec { font-size: 13px; margin: 22px 0 8px; }
 .ok-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--fl-good); color: #fff; font-size: 14px; font-weight: 700; }
 
 /* ---------- Program ---------- */
-.segctl { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 3px; padding: 3px; border-radius: 12px; background: var(--fl-surface);
+.segctl { display: grid; grid-template-columns: .8fr .8fr 1.2fr 1.2fr; gap: 3px; padding: 3px; border-radius: 12px; background: var(--fl-surface);
   border: 1px solid var(--fl-border); margin-bottom: 12px; }
-.segctl button { min-height: 44px; border: 0; border-radius: 9px; background: none; font-size: 15px; font-weight: 650; padding: 0 4px; }
+.segctl button { min-height: 44px; border: 0; border-radius: 9px; background: none; font-size: 15px; font-weight: 650; padding: 0 4px; line-height: 1.15; overflow-wrap: anywhere; }
 .segctl button[aria-selected="true"] { background: var(--fl-bg); color: var(--fit-accent); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .picker { margin-bottom: 14px; }
 .shead { border-left: 4px solid var(--fit-accent); padding-left: 10px; margin: 4px 0 12px; }
@@ -237,3 +239,22 @@ details.cues li + li { margin-top: 4px; }
 .done li { padding: 8px 0; border-bottom: 1px solid var(--fl-border); display: flex; justify-content: space-between; gap: 10px; font-size: 15px; }
 .done li span:last-child { color: var(--fl-muted); text-align: right; font-variant-numeric: tabular-nums; }
 .segctl.seg3 button[aria-selected="true"] { color: var(--fl-fg); }
+
+/* Günlük esneme: Bugün card, Program section, Geçmiş line, routine timer */
+.mob { border-left: 5px solid var(--fit-sabah); }
+.mobh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.mobh h2 { margin: 0; font-size: 19px; font-weight: 750; }
+.mobbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.mobbtn { min-height: 64px; border-radius: 12px; border: 2px solid var(--fit-accent); background: var(--fl-bg); color: var(--fit-accent); text-align: left; padding: 8px 12px; }
+.mobbtn b { display: block; font-size: 17px; }
+.mobbtn small { display: block; font-size: 13.5px; color: var(--fl-muted); font-weight: 600; }
+.mobbtn.pick { background: var(--fit-accent); color: #fff; }
+.mobbtn.pick small { color: rgba(255, 255, 255, .9); }
+.mobbtn.done small { color: var(--fl-good); }
+.mobbtn.pick.done small { color: #fff; }
+.mob > p { margin: 10px 0 0; font-size: 14px; }
+.rtn { margin-top: 6px; }
+.rtn .big { margin-top: 12px; }
+.mobweek { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; border-left: 5px solid var(--fit-sabah); }
+.timer.prep .tv { color: var(--fl-muted); }
+.timer.paused .tv { opacity: .55; }
