@@ -1,10 +1,10 @@
 /* sw.js: precaches the app, the data and every photo listed in data/media.json (new photos are picked up from there) for offline use.
    Bump VERSION whenever a file changes; the old cache is deleted on activate. YouTube stays online-only. */
-const VERSION = 'antrenman-v7';
+const VERSION = 'antrenman-v8';
 const CORE = [
   './', 'index.html', 'manifest.json',
   'css/fit.css', 'css/app.css',
-  'js/exercise-data.js', 'js/bodymap-data.js', 'js/bodymap.js', 'js/exercise.js', 'js/session-timeline.js', 'js/block-picker.js', 'js/app.js',
+  'js/exercise-data.js', 'js/i18n.js', 'js/bodymap-data.js', 'js/bodymap.js', 'js/exercise.js', 'js/session-timeline.js', 'js/block-picker.js', 'js/app.js',
   'data/media.json',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
 ];

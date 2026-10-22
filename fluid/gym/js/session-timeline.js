@@ -4,6 +4,7 @@
  * red when the planned length passes 60 minutes; a note warns when only the longest case does.
  * Steps come from window.FIT_SESSIONS[session], resolved for the active program block
  * (FIT_sessionSteps); the strip re-renders when the block changes. Load /components/exercise-data.js first.
+ * With js/i18n.js it shows the steps and its text in the active language and re-renders on a switch ('fit-lang').
  *
  * Attributes:
  *   session  "sali" | "cuma"   key in FIT_SESSIONS (required)
@@ -25,7 +26,9 @@
  */
 (() => {
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  const half = (x) => String(Math.round(x * 2) / 2).replace('.', ',');
+  const T = (k, ...a) => (window.FIT_I18N ? FIT_I18N.t(k, ...a) : k);
+  const half = (x) => (window.FIT_I18N ? FIT_I18N.num(Math.round(x * 2) / 2) : String(Math.round(x * 2) / 2).replace('.', ','));
+  const MIN = () => T('u.min');
   const CSS = `
     :host {
       --_font: var(--fl-font, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
@@ -61,18 +64,20 @@
     constructor() { super(); this.attachShadow({ mode: 'open' }); }
     connectedCallback() {
       if (!this._off && window.FIT_onBlockChange) this._off = window.FIT_onBlockChange(() => this.render());
+      if (!this._offLang) { const f = () => this.render(); window.addEventListener('fit-lang', f); this._offLang = () => window.removeEventListener('fit-lang', f); }
       this.render();
     }
-    disconnectedCallback() { if (this._off) { this._off(); this._off = null; } }
+    disconnectedCallback() { if (this._off) { this._off(); this._off = null; } if (this._offLang) { this._offLang(); this._offLang = null; } }
     attributeChangedCallback() { if (this.isConnected) this.render(); }
     render() {
       const key = this.getAttribute('session') || '';
       const raw = window.FIT_SESSIONS && window.FIT_SESSIONS[key];
-      const steps = raw && (window.FIT_sessionSteps ? window.FIT_sessionSteps(key, this.getAttribute('block')) : raw);
-      const blk = steps && steps[0] && (window.FIT_BLOCKS || []).find((b) => b.n === steps[0].block);
-      const meta = (window.FIT_SESSION_META && window.FIT_SESSION_META[key]) || { label: key };
+      const steps = raw && (window.FIT_tx ? FIT_tx.steps(key, this.getAttribute('block')) : window.FIT_sessionSteps ? window.FIT_sessionSteps(key, this.getAttribute('block')) : raw);
+      let blk = steps && steps[0] && (window.FIT_BLOCKS || []).find((b) => b.n === steps[0].block);
+      if (blk && window.FIT_tx) blk = FIT_tx.block(blk);
+      const meta = (window.FIT_tx ? FIT_tx.meta(key) : window.FIT_SESSION_META && window.FIT_SESSION_META[key]) || { label: key };
       const root = this.shadowRoot;
-      if (!steps) { root.innerHTML = `<style>${CSS}</style><div class="plan err">fl-session-timeline: "${esc(key)}" yok (exercise-data.js yüklendi mi?)</div>`; return; }
+      if (!steps) { root.innerHTML = `<style>${CSS}</style><div class="plan err">${esc(T('tl.missing', key))}</div>`; return; }
       const limit = +this.getAttribute('limit') || 60;
       const acc = meta.accent || 'var(--fit-accent, var(--fl-accent, #4f6bed))';
       const color = (s) => (s.phase === 'warm' || s.phase === 'cool' ? 'var(--_warm)' : 'var(--_acc)');
@@ -80,18 +85,18 @@
       const rows = steps.map((s) => { const r = { s, start: t }; t += s.min; lo += s.lo ?? s.min; hi += s.hi ?? s.min; return r; });
       const total = Math.round(t), tLo = Math.round(lo), tHi = Math.round(hi);
       const over = total > limit, overHi = !over && tHi > limit;
-      const range = tLo < total ? `${tLo}–${tHi} dk` : tHi > total ? `en uzun senaryo ~${tHi} dk` : '';
-      const note = over ? `Toplam ~${total} dk: ${limit} dk sınırını ${total - limit} dk aşıyor.`
-        : overHi ? `Toplam ~${total} dk; en uzun senaryoda ~${tHi} dk, ${limit} dk sınırını aşabilir.`
-          : `Toplam ~${total} dk${range ? ` (${range})` : ''}: ${limit} dk sınırı içinde.`;
+      const range = tLo < total ? `${tLo}–${tHi}${MIN()}` : tHi > total ? T('tl.longest', tHi) : '';
+      const note = over ? T('tl.over', total, limit, total - limit)
+        : overHi ? T('tl.overHi', total, tHi, limit)
+          : T('tl.ok', total, range ? ` (${range})` : '', limit);
       const active = this.getAttribute('active');
-      const heading = this.hasAttribute('noheading') ? '' : `<h2>${esc(this.getAttribute('heading') || 'Seans programı — ' + (meta.label || key) + (blk ? ` · ${blk.name} (hf ${blk.weeks})` : ''))}</h2>`;
+      const heading = this.hasAttribute('noheading') ? '' : `<h2>${esc(this.getAttribute('heading') || T('tl.head', (meta.label || key) + (blk ? ` · ${blk.name} (${T('wk')} ${blk.weeks})` : '')))}</h2>`;
       root.innerHTML = `<style>${CSS}:host{--_acc:${acc}}</style><section class="plan">${heading}
-        <div class="bar" aria-hidden="true">${rows.map(({ s }) => `<i style="flex:${s.min} 1 0;background:${color(s)}" title="${esc(s.name)} ~${half(s.min)} dk"></i>`).join('')}</div>
+        <div class="bar" aria-hidden="true">${rows.map(({ s }) => `<i style="flex:${s.min} 1 0;background:${color(s)}" title="${esc(s.name)} ~${half(s.min)}${MIN()}"></i>`).join('')}</div>
         <div class="steps">${rows.map(({ s, start }) => `<div class="step${active && (s.id === active || s.slot === active) ? ' on' : ''}" tabindex="0" style="--c:${color(s)}" data-item="step" data-id="${esc(s.id)}" data-title="${esc(s.name)}" title="${esc(s.detail || '')}">
-            <div class="st"><b>${Math.round(start)}. dk</b> · ~${half(s.min)} dk</div><div class="nm">${esc(s.name)}</div><div class="dt">${esc(s.detail || '')}</div></div>`).join('')}
-          <div class="step total${over ? ' over' : ''}" data-item="step" data-id="toplam" data-title="Toplam">
-            <div class="st"><b>${total}. dk</b> · çıkış</div><div class="nm">Toplam ~${total} dk</div><div class="dt">${range ? esc(range) + ' · ' : ''}ısınma ve soğuma dahil</div></div>
+            <div class="st"><b>${T('tl.minAt', Math.round(start))}</b> · ~${half(s.min)}${MIN()}</div><div class="nm">${esc(s.name)}</div><div class="dt">${esc(s.detail || '')}</div></div>`).join('')}
+          <div class="step total${over ? ' over' : ''}" data-item="step" data-id="toplam" data-title="${esc(T('tl.total'))}">
+            <div class="st"><b>${T('tl.minAt', total)}</b> · ${T('tl.out')}</div><div class="nm">${T('tl.totalMin', total)}</div><div class="dt">${range ? esc(range) + ' · ' : ''}${T('tl.incl')}</div></div>
         </div>
         <div class="note${over ? ' over' : ''}">${esc(note)}${meta.note ? ' ' + esc(meta.note) : ''}</div></section>`;
       root.querySelectorAll('.step:not(.total)').forEach((el, i) => {

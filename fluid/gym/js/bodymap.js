@@ -10,9 +10,12 @@
  * inner thigh on the front view, which the source data names 'abductors'. The soleus regions
  * ('left-soleus', 'right-soleus') hang below the calves at y 196-220, so the figures use viewBox 0 0 100 220.
  * Stretch and mobility moves (kind static / dynamic) are titled "Esneyen kaslar", the rest "Çalışan kaslar".
+ * With js/i18n.js loaded, the muscle names and the labels follow the active language (FIT_tx.muscle, FIT_I18N.t).
  */
 (() => {
   const ALSO = { adductor: ['abductors'] };
+  const T = (k) => (window.FIT_I18N ? FIT_I18N.t(k) : k);
+  const NM = (tr) => (window.FIT_tx ? FIT_tx.muscle(tr) : tr);
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
   const CSS = `
@@ -63,11 +66,11 @@
     const m = fill(w), items = (w.main || []).map((it) => [1, it]).concat((w.help || []).map((it) => [2, it]));
     const off = items.some(([, it]) => !it.map);
     const stretch = e.kind === 'static' || e.kind === 'dynamic';
-    const li = items.map(([c, it]) => `<li><i class="p${c}${it.map ? '' : ' off'}"></i>${c === 1 ? `<b>${esc(it.tr)}</b>` : `<span>${esc(it.tr)}</span>`}</li>`).join('');
+    const li = items.map(([c, it]) => `<li><i class="p${c}${it.map ? '' : ' off'}"></i>${c === 1 ? `<b>${esc(NM(it.tr))}</b>` : `<span>${esc(NM(it.tr))}</span>`}</li>`).join('');
     return `<div class="bm-box" data-bm="${esc(e.slug || '')}">` +
-      `<div class="bm-figs"><figure>${svg('front', m)}<figcaption>ÖN</figcaption></figure><figure>${svg('back', m)}<figcaption>ARKA</figcaption></figure></div>` +
-      `<div class="bm-txt"><p class="bm-h">${stretch ? 'Esneyen kaslar' : 'Çalışan kaslar'}</p><ul class="bm-leg">${li}</ul>` +
-      `<p class="bm-key">koyu: ana kas · açık: yardımcı${off ? ' · halka: haritada yok' : ''}</p></div></div>`;
+      `<div class="bm-figs"><figure>${svg('front', m)}<figcaption>${T('bm.front')}</figcaption></figure><figure>${svg('back', m)}<figcaption>${T('bm.back')}</figcaption></figure></div>` +
+      `<div class="bm-txt"><p class="bm-h">${T(stretch ? 'bm.str' : 'bm.work')}</p><ul class="bm-leg">${li}</ul>` +
+      `<p class="bm-key">${T('bm.key')}${off ? T('bm.off') : ''}</p></div></div>`;
   }
 
   window.FIT_bodyMap = bodyMap;

@@ -3,7 +3,8 @@
  * Every workout view shares the choice: it lives in localStorage ('fit-block' for a manual pick,
  * 'fit-start' for the program start date), and fl-exercise and fl-session-timeline re-render when
  * it changes. Without a manual pick the block follows the start date (4 weeks per block).
- * Load /components/exercise-data.js first (FIT_BLOCKS, FIT_blockInfo, FIT_setBlock, FIT_setStart).
+ * Load /components/exercise-data.js first (FIT_BLOCKS, FIT_blockInfo, FIT_setBlock, FIT_setStart). With js/i18n.js the
+ * text and dates follow the active language and the picker re-renders on a switch ('fit-lang').
  *
  * Attributes:
  *   compact  boolean attr   buttons only (no start date line)
@@ -19,8 +20,8 @@
  */
 (() => {
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  const AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
-  const day = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || ''); return m ? `${+m[3]} ${AY[+m[2] - 1]}` : ''; };
+  const T = (k, ...a) => (window.FIT_I18N ? FIT_I18N.t(k, ...a) : k);
+  const day = (iso) => (/^\d{4}-\d{2}-\d{2}/.test(iso || '') && window.FIT_I18N ? FIT_I18N.day(iso, { short: true }) : iso || '');
   const CSS = `
     :host {
       --_font: var(--fl-font, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
@@ -51,25 +52,26 @@
     constructor() { super(); this.attachShadow({ mode: 'open' }); }
     connectedCallback() {
       if (!this._off && window.FIT_onBlockChange) this._off = window.FIT_onBlockChange(() => this.render());
+      if (!this._offLang) { const f = () => this.render(); window.addEventListener('fit-lang', f); this._offLang = () => window.removeEventListener('fit-lang', f); }
       this.render();
     }
-    disconnectedCallback() { if (this._off) { this._off(); this._off = null; } }
+    disconnectedCallback() { if (this._off) { this._off(); this._off = null; } if (this._offLang) { this._offLang(); this._offLang = null; } }
     get block() { return window.FIT_currentBlock ? window.FIT_currentBlock() : 1; }
     render() {
-      const root = this.shadowRoot, B = window.FIT_BLOCKS;
-      if (!B || !window.FIT_blockInfo) { root.innerHTML = `<style>${CSS}</style><span class="cap">fl-block-picker: /components/exercise-data.js yüklenmedi</span>`; return; }
+      const root = this.shadowRoot, B = (window.FIT_BLOCKS || []).map((b) => (window.FIT_tx ? FIT_tx.block(b) : b));
+      if (!window.FIT_BLOCKS || !window.FIT_blockInfo) { root.innerHTML = `<style>${CSS}</style><span class="cap">${esc(T('bp.noData'))}</span>`; return; }
       const info = window.FIT_blockInfo();
       this.setAttribute('data-item', 'block-picker'); this.setAttribute('data-id', String(info.block));
       const wk = info.week;
-      const weekTxt = wk == null ? '' : wk === 0 ? `program ${day(info.start)} başlıyor` : wk > 12 ? `${wk}. hafta: 12 hafta bitti` : `${wk}. hafta`;
+      const weekTxt = wk == null ? '' : wk === 0 ? T('bp.starts', day(info.start)) : wk > 12 ? T('weekDone', wk) : T('week', wk);
       let cap;
-      if (info.source === 'manual') cap = `Elle seçildi${weekTxt ? ' · tarihe göre ' + weekTxt : ''}${info.start ? ' <button type="button" data-auto>Tarihe göre seç</button>' : ''}`;
-      else if (info.source === 'url') cap = 'Bağlantıdan seçildi';
-      else if (info.source === 'start') cap = `${weekTxt} · başlangıç ${day(info.start)}`;
-      else cap = 'Başlangıç tarihi yok; ilk kayıttan sonraki salı başlangıç sayılır';
+      if (info.source === 'manual') cap = `${esc(T('bp.manual'))}${weekTxt ? esc(T('bp.byDate') + weekTxt) : ''}${info.start ? ` <button type="button" data-auto>${esc(T('bp.auto'))}</button>` : ''}`;
+      else if (info.source === 'url') cap = esc(T('bp.url'));
+      else if (info.source === 'start') cap = esc(`${weekTxt} · ${T('bp.since', day(info.start))}`);
+      else cap = esc(T('bp.none'));
       root.innerHTML = `<style>${CSS}</style><div class="bp"><span class="lab">Program</span>
-        <span class="seg" role="group" aria-label="Program bloğu">${B.map((b) => `<button type="button" data-item="block" data-id="${b.n}" data-title="${esc(b.name + ' · hf ' + b.weeks)}" aria-pressed="${b.n === info.block}">${esc(b.name)} <small>· hf ${esc(b.weeks)}</small></button>`).join('')}</span>
-        <span class="cap">${cap}<label>Başlangıç <input type="date" value="${esc(info.start || '')}" aria-label="Program başlangıç tarihi"></label></span></div>`;
+        <span class="seg" role="group" aria-label="${esc(T('bp.aria'))}">${B.map((b) => `<button type="button" data-item="block" data-id="${b.n}" data-title="${esc(b.name + ' · ' + T('wk') + ' ' + b.weeks)}" aria-pressed="${b.n === info.block}">${esc(b.name)} <small>· ${esc(T('wk'))} ${esc(b.weeks)}</small></button>`).join('')}</span>
+        <span class="cap">${cap}<label>${esc(T('bp.start'))} <input type="date" value="${esc(info.start || '')}" aria-label="${esc(T('bp.startAria'))}"></label></span></div>`;
       root.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
         window.FIT_setBlock(+b.dataset.id);
         this.dispatchEvent(new CustomEvent('change', { detail: { block: +b.dataset.id } }));

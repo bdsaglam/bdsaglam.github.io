@@ -99,6 +99,13 @@
  *   the view and a 'storage' event in the other views; FIT_onBlockChange listens to both.
  *
  * Videos come from .fluid/sources/youtube-links.json, copied into YT below; update both together.
+ *
+ * ── Language ───────────────────────────────────────────────────────────────────────────
+ * Every text here is Turkish and stays the source. English lives in one place, js/i18n.js (FIT_EN): per slug for an
+ * entry's name, sub, cues, avoid, alt, note and video note; per session and step id for step names and details; a
+ * phrase table for doses, rests, reps, effort lines, tips and animation labels; muscle names keyed by `tr`. Views read
+ * through FIT_tx (FIT_tx.ex, FIT_tx.steps, FIT_tx.meta), which falls back to Turkish. Add the English there when you
+ * add an entry or a step; FIT_tx.missing() and the test suite report what is missing.
  */
 (() => {
   const FLOOR = 184, K = 1.6;
