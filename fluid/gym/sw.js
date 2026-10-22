@@ -1,6 +1,6 @@
 /* sw.js: precaches the app, the data and every photo listed in data/media.json (new photos are picked up from there) for offline use.
    Bump VERSION whenever a file changes; the old cache is deleted on activate. YouTube stays online-only. */
-const VERSION = 'antrenman-v6';
+const VERSION = 'antrenman-v7';
 const CORE = [
   './', 'index.html', 'manifest.json',
   'css/fit.css', 'css/app.css',
