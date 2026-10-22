@@ -3,7 +3,7 @@
  * (start and end photos crossfading, side by side under reduced motion), "Video" (YouTube,
  * embedded only when the tab is opened), "Animasyon" (stick figure: target muscles highlighted,
  * equipment, tempo label, hold-timer ring for stretches and the plank). Then name, dose, rest,
- * effort, muscle legend, "Doğru" / "Kaçın" cues, alternative, and links (YouTube, GIF, Ağırsağlam yazısı).
+ * effort, the muscle body map (js/bodymap.js, under the media in every mode), "Doğru" / "Kaçın" cues, alternative, and links (YouTube, GIF, Ağırsağlam yazısı).
  * Exercises come from window.FIT_EXERCISES; load /components/exercise-data.js first.
  * Photos and videos come from .fluid/sources/media.json, fetched at runtime (and polled until it
  * exists): {"<slug>": {"video": {"id", "start", "embeddable", "source"}, "photos": ["media/<slug>/0.jpg", ...],
@@ -15,7 +15,7 @@
  *
  * Attributes:
  *   slug     string        key in FIT_EXERCISES, e.g. "goblet-squat" (required unless `data` is set)
- *   compact  boolean attr  figure, name, dose and controls only (for a session player)
+ *   compact  boolean attr  figure, name, dose, muscle map and controls only (for a session player)
  *   size     "s" | "m" | "l"   figure height cap: 150 / 230 (default) / 340 px
  *   index    number        number badge before the name
  *   dose     string        override the registry dose, e.g. "5 / taraf"
@@ -29,7 +29,7 @@
  *                          `step` is the step id in FIT_SESSIONS (the block-1 id, e.g. "one-arm-db-row").
  *                          The card re-renders when the block changes (fit-block / storage events).
  *   block    1 | 2 | 3     pin the block instead of following the active one
- *   bare     boolean attr  media tabs only: no name, dose or links (PWA workout screen)
+ *   bare     boolean attr  media tabs and muscle map only: no name, dose or links (PWA workout screen)
  *
  * The host carries data-item="exercise", data-id=<slug> and data-title=<name>.
  * Look: --fl-* properties, plus --fit-accent (badge, buttons) and --fit-m1..3 (muscle colours)
@@ -452,14 +452,16 @@
       const media = tabs.length ? `<div class="media">
           ${tabs.length > 1 ? `<div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-tab="${k}">${l}</button>`).join('')}</div>` : ''}
           ${photoPane}${videoPane}${figPane}</div>` : `<div class="fig nofig">Görsel yok.</div>`;
-      const legend = (e.legend || []).length || (A && A.guide) ? `<div class="legend"><span style="color:var(--_fg)">Hedef kaslar:</span>${(e.legend || []).map((l) => `<span><i style="background:var(--_m${l[0]})"></i>${esc(l[1])}</span>`).join('')}${A && A.guide && A.guide.label ? `<span><i class="dash"></i>${esc(A.guide.label)}</span>` : ''}</div>` : '';
+      // muscles: the body map box under the media (js/bodymap.js); the dashed guide line of the animation keeps its own key
+      const bmap = window.FIT_bodyMap ? FIT_bodyMap(e) : '';
+      const legend = A && A.guide && A.guide.label ? `<div class="legend"><span><i class="dash"></i>${esc(A.guide.label)}</span></div>` : '';
       const cues = (e.cues || []).length || e.avoid ? `<ul class="cues">${(e.cues || []).map((c) => `<li><span class="tag ok">Doğru</span><span>${esc(c)}</span></li>`).join('')}${e.avoid ? `<li><span class="tag no">Kaçın</span><span>${esc(e.avoid)}</span></li>` : ''}</ul>` : '';
       const effort = e.rir ? `<div class="effort"><b>Efor</b><span>${esc(e.rir)}</span>${e.rirTag ? `<span class="rirtag" title="${esc(RIR_TIP)}">${esc(e.rirTag)}</span>` : ''}</div>` : '';
       active.delete(this);
-      root.innerHTML = `<style>${CSS}</style><article class="card${compact ? ' compact' : ''}">${bare ? '' : `
+      root.innerHTML = `<style>${CSS}${window.FIT_BODYMAP_CSS || ''}</style><article class="card${compact ? ' compact' : ''}">${bare ? '' : `
         <div class="top">${idx ? `<span class="num">${esc(idx)}</span>` : ''}<div class="tt"><h3>${esc(e.name)}</h3>${e.sub ? `<div class="sub">${esc(e.sub)}</div>` : ''}</div>
           ${compact && dose ? `<span class="chip dose">${esc(dose)}</span>` : ''}</div>`}
-        ${media}${bare ? '' : links}
+        ${media}${bare ? '' : links}${bmap}
         ${compact ? '' : `
           <div class="chips">${dose ? `<span class="chip dose">${esc(dose)}</span>` : ''}${rest ? `<span class="chip">Dinlenme ${esc(rest)}</span>` : ''}${blk ? `<span class="chip blk" title="Bu hareket bloğa göre değişir">${esc(blk.name)} · hf ${esc(blk.weeks)}</span>` : ''}</div>
           ${effort}${legend}${cues}
