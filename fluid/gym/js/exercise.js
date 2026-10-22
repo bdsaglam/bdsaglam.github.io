@@ -4,7 +4,8 @@
  * embedded only when the tab is opened), "Animasyon" (stick figure: target muscles highlighted,
  * equipment, tempo label, hold-timer ring for stretches and the plank). Then name, dose, rest,
  * effort, the muscle body map (js/bodymap.js, under the media in every mode), "Doğru" / "Kaçın" cues, alternative, and links (YouTube, GIF, Ağırsağlam yazısı).
- * Exercises come from window.FIT_EXERCISES; load /components/exercise-data.js first.
+ * Exercises come from window.FIT_EXERCISES; load /components/exercise-data.js first. With js/i18n.js loaded, the card
+ * shows the entry and its UI in the active language (FIT_tx.ex, FIT_I18N.t) and re-renders on a switch ('fit-lang').
  * Photos and videos come from .fluid/sources/media.json, fetched at runtime (and polled until it
  * exists): {"<slug>": {"video": {"id", "start", "embeddable", "source"}, "photos": ["media/<slug>/0.jpg", ...],
  * "photoNote": "caveat under the photos", "gif": "url" | null, "page": "Ağırsağlam article url"}}; photo paths are relative to .fluid/. Default tab: Fotoğraf if photos
@@ -59,7 +60,9 @@
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const RM = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ACT = { con: 1, ecc: 0.7, hold: 0.4, move: 0.85, in: 0.6, static: 1, out: 0.6, iso: 1 };
-  const RIR_TIP = 'RIR: Reps in Reserve — setin sonunda yedekte kalan tekrar sayısı';
+  // language (js/i18n.js); without it the card stays Turkish
+  const T = (k, ...a) => (window.FIT_I18N ? FIT_I18N.t(k, ...a) : k);
+  const LX = (e) => (window.FIT_tx && e ? FIT_tx.ex(e) : e);
 
   /* ---------- pose maths ---------- */
   function ik(A, T, l1, l2, s) {
@@ -195,7 +198,7 @@
   }
   const fileUrl = (p) => (!p ? '' : /^(https?:)?\/\//.test(p) ? p : p.replace(/^\/+/, '').replace(/^\.fluid\//, ''));
   const ytId = (s) => (String(s || '').match(/(?:v=|youtu\.be\/|\/embed\/|\/shorts\/)([\w-]{11})/) || [])[1] || (/^[\w-]{11}$/.test(String(s || '')) ? s : '');
-  const TABS = [['photo', 'Fotoğraf'], ['video', 'Video'], ['anim', 'Animasyon']];
+  const TABS = () => [['photo', T('x.photo')], ['video', T('x.video')], ['anim', T('x.anim')]];
 
   /* ---------- one shared animation loop ---------- */
   const active = new Set();
@@ -274,7 +277,7 @@
     .ph.two img:nth-child(2) { animation: xfade 3s infinite; }
     @keyframes xfade { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
     .ph .cap { position: absolute; left: 8px; bottom: 6px; font-size: 11px; padding: 1px 8px; border-radius: 10px; background: var(--_surface); border: 1px solid var(--_border); }
-    .ph.two .cap::after { content: 'Başlangıç ↔ Bitiş'; }
+    .ph:not(.two) .cap { display: none; }
     @media (prefers-reduced-motion: reduce) {
       .ph.two { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; aspect-ratio: 16 / 6; }
       .ph.two img { position: static; animation: none !important; opacity: 1 !important; }
@@ -341,11 +344,13 @@
       Media.els.add(this);
       if (!Media.started) { Media.started = true; loadMedia(); }
       if (!this._offBlock && window.FIT_onBlockChange) this._offBlock = window.FIT_onBlockChange(() => { if (this.hasAttribute('step')) this.render(); });
+      if (!this._offLang) { const f = () => this.render(); window.addEventListener('fit-lang', f); this._offLang = () => window.removeEventListener('fit-lang', f); }
       this.render();
     }
     disconnectedCallback() {
       this._io && this._io.disconnect(); active.delete(this); Media.els.delete(this);
       if (this._offBlock) { this._offBlock(); this._offBlock = null; }
+      if (this._offLang) { this._offLang(); this._offLang = null; }
     }
     // the session step this card stands for, resolved for the active (or pinned) block
     _step() {
@@ -373,10 +378,10 @@
       if (!box || box.dataset.loaded) return;
       box.dataset.loaded = '1';
       const v = this._vid;
-      if (navigator.onLine === false) { delete box.dataset.loaded; box.innerHTML = `<div class="vmsg">Video için internet bağlantısı gerekli. Fotoğraf ve Animasyon çevrimdışı çalışır.</div>`; return; }
-      if (v.embeddable === false) { box.innerHTML = `<div class="vmsg">Bu video gömülemiyor; aşağıdaki "YouTube'da aç" bağlantısını kullan.</div>`; return; }
+      if (navigator.onLine === false) { delete box.dataset.loaded; box.innerHTML = `<div class="vmsg">${esc(T('x.offline'))}</div>`; return; }
+      if (v.embeddable === false) { box.innerHTML = `<div class="vmsg">${esc(T('x.noEmbed'))}</div>`; return; }
       if (customElements.get('fl-youtube')) box.innerHTML = `<div class="vid"><fl-youtube video="${esc(v.id)}" start="${v.start || 0}" lazy></fl-youtube></div>`;
-      else box.innerHTML = `<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(v.id)}?start=${v.start || 0}&rel=0" title="${esc(this._e.name)} videosu" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
+      else box.innerHTML = `<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(v.id)}?start=${v.start || 0}&rel=0" title="${esc(T('x.vidTitle', this._e.name))}" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>`;
     }
     attributeChangedCallback(name, _o, v) {
       if (name === 'data') { try { this._data = v ? JSON.parse(v) : null; } catch { this._data = null; } }
@@ -398,7 +403,7 @@
     _sync() {
       const root = this.shadowRoot;
       const pb = root.querySelector('.play');
-      if (pb) { pb.textContent = this._playing ? '❚❚ Duraklat' : '▶ Oynat'; pb.setAttribute('aria-pressed', String(this._playing)); }
+      if (pb) { pb.textContent = T(this._playing ? 'x.pause' : 'x.play'); pb.setAttribute('aria-pressed', String(this._playing)); }
       root.querySelectorAll('.seg button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.s === this._speed)));
       if (this._playing && this._vis && this.isConnected && this._c && this._c.A && this._tab === 'anim') active.add(this); else active.delete(this);
       wake();
@@ -410,15 +415,17 @@
       if (st && this._slug !== st.slug) { this._userTab = false; this._t = 0; }
       const slug = (st && st.slug) || this.getAttribute('slug') || (this._data && this._data.slug) || '';
       this._slug = slug;
-      const e = (st ? null : this._data) || (REG && REG[slug]);
+      const e = LX((st ? null : this._data) || (REG && REG[slug]));
       const root = this.shadowRoot;
-      if (!G || !REG) { root.innerHTML = `<style>${CSS}</style><div class="card nofig">fl-exercise: /components/exercise-data.js yüklenmedi</div>`; return; }
-      if (!e) { root.innerHTML = `<style>${CSS}</style><div class="card nofig">fl-exercise: "${esc(slug)}" bulunamadı</div>`; return; }
+      if (!G || !REG) { root.innerHTML = `<style>${CSS}</style><div class="card nofig">${esc(T('x.noData'))}</div>`; return; }
+      if (!e) { root.innerHTML = `<style>${CSS}</style><div class="card nofig">${esc(T('x.notFound', slug))}</div>`; return; }
       this._e = e; this._G = G; this._c = compile(e);
       this.setAttribute('data-item', 'exercise'); this.setAttribute('data-id', e.slug || slug); this.setAttribute('data-title', e.name);
       const compact = this.hasAttribute('compact'), bare = this.hasAttribute('bare');
-      const dose = this.getAttribute('dose') || (st && st.dose) || e.dose, rest = this.getAttribute('rest') ?? e.rest;
-      const blk = st && st.variants && (window.FIT_BLOCKS || []).find((b) => b.n === st.block);
+      const P = (s) => (window.FIT_tx && s ? FIT_tx.phrase(s) : s);
+      const dose = P(this.getAttribute('dose') || (st && st.dose)) || e.dose, rest = P(this.getAttribute('rest')) ?? e.rest;
+      let blk = st && st.variants && (window.FIT_BLOCKS || []).find((b) => b.n === st.block);
+      if (blk && window.FIT_tx) blk = FIT_tx.block(blk);
       const idx = this.getAttribute('index');
       const A = e.anim, M = this.media || {};
       // video: media.json first, the registry link second
@@ -427,7 +434,7 @@
         : rv && ytId(rv.url) ? { id: ytId(rv.url), start: rv.start || 0, source: rv.source, title: rv.title, channel: rv.channel, url: rv.url } : null;
       this._vid = vid;
       const photos = (M.photos || []).slice(0, 2).map(fileUrl);
-      const tabs = TABS.filter(([k]) => (k === 'photo' ? photos.length : k === 'video' ? vid : A));
+      const tabs = TABS().filter(([k]) => (k === 'photo' ? photos.length : k === 'video' ? vid : A));
       // media: one tab name or a comma list in order of preference, e.g. "photo,anim"
       const want = (this.getAttribute('media') || '').split(',').map((x) => x.trim()).find((w) => tabs.some(([k]) => k === w));
       const first = this._userTab && tabs.some(([k]) => k === this._tab) ? this._tab
@@ -437,37 +444,37 @@
       const ytUrl = vid ? `https://www.youtube.com/watch?v=${vid.id}${vid.start ? `&t=${vid.start}s` : ''}` : '';
       const page = M.page || M.site || M.pageUrl;
       const links = vid || M.gif || page ? `<div class="links">
-          ${vid ? `<a class="yt" href="${esc(ytUrl)}" target="_blank" rel="noopener" title="${esc((vid.title || '') + (vid.channel ? ' · ' + vid.channel : ''))}">▶ YouTube'da aç<span class="src ${isAg ? '' : 'other'}">${isAg ? 'Ağırsağlam' : esc(vid.channel || 'Video')}</span></a>` : ''}
+          ${vid ? `<a class="yt" href="${esc(ytUrl)}" target="_blank" rel="noopener" title="${esc((vid.title || '') + (vid.channel ? ' · ' + vid.channel : ''))}">${esc(T('x.yt'))}<span class="src ${isAg ? '' : 'other'}">${isAg ? 'Ağırsağlam' : esc(vid.channel || 'Video')}</span></a>` : ''}
           ${M.gif ? `<a href="${esc(fileUrl(M.gif))}" target="_blank" rel="noopener">GIF</a>` : ''}
-          ${page ? `<a href="${esc(page)}" target="_blank" rel="noopener">Ağırsağlam yazısı</a>` : ''}</div>` : '';
+          ${page ? `<a href="${esc(page)}" target="_blank" rel="noopener">${esc(T('x.page'))}</a>` : ''}</div>` : '';
       const figPane = A ? `<div class="pane" data-tab="anim">
-          <div class="fig"><svg viewBox="0 0 ${G.W} ${G.H}" role="img" aria-label="${esc(e.name)} hareket animasyonu">
+          <div class="fig"><svg viewBox="0 0 ${G.W} ${G.H}" role="img" aria-label="${esc(T('x.animLabel', e.name))}">
             <line class="floor" x1="8" y1="${G.FLOOR}" x2="${G.W - 8}" y2="${G.FLOOR}"/><g${A.zoom ? ` transform="translate(${G.W / 2} ${G.FLOOR}) scale(${A.zoom}) translate(${-G.W / 2} ${-G.FLOOR})"` : ''}><g class="st"></g><g class="dyn"></g></g></svg>
             <span class="phase" hidden></span></div>
           <div class="ctrl"><button class="play" type="button"></button>
-            <span class="seg" role="group" aria-label="Hız"><button type="button" data-s="0.5">0.5x</button><button type="button" data-s="1">1x</button></span></div></div>` : '';
+            <span class="seg" role="group" aria-label="${esc(T('x.speed'))}"><button type="button" data-s="0.5">0.5x</button><button type="button" data-s="1">1x</button></span></div></div>` : '';
       const photoPane = photos.length ? `<div class="pane" data-tab="photo"><div class="ph ${photos.length > 1 ? 'two' : ''}">
-          ${photos.map((u, i) => `<img src="${esc(u)}" alt="${esc(e.name)} ${i ? 'bitiş' : 'başlangıç'} pozisyonu" loading="lazy">`).join('')}<span class="cap"></span></div>${M.photoNote ? `<p class="pnote">${esc(M.photoNote)}</p>` : ''}</div>` : '';
+          ${photos.map((u, i) => `<img src="${esc(u)}" alt="${esc(T(i ? 'x.alt1' : 'x.alt0', e.name))}" loading="lazy">`).join('')}<span class="cap">${esc(T('x.startEnd'))}</span></div>${M.photoNote ? `<p class="pnote">${esc(window.FIT_tx ? FIT_tx.photoNote(e.slug || slug, M.photoNote) : M.photoNote)}</p>` : ''}</div>` : '';
       const videoPane = vid ? `<div class="pane" data-tab="video"></div>` : '';
       const media = tabs.length ? `<div class="media">
           ${tabs.length > 1 ? `<div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-tab="${k}">${l}</button>`).join('')}</div>` : ''}
-          ${photoPane}${videoPane}${figPane}</div>` : `<div class="fig nofig">Görsel yok.</div>`;
+          ${photoPane}${videoPane}${figPane}</div>` : `<div class="fig nofig">${esc(T('x.noImg'))}</div>`;
       // muscles: the body map box under the media (js/bodymap.js); the dashed guide line of the animation keeps its own key
       const bmap = window.FIT_bodyMap ? FIT_bodyMap(e) : '';
       const legend = A && A.guide && A.guide.label ? `<div class="legend"><span><i class="dash"></i>${esc(A.guide.label)}</span></div>` : '';
-      const cues = (e.cues || []).length || e.avoid ? `<ul class="cues">${(e.cues || []).map((c) => `<li><span class="tag ok">Doğru</span><span>${esc(c)}</span></li>`).join('')}${e.avoid ? `<li><span class="tag no">Kaçın</span><span>${esc(e.avoid)}</span></li>` : ''}</ul>` : '';
-      const effort = e.rir ? `<div class="effort"><b>Efor</b><span>${esc(e.rir)}</span>${e.rirTag ? `<span class="rirtag" title="${esc(RIR_TIP)}">${esc(e.rirTag)}</span>` : ''}</div>` : '';
+      const cues = (e.cues || []).length || e.avoid ? `<ul class="cues">${(e.cues || []).map((c) => `<li><span class="tag ok">${esc(T('x.do'))}</span><span>${esc(c)}</span></li>`).join('')}${e.avoid ? `<li><span class="tag no">${esc(T('x.avoid'))}</span><span>${esc(e.avoid)}</span></li>` : ''}</ul>` : '';
+      const effort = e.rir ? `<div class="effort"><b>${esc(T('x.effort'))}</b><span>${esc(e.rir)}</span>${e.rirTag ? `<span class="rirtag" title="${esc(T('x.rirTip'))}">${esc(e.rirTag)}</span>` : ''}</div>` : '';
       active.delete(this);
       root.innerHTML = `<style>${CSS}${window.FIT_BODYMAP_CSS || ''}</style><article class="card${compact ? ' compact' : ''}">${bare ? '' : `
         <div class="top">${idx ? `<span class="num">${esc(idx)}</span>` : ''}<div class="tt"><h3>${esc(e.name)}</h3>${e.sub ? `<div class="sub">${esc(e.sub)}</div>` : ''}</div>
           ${compact && dose ? `<span class="chip dose">${esc(dose)}</span>` : ''}</div>`}
         ${media}${bare ? '' : links}${bmap}
         ${compact ? '' : `
-          <div class="chips">${dose ? `<span class="chip dose">${esc(dose)}</span>` : ''}${rest ? `<span class="chip">Dinlenme ${esc(rest)}</span>` : ''}${blk ? `<span class="chip blk" title="Bu hareket bloğa göre değişir">${esc(blk.name)} · hf ${esc(blk.weeks)}</span>` : ''}</div>
+          <div class="chips">${dose ? `<span class="chip dose">${esc(dose)}</span>` : ''}${rest ? `<span class="chip">${esc(T('x.rest', rest))}</span>` : ''}${blk ? `<span class="chip blk" title="${esc(T('x.blkTip'))}">${esc(blk.name)} · ${esc(T('wk'))} ${esc(blk.weeks)}</span>` : ''}</div>
           ${effort}${legend}${cues}
-          ${e.alt ? `<p class="alt"><b>Alternatif:</b> ${esc(e.alt)}</p>` : ''}
+          ${e.alt ? `<p class="alt"><b>${esc(T('x.alt'))}</b> ${esc(e.alt)}</p>` : ''}
           ${e.note ? `<p class="note">${esc(e.note)}</p>` : ''}
-          ${vid && rv && rv.note && !(mv && mv.id && mv.id !== ytId(rv.url)) ? `<p class="vnote">Video: ${esc(rv.note)}</p>` : ''}`}
+          ${vid && rv && rv.note && !(mv && mv.id && mv.id !== ytId(rv.url)) ? `<p class="vnote">${esc(T('x.vnote', rv.note))}</p>` : ''}`}
       </article>`;
       root.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => this.setTab(b.dataset.tab)));
       this._dyn = null;
@@ -542,11 +549,11 @@
     _ring(r, st) {
       const cx = this._G.W - 30, cy = 32, rad = 20, C = 2 * Math.PI * rad;
       let frac, num, lab;
-      if (r.mode === 'up') { const sec = (this._clock / 1000) % r.sec; frac = sec / r.sec; num = Math.floor(sec); lab = `/ ${r.sec} sn`; }
+      if (r.mode === 'up') { const sec = (this._clock / 1000) % r.sec; frac = sec / r.sec; num = Math.floor(sec); lab = `/ ${r.sec}${T('u.s')}`; }
       else {
         const hs = this._c.seq.find((q) => q.k === 'static') || st.sg, t = mod(st.t, this._c.cycle);
         const el = Math.min(Math.max(t - hs.t0, 0), hs.d);
-        frac = el / hs.d; num = t < hs.t0 ? r.sec : Math.max(0, Math.ceil((hs.d - el) / 1000)); lab = 'sn';
+        frac = el / hs.d; num = t < hs.t0 ? r.sec : Math.max(0, Math.ceil((hs.d - el) / 1000)); lab = T('u.s').trim();
       }
       return `<circle class="rtrack" cx="${cx}" cy="${cy}" r="${rad}"/><circle class="rprog" cx="${cx}" cy="${cy}" r="${rad}" transform="rotate(-90 ${cx} ${cy})" stroke-dasharray="${f(C * frac)} ${f(C)}"/>` +
         `<text class="rsec" x="${cx}" y="${cy + 5}">${num}</text><text class="rlab" x="${cx}" y="${cy + rad + 13}">${lab}</text>`;
