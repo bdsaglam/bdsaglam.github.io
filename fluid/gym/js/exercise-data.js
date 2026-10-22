@@ -29,7 +29,10 @@
  *     dose: '3 × 8–10', rest: '2–2,5 dk', restSec: [120, 150],      (rest optional)
  *     rir: '2 tekrar kala bırak' (plain effort line), rirTag: 'RIR 2 · RPE 8' (small tag)
  *     equipment: ['dambıl'],
- *     legend: [[1, 'Kuadriseps'], [2, 'Kalça']],      muscle colour 1..3 + name
+ *     legend: [[1, 'Kuadriseps'], [2, 'Kalça']],      animation colour 1..3 + muscle name (not shown in the app)
+ *     work: {main: [MUSCLE], help: [MUSCLE]}          body map box (js/bodymap.js): main = prime movers, help = synergists and
+ *             stabilisers; for stretches main = the stretched muscles. MUSCLE = {map, tr}: map is a BODYMAP key, a list of
+ *             keys, or null (no region on the map: hip flexors, rotator cuff, joints); tr the Turkish name. MU has common ones.
  *     cues: ['...'], avoid: '...', alt: 'alternative', note: 'muted footnote',
  *     video: {url, title, channel, source: 'agirsaglam'|'fallback'|'user', note}  (added from YT below)
  *     anim: ANIM
@@ -176,6 +179,29 @@
   const RIR_ACC = { rir: '1-2 tekrar kala bırak', rirTag: 'RIR 1-2' };
   const RIR_MACH = { rir: '1-2 tekrar kala bırak; son sette 0-1 tekrar kalabilir', rirTag: 'RIR 1-2 · son set 0-1' };
 
+  // Muscles a move works (or stretches), for the body map (js/bodymap.js): {map: BODYMAP key, a list of keys, or null, tr: Turkish name}
+  const MU = {
+    quad: { map: 'quadriceps', tr: 'Ön bacak (kuadriseps)' },
+    glute: { map: 'gluteal', tr: 'Kalça (gluteus)' },
+    ham: { map: 'hamstring', tr: 'Arka bacak (hamstring)' },
+    add: { map: 'adductor', tr: 'İç bacak (adduktor)' },
+    abs: { map: 'abs', tr: 'Karın' },
+    obl: { map: 'obliques', tr: 'Yan karın (oblik)' },
+    lowBack: { map: 'lower-back', tr: 'Bel (erektörler)' },
+    lat: { map: 'upper-back', tr: 'Sırt (latissimus)' },
+    midBack: { map: 'trapezius', tr: 'Orta sırt (trapez, romboid)' },
+    rearDelt: { map: 'back-deltoids', tr: 'Arka omuz' },
+    frontDelt: { map: 'front-deltoids', tr: 'Ön omuz' },
+    chest: { map: 'chest', tr: 'Göğüs' },
+    tri: { map: 'triceps', tr: 'Arka kol (triceps)' },
+    bi: { map: 'biceps', tr: 'Pazu (biceps)' },
+    grip: { map: 'forearm', tr: 'Ön kol (tutuş)' },
+    hipFlex: { map: null, tr: 'Kalça fleksörü (iliopsoas)' },
+    cuff: { map: null, tr: 'Rotator manşet' },
+    ankle: { map: null, tr: 'Ayak bileği (eklem)' },
+    tspine: { map: null, tr: 'Göğüs omurgası (eklem)' },
+  };
+
   const EX = {
     /* ================= Gün A ================= */
     'goblet-squat': {
@@ -183,6 +209,7 @@
       alt: 'Leg press.',
       equipment: ['dambıl'],
       legend: [[1, 'Kuadriseps'], [2, 'Kalça (gluteus)'], [3, 'Core']],
+      work: { main: [MU.quad, MU.glute], help: [MU.add, MU.abs, MU.lowBack] },
       cues: ['Dambılı göğse yapıştır, dirsekler aşağıda', 'Kalçayı geri ve aşağı it; uyluklar en az yere paralel', 'Topuklar yerde, dizler ayak ucu yönünde, gövde dik'],
       avoid: 'Dizlerin içe çökmesi, topukların kalkması',
       anim: {
@@ -199,6 +226,7 @@
       alt: 'Barbell bench press veya şınav.',
       equipment: ['dambıl', 'düz bench'],
       legend: [[1, 'Göğüs'], [2, 'Ön omuz'], [3, 'Triceps']],
+      work: { main: [MU.chest], help: [MU.frontDelt, MU.tri] },
       cues: ['Dambılları göğüs hizasına indir; dirsekler gövdeden ~45° (yandan görünümde kısa görünür)', 'Kürek kemiklerini geri ve aşağı sıkıp benche yapıştır', 'Ayaklar yerde; dambılları omuzların üstüne it'],
       avoid: 'Dirsekleri 90° yana açmak, belin aşırı kemerlenmesi',
       anim: {
@@ -217,6 +245,7 @@
       name: 'Tek Kol Dambıl Row', sub: 'Bir el ve diz benchte', kind: 'lift', dose: '3 × 8–12 / kol', rest: '60–90 sn', restSec: [60, 90], ...RIR_ACC,
       equipment: ['dambıl', 'düz bench'],
       legend: [[1, 'Sırt / lat'], [2, 'Arka omuz - romboid'], [3, 'Biceps']],
+      work: { main: [MU.lat, MU.midBack], help: [MU.rearDelt, MU.bi, MU.grip] },
       cues: ['Bir el ve aynı taraf diz benchte; sırt düz, yere yaklaşık paralel.', 'Dirseği kalçaya doğru geriye çek; kürek kemiğini sık.', 'Dambılı 2 sn kontrollü indir; gövdeyi döndürme.'],
       avoid: 'Gövdeyi çevirerek ya da sallayarak kaldırmak; omzu kulağa çekmek.',
       alt: 'Oturarak kablo row.',
@@ -239,6 +268,7 @@
       name: 'Dambıl Romanian Deadlift', sub: 'Kalça menteşesi, dambıl bacağa yakın', kind: 'lift', dose: '3 × 8–12', rest: '2 dk', restSec: [120, 120], ...RIR_MAIN,
       equipment: ['dambıl'],
       legend: [[1, 'Hamstring'], [2, 'Kalça'], [3, 'Alt sırt (sabitler)']],
+      work: { main: [MU.ham, MU.glute], help: [MU.lowBack, MU.add, MU.grip] },
       cues: ['Dizler hafif bükük ve sabit; kalçayı geriye it', 'Sırt düz, boyun nötr; dambıllar bacağa yakın kayar', 'Diz altı / kaval hizasında dur, kalçayı öne sürerek kalk'],
       avoid: 'Sırtı yuvarlamak, squat gibi dizleri bükmek',
       anim: {
@@ -255,6 +285,7 @@
       name: 'Plank', sub: 'Ön kol plank, statik tutuş', kind: 'hold', dose: '3 × 30–60 sn', rest: '60 sn', restSec: [60, 60],
       rir: 'Formu bozulmadan bitir',
       legend: [[1, 'Core'], [2, 'Kalça'], [3, 'Ön omuz']],
+      work: { main: [MU.abs], help: [MU.obl, MU.glute, MU.frontDelt, MU.quad] },
       cues: ['Dirsekler omuzların tam altında', 'Baştan topuğa düz çizgi; kalçayı ve karnı sık', 'Normal nefes al, nefesi tutma', "60 sn'yi geçince zorlaştır (dirsekleri öne al)"],
       avoid: 'Kalçanın düşmesi (bel çökmesi) ya da havaya kalkması',
       anim: {
@@ -273,6 +304,7 @@
       warmupSets: '2–3 ısınma seti',
       equipment: ['barbell', 'plaka'],
       legend: [[1, 'Hamstring & kuadriseps'], [2, 'Kalça (gluteus)'], [3, 'Sırt / erektörler']],
+      work: { main: [MU.glute, MU.ham, MU.lowBack], help: [MU.quad, MU.add, MU.midBack, MU.grip] },
       cues: ['Önce 2–3 hafif ısınma seti, sonra 1 çalışma seti.', 'Bar orta ayağın üstünde; kalça dizden yukarıda, omuzdan aşağıda.', 'Sırt nötr, göğüs açık; barı bacaklara sürterek yukarı çek.', 'Üstte kalçayı kilitle, dik dur; geriye yaslanma.'],
       avoid: 'Belin yuvarlanması; barın bacaktan uzaklaşması.',
       alt: 'Dambıl deadlift.',
@@ -300,6 +332,7 @@
       alt: 'Destekli barfiks makinesi.',
       equipment: ['makara (lat pulldown)'],
       legend: [[1, 'Lat (sırt genişliği)'], [2, 'Biceps']],
+      work: { main: [MU.lat], help: [MU.bi, MU.rearDelt, MU.grip, MU.midBack] },
       cues: ['Hafif geriye yaslan, göğsünü bara doğru aç.', 'Dirsekleri aşağı ve geriye sür; bar üst göğse insin.', 'Barı yavaş bırak; kollar tam uzasın, omuzlar kulağa kalkmasın.'],
       avoid: 'Gövdeyi sallayarak çekmek veya barı ensenin arkasına indirmek.',
       anim: {
@@ -321,6 +354,7 @@
       name: 'Barbell Omuz Presi', sub: 'Ayakta (overhead press)', kind: 'lift', dose: '3 × 6–10', rest: '2–3 dk', restSec: [120, 180], ...RIR_ACC,
       equipment: ['barbell', 'rack'],
       legend: [[1, 'Omuz (deltoid)'], [2, 'Triceps'], [3, 'Core']],
+      work: { main: [{ map: 'front-deltoids', tr: 'Omuz (ön ve yan deltoid)' }], help: [MU.tri, { map: 'trapezius', tr: 'Üst trapez' }, { map: 'abs', tr: 'Karın (sabitler)' }] },
       cues: ['Bar omuzların önünde, önkollar dik; dirsekler barın biraz önünde.', 'Barı düz yukarı it; bar yüzünden geçerken başını hafif geri al, sonra barın altına getir.', 'Kaburgalar aşağı, kalça ve karın sıkı; bar yukarıda orta ayağın üstünde kilitlensin.'],
       avoid: 'Geriye yaslanıp beli kavislemek; barı öne doğru itmek.',
       alt: 'Omuz press makinesi veya dambıl.',
@@ -346,6 +380,7 @@
       name: 'Leg Press', kind: 'lift', dose: '3 × 8–12', rest: '2 dk', restSec: [120, 120], ...RIR_MACH,
       equipment: ['leg press makinesi'],
       legend: [[1, 'Kuadriseps'], [2, 'Kalça (gluteus)']],
+      work: { main: [MU.quad, MU.glute], help: [MU.add] },
       cues: ['Sırt ve kalça pedde sabit; bel pedden ayrılmasın.', 'Dizler ayak parmakları yönünde ~90° bükülsün.', 'Üstte dizleri kilitleme, hafif bükük bırak.'],
       avoid: 'Çok derin inip kalçanın pedden kalkması (bel yuvarlanır); dizlerin içe çökmesi.',
       alt: 'Dambıl split squat.',
@@ -382,6 +417,7 @@
       alt: 'Band pull-apart.',
       equipment: ['makara', 'ip tutamak'],
       legend: [[1, 'Arka omuz'], [2, 'Rotator manşet & üst sırt']],
+      work: { main: [MU.rearDelt, MU.cuff], help: [MU.midBack, MU.bi] },
       cues: ['Makara yüz hizasında; ipi alnına / gözlere doğru çek.', 'Dirsekler yüksek: sonunda omuz hizasında veya hafif arkada.', 'Eller kulakların yanında bitsin (dışa rotasyon); omuzlar geride ve aşağıda.'],
       avoid: 'Ağır seçip gövdeyi geriye sallayarak çekmek; hafif tut.',
       anim: {
@@ -406,6 +442,7 @@
       name: 'Oturarak Leg Curl', sub: 'Makinede, arka bacak', kind: 'lift', dose: '2–3 × 8–12', rest: '60–90 sn', restSec: [60, 90], ...RIR_MACH,
       equipment: ['leg curl makinesi'],
       legend: [[1, 'Hamstring (arka bacak)'], [2, 'Baldır']],
+      work: { main: [MU.ham], help: [{ map: 'calves', tr: 'Baldır (gastroknemius)' }] },
       cues: ['Dizler makinenin dönme noktası hizasında; uyluk pedi dizlerin hemen üstüne sıkıca otursun.', 'Topukları aşağı ve geriye çek; en altta kısa bir an sık.', 'Bacağı 2 sn’de kontrollü aç; ağırlık yığına çarpmasın.'],
       avoid: 'Kalçayı oturaktan kaldırmak, ağırlığı savurmak.',
       alt: 'Makine yoksa yatarak leg curl; o da yoksa topla hamstring curl (sırtüstü, topuklar topta).',
@@ -429,6 +466,7 @@
       name: 'Yatarak Leg Curl', sub: 'Makinede, yüzüstü', kind: 'lift', dose: '2–3 × 8–12', rest: '60–90 sn', restSec: [60, 90], ...RIR_MACH,
       equipment: ['leg curl makinesi'],
       legend: [[1, 'Hamstring (arka bacak)'], [2, 'Baldır']],
+      work: { main: [MU.ham], help: [{ map: 'calves', tr: 'Baldır (gastroknemius)' }] },
       cues: ['Diz kapakları benchin hemen dışında; ped topuğun biraz üstünde.', 'Kalçayı benche bastır, topukları kalçana doğru çek.', 'Bacağı 2 sn’de kontrollü indir.'],
       avoid: 'Kalçayı benchten kaldırmak, beli kavislemek.',
       alt: 'Oturarak leg curl; makine yoksa topla hamstring curl.',
@@ -451,6 +489,7 @@
       rir: 'Tükenişe 2 tekrar kala bırak', rirTag: 'RIR 2',
       equipment: [],
       legend: [[1, 'Göğüs'], [2, 'Ön omuz'], [3, 'Triceps']],
+      work: { main: [MU.chest], help: [MU.frontDelt, MU.tri, { map: 'abs', tr: 'Karın (sabitler)' }] },
       cues: ['Eller omuz genişliğinden biraz geniş, omuzların altında.', 'Baştan topuğa düz çizgi; karın ve kalça sıkı.', 'Göğüs yere yaklaşana kadar in; dirsekler gövdeden ~45°.'],
       avoid: 'Kalçanın düşmesi; dirsekleri 90° yana açmak.',
       alt: 'Zorsa eller bench’te eğimli şınav; kolaylaşınca ayakları yükselt.',
@@ -468,6 +507,7 @@
       name: 'Oturarak Kablo Row', sub: 'Makarada, V tutamak', kind: 'lift', dose: '3 × 8–12', rest: '60–90 sn', restSec: [60, 90], ...RIR_ACC,
       equipment: ['makara (kablo row)'],
       legend: [[1, 'Sırt / lat'], [2, 'Arka omuz - romboid'], [3, 'Biceps']],
+      work: { main: [MU.lat, MU.midBack], help: [MU.rearDelt, MU.bi, MU.grip] },
       cues: ['Dizler hafif bükük, gövde dik, göğüs açık.', 'Tutamağı karnına çek; dirsekler gövdeye yakın, kürek kemiklerini sık.', 'Kolları 2 sn’de uzat; bel yuvarlanmasın.'],
       avoid: 'Gövdeyi ileri-geri sallayarak çekmek.',
       alt: 'Kablo yoksa tek kol dambıl row veya göğüs destekli dambıl row.',
@@ -489,6 +529,7 @@
       name: 'Göğüs Destekli Dambıl Row', sub: 'Eğimli bench, göğüs pedde', kind: 'lift', dose: '3 × 8–12', rest: '60–90 sn', restSec: [60, 90], ...RIR_ACC,
       equipment: ['dambıl', 'eğimli bench'],
       legend: [[1, 'Sırt / lat'], [2, 'Arka omuz - romboid'], [3, 'Biceps']],
+      work: { main: [MU.midBack, MU.lat], help: [MU.rearDelt, MU.bi, MU.grip] },
       cues: ['Bench 30-45° eğimde; göğüs pede yaslı, ayaklar yerde.', 'Dirsekleri geriye sürerek dambılları kaburgalara çek; kürek kemiklerini sık.', '2 sn’de kontrollü indir; kollar tam uzasın.'],
       avoid: 'Göğsü pedden kaldırmak, başı yukarı kırmak.',
       alt: 'Eğimli bench yoksa tek kol dambıl row; göğüs destekli row makinesi (T-bar) de olur.',
@@ -516,6 +557,7 @@
       name: 'Yan Plank', sub: 'Ön kol üstünde, statik tutuş', kind: 'hold', dose: '2–3 × 20–40 sn / taraf', rest: '60 sn', restSec: [60, 60],
       rir: 'Formu bozulmadan bitir',
       legend: [[1, 'Yan karın (oblik)'], [2, 'Kalça yanı'], [3, 'Omuz']],
+      work: { main: [MU.obl], help: [{ map: 'lower-back', tr: 'Bel yanı (kuadratus lumborum)' }, { map: 'gluteal', tr: 'Kalça yanı (gluteus medius)' }, MU.abs, { map: 'front-deltoids', tr: 'Omuz' }] },
       cues: ['Dirsek omzun tam altında; ayaklar üst üste.', 'Kalçayı kaldır: baştan ayağa düz çizgi.', 'Normal nefes al; süre bitince diğer tarafa geç.'],
       avoid: 'Kalçanın aşağı sarkması ya da geriye kaçması.',
       alt: 'Zorsa dizler bükülü yan plank.',
@@ -534,6 +576,7 @@
       rir: 'Formu bozulmadan bitir',
       equipment: ['plaka'],
       legend: [[1, 'Core'], [2, 'Kalça'], [3, 'Ön omuz']],
+      work: { main: [MU.abs], help: [MU.obl, MU.glute, MU.frontDelt, MU.quad] },
       cues: ['Plakayı biri sırtına, kürek kemiklerinin arasına koysun.', 'Plank gibi: dirsekler omuz altında, baştan topuğa düz çizgi.', 'Hafif başla (5-10 kg); 45 sn rahat olunca ağırlığı artır.'],
       avoid: 'Plakayı bele koymak; kalçanın düşmesi.',
       alt: 'Plaka yoksa dirsekleri biraz öne alarak plank (daha zor kaldıraç).',
@@ -542,6 +585,7 @@
       name: 'Ters Tutuş Lat Pulldown', sub: 'Avuçlar sana dönük, omuz genişliği', kind: 'lift', dose: '3 × 6–10', rest: '2 dk', restSec: [120, 120], ...RIR_MACH,
       equipment: ['makara (lat pulldown)'],
       legend: [[1, 'Lat (sırt genişliği)'], [2, 'Biceps']],
+      work: { main: [MU.lat], help: [MU.bi, MU.midBack, MU.grip] },
       cues: ['Avuçlar sana dönük, eller omuz genişliğinde.', 'Barı üst göğse çek; dirsekler aşağı ve gövdeye yakın insin.', 'Barı yavaş bırak; kollar tam uzasın.'],
       avoid: 'Geriye çok yaslanıp sallanmak.',
       alt: 'Makine yoksa destekli barfiks (ters tutuş) veya lastikle barfiks.',
@@ -551,6 +595,7 @@
       name: 'Destekli Barfiks', sub: 'Makinede, dizler pedde', kind: 'lift', dose: '3 × 6–10', rest: '2 dk', restSec: [120, 120], ...RIR_MACH,
       equipment: ['destekli barfiks makinesi'],
       legend: [[1, 'Lat (sırt genişliği)'], [2, 'Biceps']],
+      work: { main: [MU.lat], help: [MU.bi, MU.midBack, MU.rearDelt, MU.grip] },
       cues: ['Dizleri pede koy; tutuş omuz genişliğinde.', 'Göğsü bara doğru çek; çene barın üstüne çıksın.', 'Yavaş in, kollar tam uzasın.'],
       avoid: 'Bacaklarla sıçrayarak çıkmak, yarım tekrar.',
       alt: 'Makine yoksa lastik destekli barfiks; o da yoksa lat pulldown.',
@@ -572,6 +617,7 @@
       name: 'Dambıl Split Squat', sub: 'Sabit adım duruşu, iki elde dambıl', kind: 'lift', dose: '3 × 8–12 / bacak', rest: '60–90 sn', restSec: [60, 90], ...RIR_ACC,
       equipment: ['dambıl'],
       legend: [[1, 'Kuadriseps (öndeki bacak)'], [2, 'Kalça (gluteus)']],
+      work: { main: [MU.quad, MU.glute], help: [MU.add, MU.grip] },
       cues: ['Uzun adım duruşu: arka topuk havada, ayaklar kalça genişliğinde.', 'Arka dizi yere doğru indir; ön ayak tabanı yere tam bassın.', 'Gövde dik; ön topuktan iterek kalk. Önce bir bacak, sonra diğeri.'],
       avoid: 'Ön dizin içe çökmesi; ön topuğun kalkması.',
       alt: 'Dambıl yoksa vücut ağırlığıyla; leg press de olur.',
@@ -591,6 +637,7 @@
       name: 'Reverse Fly', sub: 'Makinede (reverse pec deck)', kind: 'lift', dose: '3 × 15–20 (hafif)', rest: '60 sn', restSec: [60, 60], rir: 'Hafif tut; son sette 0-1 tekrar kalabilir', rirTag: 'son set RIR 0-1',
       equipment: ['pec deck makinesi'],
       legend: [[1, 'Arka omuz'], [2, 'Üst sırt']],
+      work: { main: [MU.rearDelt], help: [MU.midBack, MU.cuff] },
       cues: ['Göğüs pede yaslı, tutamaklar omuz hizasında.', 'Kollar hafif bükük; geniş bir yayla geriye aç.', 'Hafif tut, 2 sn’de geri getir.'],
       avoid: 'Ağır seçip gövdeyle sallamak; omuzları kulağa kaldırmak.',
       alt: 'Makine yoksa band pull-apart veya eğilerek dambıl reverse fly.',
@@ -616,6 +663,7 @@
     'bike': {
       name: 'Hafif kardiyo', sub: 'Koşu bandı veya sabit bisiklet', kind: 'cardio', dose: '5–10 dk',
       legend: [[1, 'Kalp-damar, bacaklar']],
+      work: { main: [MU.quad, MU.glute], help: [MU.ham, { map: ['calves', 'left-soleus', 'right-soleus'], tr: 'Baldır' }] },
       cues: ['Koşu bandı veya sabit bisiklet.', 'Konuşabileceğin tempo, hafif terleme.'],
       anim: (() => {
         const B = { rear: [64, 148.8], front: [240, 148.8], bb: [152, 136], seat: [131.2, 73.6], head: [208, 78.4], bar: [220.8, 62.4] };
@@ -646,6 +694,7 @@
     'leg-swing': {
       name: 'Bacak salınımı', sub: 'Öne-arkaya', kind: 'dynamic', dose: '8–10 tekrar/taraf',
       legend: [[1, 'Kalça fleksörleri, hamstring']],
+      work: { main: [MU.ham, MU.hipFlex], help: [MU.glute] },
       cues: ['Duvara tutun, gövde dik; salınımı kalçadan yap.', 'Önce küçük, sonra daha geniş salla.'],
       anim: Object.assign(WT({ t1: 4, t2: 7, ul2: 0, ll2: 0, wx: 146, wh: 86 },
         [[0, { ul: -28, ll: -32 }], [1.2, { ul: 62, ll: 48 }], [2.4, { ul: -28, ll: -32 }]],
@@ -657,6 +706,7 @@
     'worlds-greatest-stretch': {
       name: "World's Greatest Stretch", sub: 'Kalça açıcı', kind: 'dynamic', dose: '8–10 tekrar/taraf',
       legend: [[1, 'Kalça, üst sırt, hamstring']],
+      work: { main: [MU.hipFlex, MU.add, MU.tspine], help: [MU.glute, MU.ham, MU.chest] },
       cues: ['Öne adım at, eller yerde, dirsek ayağın içine doğru.', 'Aynı taraf kolu tavana aç, bakışın elini izlesin.'],
       anim: (() => {
         const LG = { ul: 85, ll: -10, ul2: -57, ll2: -57 };
@@ -670,6 +720,7 @@
     'arm-circles': {
       name: 'Kol çevirme', sub: 'Öne ve geriye', kind: 'dynamic', dose: '8–10 tekrar/yön',
       legend: [[1, 'Omuzlar, üst sırt']],
+      work: { main: [{ map: ['front-deltoids', 'back-deltoids'], tr: 'Omuz (deltoid)' }], help: [MU.cuff, { map: 'trapezius', tr: 'Trapez' }] },
       cues: ['Küçük dairelerle başla, yavaş yavaş büyüt.', 'Omuzları kulaktan uzak tut, gövde sabit.'],
       anim: {
         anchor: { j: 'hip', x: mx(105), ground: true }, far: 'both', period: 12000, still: 3000, muscles: HL(['arm']),
@@ -682,6 +733,7 @@
     'stick-pass-through': {
       name: 'Sopayla omuz geçişi', kind: 'dynamic', dose: '8–10 tekrar',
       legend: [[1, 'Omuz, göğüs, üst sırt']],
+      work: { main: [MU.chest, MU.frontDelt], help: [MU.bi, MU.cuff] },
       cues: ['Geniş tutuşla başla, kollar düz; sopayı önden başın üstünden arkaya taşı.', 'Dar tutuş daha zor; omuz zorlanırsa tutuşu genişlet.'],
       note: 'Yandan çizim: sopa uçtan görünür (koyu nokta), kesikli çizgi yolunu gösterir.',
       anim: {
@@ -697,6 +749,7 @@
     'bodyweight-squat': {
       name: 'Vücut ağırlığıyla squat', kind: 'dynamic', dose: '8–10 tekrar',
       legend: [[1, 'Kalça, kuadriseps, ayak bileği']],
+      work: { main: [MU.glute, MU.add, MU.ankle], help: [MU.quad] },
       cues: ['Yavaş in, derin ol; topuklar yerde, göğüs dik.', 'Dizler ayak parmakları yönünde.'],
       anim: (() => {
         const a = { ul: 0, ll: 0, t1: 0, h: 0, ua: 30, fa: 80 }, b = { ul: 100, ll: -25, t1: 42, t2: 50, h: 35, ua: 80, fa: 88 };
@@ -708,6 +761,7 @@
     'cat-cow': {
       name: 'Kedi-deve', sub: 'Cat-cow', kind: 'dynamic', dose: '8–10 tekrar',
       legend: [[1, 'Omurga, karın, sırt']],
+      work: { main: [MU.lowBack, MU.abs], help: [MU.midBack, { map: null, tr: 'Omurga (eklemler)' }] },
       cues: ['Nefes verirken sırtı yuvarla, alırken aç.', 'Yavaş git; hareket omurga boyunca aksın.'],
       anim: Object.assign(WT({ ul: 0, ll: -90, hh: 0, hdx: 0 },
         [[0, { t1: 75, t2: 75, h: 85 }], [2, { t1: 50, t2: 97, h: 135 }], [4, { t1: 75, t2: 75, h: 85 }], [6, { t1: 100, t2: 46, h: 40 }], [8, { t1: 75, t2: 75, h: 85 }]]), {
@@ -719,6 +773,7 @@
     'pancake-stretch': {
       name: 'Pancake', sub: 'Oturarak geniş açı', kind: 'static', dose: '30 sn',
       legend: [[1, 'Hamstring, iç bacak']],
+      work: { main: [MU.ham, MU.add], help: [] },
       cues: ['Kalçadan katlan, sırt düz kalsın.', 'Başta ellerini bir basamağa veya benche koy; yükseklik arttıkça kolay, alçaldıkça zor.'],
       note: 'Yandan çizim; gerçekte bacaklar yana açık.',
       anim: Object.assign({}, STATIC, {
@@ -730,6 +785,7 @@
     'figure-4-stretch': {
       name: 'Figure-4', sub: 'Sırtüstü kalça', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Kalça, piriformis']],
+      work: { main: [MU.glute, { map: 'gluteal', tr: 'Piriformis (derin kalça)' }], help: [] },
       cues: ['Sırtüstü yat, bilek karşı dizin üstünde; alttaki uyluğu göğse çek.', 'Zorsa dizini elinle destekle; esneyince dizi düzleştirmeye çalış.'],
       note: 'Squat ve deadlift sonrası iyi gelir. Videoda oturarak yapılışı da var.',
       anim: Object.assign({}, STATIC, {
@@ -743,6 +799,7 @@
     'hip-flexor-reach': {
       name: 'Diz çökerek kalça fleksörü + uzanma', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Kalça fleksörü, ön uyluk, karın']],
+      work: { main: [MU.hipFlex, { map: 'quadriceps', tr: 'Ön bacak (rektus femoris)' }], help: [MU.abs, MU.obl] },
       cues: ['Arka dizi yere koy, kalçayı öne it, gövde dik.', 'Arka dizi tarafındaki kolu tavana uzat, hafifçe karşı yana eğil; gerginlik karna kadar uzanır.'],
       anim: Object.assign({}, STATIC, {
         keys: [{ ul: 90, ll: 0, t1: 14, t2: 14, h: 14, ua: -10, fa: 50, ua2: 10, fa2: 20 }, { ul: 100, ll: -17, t1: -4, t2: -6, h: -6, ua: -10, fa: 50, ua2: 165, fa2: 172 }]
@@ -753,6 +810,7 @@
     'lat-stretch-rail': {
       name: 'Lat esnetmesi', sub: 'Bench / rack / çit', kind: 'static', dose: '30 sn',
       legend: [[1, 'Lat, sırt, omuz']],
+      work: { main: [MU.lat], help: [MU.tri, { map: null, tr: 'Omuz (eklem)' }] },
       cues: ['Bench, rack veya çite tutun; eller kalça-göğüs hizasında.', 'Kalçayı geriye it, göğsü kolların arasında aşağı bırak.'],
       note: 'Videoda kolaydan zora üç seviye gösteriliyor; kolay olanla başla.',
       anim: Object.assign({}, STATIC, {
@@ -764,6 +822,7 @@
     'quad-stretch': {
       name: 'Ayakta ön bacak', sub: 'Kuadriseps', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Ön uyluk']],
+      work: { main: [MU.quad], help: [MU.hipFlex] },
       cues: ['Topuğu kalçaya çek, dizler yan yana.', 'Bel kavislenmesin; kalçayı hafif öne it.'],
       anim: Object.assign({}, STATIC, {
         keys: [{ ul: 0, ll: 0, t1: 0, h: 0, ul2: 0, ll2: 0 }, { ul: 14, ll: -145, t1: 0, h: 0, ul2: 0, ll2: 0 }]
@@ -775,6 +834,7 @@
     'chest-doorway-stretch': {
       name: 'Kapı kenarında göğüs esnetme', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Göğüs, ön omuz']],
+      work: { main: [MU.chest], help: [MU.frontDelt, MU.bi] },
       cues: ['Önkol çerçevede, dirsek omuz hizasında.', 'Bir adım öne çık, göğüste hafif gerginlik.'],
       anim: Object.assign({}, STATIC, {
         keys: [{ ul: 0, ll: 0, ul2: 0, ll2: 0, t1: 0, h: 0 }, { ul: -18, ll: -18, ul2: 25, ll2: 0, t1: 6, h: 4 }]
@@ -785,13 +845,14 @@
     },
 
     /* Listed in the cool-downs, no drawing yet (the card shows the text and the video). */
-    'hamstring-stretch': { name: 'Hamstring esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Arka bacak (hamstring)']], cues: [] },
-    'hip-flexor-stretch': { name: 'Kalça fleksörü esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Kalça fleksörü']], cues: [] },
+    'hamstring-stretch': { name: 'Hamstring esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Arka bacak (hamstring)']], work: { main: [MU.ham], help: [] }, cues: [] },
+    'hip-flexor-stretch': { name: 'Kalça fleksörü esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Kalça fleksörü']], work: { main: [MU.hipFlex], help: [{ map: 'quadriceps', tr: 'Ön bacak (rektus femoris)' }] }, cues: [] },
 
     /* ================= Günlük esneme (sabah dinamik, akşam statik) ================= */
     'thoracic-rotation': {
       name: 'Dört ayakta sırt rotasyonu', sub: 'Göğüs omurgası (T-spine) rotasyonu', kind: 'dynamic', dose: '6 tekrar/taraf',
       legend: [[1, 'Üst sırt (göğüs omurgası), omuz']],
+      work: { main: [MU.tspine], help: [MU.chest, MU.midBack, MU.obl] },
       cues: ['Dört ayak dur; kalçayı biraz topuklara doğru geri al, bel sabit kalsın.', 'Bir elini ensene koy; dirseği karşı kolun altına indir, sonra tavana aç.', 'Bakışın dirseği izlesin; nefes verirken aç.'],
       avoid: 'Dönüşü belden ya da kalçadan yapmak; hızlı savurmak.',
       alt: 'Yan yatarak açık kitap (open book): dizler bükülü, üstteki kolu yay çizerek arkaya aç.',
@@ -804,6 +865,7 @@
     'ankle-rock': {
       name: 'Duvara diz değdirme', sub: 'Ayak bileği mobilitesi (knee-to-wall)', kind: 'dynamic', dose: '10 tekrar/taraf',
       legend: [[1, 'Baldır, ayak bileği'], [2, 'Ön uyluk']],
+      work: { main: [{ map: ['calves', 'left-soleus', 'right-soleus'], tr: 'Baldır (soleus)' }, MU.ankle], help: [MU.quad] },
       cues: ['Öndeki ayak duvardan bir karış uzakta, arka ayak geride.', 'Topuk yerde kalsın; dizi ikinci parmak yönünde duvara doğru it, 1-2 sn bekle, geri gel.', 'Diz duvara kolay değiyorsa ayağı biraz geri al.'],
       avoid: 'Topuğun kalkması; dizin içe çökmesi.',
       alt: 'Duvar yoksa yarım diz çök; öndeki dizi ayak ucunun ötesine it.',
@@ -822,6 +884,7 @@
     'deep-squat-hold': {
       name: 'Derin squat bekleme', sub: 'Kapı kasasına tutunarak', kind: 'static', dose: '30–45 sn',
       legend: [[1, 'Kalça, iç bacak'], [2, 'Ayak bileği'], [3, 'Alt sırt (gevşek)']],
+      work: { main: [MU.glute, MU.add], help: [MU.ankle, { map: ['calves', 'left-soleus', 'right-soleus'], tr: 'Baldır' }, { map: 'lower-back', tr: 'Bel' }] },
       cues: ['Kapı kasasını iki elle tut; ayaklar omuz genişliğinde, uçlar hafif dışa.', 'Yavaşça en aşağı otur; topuklar yerde, dizleri dirseklerle hafifçe dışa it.', 'Göğüs açık, rahat nefes al; zorlanırsan ellerle daha çok destek al.'],
       avoid: 'Topukların kalkması; ağrıya kadar zorlamak.',
       alt: 'Topuklar kalkıyorsa altına ince bir kitap veya plaka koy.',
@@ -841,6 +904,7 @@
     'neck-tilt-turn': {
       name: 'Boyun eğme ve çevirme', sub: 'Yavaş, dinamik', kind: 'dynamic', dose: '5 tekrar/yön',
       legend: [[1, 'Boyun yanı, üst trapez']],
+      work: { main: [{ map: 'neck', tr: 'Boyun yanı (SKM, skalen)' }, { map: 'trapezius', tr: 'Üst trapez' }], help: [{ map: null, tr: 'Boyun omurları (eklem)' }] },
       cues: ['Dik otur veya dur, omuzlar aşağıda.', 'Kulağı omza doğru yavaşça eğ, ortaya dön, diğer tarafa eğ.', 'Sonra başı sağa ve sola çevir; çene yere paralel kalsın.'],
       avoid: 'Başı çember çizerek geriye atmak; ağrılı noktaya zorlamak.',
       alt: 'Masada çene geri çekme (chin tuck): başı duvara yasla, çeneyi hafifçe içeri çek, 5 sn tut.',
@@ -849,6 +913,7 @@
     'calf-stretch-wall': {
       name: 'Duvarda baldır esnetme', sub: 'Arka bacak düz, topuk yerde', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Baldır (gastroknemius)'], [2, 'Aşil tendonu']],
+      work: { main: [{ map: 'calves', tr: 'Baldır (gastroknemius)' }], help: [{ map: ['left-soleus', 'right-soleus'], tr: 'Soleus ve aşil (diz bükülünce)' }] },
       cues: ['Ellerini duvara koy, bir bacağı geriye uzat; arka ayak ucu ileri baksın.', 'Arka topuğu yere bastır, dizi düz tut; kalçayı duvara doğru it.', 'Sonra arka dizi hafifçe bük: gerginlik aşağı, aşile iner.'],
       avoid: 'Arka topuğun kalkması; ayağın dışa dönmesi.',
       alt: 'Basamakta topuk sarkıtma: ayak ucu basamakta, topuğu yavaşça aşağı bırak.',
@@ -865,6 +930,7 @@
     'childs-pose-lat-stretch': {
       name: 'Çocuk pozu + yana uzanma', sub: 'Yerde lat esnetme', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Lat, yan gövde'], [2, 'Alt sırt']],
+      work: { main: [MU.lat, { map: 'obliques', tr: 'Yan gövde (oblik)' }], help: [{ map: 'lower-back', tr: 'Bel' }, MU.tri] },
       cues: ['Dizler kalça genişliğinde açık, kalça topuklara otursun; kollar önde.', 'İki eli birlikte sağa yürüt: sol yan esner. 30 sn sonra sola yürüt.', 'Nefes verirken kalçayı geriye, elleri ileri it.'],
       avoid: 'Kalçayı topuklardan kaldırmak; omzu zorlamak.',
       alt: 'Bench, rack veya çit varsa ayakta lat esnetmesi.',
@@ -881,6 +947,7 @@
     'supine-breathing': {
       name: 'Sırtüstü nefes', sub: 'Burundan al, uzun ver', kind: 'hold', dose: '1 dk',
       legend: [[1, 'Diyafram, karın']],
+      work: { main: [{ map: null, tr: 'Diyafram' }], help: [{ map: 'abs', tr: 'Karın (nefes verirken)' }, MU.obl] },
       cues: ['Sırtüstü yat, dizler bükülü; bir el göğüste, bir el karında.', 'Burundan ~4 sn al: karın kalksın, göğüs az oynasın.', 'Ağızdan veya burundan ~6-8 sn yavaşça ver; omuzları ve çeneyi gevşet.'],
       avoid: 'Nefesi zorlamak ya da tutmak; göğüsten hızlı solumak.',
       alt: 'Baldırları bir sandalyeye koy (90/90) veya yüzüstü yatıp alnını ellere koy.',
