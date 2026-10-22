@@ -171,7 +171,7 @@
   function announce(st, key) {
     if (key === saidKey) return; saidKey = key;
     if (!st) { say('Bitti. Eline sağlık.'); return; }
-    if (st.type === 'list') { var it = itemOf(st), e = EX[it.slug] || {}; say((it.name || e.name || '') + '. ' + spoken(it.dose) + (it.perSide && it.holdSec ? '. Önce sol taraf.' : '')); }
+    if (st.type === 'list') { var it = itemOf(st), e = EX[it.slug] || {}; say((it.name || e.name || '') + '. ' + spoken(it.dose) + (it.perSide ? '. Önce sol taraf, sonra sağ.' : '')); }
     else if (st.type === 'exercise') { var x = EX[st.slug] || {}; say((st.name || x.name || '') + '. ' + spoken(st.dose || x.dose)); }
     else if (st.type === 'cardio') say((st.name || 'Kardiyo') + '.');
   }
@@ -385,14 +385,14 @@
       var i = listIdx(st), it = st.items[i], h = s.hold, out = '', ent = EX[it.slug] || {}, rt = isRoutine();
       if (rt) {
         var kind = ent.kind === 'dynamic' ? 'Yavaş ve kontrollü; tutup bekleme.' : 'Hafif gerginlikte tut, nefes rahat.';
-        out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">' + (it.optional ? 'İsteğe bağlı: vaktin yoksa geç. ' : '') + (it.tip ? esc(it.tip.charAt(0).toLocaleUpperCase('tr') + it.tip.slice(1)) + '. ' : '') + kind + '</div></div>';
-      } else out += '<div class="listn">' + esc(ent.name || it.name || it.slug) + ' · ' + (i + 1) + ' / ' + st.items.length + '</div>';
+        out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">' + (it.optional ? 'İsteğe bağlı: vaktin yoksa geç. ' : '') + (it.tip ? esc(it.tip.charAt(0).toLocaleUpperCase('tr') + it.tip.slice(1)) + '. ' : '') + (it.perSide ? 'İki taraf: önce sol, sonra sağ. ' : '') + kind + '</div></div>';
+      } else out += '<div class="listn">' + esc(ent.name || it.name || it.slug) + ' · ' + (i + 1) + ' / ' + st.items.length + (it.perSide ? ' · önce sol, sonra sağ' : '') + '</div>';
       if (it.holdSec) {
         var v = h ? holdView(h, Date.now()) : { prep: false, left: it.holdSec }, side = sideTxt(h, it);
         var lab = v.prep ? (h.side ? 'Taraf değiştir' : 'Hazırlan') + (side ? ' · ' + side : '') : 'saniye' + (side ? ' · ' + side : !it.perSide && /taraf/.test(it.dose || '') ? ' · her taraf için tekrarla' : '');
         out += '<div class="timer' + (v.prep ? ' prep' : '') + (h && h.paused ? ' paused' : '') + '"><div class="tv" id="holdT">' + Math.ceil(v.left) + '</div><div class="tl" id="holdL">' + esc(lab) + (h && h.paused ? ' · duraklatıldı' : '') + '</div></div>';
       } else {
-        out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">Yavaş ve kontrollü yap.</div></div>';
+        out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">' + (it.perSide ? 'Önce sol, sonra sağ taraf. ' : '') + 'Yavaş ve kontrollü yap.</div></div>';
       }
       var lastStep = S().step >= steps().length - 1 && i + 1 >= st.items.length;
       if (it.holdSec) out += '<button class="btn" data-act="lnext" type="button">' + (rt ? (lastStep ? 'Bitir ✓' : 'Sonraki hareket →') : i + 1 >= st.items.length ? 'Sonraki adım →' : 'Sonraki hareket →') + '</button>';
