@@ -123,19 +123,57 @@
   var AC = null;
   function unlock() {
     try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) {}
+    try { if (window.speechSynthesis && soundOn) speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch (e) {}
   }
-  function beep(n) {
-    n = n || 2;
-    try { if (navigator.vibrate) navigator.vibrate(n === 1 ? 200 : [200, 100, 200, 100, 300]); } catch (e) {}
+  // sound: short Web Audio tones per event, plus spoken move names (speechSynthesis, Turkish voice when present)
+  var soundOn = localStorage.getItem('fit-sound') !== '0';
+  function tone(f, t0, dur, vol) {
+    var o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + t0;
+    o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(AC.destination);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.4, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  var CUES = {
+    tick: [[660, 0, 0.09, 0.25]],                                                     // last seconds of a countdown
+    go: [[1046, 0, 0.3]],                                                             // hold starts
+    side: [[784, 0, 0.18], [1046, 0.2, 0.3]],                                         // switch sides
+    done: [[1046, 0, 0.18], [784, 0.2, 0.3]],                                         // hold or rest over
+    finish: [[523, 0, 0.16], [659, 0.17, 0.16], [784, 0.34, 0.16], [1046, 0.51, 0.45]] // routine or session done
+  };
+  var VIB = { tick: 40, go: 200, side: [150, 80, 150], done: [200, 100, 200], finish: [200, 100, 200, 100, 400] };
+  function cue(name) {
+    try { if (navigator.vibrate) navigator.vibrate(VIB[name]); } catch (e) {}
+    if (!soundOn || !AC) return;
+    try { CUES[name].forEach(function (c) { tone(c[0], c[1], c[2], c[3]); }); } catch (e) {}
+  }
+  function beep(n) { cue(n === 1 ? 'go' : n === 3 ? 'finish' : 'done'); }
+  var trVoice = null;
+  function pickVoice() {
+    try { trVoice = speechSynthesis.getVoices().filter(function (v) { return /^tr/i.test(v.lang); })[0] || null; } catch (e) {}
+  }
+  if (window.speechSynthesis) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+  function say(text) {
+    if (!soundOn || !window.speechSynthesis || !text) return;
     try {
-      if (!AC) return;
-      for (var i = 0; i < n; i++) {
-        var o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime + i * 0.28;
-        o.type = 'sine'; o.frequency.value = 880; o.connect(g); g.connect(AC.destination);
-        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-        o.start(t); o.stop(t + 0.25);
-      }
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text); u.lang = 'tr-TR'; if (trVoice) u.voice = trVoice; u.rate = 1;
+      speechSynthesis.speak(u);
     } catch (e) {}
+  }
+  function setSound(on) {
+    soundOn = on; localStorage.setItem('fit-sound', on ? '1' : '0');
+    if (!on && window.speechSynthesis) speechSynthesis.cancel();
+    var b = $('wkSound'); if (b) { b.textContent = on ? '🔊' : '🔇'; b.setAttribute('aria-label', on ? 'Sesi kapat' : 'Sesi aç'); }
+  }
+  // what to say when a move comes up: name, then the dose in words
+  function spoken(t) { return String(t || '').replace(/×/g, ' kere ').replace(/[–-]/g, ' ile ').replace(/\//g, ' her ').replace(/sn\b/g, 'saniye').replace(/dk\b/g, 'dakika'); }
+  var saidKey = '';
+  function announce(st, key) {
+    if (key === saidKey) return; saidKey = key;
+    if (!st) { say('Bitti. Eline sağlık.'); return; }
+    if (st.type === 'list') { var it = itemOf(st), e = EX[it.slug] || {}; say((it.name || e.name || '') + '. ' + spoken(it.dose) + (it.perSide && it.holdSec ? '. Önce sol taraf.' : '')); }
+    else if (st.type === 'exercise') { var x = EX[st.slug] || {}; say((st.name || x.name || '') + '. ' + spoken(st.dose || x.dose)); }
+    else if (st.type === 'cardio') say((st.name || 'Kardiyo') + '.');
   }
   var wakeLock = null;
   function lockOn() {
@@ -192,7 +230,7 @@
     if (i >= n) finish();
   }
   function finish() {
-    var s = S(); if (!s.t1) { s.t1 = Date.now(); }
+    var s = S(); if (!s.t1) { s.t1 = Date.now(); cue('finish'); }
     if (isRoutine()) markMob(ROOT.session); else saveLog();
     save(); renderWk();
   }
@@ -418,6 +456,7 @@
     var st = cur(), key = ROOT.session + '|' + block() + '|' + S().step + '|' + (st && st.type === 'list' ? listIdx(st) : '');
     if (key !== cardKey) {
       cardKey = key;
+      announce(st, key);
       $('card').innerHTML = st ? cardHtml(st) : '';
       $('wkMain').scrollTop = 0;
     }
@@ -435,7 +474,7 @@
       if (el < r.lo) { cls = 'rest'; label = 'Dinlen'; val = mmss(Math.ceil(r.lo - el)); }
       else if (el < r.hi) { cls = 'rest over'; label = 'Hazırsan başla (en geç ' + mmss(r.hi) + ')'; val = '+' + mmss(el - r.lo); }
       else { cls = 'rest ready'; label = 'Dinlenme bitti, sıradaki sete!'; val = '+' + mmss(el - r.lo); }
-      if (el >= r.lo && !r.beeped) { r.beeped = 1; save(); beep(2); }
+      if (el >= r.lo && !r.beeped) { r.beeped = 1; save(); beep(2); say('Dinlenme bitti. Sıradaki set.'); }
       if (el >= r.hi && r.beeped < 2) { r.beeped = 2; save(); beep(1); }
       if (box.dataset.h !== cls + label) {
         box.dataset.h = cls + label;
@@ -452,11 +491,13 @@
       }
     } else if (st.type === 'list' && s.hold && !s.hold.paused) {
       var h = s.hold, v = holdView(h, now), ht = $('holdT');
-      if (!v.prep && !h.go) { h.go = 1; save(); beep(1); renderCtl(); }                 // "Hazırlan" is over
+      var secLeft = Math.ceil(v.left);
+      if (secLeft <= 3 && secLeft >= 1 && h.ticked !== (v.prep ? -secLeft : secLeft)) { h.ticked = v.prep ? -secLeft : secLeft; cue('tick'); }
+      if (!v.prep && !h.go) { h.go = 1; save(); cue('go'); renderCtl(); }                  // "Hazırlan" is over
       else if (!v.prep && v.left <= 0) {
-        if ((h.side || 0) + 1 < (h.sides || 1)) { h.side = (h.side || 0) + 1; h.start = now + SIDE_PREP * 1000; h.go = 0; save(); beep(1); renderCtl(); }
-        else { beep(2); nextListItem(st); }
-      } else if (ht) ht.textContent = Math.ceil(v.left);
+        if ((h.side || 0) + 1 < (h.sides || 1)) { h.side = (h.side || 0) + 1; h.start = now + SIDE_PREP * 1000; h.go = 0; save(); cue('side'); say('Sağ taraf'); renderCtl(); }
+        else { cue('done'); nextListItem(st); }
+      } else if (ht) ht.textContent = secLeft;
     }
   }
 
@@ -764,6 +805,8 @@
   $('nextBtn').addEventListener('click', next);
   $('backBtn').addEventListener('click', back);
   $('wkClose').addEventListener('click', closeWk);
+  $('wkSound').addEventListener('click', function () { unlock(); setSound(!soundOn); });
+  setSound(soundOn);
   document.addEventListener('keydown', function (ev) {
     if (!ROOT.open) return;
     var tg = ev.target && ev.target.tagName;
