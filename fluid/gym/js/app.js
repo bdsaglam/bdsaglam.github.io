@@ -6,6 +6,11 @@
  *                     {date, session, block, exercise, set, kg, reps, form, perSide?}
  *   fluid-workout-v1  the in-progress workout (step, sets, timers), same key as the Fluid view, plus `open`
  *   fit-block, fit-start   the program block / start date (read and written by exercise-data.js)
+ *   fit-mobility      daily routines done: {"YYYY-MM-DD": {"sabah": ms, "aksam": ms}}; kept out of fit-log so
+ *                     the lift history and "Son değerler" stay lift-only
+ *
+ * The daily routines (FIT_SESSION_META[k].routine: sabah, aksam) run through the same workout mode: one-item
+ * list steps, a hold timer per side, and auto-advance with a short "Hazırlan" pause between moves.
  */
 (function () {
   'use strict';
@@ -21,7 +26,11 @@
   var AY = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
   var parseDay = function (s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
   var dayTxt = function (s, withDow) { var d = parseDay(s); return d ? d.getDate() + ' ' + AY[d.getMonth()] + (withDow ? ' ' + GUN[d.getDay()] : '') : s; };
-  var SES_NAME = { sali: 'Gün A', cuma: 'Gün B' };
+  var SES_NAME = { sali: 'Gün A', cuma: 'Gün B', sabah: 'Sabah mobilite', aksam: 'Akşam esneme' };
+  var GYM = ['sali', 'cuma'];
+  var ROUT = Object.keys(SESS).filter(function (k) { return META[k] && META[k].routine; });
+  var isRoutine = function (k) { k = k || (ROOT && ROOT.session); return !!(META[k] && META[k].routine); };
+  var PREP = window.FIT_ROUTINE_PREP || 5, SIDE_PREP = 4; // seconds to get into position before a move / a side
   var num = function (v) { if (v === '' || v == null) return null; var n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
   var fmt = function (n) { return n == null ? '' : String(Math.round(n * 100) / 100).replace('.', ','); };
 
@@ -40,6 +49,20 @@
     });
     hist = out;
   }
+
+  /* ---------- daily routines done (localStorage 'fit-mobility') ---------- */
+  var MOBKEY = 'fit-mobility';
+  function readMob() { try { var o = JSON.parse(localStorage.getItem(MOBKEY) || '{}'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
+  function markMob(k) { var m = readMob(), d = today(); (m[d] = m[d] || {})[k] = Date.now(); try { localStorage.setItem(MOBKEY, JSON.stringify(m)); } catch (e) {} }
+  function mobToday() { return readMob()[today()] || {}; }
+  // this week (Monday to Sunday): "Bu hafta: sabah 4/7, akşam 3/7"
+  function mobWeek() {
+    var m = readMob(), d = new Date(), out = {}; d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+    ROUT.forEach(function (k) { out[k] = 0; });
+    for (var i = 0; i < 7; i++) { var r = m[iso(d)] || {}; ROUT.forEach(function (k) { if (r[k]) out[k]++; }); d.setDate(d.getDate() + 1); }
+    return out;
+  }
+  function mobWeekTxt() { var w = mobWeek(); return 'Bu hafta: ' + ROUT.map(function (k) { return ((META[k] || {}).label || k).toLocaleLowerCase('tr') + ' ' + w[k] + '/7'; }).join(', '); }
 
   /* ---------- workout state (same shape as the Fluid view) ---------- */
   var ROOT;
@@ -155,20 +178,30 @@
 
   /* ---------- workout navigation ---------- */
   var cardKey = '', sel = -1;
-  function go(i) {
+  // auto: start the next move's timer after PREP seconds (routines keep running once started)
+  function go(i, auto) {
     var n = steps().length, s = S();
     i = Math.max(0, Math.min(n, i));
     if (i === s.step) return;
+    if (auto === undefined) auto = isRoutine() && s.hold && !s.hold.paused;
     touch();
-    s.step = i; s.hold = null; s.rest = null; sel = -1; save(); renderWk();
+    s.step = i; s.hold = null; s.rest = null; sel = -1;
+    var nx = steps()[i];
+    if (auto && nx && nx.type === 'list' && itemOf(nx).holdSec) s.hold = holdNew(itemOf(nx), PREP);
+    save(); renderWk();
     if (i >= n) finish();
   }
-  function finish() { var s = S(); if (!s.t1) { s.t1 = Date.now(); } saveLog(); save(); renderWk(); }
+  function finish() {
+    var s = S(); if (!s.t1) { s.t1 = Date.now(); }
+    if (isRoutine()) markMob(ROOT.session); else saveLog();
+    save(); renderWk();
+  }
   function listIdx(st) { return S().list[st.id] || 0; }
+  function itemOf(st) { return st.items[listIdx(st)] || st.items[0]; }
   function nextListItem(st) {
-    var s = S(), i = listIdx(st);
+    var s = S(), i = listIdx(st), auto = isRoutine() && s.hold && !s.hold.paused;
     s.hold = null;
-    if (i + 1 >= st.items.length) { go(s.step + 1); return; }
+    if (i + 1 >= st.items.length) { go(s.step + 1, auto); return; }
     s.list[st.id] = i + 1; save(); renderWk();
   }
   function prevListItem(st) { var s = S(), i = listIdx(st); s.hold = null; s.list[st.id] = Math.max(0, i - 1); save(); renderWk(); }
@@ -194,11 +227,20 @@
     save(); renderWk();
   }
   function cardioReset(st) { var c = cardioState(st); c.total = 0; c.running = false; c.beeped = false; save(); renderWk(); }
-  function holdStart(st, sec) {
-    var s = S(); touch();
-    s.hold = s.hold ? null : { start: Date.now(), sec: sec, beeped: false };
+  // hold timer of a list item: {start, sec, side, sides, go, paused}. Before `start` is the "Hazırlan" pause;
+  // perSide items run the timer once per side with a SIDE_PREP pause between.
+  function holdNew(it, prep) {
+    return { start: Date.now() + (prep || 0) * 1000, sec: it.holdSec, side: 0, sides: it.perSide ? 2 : 1, go: prep ? 0 : 1, paused: 0 };
+  }
+  function holdView(h, now) { var el = ((h.paused || now) - h.start) / 1000; return { prep: el < 0, left: el < 0 ? -el : Math.max(0, h.sec - el) }; }
+  function holdToggle(st) {
+    var s = S(), h = s.hold; touch();
+    if (!h) s.hold = holdNew(itemOf(st), isRoutine() ? 3 : 0);
+    else if (h.paused) { h.start += Date.now() - h.paused; h.paused = 0; }
+    else h.paused = Date.now();
     save(); renderWk();
   }
+  function sideTxt(h, it) { return it.perSide ? ((h && h.side) ? 'Sağ taraf' : 'Sol taraf') : ''; }
   function nextWork(e) { for (var i = 0; i < e.work.length; i++) if (!e.work[i].done) return i; return -1; }
   function selIdx(e) { if (sel >= 0 && sel < e.work.length) return sel; var n = nextWork(e); return n >= 0 ? n : e.work.length - 1; }
   function setDone(st, i) {
@@ -223,8 +265,8 @@
     if (!st) { closeWk(); return; }
     if (st.type === 'cardio') cardioToggle(st);
     else if (st.type === 'list') {
-      var it = st.items[listIdx(st)];
-      if (it.holdSec) holdStart(st, it.holdSec); else nextListItem(st);
+      var it = itemOf(st);
+      if (it.holdSec) holdToggle(st); else nextListItem(st);
     } else {
       var e = exState(st), i = selIdx(e);
       if (!e.work[i].done) setDone(st, i);
@@ -262,8 +304,8 @@
     if (!st) return ['Kapat', ''];
     if (st.type === 'cardio') { var c = cardioState(st); return [c.running ? '❚❚ Duraklat' : c.total ? '▶ Devam' : '▶ Başlat', '']; }
     if (st.type === 'list') {
-      var it = st.items[listIdx(st)], last = listIdx(st) + 1 >= st.items.length;
-      if (it.holdSec) return [S().hold ? '❚❚ Durdur' : '▶ ' + it.holdSec + ' sn başlat', ''];
+      var it = itemOf(st), last = listIdx(st) + 1 >= st.items.length, h = S().hold;
+      if (it.holdSec) return [h ? (h.paused ? '▶ Devam' : '❚❚ Duraklat') : isRoutine() ? '▶ Başlat' : '▶ ' + it.holdSec + ' sn başlat', h ? '' : 'good'];
       return [last ? 'Sonraki adım →' : 'Sonraki hareket →', ''];
     }
     var e = exState(st), i = selIdx(e), w = e.work[i];
@@ -279,6 +321,10 @@
   }
   function ctlHtml(st) {
     var s = S();
+    if (!st && isRoutine()) {
+      return '<div class="done"><h2>' + esc((META[ROOT.session] || {}).title) + ' bitti ✓</h2><p>Süre ' + mmss(((s.t1 || Date.now()) - (s.t0 || Date.now())) / 1000) + '.</p>' +
+        '<p class="msg ok">Bugün için işaretlendi.</p><p class="muted">' + esc(mobWeekTxt()) + '</p></div>';
+    }
     if (!st) {
       var recs = records(), by = {};
       recs.forEach(function (r) { (by[r.exercise] = by[r.exercise] || []).push(r); });
@@ -298,15 +344,20 @@
         (started ? '<button class="btn" data-act="cr" type="button">Sıfırla</button>' : '');
     }
     if (st.type === 'list') {
-      var i = listIdx(st), it = st.items[i], h = s.hold, out = '', ent = EX[it.slug] || {};
-      out += '<div class="listn">' + esc(ent.name || it.name || it.slug) + ' · ' + (i + 1) + ' / ' + st.items.length + '</div>';
+      var i = listIdx(st), it = st.items[i], h = s.hold, out = '', ent = EX[it.slug] || {}, rt = isRoutine();
+      if (rt) {
+        var kind = ent.kind === 'dynamic' ? 'Yavaş ve kontrollü; tutup bekleme.' : 'Hafif gerginlikte tut, nefes rahat.';
+        out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">' + (it.optional ? 'İsteğe bağlı: vaktin yoksa geç. ' : '') + (it.tip ? esc(it.tip.charAt(0).toLocaleUpperCase('tr') + it.tip.slice(1)) + '. ' : '') + kind + '</div></div>';
+      } else out += '<div class="listn">' + esc(ent.name || it.name || it.slug) + ' · ' + (i + 1) + ' / ' + st.items.length + '</div>';
       if (it.holdSec) {
-        var el = h ? (Date.now() - h.start) / 1000 : 0, rem = h ? Math.max(0, h.sec - el) : it.holdSec;
-        out += '<div class="timer"><div class="tv" id="holdT">' + Math.ceil(rem) + '</div><div class="tl">saniye' + (/taraf/.test(it.dose || '') ? ' · her taraf için tekrarla' : '') + '</div></div>';
+        var v = h ? holdView(h, Date.now()) : { prep: false, left: it.holdSec }, side = sideTxt(h, it);
+        var lab = v.prep ? (h.side ? 'Taraf değiştir' : 'Hazırlan') + (side ? ' · ' + side : '') : 'saniye' + (side ? ' · ' + side : !it.perSide && /taraf/.test(it.dose || '') ? ' · her taraf için tekrarla' : '');
+        out += '<div class="timer' + (v.prep ? ' prep' : '') + (h && h.paused ? ' paused' : '') + '"><div class="tv" id="holdT">' + Math.ceil(v.left) + '</div><div class="tl" id="holdL">' + esc(lab) + (h && h.paused ? ' · duraklatıldı' : '') + '</div></div>';
       } else {
         out += '<div class="target"><div class="t1">' + esc(it.dose || '') + '</div><div class="t3">Yavaş ve kontrollü yap.</div></div>';
       }
-      if (it.holdSec) out += '<button class="btn" data-act="lnext" type="button">' + (i + 1 >= st.items.length ? 'Sonraki adım →' : 'Sonraki hareket →') + '</button>';
+      var lastStep = S().step >= steps().length - 1 && i + 1 >= st.items.length;
+      if (it.holdSec) out += '<button class="btn" data-act="lnext" type="button">' + (rt ? (lastStep ? 'Bitir ✓' : 'Sonraki hareket →') : i + 1 >= st.items.length ? 'Sonraki adım →' : 'Sonraki hareket →') + '</button>';
       return out + cuesHtml(it.slug);
     }
     // exercise
@@ -339,8 +390,11 @@
   function renderTopWk() {
     var k = ROOT.session, s = S(), st = steps(), c = cur(), info = window.FIT_blockInfo ? FIT_blockInfo() : { block: 1 };
     $('wk').dataset.session = k;
-    $('wkSes').textContent = ((META[k] && META[k].label) || k) + ' · ' + (SES_NAME[k] || '');
-    $('wkBlk').textContent = 'Blok ' + info.block + (info.week ? ' · ' + info.week + '. hafta' : '');
+    if (isRoutine(k)) { $('wkSes').textContent = META[k].title; $('wkBlk').textContent = '~' + META[k].min + ' dk · her gün'; }
+    else {
+      $('wkSes').textContent = ((META[k] && META[k].label) || k) + ' · ' + (SES_NAME[k] || '');
+      $('wkBlk').textContent = 'Blok ' + info.block + (info.week ? ' · ' + info.week + '. hafta' : '');
+    }
     $('prog').innerHTML = st.map(function (x, i) {
       return '<button type="button" data-go="' + i + '" class="' + (i < s.step ? 'done' : i === s.step ? 'cur' : '') + '" aria-label="' + esc((i + 1) + '. ' + x.name) + '"></button>';
     }).join('');
@@ -396,17 +450,24 @@
         t.textContent = (left < 0 ? '+' : '') + mmss(Math.abs(left)); t.className = 'tv' + (left < 0 ? ' over' : '');
         if (left < 0 && !c.beeped) { c.beeped = true; save(); beep(3); var l = $('cardioL'); if (l) l.textContent = 'Süre doldu, bırakabilirsin'; }
       }
-    } else if (st.type === 'list' && s.hold) {
-      var rem = s.hold.sec - (now - s.hold.start) / 1000, ht = $('holdT');
-      if (rem <= 0) { beep(2); nextListItem(st); }
-      else if (ht) ht.textContent = Math.ceil(rem);
+    } else if (st.type === 'list' && s.hold && !s.hold.paused) {
+      var h = s.hold, v = holdView(h, now), ht = $('holdT');
+      if (!v.prep && !h.go) { h.go = 1; save(); beep(1); renderCtl(); }                 // "Hazırlan" is over
+      else if (!v.prep && v.left <= 0) {
+        if ((h.side || 0) + 1 < (h.sides || 1)) { h.side = (h.side || 0) + 1; h.start = now + SIDE_PREP * 1000; h.go = 0; save(); beep(1); renderCtl(); }
+        else { beep(2); nextListItem(st); }
+      } else if (ht) ht.textContent = Math.ceil(v.left);
     }
   }
 
   /* ---------- open / close workout ---------- */
   function openWk(k) {
     unlock();
-    if (k && SESS[k]) { ROOT.session = k; ROOT.last = k; }
+    if (k && SESS[k]) {
+      if (isRoutine(k)) { if (ROOT.s[k] && ROOT.s[k].t1) delete ROOT.s[k]; } // a finished routine starts over
+      else ROOT.last = k;
+      ROOT.session = k;
+    }
     ROOT.open = true; save();
     cardKey = ''; sel = -1;
     buildHistory();
@@ -417,7 +478,7 @@
     ROOT.open = false; save();
     $('wk').hidden = true; document.body.classList.remove('wk-open');
     $('card').innerHTML = ''; cardKey = '';
-    lockOff(); renderToday(); renderHistory();
+    lockOff(); renderToday(); renderHistory(); if (progSec === 'gunluk') renderProgram();
   }
 
   /* ---------- Bugün ---------- */
@@ -440,6 +501,17 @@
       }).join('') + '</ul>' +
       '<button type="button" class="big" data-start="' + k + '">' + esc(label) + '</button></div>';
   }
+  // "Günlük esneme": Sabah and Akşam buttons; before 14:00 Sabah is the suggested one, later Akşam
+  function mobCard() {
+    var done = mobToday(), pick = new Date().getHours() < 14 ? 'sabah' : 'aksam';
+    if (done[pick]) pick = ROUT.filter(function (k) { return !done[k]; })[0] || '';
+    return '<div class="card mob"><div class="mobh"><h2>Günlük esneme</h2><span class="muted">her gün</span></div><div class="mobbtns">' + ROUT.map(function (k) {
+      var m = META[k] || {}, st = steps(k), s = ROOT.s[k], prog = inProgress(k);
+      var sub = done[k] ? 'Bugün yapıldı ✓' : prog ? 'Devam et (' + (Math.min(s.step, st.length - 1) + 1) + '/' + st.length + ')' : '~' + m.min + ' dk · ' + (k === 'sabah' ? 'dinamik' : 'statik');
+      return '<button type="button" class="mobbtn' + (k === pick ? ' pick' : '') + (done[k] ? ' done' : '') + '" data-session="' + k + '" data-start="' + k + '"' + (k === pick ? ' aria-describedby="mobPick"' : '') + '>' +
+        '<b>' + esc(m.label || k) + '</b><small>' + esc(sub) + '</small></button>';
+    }).join('') + '</div><p class="muted" id="mobPick">' + esc(mobWeekTxt()) + '</p></div>';
+  }
   function lastSessionLine() {
     var log = readLog(); if (!log.length) return '';
     var r = log.reduce(function (a, b) { return !a || b.date > a.date ? b : a; }, null);
@@ -448,24 +520,24 @@
   function renderToday() {
     var d = new Date(), dow = d.getDay(), out = '';
     out += '<div class="date">' + GUN[dow] + ', ' + d.getDate() + ' ' + AY[d.getMonth()] + '</div>';
-    var running = Object.keys(SESS).filter(inProgress)[0];
+    var running = GYM.filter(inProgress)[0];
     var todayKey = dow === 2 ? 'sali' : dow === 5 ? 'cuma' : null;
+    // gym days (or a running lift session): the session card first, then the daily routines
     if (running && running !== todayKey) {
-      out += '<h1 class="title">Devam eden seans</h1><div class="stack">' + sessionCard(running, '', 'Devam et');
+      out += '<h1 class="title">Devam eden seans</h1><div class="stack">' + sessionCard(running, '', 'Devam et') + mobCard();
     } else if (todayKey) {
-      out += '<h1 class="title">Bugün: ' + SES_NAME[todayKey] + '</h1><div class="stack">' + sessionCard(todayKey, '', 'Antrenmanı başlat');
+      out += '<h1 class="title">Bugün: ' + SES_NAME[todayKey] + '</h1><div class="stack">' + sessionCard(todayKey, '', 'Antrenmanı başlat') + mobCard();
     } else if (dow === 0) {
-      out += '<h1 class="title">Bugün: Pazar</h1><div class="stack"><div class="card hero" data-session="warm"><h2>Zone 2 + esneme</h2>' +
-        '<ul class="steps-mini"><li class="warm"><span>Zone 2 kardiyo: konuşabildiğin tempo</span><span>30-40 dk</span></li>' +
-        '<li class="warm"><span>Esneme: Isınma &amp; Soğuma bölümündeki esnemeler</span><span>~10 dk</span></li></ul>' +
-        '<button type="button" class="big" data-goto="program/warm">Esnemeleri göster</button></div>';
+      out += '<h1 class="title">Bugün: Pazar</h1><div class="stack">' + mobCard() + '<div class="card hero" data-session="warm"><h2>Zone 2 kardiyo</h2>' +
+        '<ul class="steps-mini"><li class="warm"><span>Konuşabildiğin tempo</span><span>30-40 dk</span></li></ul>' +
+        '<p class="muted">Esneme: yukarıdaki akşam rutini.</p></div>';
     } else {
       var n = 1, nd; for (; n <= 7; n++) { nd = (dow + n) % 7; if (nd === 2 || nd === 5) break; }
       var nk = nd === 2 ? 'sali' : 'cuma';
-      out += '<h1 class="title">Bugün dinlenme</h1><div class="stack">' + sessionCard(nk, 'Sıradaki: ' + GUN[nd] + ', ' + (n === 1 ? 'yarın' : n + ' gün sonra'), 'Yine de başlat');
+      out += '<h1 class="title">Bugün dinlenme</h1><div class="stack">' + mobCard() + sessionCard(nk, 'Sıradaki: ' + GUN[nd] + ', ' + (n === 1 ? 'yarın' : n + ' gün sonra'), 'Yine de başlat');
     }
     out += blockLine();
-    out += '<div><p class="sec">Yine de başlat</p><div class="anyway">' + Object.keys(SESS).map(function (k) {
+    out += '<div><p class="sec">Yine de başlat</p><div class="anyway">' + GYM.map(function (k) {
       return '<button type="button" class="btn" data-start="' + k + '" data-ses="' + k + '">' + esc(SES_NAME[k]) + ' <span class="muted">· ' + esc((META[k] || {}).label || k) + '</span></button>';
     }).join('') + '</div></div>' + lastSessionLine() + '</div>';
     $('v-bugun').innerHTML = out;
@@ -480,10 +552,22 @@
   }
   function renderProgram() {
     var sec = progSec, out = '';
-    $('v-program').dataset.session = sec;
+    $('v-program').dataset.session = sec === 'gunluk' ? 'sabah' : sec;
     document.querySelectorAll('.segctl button').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.sec === sec)); });
-    $('v-program').querySelector('.picker').hidden = sec === 'warm';
-    if (sec === 'warm') {
+    $('v-program').querySelector('.picker').hidden = sec === 'warm' || sec === 'gunluk';
+    if (sec === 'gunluk') {
+      out += '<div class="shead"><h2>Günlük esneme</h2><span class="when">Her gün · sabah ~' + META.sabah.min + ' dk, akşam ~' + META.aksam.min + ' dk</span>' +
+        '<p>Antrenmana ek, masa başı için. Sabah dinamik: yavaş hareket, tutup beklemek yok. Akşam statik: her taraf 30 sn, ağrı değil hafif gerginlik. Başlatınca zamanlayıcı her hareketi ve tarafı sırayla yürütür.</p></div>' +
+        ROUT.map(function (k) {
+          var m = META[k] || {}, done = mobToday()[k];
+          return '<div class="rtn" data-session="' + k + '"><h2 class="fit-sec">' + esc(m.title) + ' <span class="fit-dur">~' + m.min + ' dk' + (done ? ' · bugün ✓' : '') + '</span></h2><div class="exlist">' +
+            steps(k).map(function (x, i) {
+              var it = x.items[0], e = EX[it.slug] || {};
+              return exRow('slug="' + it.slug + '" index="' + (i + 1) + '" dose="' + esc(it.dose) + '"', i + 1, e.name || it.slug, x.detail, '', k + ':' + it.slug);
+            }).join('') + '</div><button type="button" class="big" data-start="' + k + '">' + esc(m.title) + ' başlat</button></div>';
+        }).join('') +
+        '<p class="muted">Kaynak: ACSM (statik esnemede 10-30 sn, her gün en etkili) ve Ağırsağlam (önce dinamik, sonra statik). Ayrıntı Kurallar sekmesinde.</p>';
+    } else if (sec === 'warm') {
       var A = ['bike', 'leg-swing', 'worlds-greatest-stretch', 'arm-circles', 'stick-pass-through', 'bodyweight-squat', 'cat-cow'];
       var B = ['pancake-stretch', 'figure-4-stretch', 'hip-flexor-reach', 'lat-stretch-rail', 'quad-stretch', 'chest-doorway-stretch'];
       var row = function (slug, i, grp) { var e = EX[slug] || {}; return exRow('slug="' + slug + '" index="' + (i + 1) + '"', i + 1, e.name || slug, e.dose, '', grp + slug); };
@@ -534,7 +618,9 @@
   function renderHistory() {
     buildHistory();
     var log = readLog(), out = '';
-    if (!log.length) { $('histBody').innerHTML = '<div class="empty">Henüz kayıt yok. Antrenman modunda tamamladığın setler buraya kaydedilir.</div>'; return; }
+    var mob = '<div class="card mobweek"><b>Günlük esneme</b><span>' + esc(mobWeekTxt()) + '</span></div>';
+    if (!log.length) { $('histBody').innerHTML = mob + '<div class="empty">Henüz kayıt yok. Antrenman modunda tamamladığın setler buraya kaydedilir.</div>'; return; }
+    out += mob;
     var slugs = Object.keys(hist).sort(function (a, b) { return (ORDER.indexOf(a) + 1 || 999) - (ORDER.indexOf(b) + 1 || 999); });
     out += '<h2 class="fit-sec">Son değerler</h2><div class="card lastlist">' + slugs.map(function (slug) {
       var li = lastInfo(stepFor(slug)), h = hist[slug];
@@ -625,7 +711,7 @@
   var TABS = ['bugun', 'program', 'gecmis', 'kurallar'];
   function route() {
     var h = (location.hash || '').replace(/^#/, '').split('/'), t = TABS.indexOf(h[0]) >= 0 ? h[0] : 'bugun';
-    if (t === 'program' && h[1] && /^(sali|cuma|warm)$/.test(h[1]) && h[1] !== progSec) { progSec = h[1]; renderProgram(); }
+    if (t === 'program' && h[1] && /^(sali|cuma|warm|gunluk)$/.test(h[1]) && h[1] !== progSec) { progSec = h[1]; renderProgram(); }
     document.querySelectorAll('.view').forEach(function (v) { v.hidden = v.dataset.view !== t; });
     document.querySelectorAll('.tabbar button').forEach(function (b) { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     if (t === 'bugun') renderToday();
@@ -697,7 +783,10 @@
     if (Math.abs(dx) > 70 && Math.abs(dx) > 1.8 * Math.abs(dy) && dt < 700) { if (dx < 0) { if (cur()) next(); } else if (!$('backBtn').disabled) back(); }
   }, { passive: true });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { tick(); lockOn(); } });
-  window.addEventListener('storage', function (e) { if (e.key === LOGKEY) { buildHistory(); renderHistory(); } });
+  window.addEventListener('storage', function (e) {
+    if (e.key === LOGKEY) { buildHistory(); renderHistory(); }
+    if (e.key === MOBKEY) { renderToday(); renderHistory(); }
+  });
 
   /* ---------- start ---------- */
   load(); save(); buildHistory();
