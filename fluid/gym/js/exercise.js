@@ -276,12 +276,9 @@
     .ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
     .ph.two img:nth-child(2) { animation: xfade 3s infinite; }
     @keyframes xfade { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
-    .ph .cap { position: absolute; left: 8px; bottom: 6px; font-size: 11px; padding: 1px 8px; border-radius: 10px; background: var(--_surface); border: 1px solid var(--_border); }
-    .ph:not(.two) .cap { display: none; }
     @media (prefers-reduced-motion: reduce) {
       .ph.two { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; aspect-ratio: 16 / 6; }
       .ph.two img { position: static; animation: none !important; opacity: 1 !important; }
-      .ph.two .cap { display: none; }
     }
     .vid { position: relative; aspect-ratio: 16 / 9; width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
     .vid > * { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
@@ -454,7 +451,7 @@
           <div class="ctrl"><button class="play" type="button"></button>
             <span class="seg" role="group" aria-label="${esc(T('x.speed'))}"><button type="button" data-s="0.5">0.5x</button><button type="button" data-s="1">1x</button></span></div></div>` : '';
       const photoPane = photos.length ? `<div class="pane" data-tab="photo"><div class="ph ${photos.length > 1 ? 'two' : ''}">
-          ${photos.map((u, i) => `<img src="${esc(u)}" alt="${esc(T(i ? 'x.alt1' : 'x.alt0', e.name))}" loading="lazy">`).join('')}<span class="cap">${esc(T('x.startEnd'))}</span></div>${M.photoNote ? `<p class="pnote">${esc(window.FIT_tx ? FIT_tx.photoNote(e.slug || slug, M.photoNote) : M.photoNote)}</p>` : ''}</div>` : '';
+          ${photos.map((u, i) => `<img src="${esc(u)}" alt="${esc(T(i ? 'x.alt1' : 'x.alt0', e.name))}" loading="lazy">`).join('')}</div>${M.photoNote ? `<p class="pnote">${esc(window.FIT_tx ? FIT_tx.photoNote(e.slug || slug, M.photoNote) : M.photoNote)}</p>` : ''}</div>` : '';
       const videoPane = vid ? `<div class="pane" data-tab="video"></div>` : '';
       const media = tabs.length ? `<div class="media">
           ${tabs.length > 1 ? `<div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button type="button" role="tab" data-tab="${k}">${l}</button>`).join('')}</div>` : ''}

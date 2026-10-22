@@ -32,7 +32,10 @@
  *     legend: [[1, 'Kuadriseps'], [2, 'Kalça']],      animation colour 1..3 + muscle name (not shown in the app)
  *     work: {main: [MUSCLE], help: [MUSCLE]}          body map box (js/bodymap.js): main = prime movers, help = synergists and
  *             stabilisers; for stretches main = the stretched muscles. MUSCLE = {map, tr}: map is a BODYMAP key, a list of
- *             keys, or null (no region on the map: hip flexors, rotator cuff, joints); tr the Turkish name. MU has common ones.
+ *             keys, or null (no region on the map: hip flexors, rotator cuff); tr the Turkish name. MU has common ones.
+ *     joints: [JT...], tissue: [TS...]               stretch and mobility moves (kind static / dynamic) only, shown under the
+ *             muscle list: the joints the move takes through range, with the direction, and the non-muscle connective
+ *             tissue that is loaded (tendon, fascia, joint capsule; never a ligament). Turkish strings; JT and TS have them.
  *     cues: ['...'], avoid: '...', alt: 'alternative', note: 'muted footnote',
  *     video: {url, title, channel, source: 'agirsaglam'|'fallback'|'user', note}  (added from YT below)
  *     anim: ANIM
@@ -205,8 +208,31 @@
     grip: { map: 'forearm', tr: 'Ön kol (tutuş)' },
     hipFlex: { map: null, tr: 'Kalça fleksörü (iliopsoas)' },
     cuff: { map: null, tr: 'Rotator manşet' },
-    ankle: { map: null, tr: 'Ayak bileği (eklem)' },
-    tspine: { map: null, tr: 'Göğüs omurgası (eklem)' },
+  };
+  // joints taken through range (direction in plain words / the term) and connective tissue, for kind static / dynamic
+  const JT = {
+    hipExt: 'Kalça (öne açılma / ekstansiyon)',
+    hipFlex: 'Kalça (bükülme / fleksiyon)',
+    hipSwing: 'Kalça (öne-arkaya / fleksiyon, ekstansiyon)',
+    hipAbd: 'Kalça (yana açılma / abdüksiyon)',
+    hipER: 'Kalça (dışa dönme / dış rotasyon)',
+    kneeFlex: 'Diz (bükülme / fleksiyon)',
+    kneeExt: 'Diz (düzleşme / ekstansiyon)',
+    ankleDF: 'Ayak bileği (bükülme / dorsifleksiyon)',
+    tspineRot: 'Göğüs omurgası (dönme / rotasyon)',
+    spineFE: 'Omurga (yuvarlama ve kavis / fleksiyon, ekstansiyon)',
+    spineSide: 'Omurga (yana eğilme / lateral fleksiyon)',
+    neck: 'Boyun (yana eğilme ve dönme)',
+    shoCirc: 'Omuz (dairesel / sirkümdüksiyon)',
+    shoUp: 'Omuz (baş üstüne kaldırma / fleksiyon)',
+    shoPass: 'Omuz (baş üstünden arkaya / fleksiyon, ekstansiyon)',
+    shoOpen: 'Omuz (arkaya açılma / yatay abdüksiyon, dış rotasyon)',
+  };
+  const TS = {
+    achilles: 'Aşil tendonu',
+    hamTendon: 'Hamstring tendonları',
+    hipCapsule: 'Kalça eklem kapsülü (ön)',
+    tlf: 'Torakolomber fasya',
   };
 
   const EX = {
@@ -701,7 +727,7 @@
     'leg-swing': {
       name: 'Bacak salınımı', sub: 'Öne-arkaya', kind: 'dynamic', dose: '8–10 tekrar/taraf',
       legend: [[1, 'Kalça fleksörleri, hamstring']],
-      work: { main: [MU.ham, MU.hipFlex], help: [MU.glute] },
+      work: { main: [MU.ham, MU.hipFlex], help: [MU.glute] }, joints: [JT.hipSwing],
       cues: ['Duvara tutun, gövde dik; salınımı kalçadan yap.', 'Önce küçük, sonra daha geniş salla.'],
       anim: Object.assign(WT({ t1: 4, t2: 7, ul2: 0, ll2: 0, wx: 146, wh: 86 },
         [[0, { ul: -28, ll: -32 }], [1.2, { ul: 62, ll: 48 }], [2.4, { ul: -28, ll: -32 }]],
@@ -713,7 +739,7 @@
     'worlds-greatest-stretch': {
       name: "World's Greatest Stretch", sub: 'Kalça açıcı', kind: 'dynamic', dose: '8–10 tekrar/taraf',
       legend: [[1, 'Kalça, üst sırt, hamstring']],
-      work: { main: [MU.hipFlex, MU.add, MU.tspine], help: [MU.glute, MU.ham, MU.chest] },
+      work: { main: [MU.hipFlex, MU.add], help: [MU.glute, MU.ham, MU.chest] }, joints: [JT.hipExt, JT.hipFlex, JT.tspineRot],
       cues: ['Öne adım at, eller yerde, dirsek ayağın içine doğru.', 'Aynı taraf kolu tavana aç, bakışın elini izlesin.'],
       anim: (() => {
         const LG = { ul: 85, ll: -10, ul2: -57, ll2: -57 };
@@ -727,7 +753,7 @@
     'arm-circles': {
       name: 'Kol çevirme', sub: 'Öne ve geriye', kind: 'dynamic', dose: '8–10 tekrar/yön',
       legend: [[1, 'Omuzlar, üst sırt']],
-      work: { main: [{ map: ['front-deltoids', 'back-deltoids'], tr: 'Omuz (deltoid)' }], help: [MU.cuff, { map: 'trapezius', tr: 'Trapez' }] },
+      work: { main: [{ map: ['front-deltoids', 'back-deltoids'], tr: 'Omuz (deltoid)' }], help: [MU.cuff, { map: 'trapezius', tr: 'Trapez' }] }, joints: [JT.shoCirc],
       cues: ['Küçük dairelerle başla, yavaş yavaş büyüt.', 'Omuzları kulaktan uzak tut, gövde sabit.'],
       anim: {
         anchor: { j: 'hip', x: mx(105), ground: true }, far: 'both', period: 12000, still: 3000, muscles: HL(['arm']),
@@ -740,7 +766,7 @@
     'stick-pass-through': {
       name: 'Sopayla omuz geçişi', kind: 'dynamic', dose: '8–10 tekrar',
       legend: [[1, 'Omuz, göğüs, üst sırt']],
-      work: { main: [MU.chest, MU.frontDelt], help: [MU.bi, MU.cuff] },
+      work: { main: [MU.chest, MU.frontDelt], help: [MU.bi, MU.cuff] }, joints: [JT.shoPass],
       cues: ['Geniş tutuşla başla, kollar düz; sopayı önden başın üstünden arkaya taşı.', 'Dar tutuş daha zor; omuz zorlanırsa tutuşu genişlet.'],
       note: 'Yandan çizim: sopa uçtan görünür (koyu nokta), kesikli çizgi yolunu gösterir.',
       anim: {
@@ -756,7 +782,7 @@
     'bodyweight-squat': {
       name: 'Vücut ağırlığıyla squat', kind: 'dynamic', dose: '8–10 tekrar',
       legend: [[1, 'Kalça, kuadriseps, ayak bileği']],
-      work: { main: [MU.glute, MU.add, MU.ankle], help: [MU.quad] },
+      work: { main: [MU.glute, MU.add], help: [MU.quad] }, joints: [JT.hipFlex, JT.kneeFlex, JT.ankleDF],
       cues: ['Yavaş in, derin ol; topuklar yerde, göğüs dik.', 'Dizler ayak parmakları yönünde.'],
       anim: (() => {
         const a = { ul: 0, ll: 0, t1: 0, h: 0, ua: 30, fa: 80 }, b = { ul: 100, ll: -25, t1: 42, t2: 50, h: 35, ua: 80, fa: 88 };
@@ -768,7 +794,7 @@
     'cat-cow': {
       name: 'Kedi-deve', sub: 'Cat-cow', kind: 'dynamic', dose: '8–10 tekrar',
       legend: [[1, 'Omurga, karın, sırt']],
-      work: { main: [MU.lowBack, MU.abs], help: [MU.midBack, { map: null, tr: 'Omurga (eklemler)' }] },
+      work: { main: [MU.lowBack, MU.abs], help: [MU.midBack] }, joints: [JT.spineFE],
       cues: ['Nefes verirken sırtı yuvarla, alırken aç.', 'Yavaş git; hareket omurga boyunca aksın.'],
       anim: Object.assign(WT({ ul: 0, ll: -90, hh: 0, hdx: 0 },
         [[0, { t1: 75, t2: 75, h: 85 }], [2, { t1: 50, t2: 97, h: 135 }], [4, { t1: 75, t2: 75, h: 85 }], [6, { t1: 100, t2: 46, h: 40 }], [8, { t1: 75, t2: 75, h: 85 }]]), {
@@ -780,7 +806,7 @@
     'pancake-stretch': {
       name: 'Pancake', sub: 'Oturarak geniş açı', kind: 'static', dose: '30 sn',
       legend: [[1, 'Hamstring, iç bacak']],
-      work: { main: [MU.ham, MU.add], help: [] },
+      work: { main: [MU.ham, MU.add], help: [] }, joints: [JT.hipFlex, JT.hipAbd], tissue: [TS.hamTendon],
       cues: ['Kalçadan katlan, sırt düz kalsın.', 'Başta ellerini bir basamağa veya benche koy; yükseklik arttıkça kolay, alçaldıkça zor.'],
       note: 'Yandan çizim; gerçekte bacaklar yana açık.',
       anim: Object.assign({}, STATIC, {
@@ -792,7 +818,7 @@
     'figure-4-stretch': {
       name: 'Figure-4', sub: 'Sırtüstü kalça', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Kalça, piriformis']],
-      work: { main: [MU.glute, { map: 'gluteal', tr: 'Piriformis (derin kalça)' }], help: [] },
+      work: { main: [MU.glute, { map: 'gluteal', tr: 'Piriformis (derin kalça)' }], help: [] }, joints: [JT.hipER, JT.hipFlex],
       cues: ['Sırtüstü yat, bilek karşı dizin üstünde; alttaki uyluğu göğse çek.', 'Zorsa dizini elinle destekle; esneyince dizi düzleştirmeye çalış.'],
       note: 'Squat ve deadlift sonrası iyi gelir. Videoda oturarak yapılışı da var.',
       anim: Object.assign({}, STATIC, {
@@ -807,6 +833,7 @@
       name: 'Diz çökerek kalça fleksörü + uzanma', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Kalça fleksörü, ön uyluk, karın']],
       work: { main: [MU.hipFlex, { map: 'quadriceps', tr: 'Ön bacak (rektus femoris)' }], help: [MU.abs, MU.obl] },
+      joints: [JT.hipExt, JT.spineSide], tissue: [TS.hipCapsule],
       cues: ['Arka dizi yere koy, kalçayı öne it, gövde dik.', 'Arka dizi tarafındaki kolu tavana uzat, hafifçe karşı yana eğil; gerginlik karna kadar uzanır.'],
       anim: Object.assign({}, STATIC, {
         keys: [{ ul: 90, ll: 0, t1: 14, t2: 14, h: 14, ua: -10, fa: 50, ua2: 10, fa2: 20 }, { ul: 100, ll: -17, t1: -4, t2: -6, h: -6, ua: -10, fa: 50, ua2: 165, fa2: 172 }]
@@ -817,7 +844,7 @@
     'lat-stretch-rail': {
       name: 'Lat esnetmesi', sub: 'Bench / rack / çit', kind: 'static', dose: '30 sn',
       legend: [[1, 'Lat, sırt, omuz']],
-      work: { main: [MU.lat], help: [MU.tri, { map: null, tr: 'Omuz (eklem)' }] },
+      work: { main: [MU.lat], help: [MU.tri] }, joints: [JT.shoUp, JT.hipFlex], tissue: [TS.tlf],
       cues: ['Bench, rack veya çite tutun; eller kalça-göğüs hizasında.', 'Kalçayı geriye it, göğsü kolların arasında aşağı bırak.'],
       note: 'Videoda kolaydan zora üç seviye gösteriliyor; kolay olanla başla.',
       anim: Object.assign({}, STATIC, {
@@ -829,7 +856,7 @@
     'quad-stretch': {
       name: 'Ayakta ön bacak', sub: 'Kuadriseps', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Ön uyluk']],
-      work: { main: [MU.quad], help: [MU.hipFlex] },
+      work: { main: [MU.quad], help: [MU.hipFlex] }, joints: [JT.kneeFlex, JT.hipExt],
       cues: ['Topuğu kalçaya çek, dizler yan yana.', 'Bel kavislenmesin; kalçayı hafif öne it.'],
       anim: Object.assign({}, STATIC, {
         keys: [{ ul: 0, ll: 0, t1: 0, h: 0, ul2: 0, ll2: 0 }, { ul: 14, ll: -145, t1: 0, h: 0, ul2: 0, ll2: 0 }]
@@ -841,7 +868,7 @@
     'chest-doorway-stretch': {
       name: 'Kapı kenarında göğüs esnetme', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Göğüs, ön omuz']],
-      work: { main: [MU.chest], help: [MU.frontDelt, MU.bi] },
+      work: { main: [MU.chest], help: [MU.frontDelt, MU.bi] }, joints: [JT.shoOpen],
       cues: ['Önkol çerçevede, dirsek omuz hizasında.', 'Bir adım öne çık, göğüste hafif gerginlik.'],
       anim: Object.assign({}, STATIC, {
         keys: [{ ul: 0, ll: 0, ul2: 0, ll2: 0, t1: 0, h: 0 }, { ul: -18, ll: -18, ul2: 25, ll2: 0, t1: 6, h: 4 }]
@@ -852,14 +879,14 @@
     },
 
     /* Listed in the cool-downs, no drawing yet (the card shows the text and the video). */
-    'hamstring-stretch': { name: 'Hamstring esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Arka bacak (hamstring)']], work: { main: [MU.ham], help: [] }, cues: [] },
-    'hip-flexor-stretch': { name: 'Kalça fleksörü esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Kalça fleksörü']], work: { main: [MU.hipFlex], help: [{ map: 'quadriceps', tr: 'Ön bacak (rektus femoris)' }] }, cues: [] },
+    'hamstring-stretch': { name: 'Hamstring esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Arka bacak (hamstring)']], work: { main: [MU.ham], help: [] }, joints: [JT.hipFlex, JT.kneeExt], tissue: [TS.hamTendon], cues: [] },
+    'hip-flexor-stretch': { name: 'Kalça fleksörü esnetme', kind: 'static', dose: '30 sn/taraf', legend: [[1, 'Kalça fleksörü']], work: { main: [MU.hipFlex], help: [{ map: 'quadriceps', tr: 'Ön bacak (rektus femoris)' }] }, joints: [JT.hipExt], tissue: [TS.hipCapsule], cues: [] },
 
     /* ================= Günlük esneme (sabah dinamik, akşam statik) ================= */
     'thoracic-rotation': {
       name: 'Dört ayakta sırt rotasyonu', sub: 'Göğüs omurgası (T-spine) rotasyonu', kind: 'dynamic', dose: '6 tekrar/taraf',
       legend: [[1, 'Üst sırt (göğüs omurgası), omuz']],
-      work: { main: [MU.tspine], help: [MU.chest, MU.midBack, MU.obl] },
+      work: { main: [MU.chest, MU.obl], help: [MU.midBack] }, joints: [JT.tspineRot],
       cues: ['Dört ayak dur; kalçayı biraz topuklara doğru geri al, bel sabit kalsın.', 'Bir elini ensene koy; dirseği karşı kolun altına indir, sonra tavana aç.', 'Bakışın dirseği izlesin; nefes verirken aç.'],
       avoid: 'Dönüşü belden ya da kalçadan yapmak; hızlı savurmak.',
       alt: 'Yan yatarak açık kitap (open book): dizler bükülü, üstteki kolu yay çizerek arkaya aç.',
@@ -872,7 +899,7 @@
     'ankle-rock': {
       name: 'Duvara diz değdirme', sub: 'Ayak bileği mobilitesi (knee-to-wall)', kind: 'dynamic', dose: '10 tekrar/taraf',
       legend: [[1, 'Baldır, ayak bileği'], [2, 'Ön uyluk']],
-      work: { main: [{ map: ['calves', 'left-soleus', 'right-soleus'], tr: 'Baldır (soleus)' }, MU.ankle], help: [MU.quad] },
+      work: { main: [{ map: ['calves', 'left-soleus', 'right-soleus'], tr: 'Baldır (soleus)' }], help: [MU.quad] }, joints: [JT.ankleDF], tissue: [TS.achilles],
       cues: ['Öndeki ayak duvardan bir karış uzakta, arka ayak geride.', 'Topuk yerde kalsın; dizi ikinci parmak yönünde duvara doğru it, 1-2 sn bekle, geri gel.', 'Diz duvara kolay değiyorsa ayağı biraz geri al.'],
       avoid: 'Topuğun kalkması; dizin içe çökmesi.',
       alt: 'Duvar yoksa yarım diz çök; öndeki dizi ayak ucunun ötesine it.',
@@ -891,7 +918,8 @@
     'deep-squat-hold': {
       name: 'Derin squat bekleme', sub: 'Kapı kasasına tutunarak', kind: 'static', dose: '30–45 sn',
       legend: [[1, 'Kalça, iç bacak'], [2, 'Ayak bileği'], [3, 'Alt sırt (gevşek)']],
-      work: { main: [MU.glute, MU.add], help: [MU.ankle, { map: ['calves', 'left-soleus', 'right-soleus'], tr: 'Baldır' }, { map: 'lower-back', tr: 'Bel' }] },
+      work: { main: [MU.glute, MU.add], help: [{ map: ['calves', 'left-soleus', 'right-soleus'], tr: 'Baldır' }, { map: 'lower-back', tr: 'Bel' }] },
+      joints: [JT.hipFlex, JT.kneeFlex, JT.ankleDF], tissue: [TS.achilles],
       cues: ['Kapı kasasını iki elle tut; ayaklar omuz genişliğinde, uçlar hafif dışa.', 'Yavaşça en aşağı otur; topuklar yerde, dizleri dirseklerle hafifçe dışa it.', 'Göğüs açık, rahat nefes al; zorlanırsan ellerle daha çok destek al.'],
       avoid: 'Topukların kalkması; ağrıya kadar zorlamak.',
       alt: 'Topuklar kalkıyorsa altına ince bir kitap veya plaka koy.',
@@ -911,7 +939,7 @@
     'neck-tilt-turn': {
       name: 'Boyun eğme ve çevirme', sub: 'Yavaş, dinamik', kind: 'dynamic', dose: '5 tekrar/yön',
       legend: [[1, 'Boyun yanı, üst trapez']],
-      work: { main: [{ map: 'neck', tr: 'Boyun yanı (SKM, skalen)' }, { map: 'trapezius', tr: 'Üst trapez' }], help: [{ map: null, tr: 'Boyun omurları (eklem)' }] },
+      work: { main: [{ map: 'neck', tr: 'Boyun yanı (SKM, skalen)' }, { map: 'trapezius', tr: 'Üst trapez' }], help: [] }, joints: [JT.neck],
       cues: ['Dik otur veya dur, omuzlar aşağıda.', 'Kulağı omza doğru yavaşça eğ, ortaya dön, diğer tarafa eğ.', 'Sonra başı sağa ve sola çevir; çene yere paralel kalsın.'],
       avoid: 'Başı çember çizerek geriye atmak; ağrılı noktaya zorlamak.',
       alt: 'Masada çene geri çekme (chin tuck): başı duvara yasla, çeneyi hafifçe içeri çek, 5 sn tut.',
@@ -920,7 +948,7 @@
     'calf-stretch-wall': {
       name: 'Duvarda baldır esnetme', sub: 'Arka bacak düz, topuk yerde', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Baldır (gastroknemius)'], [2, 'Aşil tendonu']],
-      work: { main: [{ map: 'calves', tr: 'Baldır (gastroknemius)' }], help: [{ map: ['left-soleus', 'right-soleus'], tr: 'Soleus ve aşil (diz bükülünce)' }] },
+      work: { main: [{ map: 'calves', tr: 'Baldır (gastroknemius)' }], help: [{ map: ['left-soleus', 'right-soleus'], tr: 'Soleus (diz bükülünce)' }] }, joints: [JT.ankleDF], tissue: [TS.achilles],
       cues: ['Ellerini duvara koy, bir bacağı geriye uzat; arka ayak ucu ileri baksın.', 'Arka topuğu yere bastır, dizi düz tut; kalçayı duvara doğru it.', 'Sonra arka dizi hafifçe bük: gerginlik aşağı, aşile iner.'],
       avoid: 'Arka topuğun kalkması; ayağın dışa dönmesi.',
       alt: 'Basamakta topuk sarkıtma: ayak ucu basamakta, topuğu yavaşça aşağı bırak.',
@@ -938,6 +966,7 @@
       name: 'Çocuk pozu + yana uzanma', sub: 'Yerde lat esnetme', kind: 'static', dose: '30 sn/taraf',
       legend: [[1, 'Lat, yan gövde'], [2, 'Alt sırt']],
       work: { main: [MU.lat, { map: 'obliques', tr: 'Yan gövde (oblik)' }], help: [{ map: 'lower-back', tr: 'Bel' }, MU.tri] },
+      joints: [JT.shoUp, JT.spineSide, JT.hipFlex], tissue: [TS.tlf],
       cues: ['Dizler kalça genişliğinde açık, kalça topuklara otursun; kollar önde.', 'İki eli birlikte sağa yürüt: sol yan esner. 30 sn sonra sola yürüt.', 'Nefes verirken kalçayı geriye, elleri ileri it.'],
       avoid: 'Kalçayı topuklardan kaldırmak; omzu zorlamak.',
       alt: 'Bench, rack veya çit varsa ayakta lat esnetmesi.',
