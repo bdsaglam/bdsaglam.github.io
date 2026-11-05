@@ -8,6 +8,7 @@ pagetitle: "CV"
   <h1>Barış Deniz Sağlam</h1>
   <div class="cvtitle">Staff AI Engineer · agents, evals, architecture</div>
   <div class="cvmeta">Ankara, Türkiye · <a href="mailto:bdsaglam@gmail.com">bdsaglam@gmail.com</a> · <a href="https://github.com/bdsaglam">GitHub</a> · <a href="https://linkedin.com/in/bdsaglam">LinkedIn</a> · <a href="https://scholar.google.com/citations?user=ItgIKcYAAAAJ">Scholar</a></div>
+  <div class="cvmeta"><a href="cv-research.pdf">Research CV (PDF)</a></div>
 </div>
 ```
 

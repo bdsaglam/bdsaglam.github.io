@@ -8,6 +8,7 @@ project:
   resources:
     - CNAME
     - cv.pdf
+    - cv-research.pdf
     - fonts/**
     - papers/**
     - slides/**
