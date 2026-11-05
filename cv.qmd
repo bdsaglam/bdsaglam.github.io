@@ -6,102 +6,132 @@ pagetitle: "CV"
 <div class="cvhead">
   <a class="dlcv" href="cv.pdf"><i class="bi bi-file-earmark-arrow-down"></i> Download CV (PDF)</a>
   <h1>Barış Deniz Sağlam</h1>
-  <div class="cvtitle">Senior AI Engineer/Researcher</div>
-  <div class="cvmeta">Ankara, Turkey · open to relocation · <a href="mailto:bdsaglam@gmail.com">bdsaglam@gmail.com</a> · <a href="https://github.com/bdsaglam">GitHub</a> · <a href="https://linkedin.com/in/bdsaglam">LinkedIn</a> · <a href="https://scholar.google.com/citations?user=ItgIKcYAAAAJ">Scholar</a></div>
+  <div class="cvtitle">Staff AI Engineer · agents, evals, architecture</div>
+  <div class="cvmeta">Ankara, Türkiye · <a href="mailto:bdsaglam@gmail.com">bdsaglam@gmail.com</a> · <a href="https://github.com/bdsaglam">GitHub</a> · <a href="https://linkedin.com/in/bdsaglam">LinkedIn</a> · <a href="https://scholar.google.com/citations?user=ItgIKcYAAAAJ">Scholar</a></div>
 </div>
 ```
 
 ::: {.pagelead}
-Senior engineer with 8+ years building and owning production AI systems end-to-end —
-architecture, system design, evaluation, and delivery — across health tech, insurance,
-legal tech, and aerospace. Now pursuing a PhD, with research interests in foundation models,
-continual learning, and neuro-symbolic AI.
+With 10+ years of engineering experience, I take AI products from first prototype to production and paying customers, and I have been the first engineer on new products several times. At Bosch I set the architecture of a multi-agent platform and built its core agent. As Novee's first engineer I built three LLM products, and all were sold. At Peppy I led the AI of an employee-benefits platform that was sold to enterprise clients and spun out as Euphoric. Earlier, I was the founding engineer of Supersense, an assistive app for blind users, and co-founded an ed-tech startup. Alongside engineering, I am doing a PhD on language models that learn from experience, and my open 27B document agent was a joint winner of the ICDAR 2026 DocVQA challenge.
 :::
 
 ## Experience
 
 ::: {.cvrole}
-[Senior AI Engineer — Independent Contractor]{.rh}
-[2025–present · Bosch Legends Lab, Novee AI, Genie AI · Remote]{.rmeta}
+[Staff AI Engineer — Independent Contractor]{.rh}
+[Mar 2025 – present · remote]{.rmeta}
 
-- Own architecture, system design, and tech-stack decisions for production AI — backend, infrastructure, and the evaluation pipelines behind RAG systems and agents.
-- **Bosch Legends Lab** — architecture owner of an AI expert-sourcing platform; introduced Temporal workflow orchestration to replace an event-driven design unfit for long-running, human-in-the-loop AI, and led a microservices → modular-monolith migration. Built CV parsing, profile generation, a web-exploration research agent, and a hybrid-search + re-rank + RAG expert matcher.
-- **Novee AI** — developed LLM structured-extraction systems for insurance underwriting (energy-asset, war/terrorism perils, general risk); built the domain-specific evaluation frameworks, failure-mode loops, and human-in-the-loop labeling that anchor iteration.
-- **Genie AI** — prototyped LLM agents for a legal-writing assistant.
+
+**Bosch Legends Lab** — multi-agent platform for sourcing external experts · Jan 2026 – present
+
+- Architected a greenfield multi-agent platform around durable workflow execution and event-driven services, so agents run for hours at scale, survive failures and resume where they stopped, a design that **held up where general-purpose agent harnesses stalled on long tasks**.
+- Consolidated the platform's early microservices into a monolith until service boundaries were clear, which let a small team ship its first use cases quickly, then split it into services behind a gateway.
+- Built the core agent, a neuro-symbolic research agent that finds experts across the web and assesses them against a project's criteria, in runs of hours over up to ten thousand candidates. It **outperforms other deep-research tools by a large margin** on our benchmarks, and recruiters prefer it to their previous tools.
+- **Set up the new team's engineering culture**: RFCs for design decisions, CI/CD, API and observability standards, a roadmap of small milestone releases shaped with the PM and business manager, shared coding-agent workflows, and evaluation-driven agent development.
+
+
+**Novee AI** — LLM products for insurance underwriting · May 2025 – Dec 2025
+
+*First engineer hired; worked directly with the CTO.*
+
+- Built an LLM extraction product, delivered on a tight deadline, that **won Novee a client contract**: an ensemble of agents that pulls insured assets from messy PDFs, spreadsheets and email threads and reliably automates whole categories of submissions.
+- **Built evaluation from day one** and, with the PM and labeling team, fixed unreliable labels and product assumptions before optimising, so every design choice was decided by data.
+- Built a superhuman contract-comparison agent that **caught material changes that underwriters missed**. The labeling interface I built for its evaluation shipped to clients as the product's interface.
+- Designed self-correcting extraction agents that check their output against independent evidence in the documents and fix what fails, improving reliability substantially; other engineers reused the approach in other products.
+
 :::
 
 ::: {.cvrole}
-[Senior AI Engineer — Peppy Health]{.rh}
-[2023–2025 · London, UK (remote)]{.rmeta}
+[Senior AI Software Engineer — Peppy Health]{.rh}
+[Mar 2023 – Feb 2025 · London (remote)]{.rmeta}
 
-- Core contributor and senior engineer on the AI platform that became **Euphoric**, now a standalone company.
-- Designed and built RAG systems — a benefits navigator and health chatbot — with FastAPI, OpenAI, pgvector, and Weaviate.
-- Owned evaluation as the product's backbone: pipelines combining classical IR metrics, domain measures, and expert feedback.
-- Ran internal knowledge-sharing on information retrieval (keyword → hybrid search → re-ranking).
+*First engineer hired for AI.*
+
+- Led the AI of an employee-benefits platform, from the prototype the business team tested with clients to a product **sold to enterprise clients and spun out as Euphoric**.
+- Shipped its benefits assistant agent, hybrid search and recommendations, choosing each algorithm by offline evaluation against expert labels.
+- **Led most of the platform's backend architecture** while the product was still taking shape, including a relational data model that absorbed many changes and an event-sourced Stripe checkout I built alone, safe to interrupt and resume, which other engineers extended to new product types.
+- Built personalised, event-triggered email campaigns that non-technical staff run themselves, from prototype to production.
+- **Launched the health app's AI chatbot globally**, building its backend and AI alone from idea to production, with clinician evaluation and safety guardrails for urgent and mental-health cases.
+- Mentored junior engineers through pair programming and gave the company's first knowledge-sharing session, on information retrieval.
+
 :::
 
 ::: {.cvrole}
 [Senior Software Engineer — Tractable]{.rh}
-[2021–2023 · London, UK (remote)]{.rmeta}
+[Aug 2021 – Feb 2023 · London (remote)]{.rmeta}
 
-- Delivered a production ML system for insurance claim-leakage assessment that directly enabled expansion into new European markets.
+- Led cost-aware leakage detection end to end, the capability a prospective client **required for Tractable's entry into a new European market**; it turns model predictions into cost-optimal repair decisions to flag overcharging.
+- Built the human-in-the-loop review platform that routes uncertain model decisions to expert reviewers.
+- Brought ML models into production in a high-scale claims-processing system.
+- Pushed for CI/CD, **which the organisation adopted**, and mentored junior engineers and researchers.
+
 :::
 
 ::: {.cvrole}
 [Software Development Engineer — Amazon Web Services]{.rh}
-[2020–2021 · Berlin, Germany (hybrid)]{.rmeta}
+[Oct 2020 – Jun 2021 · Berlin]{.rmeta}
 
-- Highly available, low-latency web services for cloud infrastructure.
+- Maintained and extended high-scale, low-latency pricing and offer services in AWS Billing; took part in on-call, wrote design docs and owned parts of projects.
+
 :::
 
 ::: {.cvrole}
-[Machine Learning Engineer — Mediate (MIT spin-off)]{.rh}
-[2018–2020 · Boston, USA (remote)]{.rmeta}
+[Founding Engineer (ML and Mobile) — Mediate / Supersense]{.rh}
+[Nov 2018 – Mar 2020 · Boston (remote)]{.rmeta}
 
-- Founding engineer on Supersense, an assistive-tech app for blind and visually impaired users; established the ML and mobile architecture end-to-end.
-- Built a deep-learning document edge-detection system that outperformed classical computer vision, a MobileNet intent classifier, and a Core ML 3D document-orientation system; deployed on-device with TensorFlow Lite and Core ML.
+- As the first engineer at an MIT spin-off, **built an on-device document-detection model end to end, from data collection and labeling to training and deployment**; it guides blind users to frame documents with the camera. Also built an intent-recognition model on the camera feed and a synthetic-data pipeline for hard cases. Took the app, Supersense, from prototype to released Android and iOS apps.
+
 :::
 
 ::: {.cvrole}
-[R&D Engineer — Turkish Aerospace Industries]{.rh}
-[2013–2017 · Ankara, Turkey]{.rmeta}
+[Co-founder and Software Engineer — Comind]{.rh}
+[Oct 2017 – Nov 2018 · Ankara]{.rmeta}
 
-- Built in-house flight-test data analysis and validation software (Python, NumPy/SciPy/Pandas, MATLAB), replacing costly tooling and improving team productivity.
+- Co-founded and built a speech-based English-learning product for children: web app, serverless backend and user testing.
+
 :::
+
+::: {.cvrole}
+[R&D Engineer, Structural Dynamics — Turkish Aerospace Industries]{.rh}
+[Sep 2013 – Nov 2017 · Ankara]{.rmeta}
+
+- **Replaced an expensive licensed tool** with flight-test modal analysis software I built to validate aircraft structural models, and wrote the department's onboarding handbook for engineers new to aerospace.
+
+:::
+
+## Selected work
+
+- **ICDAR 2026 DocVQA**, joint winner (8–35B category) · open 27B code agent that tells a vision model where to look · [write-up](https://barisdeniz.is-a.dev/posts/perceive-reason-code/)
+- **Language of Learning**, first author · position paper on models that learn from experience during use · [SSRN 2026](https://doi.org/10.2139/ssrn.7552418)
+- **ArgGYM**, third author · defeasible-reasoning benchmark, under review at ICLR 2027 · proposed turning the work into a benchmark, built and ran its evaluation · [arXiv](https://arxiv.org/abs/2609.38409)
+- **Fine-tuning vs prompting for extraction** · string-match metrics and LLM-judge ratings rank the two differently · [dataset](https://huggingface.co/datasets/bdsaglam/web_nlg-erx) · [blog post](https://barisdeniz.is-a.dev/posts/fine-tuning-vs-prompting/)
+- **dspy-temporal**, open source · durable execution for DSPy programs · [GitHub](https://github.com/bdsaglam/dspy-temporal)
 
 ## Education
 
 ::: {.eduitem}
-[PhD, Information Systems — METU]{.eh} · [2025–present]{.emeta}
-[Deep learning, language models, reinforcement learning, information retrieval.]{.edesc}
+[PhD, Information Systems — Middle East Technical University (METU)]{.eh} · [2025 – present · research on language models that learn from experience]{.emeta}
 :::
 ::: {.eduitem}
-[MSc, Data Informatics — METU]{.eh} · [2021–2024 · CGPA 3.93]{.emeta}
-[[Thesis](https://open.metu.edu.tr/handle/11511/111317): Knowledge Graph Augmented Multi-Hop Question Answering Using Large Language Models.]{.edesc}
+[MSc, Data Informatics — METU]{.eh} · [2021 – 2024 · CGPA 3.93/4.00]{.emeta}
+[Thesis on knowledge-graph-augmented multi-hop question answering with LLMs.]{.edesc}
 :::
 ::: {.eduitem}
-[BSc, Mechanical Engineering — METU]{.eh} · [2006–2012]{.emeta}
+[BSc, Mechanical Engineering — METU]{.eh} · [2006 – 2012]{.emeta}
 :::
 
 ## Skills
 
 ::: {.skills}
-AI engineering
-:   Production AI products end-to-end — RAG systems, agents, and LLM fine-tuning, serving, and post-training.
+AI
+:   LLM agents and multi-agent systems, RAG and hybrid retrieval, evaluation design and LLM-as-judge, document extraction, RL post-training, PyTorch, Hugging Face
 
-Evaluation
-:   Systematic evaluation of AI systems — evaluation pipelines, offline/online metrics, human/judge alignment, and statistical rigor.
+Backend
+:   Python, TypeScript, Java; FastAPI, workflow orchestration (Temporal), event-driven systems (Kafka, NATS), event sourcing, PostgreSQL, Redis
 
-Architecture
-:   System design and architecture for AI products; backend, infrastructure, and observability.
+Infrastructure
+:   AWS, Azure, GCP, Kubernetes, Docker, CI/CD, OpenTelemetry
 
-Research
-:   Rigorous experimental methodology — strong baselines, ablations, and honest measurement.
-
-Leadership
-:   Technical direction, tech-stack decisions, and cross-functional collaboration.
+Languages
+:   Turkish (native), English (professional)
 :::
-
-## Awards
-
-- **DocVQA challenge** winner — ICDAR 2026.
