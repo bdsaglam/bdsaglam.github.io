@@ -95,16 +95,16 @@ With 10+ years of engineering experience, I take AI products from first prototyp
 [R&D Engineer, Structural Dynamics — Turkish Aerospace Industries]{.rh}
 [Sep 2013 – Nov 2017 · Ankara]{.rmeta}
 
-- **Replaced an expensive licensed tool** with flight-test modal analysis software I built to validate aircraft structural models, and wrote the department's onboarding handbook for engineers new to aerospace.
+- **Built flight-test modal analysis software** to validate aircraft structural models, replacing an expensive licensed tool. Wrote the department's onboarding handbook for engineers new to aerospace.
 
 :::
 
 ## Selected work
 
-- **ICDAR 2026 DocVQA**, joint winner (8–35B category) · open 27B code agent that tells a vision model where to look · [write-up](https://barisdeniz.is-a.dev/posts/perceive-reason-code/)
-- **Language of Learning**, first author · position paper on models that learn from experience during use · [SSRN 2026](https://doi.org/10.2139/ssrn.7552418)
+- **ICDAR 2026 DocVQA**, joint winner (8–35B category) · open 27B code agent that tells a vision model where to look · [blog](https://barisdeniz.is-a.dev/posts/perceive-reason-code/)
+- **Language of Learning**, first author · position paper on models that learn from experience at test time · [SSRN 2026](https://doi.org/10.2139/ssrn.7552418)
 - **ArgGYM**, third author · defeasible-reasoning benchmark, under review at ICLR 2027 · proposed turning the work into a benchmark, built and ran its evaluation · [arXiv](https://arxiv.org/abs/2609.38409)
-- **Fine-tuning vs prompting for extraction** · string-match metrics and LLM-judge ratings rank the two differently · [dataset](https://huggingface.co/datasets/bdsaglam/web_nlg-erx) · [blog post](https://barisdeniz.is-a.dev/posts/fine-tuning-vs-prompting/)
+- **Fine-tuning vs prompting for extraction** · string-match metrics and LLM-judge ratings rank the two differently · [dataset](https://huggingface.co/datasets/bdsaglam/web_nlg-erx) · [blog](https://barisdeniz.is-a.dev/posts/fine-tuning-vs-prompting/)
 - **dspy-temporal**, open source · durable execution for DSPy programs · [GitHub](https://github.com/bdsaglam/dspy-temporal)
 
 ## Education
