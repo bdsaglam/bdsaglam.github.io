@@ -18,7 +18,7 @@ Joint winner of the ICDAR 2026 DocVQA challenge (8–35B tier), ahead of Gemini 
 GPT-5.2 on the held-out test set, with no fine-tuning and no OCR pipeline. Ablations isolate
 the REPL plus a single perception call as what carries the lift; the bottleneck is a
 perception budget, not reasoning.
-[[Code](https://github.com/bdsaglam/docvqa) · [Post](posts/perceive-reason-code/index.html)]{.links}
+[[Code](https://github.com/bdsaglam/docvqa) · [Blog](posts/perceive-reason-code/index.html)]{.links}
 :::
 
 ::: {.card}
@@ -52,7 +52,7 @@ solved several ARC-AGI-2 tasks that the verified state of the art missed.
 A study on joint entity–relation extraction (WebNLG) showing that DSPy prompt optimization
 can match LoRA fine-tuning at far lower data and compute cost, evaluated with an LLM-as-judge
 (ELO).
-[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Post](posts/fine-tuning-vs-prompting/index.html)]{.links}
+[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Blog](posts/fine-tuning-vs-prompting/index.html)]{.links}
 :::
 
 ::: {.card}

@@ -44,7 +44,7 @@ poster, video. -->
 [2024 [thesis](https://open.metu.edu.tr/handle/11511/111317)]{.plinks}
 :::
 
-## Posts
+## Blog
 
 ::: {#posts}
 :::

@@ -50,7 +50,7 @@ pagetitle: "Barış Deniz Sağlam"
 
 [All publications →](writing.html#publications){.more}
 
-## Posts
+## Blog
 
 ::: {.postlist}
 - [Perceive-Reason-Code: Active Perception for Document VQA](posts/perceive-reason-code/index.html){.pt}[Jul 2026]{.pd}[How a code REPL plus on-demand VLM perception let an open 27B win a document-QA challenge, and which parts carry it.]{.pdesc}
@@ -58,7 +58,7 @@ pagetitle: "Barış Deniz Sağlam"
 - [Is Everything an Abstraction?](posts/is-everything-an-abstraction/index.html){.pt}[Jan 2025]{.pd}[Physics, Kant, and the layers we build to grasp reality.]{.pdesc}
 :::
 
-[All posts →](writing.html#posts){.more}
+[All blogs →](writing.html#posts){.more}
 
 ## Experience
 
@@ -96,7 +96,7 @@ An LLM agent that solves ARC-AGI puzzles by implicit program synthesis in a Pyth
 
 ### [Fine-tuning vs. Prompting](https://github.com/bdsaglam/pipeline-llm-adaptation)
 Prompt optimization matches LoRA fine-tuning at lower cost on entity–relation extraction.
-[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Post](posts/fine-tuning-vs-prompting/index.html)]{.links}
+[[Code](https://github.com/bdsaglam/pipeline-llm-adaptation) · [Blog](posts/fine-tuning-vs-prompting/index.html)]{.links}
 :::
 ::: {.card}
 [Apr 2025]{.cdate}
