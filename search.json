@@ -749,18 +749,18 @@
     "text": "Language of Learning Barış Deniz Sağlam, Duygu Ataman, Altan Koçyiğit 2026 preprint\n\n\nArgGYM: A Procedural, Engine-Verified Benchmark for Structured Defeasible Reasoning İbrahim Ethem Deveci, Funda Tan Çalık, Barış Deniz Sağlam, Duygu Ataman 2026 preprint code\n\n\nKnowledge Graph Augmented Multi-Hop Question Answering Using Large Language Models Barış Deniz Sağlam 2024 thesis"
   },
   {
-    "objectID": "writing.html#posts",
-    "href": "writing.html#posts",
+    "objectID": "writing.html#blog",
+    "href": "writing.html#blog",
     "title": "Barış Deniz Sağlam",
-    "section": "Posts",
-    "text": "Posts\n\n\n\n\nExperience Is More Than Reward Aug 2026\n\nAI · RL · Continual Learning\n\n\n\nPerceive-Reason-Code: Active Perception for Document VQA Jul 2026\n\nLLM · Agents · Document AI\n\n\n\nOn-Policy Distillation: A Tutorial May 2026\n\nLLM · RL · Post-training · Distillation\n\n\n\nFine-tuning vs Prompting Feb 2025\n\nNLP · LLM\n\n\n\nIs Everything an Abstraction? Jan 2025\n\nPhilosophy · Science\n\n\n\nHow many coin flips does high confidence need? Jul 2020\n\nmath\n\n\n\nWhy is initialization important in neural networks? Jun 2020\n\nneural-network\n\n\n\nFourier Transform Jun 2020\n\nmath\n\n\n\nHalting problem Apr 2020\n\ncomputer-science\n\n\n\n\nNo matching items\n\nArchive →"
+    "section": "Blog",
+    "text": "Blog\n\n\n\n\nExperience Is More Than Reward Aug 2026\n\nAI · RL · Continual Learning\n\n\n\nPerceive-Reason-Code: Active Perception for Document VQA Jul 2026\n\nLLM · Agents · Document AI\n\n\n\nOn-Policy Distillation: A Tutorial May 2026\n\nLLM · RL · Post-training · Distillation\n\n\n\nFine-tuning vs Prompting Feb 2025\n\nNLP · LLM\n\n\n\nIs Everything an Abstraction? Jan 2025\n\nPhilosophy · Science\n\n\n\nHow many coin flips does high confidence need? Jul 2020\n\nmath\n\n\n\nWhy is initialization important in neural networks? Jun 2020\n\nneural-network\n\n\n\nFourier Transform Jun 2020\n\nmath\n\n\n\nHalting problem Apr 2020\n\ncomputer-science\n\n\n\n\nNo matching items\n\nArchive →"
   },
   {
     "objectID": "projects.html",
     "href": "projects.html",
     "title": "Projects",
     "section": "",
-    "text": "Projects\nMore on GitHub →\n\n\nJul 2026\n\nPerceive-Reason-Code: Active Perception for Document VQA\nA code-capable model (Qwen 3.5 27B) given a Python REPL and one on-demand VLM perception call — it crops, zooms, and computes over document pages instead of reading them whole. Joint winner of the ICDAR 2026 DocVQA challenge (8–35B tier), ahead of Gemini 3 Pro and GPT-5.2 on the held-out test set, with no fine-tuning and no OCR pipeline. Ablations isolate the REPL plus a single perception call as what carries the lift; the bottleneck is a perception budget, not reasoning. Code · Post\n\n\n\nJul 2026\n\nContinual Learning — a course\nMemory, fast weights, and learning at many timescales, rebuilt by hand in runnable notebooks — associative memory to HOPE, each idea introduced as the fix to a concrete limitation of the one before. The foundations collapse into a single recurrence with three dials, and every paper family after that attaches as a self-contained track stating which dial it turns. Hub-and-spoke, so a new track renumbers nothing. Runs on a laptop CPU, or in Colab with zero install. Course · Cheatsheet\n\n\n\nFeb 2026\n\nImplicit Program Synthesis for Abstract Reasoning (epiq)\nAn LLM agent that solves ARC-AGI puzzles inside a persistent Python REPL through observe–reason–act–verify loops. Rather than emitting one explicit transform() function, the execution trace is the program — implicit synthesis grounded in real computed state — with holdout verification (hide a training example to force genuine generalization). It solved several ARC-AGI-2 tasks that the verified state of the art missed. Code\n\n\n\nJun 2025\n\nFine-tuning vs. Prompting for LLM Adaptation\nA study on joint entity–relation extraction (WebNLG) showing that DSPy prompt optimization can match LoRA fine-tuning at far lower data and compute cost, evaluated with an LLM-as-judge (ELO). Code · Post\n\n\n\nApr 2025\n\nReinforcement Learning for Multi-Hop QA\nFine-tuned Llama-3.1-8B with GRPO to answer multi-hop questions as an agentic task — interleaving reasoning, planning, and retrieval tool calls. RL raised answer F1 from 0.30 to 0.48 on MuSiQue (~60% relative) over the base model — evidence that small models can learn to use retrieval tools for multi-step reasoning. Code"
+    "text": "Projects\nMore on GitHub →\n\n\nJul 2026\n\nPerceive-Reason-Code: Active Perception for Document VQA\nA code-capable model (Qwen 3.5 27B) given a Python REPL and one on-demand VLM perception call — it crops, zooms, and computes over document pages instead of reading them whole. Joint winner of the ICDAR 2026 DocVQA challenge (8–35B tier), ahead of Gemini 3 Pro and GPT-5.2 on the held-out test set, with no fine-tuning and no OCR pipeline. Ablations isolate the REPL plus a single perception call as what carries the lift; the bottleneck is a perception budget, not reasoning. Code · Blog\n\n\n\nJul 2026\n\nContinual Learning — a course\nMemory, fast weights, and learning at many timescales, rebuilt by hand in runnable notebooks — associative memory to HOPE, each idea introduced as the fix to a concrete limitation of the one before. The foundations collapse into a single recurrence with three dials, and every paper family after that attaches as a self-contained track stating which dial it turns. Hub-and-spoke, so a new track renumbers nothing. Runs on a laptop CPU, or in Colab with zero install. Course · Cheatsheet\n\n\n\nFeb 2026\n\nImplicit Program Synthesis for Abstract Reasoning (epiq)\nAn LLM agent that solves ARC-AGI puzzles inside a persistent Python REPL through observe–reason–act–verify loops. Rather than emitting one explicit transform() function, the execution trace is the program — implicit synthesis grounded in real computed state — with holdout verification (hide a training example to force genuine generalization). It solved several ARC-AGI-2 tasks that the verified state of the art missed. Code\n\n\n\nJun 2025\n\nFine-tuning vs. Prompting for LLM Adaptation\nA study on joint entity–relation extraction (WebNLG) showing that DSPy prompt optimization can match LoRA fine-tuning at far lower data and compute cost, evaluated with an LLM-as-judge (ELO). Code · Blog\n\n\n\nApr 2025\n\nReinforcement Learning for Multi-Hop QA\nFine-tuned Llama-3.1-8B with GRPO to answer multi-hop questions as an agentic task — interleaving reasoning, planning, and retrieval tool calls. RL raised answer F1 from 0.30 to 0.48 on MuSiQue (~60% relative) over the base model — evidence that small models can learn to use retrieval tools for multi-step reasoning. Code"
   },
   {
     "objectID": "posts/perceive-reason-code/index.html",
@@ -917,11 +917,11 @@
     "text": "Publications\n\nLanguage of Learning Barış Deniz Sağlam, Duygu Ataman, Altan Koçyiğit 2026 preprint\n\n\nArgGYM: A Procedural, Engine-Verified Benchmark for Structured Defeasible Reasoning İbrahim Ethem Deveci, Funda Tan Çalık, Barış Deniz Sağlam, Duygu Ataman 2026 preprint code\n\nAll publications →"
   },
   {
-    "objectID": "index.html#posts",
-    "href": "index.html#posts",
+    "objectID": "index.html#blog",
+    "href": "index.html#blog",
     "title": "Barış Deniz Sağlam",
-    "section": "Posts",
-    "text": "Posts\n\n\nPerceive-Reason-Code: Active Perception for Document VQAJul 2026How a code REPL plus on-demand VLM perception let an open 27B win a document-QA challenge, and which parts carry it.\nFine-tuning vs. PromptingFeb 2025When adapting weights beats prompting, and what it costs.\nIs Everything an Abstraction?Jan 2025Physics, Kant, and the layers we build to grasp reality.\n\n\nAll posts →"
+    "section": "Blog",
+    "text": "Blog\n\n\nPerceive-Reason-Code: Active Perception for Document VQAJul 2026How a code REPL plus on-demand VLM perception let an open 27B win a document-QA challenge, and which parts carry it.\nFine-tuning vs. PromptingFeb 2025When adapting weights beats prompting, and what it costs.\nIs Everything an Abstraction?Jan 2025Physics, Kant, and the layers we build to grasp reality.\n\n\nAll blog posts →"
   },
   {
     "objectID": "index.html#experience",
@@ -935,7 +935,7 @@
     "href": "index.html#projects",
     "title": "Barış Deniz Sağlam",
     "section": "Projects",
-    "text": "Projects\n\n\nFeb 2026\n\nAbstract Reasoning (epiq)\nAn LLM agent that solves ARC-AGI puzzles by implicit program synthesis in a Python REPL, with holdout verification. Code\n\n\n\nJun 2025\n\nFine-tuning vs. Prompting\nPrompt optimization matches LoRA fine-tuning at lower cost on entity–relation extraction. Code · Post\n\n\n\nApr 2025\n\nRL for Multi-Hop QA\nGRPO-trained Llama-3.1-8B learns agentic retrieval — answer F1 0.30 → 0.48 on MuSiQue. Code\n\n\n\nAll projects →"
+    "text": "Projects\n\n\nFeb 2026\n\nAbstract Reasoning (epiq)\nAn LLM agent that solves ARC-AGI puzzles by implicit program synthesis in a Python REPL, with holdout verification. Code\n\n\n\nJun 2025\n\nFine-tuning vs. Prompting\nPrompt optimization matches LoRA fine-tuning at lower cost on entity–relation extraction. Code · Blog\n\n\n\nApr 2025\n\nRL for Multi-Hop QA\nGRPO-trained Llama-3.1-8B learns agentic retrieval — answer F1 0.30 → 0.48 on MuSiQue. Code\n\n\n\nAll projects →"
   },
   {
     "objectID": "courses/continual-learning/tracks/state-space-models/index.html",
@@ -1012,7 +1012,7 @@
     "href": "archive.html",
     "title": "Archive",
     "section": "",
-    "text": "Archive\n\nOlder posts, kept for posterity.\n\n\n\n\n\nStructured output quirks Feb 2025\n\nllm\n\n\n\nBenchmark CUDA kernel with Python Mar 2024\n\ncuda · python\n\n\n\nServing open source LLM as OpenAI API Jan 2024\n\nllm · huggingface · openai · litellm\n\n\n\nHow to use HuggingFace datasets with fastai? Apr 2023\n\nfastai · huggingface · datasets\n\n\n\nHow to use a custom model with fastai cnn_learner? Feb 2022\n\nfastai\n\n\n\n\nNo matching items\n\n← Back to writing"
+    "text": "Archive\n\nOlder blog posts, kept for posterity.\n\n\n\n\n\nStructured output quirks Feb 2025\n\nllm\n\n\n\nBenchmark CUDA kernel with Python Mar 2024\n\ncuda · python\n\n\n\nServing open source LLM as OpenAI API Jan 2024\n\nllm · huggingface · openai · litellm\n\n\n\nHow to use HuggingFace datasets with fastai? Apr 2023\n\nfastai · huggingface · datasets\n\n\n\nHow to use a custom model with fastai cnn_learner? Feb 2022\n\nfastai\n\n\n\n\nNo matching items\n\n← Back to writing"
   },
   {
     "objectID": "courses/continual-learning/cheatsheet.html",
