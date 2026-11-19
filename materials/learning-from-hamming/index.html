@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Read an idea from Richard Hamming and take a question on your next walk.">
+  <title>Learning from Hamming</title>
+  <link rel="stylesheet" href="../../fonts/fonts.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="readings.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <svg class="icons" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="icon-draw" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 9h.01m6 0h.01m-3 3h.01m-3 3h.01m6 0h.01"/></symbol>
+    <symbol id="icon-mix" viewBox="0 0 24 24"><path d="M3 6h3c4 0 4 12 9 12h5m-4-4 4 4-4 4M3 18h3c4 0 4-12 9-12h5m-4-4 4 4-4 4"/></symbol>
+    <symbol id="icon-browse" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></symbol>
+    <symbol id="icon-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zm0 0v14"/></symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+  </svg>
+  <a class="skip" href="#reading-content">Skip to reading</a>
+  <header class="masthead wrap">
+    <a class="back" href="../">Materials</a>
+    <h1>Learning from Hamming</h1>
+    <p>Ideas and questions to carry on a walk.</p>
+  </header>
+  <nav class="toolbar wrap" aria-label="Choose a reading">
+    <button type="button" data-action="today" aria-pressed="true"><svg aria-hidden="true"><use href="#icon-sun"/></svg><span>Today</span></button>
+    <button type="button" data-action="draw" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-draw"/></svg><span>Draw another</span></button>
+    <button type="button" data-action="mix" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-mix"/></svg><span>Mix clusters</span></button>
+    <button type="button" data-action="browse" aria-pressed="false"><svg aria-hidden="true"><use href="#icon-browse"/></svg><span>Browse</span></button>
+  </nav>
+  <main class="wrap" id="reading-content">
+    <p id="loading">Loading readings…</p>
+    <noscript><p>Enable JavaScript to draw and browse readings.</p></noscript>
+  </main>
+  <footer class="wrap foot"><a href="../hamming/">Hamming’s lecture canvas</a></footer>
+</body>
+</html>

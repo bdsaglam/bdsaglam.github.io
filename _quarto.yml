@@ -15,6 +15,7 @@ project:
     - fluid/**
     - materials/index.html
     - materials/hamming/**
+    - materials/learning-from-hamming/**
 
 website:
   title: "Barış Deniz Sağlam"
