@@ -22,7 +22,7 @@ svg:has(use) { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor
 .skip { position: absolute; left: -999rem; background: var(--paper); padding: .5rem; }
 .skip:focus { left: .5rem; top: .5rem; z-index: 2; }
 .masthead { padding-block: clamp(1.5rem, 6vw, 3.5rem) 1.4rem; }
-.masthead h1 { font: 400 clamp(2.05rem, 5.8vw, 3.55rem)/1.03 var(--reading-font); letter-spacing: -.045em; margin: .75rem 0 .55rem; }
+.masthead h1 { font: 400 clamp(1.8rem, 5vw, 3rem)/1.08 var(--reading-font); letter-spacing: -.045em; margin: .75rem 0 .55rem; }
 .masthead p { color: var(--muted); margin: 0; }
 .back { font-size: .88rem; }
 .toolbar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .4rem; padding-bottom: 1.25rem; }
@@ -40,9 +40,9 @@ main:focus, .view-heading:focus { outline: none; }
 .cluster-link { display: inline-block; font-size: .88rem; font-weight: 500; }
 h2, h3, h4 { text-wrap: pretty; }
 .reading-title, .view-heading { font-family: var(--reading-font); font-weight: 400; letter-spacing: -.028em; line-height: 1.1; }
-.reading-title { font-size: clamp(1.65rem, 4.2vw, 2.65rem); margin: .62rem 0 .9rem; }
-.view-heading { margin: 0 0 .85rem; font-size: clamp(1.65rem, 4vw, 2.25rem); }
-.reading-text { font: 400 clamp(1.12rem, 2.8vw, 1.27rem)/1.62 var(--reading-font); margin: 0; }
+.reading-title { font-size: clamp(1.45rem, 3.7vw, 2.15rem); margin: .62rem 0 .9rem; }
+.view-heading { margin: 0 0 .85rem; font-size: clamp(1.45rem, 3.5vw, 2rem); }
+.reading-text { font: 400 clamp(1.03rem, 2.5vw, 1.13rem)/1.6 var(--reading-font); margin: 0; }
 .questions { background: var(--accent-bg); border-inline-start: 3px solid var(--accent); margin: 1.35rem 0; padding: .85rem 1rem; border-radius: 0 .35rem .35rem 0; }
 .questions h3, .questions h4 { color: var(--accent); font-size: .91rem; margin: 0 0 .35rem; }
 .questions ul { margin: 0; padding-inline-start: 1.05rem; }
@@ -58,7 +58,7 @@ h2, h3, h4 { text-wrap: pretty; }
 .related summary::-webkit-details-marker { display: none; }
 .related details[open] summary svg { rotate: 180deg; }
 .related-content { padding: .35rem .25rem .7rem; }
-.related-content .reading-text { font-size: 1.09rem; }
+.related-content .reading-text { font-size: 1.03rem; }
 .cluster-list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
 .cluster-list a { display: flex; justify-content: space-between; align-items: center; gap: .75rem; border-bottom: 1px solid var(--line); min-height: 3rem; padding: .6rem .35rem; }
 .cluster-list small { color: var(--muted); text-decoration: none; flex: none; }
