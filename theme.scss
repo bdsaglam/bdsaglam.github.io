@@ -5,7 +5,7 @@ $font-family-sans-serif: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans
 $font-family-monospace:  "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
 $font-family-base:       $font-family-sans-serif;
 $headings-font-family:   $font-family-monospace;
-$body-bg:    #fbf9f4;
+$body-bg:    #fefbf4;
 $body-color: #1c1e21;
 $link-color: #2346a0;
 $code-block-bg: #f3f0e8;
@@ -16,7 +16,7 @@ $headings-font-weight: 500;
 $callout-color-note: #2346a0;
 
 /*-- scss:rules --*/
-:root { --paper: #fbf9f4; --ink: #1c1e21; --dim: #62666d; --rule: #e4dfd3; --mark: #c9c3b4; --blue: #2346a0; --code: #f3f0e8;
+:root { --paper: #fefbf4; --ink: #1c1e21; --dim: #62666d; --rule: #e4dfd3; --mark: #c9c3b4; --blue: #2346a0; --code: #f3f0e8;
         --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; }
 body { background: var(--paper); -webkit-font-smoothing: antialiased; }
 a { color: var(--blue); text-decoration: underline; text-decoration-color: rgba(35,70,160,.35); text-underline-offset: 3px; }
