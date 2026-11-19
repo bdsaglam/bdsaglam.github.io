@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Primer · Signals: spectra, phase and noise</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors come from the theme palette (../../components/theme.js): one accent (blue), amber only for proof lights, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.case{margin:0;font-size:16px}
+.formula{font-size:clamp(18px,1.8vw,26px)}
+.formula .katex-display{margin:.2em 0}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.next{margin:0;font-size:16px;color:var(--muted)}
+
+/* Controls, readouts, legend */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%;align-items:center}
+.btnrow{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px;flex-wrap:wrap}
+.slide-ctl input{width:clamp(120px,12vw,190px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:44px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);color:var(--fg);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 10px;border-radius:10px;background:var(--pal-soft);font-size:16px;overflow-wrap:anywhere;overflow:hidden}
+.readout .k{color:var(--pal-text-2);font-size:15px}
+.readout .val{font-size:17px;font-weight:600;line-height:1.55}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.readout.bad .k{color:var(--red)}
+.legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:16px;color:var(--pal-text-2);align-items:center}
+.sw{display:inline-block;width:22px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:16px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.ring{display:inline-block;width:13px;height:13px;vertical-align:middle;margin-right:6px;border-radius:50%;border:2px solid var(--pal-ink)}
+
+/* Plots fill the height left in the widget column */
+.fill{flex:1 1 0;min-height:90px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.name i{font-style:italic}
+.takeholder{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.takeholder .takeaway{align-self:stretch}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side{justify-content:flex-start}
+.fill.proofpic{min-height:150px}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,9vw,140px)}
+.slide.proof-slide .sliders{gap:6px 16px}
+.slide.proof-slide .btn{padding:4px 10px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px}
+.test .tries{gap:3px}
+.model{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.tries,.takeaway,.case{line-height:1.25}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:20px}
+  h2{font-size:20px}
+  .question{font-size:16px}
+  .fill{min-height:80px}
+  .readout{padding:2px 8px}
+  .readout .val{line-height:1.5}
+  .fill.proofpic{min-height:130px}
+  .model{padding:5px 10px}
+  .test .tries{gap:1px}
+  .btn{padding:4px 10px}
+}
+</style>
+</head>
+<body>
+<header>Primer · Signals: spectra, phase and noise</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// ---------- palette and redraw ----------
+// COL holds the palette for the SVG being drawn; plotBox reads it at every paint, so a draw always uses the
+// current theme. A theme switch redraws the current slide's plots and keeps every control's state.
+let COL = {};
+const PAL_NAMES = ['bg', 'ink', 'fg', 'text-2', 'muted', 'muted-2', 'grey', 'guide', 'grid', 'line', 'panel', 'soft', 'soft-2',
+  'accent', 'accent-2', 'accent-3', 'accent-deep', 'accent-tint', 'accent-soft', 'on-accent',
+  'amber', 'amber-bg', 'amber-ink', 'red'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+// A palette color with alpha, e.g. rgbaOf(COL.accent, 0.5). Takes #rgb, #rrggbb or rgb(...).
+function rgbaOf(c, a) {
+  let r = 0, g = 0, b = 0;
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c.trim());
+  if (m) {
+    let hx = m[1]; if (hx.length === 3) hx = hx.split('').map(x => x + x).join('');
+    const n = parseInt(hx, 16); r = n >> 16; g = (n >> 8) & 255; b = n & 255;
+  } else {
+    const v = (c.match(/[\d.]+/g) || [0, 0, 0]).map(Number); [r, g, b] = v;
+  }
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+}
+
+// ---------- DOM helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false }], throwOnError: false };
+// Render $...$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) { if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH); return node; }
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function hh(tag, cls, ...kids) { const e = h(tag, cls); for (const k of kids) if (k) e.append(k); return e; }
+function mark(e, kind, id, title) { e.dataset.item = kind; if (id != null) e.dataset.id = id; if (title != null) e.dataset.title = title; return e; }
+function emit(kind, data) {
+  try { if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {}); }
+  catch (e) { /* the view works without the bridge */ }
+}
+// Fixed decimals, with no minus sign on zero.
+function fx(x, d) { const y = Math.abs(x) < 0.5 * Math.pow(10, -d) ? 0 : x; return y.toFixed(d); }
+// A short number: up to d decimals, trailing zeros dropped.
+function sn(x, d) { return String(+fx(x, d == null ? 3 : d)); }
+// Common fractions as TeX, else a short decimal.
+function fracTex(v) {
+  const F = [[1 / 3, '\\tfrac13'], [-1 / 3, '-\\tfrac13'], [0.5, '\\tfrac12'], [-0.5, '-\\tfrac12'], [0.25, '\\tfrac14'], [2 / 3, '\\tfrac23']];
+  for (const [x, t] of F) if (Math.abs(v - x) < 1e-9) return t;
+  return sn(v, 3);
+}
+// Plain-text cell label: 1/3, 1/2, 1/4 as glyphs, blank for 0.
+function cellText(v) {
+  if (Math.abs(v) < 1e-9) return '';
+  const G = [[1 / 3, '⅓'], [0.5, '½'], [0.25, '¼'], [-0.5, '−½']];
+  for (const [x, t] of G) if (Math.abs(v - x) < 1e-9) return t;
+  return sn(v, 2).replace('-', '−');
+}
+
+// ---------- controls ----------
+// A labelled range input. o: {id, min, max, step, value, fmt(v) -> TeX-ready text, onInput(v)}.
+function ctl(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = setTex(h('span'), label);
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.id);
+  const val = h('span', 'val');
+  const show = v => setTex(val, o.fmt(v));
+  inp.addEventListener('input', () => { show(+inp.value); o.onInput(+inp.value); });
+  show(o.value);
+  wrap.append(lab, inp, val);
+  return { el: wrap, input: inp, set(v) { inp.value = v; show(v); } };
+}
+// A row of buttons that pick one choice. choices: [[id, label], ...]; getCur() gives the current id.
+function choiceRow(label, choices, getCur, onPick) {
+  const row = hh('div', 'btnrow', label ? setTex(h('span', 'lab'), label) : null);
+  const btns = choices.map(([id, text]) => {
+    const b = mark(h('button', 'btn'), 'control', id);
+    setTex(b, text);
+    b.addEventListener('click', () => { onPick(id); paint(); });
+    row.append(b);
+    return [id, b];
+  });
+  function paint() { btns.forEach(([id, b]) => b.classList.toggle('on', id === getCur())); }
+  paint();
+  return { el: row, paint };
+}
+function button(id, label, onClick) {
+  const b = mark(h('button', 'btn'), 'control', id);
+  setTex(b, label);
+  b.addEventListener('click', onClick);
+  return b;
+}
+// A readout box: label and value are TeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = setTex(h('div', 'k'), label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); }, label(t) { setTex(k, t); } };
+}
+// Legend: items {color (CSS), text, kind: 'line' | 'dash' | 'chip' | 'ring'}.
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    let sw;
+    if (it.kind === 'chip') { sw = h('span', 'chip'); sw.style.background = it.color; }
+    else if (it.kind === 'ring') { sw = h('span', 'ring'); if (it.color) sw.style.borderColor = it.color; }
+    else { sw = h('span', 'sw'); sw.style.borderTop = '3px ' + (it.kind === 'dash' ? 'dashed' : 'solid') + ' ' + it.color; }
+    s.append(sw, setTex(h('span'), it.text));
+    d.append(s);
+  }
+  return d;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function caseLine(text) { return setTex(h('p', 'case'), text); }
+function nameLine(html) { const p = h('p', 'sym name'); p.innerHTML = html; return tex(p); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+// The takeaway appears after the first try: on the first click, drag or slider move in the widget, or on "Show".
+function takeBox(widget, text) {
+  const holder = h('div', 'takeholder');
+  const btn = mark(h('button', 'btn'), 'control', 'show-takeaway');
+  setTex(btn, 'Show the takeaway');
+  const tk = setTex(h('p', 'takeaway'), text);
+  tk.hidden = true;
+  const show = () => { tk.hidden = false; btn.hidden = true; };
+  btn.addEventListener('click', show);
+  for (const ev of ['input', 'click', 'pointerdown']) widget.addEventListener(ev, show);
+  holder.append(btn, tk);
+  return holder;
+}
+// The side column of a formula slide, after the frame's tag, title, question and formula.
+// o: {sym, name, tries, take, next}. The everyday case (o.case) goes right under the question.
+function sideStd(widget, side, o) {
+  if (o.case) side.querySelector('.question').after(caseLine(o.case));
+  if (o.sym) side.append(sym(o.sym));
+  if (o.name) side.append(nameLine(o.name));
+  if (o.tries) side.append(triesList(o.tries));
+  if (o.take) side.append(takeBox(widget, o.take));
+  if (o.next) side.append(setTex(h('p', 'next'), o.next));
+}
+
+// ---------- SVG helpers ----------
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) { return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 }); }
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted, 'font-size': 14 }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label inside an SVG: a foreignObject holding a rendered formula. o: {w, anchor, size, fill, bg, bold}.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc + (o.bold ? ';font-weight:600' : ''));
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 6px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// The same label with a halo in the page color, so it reads over a curve or bars.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  return fo;
+}
+function line(svg, x1, y1, x2, y2, o) { return svgNode('line', Object.assign({ x1, y1, x2, y2 }, o || {}), svg); }
+function dot(svg, x, y, r, fill, o) { return svgNode('circle', Object.assign({ cx: x, cy: y, r, fill }, o || {}), svg); }
+function rect(svg, x, y, w, ht, o) { return svgNode('rect', Object.assign({ x, y, width: Math.max(0, w), height: Math.max(0, ht) }, o || {}), svg); }
+// An arrow with a head. o: {color, w, dash, id}.
+function arrow(svg, x1, y1, x2, y2, o) {
+  const g = svgNode('g', { 'data-item': 'mark', 'data-id': o.id }, svg);
+  svgNode('line', { x1, y1, x2, y2, stroke: o.color, 'stroke-width': o.w || 2.5, 'stroke-dasharray': o.dash }, g);
+  const len = Math.hypot(x2 - x1, y2 - y1), hl = Math.min(9, len * 0.45);
+  if (len > 3) {
+    const a = Math.atan2(y2 - y1, x2 - x1), s = hl / 2;
+    const bx = x2 - hl * Math.cos(a), by = y2 - hl * Math.sin(a);
+    svgNode('polygon', { points: [[x2, y2], [bx - s * Math.sin(a), by + s * Math.cos(a)], [bx + s * Math.sin(a), by - s * Math.cos(a)]].map(p => p.join(',')).join(' '), fill: o.color }, g);
+  }
+  return g;
+}
+// Amber marks what the newest proof line is about.
+function glowRect(svg, x, y, w, ht, pad) {
+  pad = pad == null ? 4 : pad;
+  return rect(svg, x - pad, y - pad, w + 2 * pad, ht + 2 * pad, { rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 });
+}
+function glowLine(svg, d, wdt) { return svgNode('path', { d, fill: 'none', stroke: COL.amberBg, 'stroke-width': wdt || 10, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg); }
+// The top row of a proof picture: what the amber part is while a line is lit, else a plain hint.
+function picCaption(svg, W, litText, plainText) {
+  if (litText) return svgTex(svg, W / 2, 12, litText, { w: W - 4, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  if (plainText) return svgTex(svg, 4, 12, plainText, { w: W - 8, anchor: 'start', size: 15, fill: COL.muted });
+  return null;
+}
+// A plot that takes the height left in its parent. draw(svg, W, H) runs on every resize and redraw.
+function plotBox(draw, cls, weight) {
+  const wrap = h('div', 'fill' + (cls ? ' ' + cls : ''));
+  if (weight) wrap.style.flex = weight + ' 1 0';
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 40) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// Axes for a plot. o: {x0, x1, y0, y1, L, R, T, B}. y values outside the range are clamped.
+function plotFrame(svg, W, H, o) {
+  const L = o.L == null ? 46 : o.L, R = o.R == null ? 14 : o.R, T = o.T == null ? 12 : o.T, B = o.B == null ? 40 : o.B;
+  const pw = W - L - R, ph = H - T - B, base = T + ph;
+  const X = x => L + (x - o.x0) / (o.x1 - o.x0) * pw;
+  const Y = y => base - (Math.max(o.y0, Math.min(o.y1, y)) - o.y0) / (o.y1 - o.y0) * ph;
+  line(svg, L, base, W - R, base, { stroke: COL.grey });
+  line(svg, L, T, L, base, { stroke: COL.grey });
+  if (o.y0 < 0 && o.y1 > 0) line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey, 'stroke-dasharray': '2 3' });
+  return { X, Y, L, R, T, B, pw, ph, base, W, H };
+}
+function pathOf(P, pts) { return pts.map((p, i) => (i ? 'L' : 'M') + P.X(p[0]).toFixed(1) + ' ' + P.Y(p[1]).toFixed(1)).join(''); }
+// Stems for values at n = 0 .. len-1. o: {vals, lo, hi, color, id, label, labelFill, values (print values),
+// rings (values drawn as rings), band(n) -> true to shade, bandColor, hollow(n) -> true for an open dot, L, T, B, ticks}.
+function stems(svg, W, H, o) {
+  const len = o.vals.length, L = o.L == null ? 34 : o.L, R = o.R == null ? 10 : o.R, T = o.T == null ? 30 : o.T, B = o.B == null ? 22 : o.B;
+  const cw = (W - L - R) / len;
+  const X = n => L + (n + 0.5) * cw;
+  const Y = v => T + (o.hi - Math.max(o.lo, Math.min(o.hi, v))) / (o.hi - o.lo) * (H - T - B);
+  if (o.band) for (let n = 0; n < len; n++) if (o.band(n)) rect(svg, X(n) - cw / 2 + 2, T - 4, cw - 4, H - T - B + 8, { rx: 6, fill: o.bandColor || COL.accentTint });
+  line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey });
+  for (const t of (o.ticks || [])) svgText(svg, L - 6, Y(t) + 5, sn(t, 2).replace('-', '−'), { 'text-anchor': 'end' });
+  for (let n = 0; n < len; n++) svgText(svg, X(n), H - 5, String(n + (o.n0 || 0)), { 'text-anchor': 'middle' });
+  o.vals.forEach((v, n) => {
+    const open = o.hollow && o.hollow(n);
+    line(svg, X(n), Y(0), X(n), Y(v), { stroke: o.color, 'stroke-width': 3 });
+    dot(svg, X(n), Y(v), 5.5, open ? COL.panel : o.color, { stroke: o.color, 'stroke-width': 2, 'data-item': 'mark', 'data-id': (o.id || 'stem') + '-' + n });
+    if (o.values) {
+      const up = v >= 0;
+      haloTex(svg, X(n), Y(v) + (up ? -15 : 15), o.fmtVal ? o.fmtVal(v, n) : sn(v, 2), { w: cw + 10, size: 14, fill: COL.ink });
+    }
+  });
+  if (o.rings) o.rings.forEach((v, n) => dot(svg, X(n), Y(v), 9.5, 'none', { stroke: COL.ink, 'stroke-width': 1.6 }));
+  if (o.label) svgTex(svg, L, 12, o.label, { w: W - L - 4, anchor: 'start', size: 15, fill: o.labelFill || o.color });
+  return { X, Y, cw, L, T, B };
+}
+// One dial per sample: a circle with the complex value as an arrow. o: {zs, scale, color, id, y, r, labels(n) -> text}.
+function dialRow(svg, W, o) {
+  const len = o.zs.length, cw = W / len, Rc = o.r || Math.min(cw / 2 - 6, 40);
+  o.zs.forEach((z, n) => {
+    const cx = (n + 0.5) * cw, cy = o.y;
+    dot(svg, cx, cy, Rc, COL.panel, { stroke: COL.line });
+    line(svg, cx - Rc, cy, cx + Rc, cy, { stroke: COL.soft2 });
+    line(svg, cx, cy - Rc, cx, cy + Rc, { stroke: COL.soft2 });
+    const k = (o.scale || 1) * (Rc - 4);
+    if (Math.hypot(z.re, z.im) * k > 3) arrow(svg, cx, cy, cx + z.re * k, cy - z.im * k, { color: o.color, id: (o.id || 'z') + '-' + n });
+    else dot(svg, cx, cy, 3, o.color);
+    if (o.labels) svgTex(svg, cx, cy + Rc + 12, o.labels(n), { w: cw, size: 14, fill: o.labelFill || COL.text2 });
+  });
+  return { cw, Rc };
+}
+
+// ---------- complex numbers ----------
+const PI = Math.PI, TAU = 2 * PI;
+const cis = t => ({ re: Math.cos(t), im: Math.sin(t) });
+const cplx = (re, im) => ({ re, im: im || 0 });
+const cxAdd = (a, b) => ({ re: a.re + b.re, im: a.im + b.im });
+const cxMul = (a, b) => ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re });
+const cxScale = (a, s) => ({ re: a.re * s, im: a.im * s });
+const cxDiv = (a, b) => { const d = b.re * b.re + b.im * b.im; return { re: (a.re * b.re + a.im * b.im) / d, im: (a.im * b.re - a.re * b.im) / d }; };
+const cxAbs = a => Math.hypot(a.re, a.im);
+const cxArg = a => Math.atan2(a.im, a.re);
+// A complex number as TeX (no $): a real number, or length and angle in degrees.
+function polarTex(z, d) {
+  d = d == null ? 3 : d;
+  if (Math.abs(z.im) < 1e-9) return fx(z.re, d);
+  let a = cxArg(z) * 180 / PI;
+  return fx(cxAbs(z), d) + '\\angle{' + sn(a, 1) + '^\\circ}';
+}
+const cv = (x, i) => x[((i % x.length) + x.length) % x.length];   // index that wraps
+
+// ---------- proof slides ----------
+// Left column of a proof slide: controls, the picture, the test, the mental model.
+function proofLeft(widget, o) {
+  if (o.controls && o.controls.length) widget.append(hh('div', 'sliders', ...o.controls));
+  const p = plotBox(o.draw, 'proofpic');
+  widget.append(p.wrap);
+  if (o.legend) widget.append(legend(o.legend));
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList(o.tests));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+  widget.append(test, model);
+  return { redraw: p.redraw, test };
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is done,
+// the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight, o) {
+  o = o || {};
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = 'Look back: under the picture.';
+  if (o.primerMoves) el.primerMoves = o.primerMoves;
+  if (o.endNote) el.endNote = o.endNote;
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+
+// ---------- frame ----------
+// SLIDES (defined by each view): {id, tag, title, question, formula, proof, mount(widget, side)}.
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side',
+    h('div', 'tag', s.tag),
+    setTex(h('h2'), s.title),
+    setTex(h('p', 'question'), s.question),
+    s.formula ? setTex(h('div', 'formula'), s.formula) : null);
+  const sec = mark(h('section', 'slide' + (s.proof ? ' proof-slide' : '')), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  s.mount(widget, side);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+function startDeck() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],input[type=number],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+}
+
+// ===== p-signals-4: Spectra: phase and noise =====
+const U0 = [4, 3, 1, 0, 1, 0, 2, 3];
+// X_k = (1/8) sum_n x_n e^{-i 2 pi k n / 8}, k = 0..7
+const dft8 = x => Array.from({ length: 8 }, (_, k) => {
+  let re = 0, im = 0; for (let n = 0; n < 8; n++) { re += x[n] * Math.cos(TAU * k * n / 8); im -= x[n] * Math.sin(TAU * k * n / 8); }
+  return { re: re / 8, im: im / 8 }; });
+const shifted = s => U0.map((_, n) => cv(U0, n - s));
+const pow2 = z => z.re * z.re + z.im * z.im;
+const deg = z => Math.atan2(z.im, z.re) * 180 / PI;
+// Seeded random numbers (mulberry32) and a standard normal draw.
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gauss(rnd) { let u = 0; while (u === 0) u = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * rnd()); }
+const noiseRecord = (len, j) => { const rnd = mulberry32(len * 1000 + j); return Array.from({ length: len }, () => gauss(rnd)); };
+// P_k = N |X_k|^2 for k = 0..N/2, with X_k carrying 1/N: (re^2 + im^2)/N on the plain sums.
+function binPower(x) {
+  const L = x.length, P = [];
+  for (let k = 0; k <= L / 2; k++) { let re = 0, im = 0; for (let n = 0; n < L; n++) { re += x[n] * Math.cos(TAU * k * n / L); im -= x[n] * Math.sin(TAU * k * n / L); } P.push((re * re + im * im) / L); }
+  return P;
+}
+const PRIMER_MOVES = ['Unfold the definition', 'Use an earlier result', 'Induction', 'Rearrange', 'Name a piece', 'Change variables', 'Compute it two ways', 'Telescope'];
+const NEXT4 = 'Next: Lecture 14.';
+// A row of dials for X_0..X_4, each scaled to its own arrow. o: {zs, before (dashed, optional), y, labels(k)}
+function dials5(svg, W, o) {
+  const dw = W / 5, R = o.r;
+  for (let k = 0; k < 5; k++) {
+    const cx = (k + 0.5) * dw, cy = o.y, z = o.zs[k], lr = R - 4;
+    dot(svg, cx, cy, R, COL.panel, { stroke: COL.line });
+    line(svg, cx - R, cy, cx + R, cy, { stroke: COL.soft2 }); line(svg, cx, cy - R, cx, cy + R, { stroke: COL.soft2 });
+    if (o.before) { const b = o.before[k], a0 = Math.atan2(b.im, b.re); line(svg, cx, cy, cx + lr * Math.cos(a0), cy - lr * Math.sin(a0), { stroke: COL.grey, 'stroke-width': 2, 'stroke-dasharray': '4 3' }); }
+    const a1 = Math.atan2(z.im, z.re);
+    arrow(svg, cx, cy, cx + lr * Math.cos(a1), cy - lr * Math.sin(a1), { color: COL.accent, w: 3, id: 'X-' + k });
+    if (o.labels) svgTex(svg, cx, cy + R + 13, o.labels(k), { w: dw, size: 14, fill: COL.text2 });
+  }
+}
+
+// ---------- 1. The spectrum ignores where you start ----------
+function slidePower(widget, side) {
+  let s = 0;
+  const sl = ctl('start later by $s$', { id: 'shift', min: 0, max: 7, step: 1, value: s, fmt: v => String(v), onInput: v => { s = v; update(); } });
+  const pX = plotBox((svg, W, H) => {
+    stems(svg, W, H, { vals: shifted(s), lo: -0.6, hi: 5.2, color: COL.muted2, id: 'x', values: true, fmtVal: v => sn(v, 2), label: 'grey: the record $x_n$, started $' + s + '$ samples later', labelFill: COL.text2 });
+  }, null, 1);
+  const pD = plotBox((svg, W, H) => {
+    const X = dft8(shifted(s)), r = Math.max(14, Math.min(W / 10 - 8, (H - 52) / 2));
+    svgTex(svg, 4, 12, 'blue arrows: $X_0$ to $X_4$, each drawn full size, so only its angle shows', { w: W - 8, anchor: 'start', size: 15, fill: COL.accentDeep });
+    dials5(svg, W, { zs: X, y: 26 + r + 2, r, labels: k => '$X_' + k + '$: $' + sn(deg(X[k]), 1) + '^\\circ$' });
+  }, null, 0.85);
+  const pB = plotBox((svg, W, H) => {
+    const X = dft8(shifted(s)), p = [0, 1, 2, 3, 4].map(k => pow2(X[k]));
+    const P = plotFrame(svg, W, H, { x0: -0.5, x1: 4.5, y0: 0, y1: 3.9, L: 46, B: 30, T: 28 });
+    const bw = P.pw / 5 * 0.5;
+    p.forEach((v, k) => {
+      rect(svg, P.X(k) - bw / 2, P.Y(v), bw, P.base - P.Y(v), { fill: COL.accent, 'data-item': 'mark', 'data-id': 'P' + k });
+      svgText(svg, P.X(k), P.Y(v) - 6, sn(v, 4), { 'text-anchor': 'middle', fill: COL.ink, 'font-size': 15 });
+      svgTex(svg, P.X(k), P.base + 15, '$k=' + k + '$', { w: 60, size: 14, fill: COL.muted });
+    });
+    svgTex(svg, P.L, 12, 'blue bars: $|X_k|^2$, the power in bin $k$', { w: W - P.L, anchor: 'start', size: 15, fill: COL.accentDeep });
+  }, null, 1);
+  function update() { pX.redraw(); pD.redraw(); pB.redraw(); }
+  widget.append(hh('div', 'sliders', sl.el), pX.wrap, pD.wrap, pB.wrap);
+  sideStd(widget, side, {
+    case: 'Start a song ten seconds in: the same notes, just as loud. Only the starting point moved.',
+    sym: String.raw`$x_n$: the record $u=(4,3,1,0,1,0,2,3)$ started $s$ samples later; it wraps. $X_k$: the arrow of wave $k$, as $U_k$ in Primer · Fourier series, step 10. Its length says how much of wave $k$; its angle, the phase, says where the wave starts.`,
+    tries: [
+      String.raw`Move $s$: the stems slide round, the arrows turn, and the bars stay put.`,
+      String.raw`Read the bars: $3.06$, $0.84$, $0.06$, $0.04$, $0.06$. They are the same for every shift.`],
+    take: 'The power spectrum keeps how much of each wave, and drops where each wave starts: its phase.' });
+  update();
+}
+
+// ---------- 2. Why it's true: a shift turns X_k and keeps its length ----------
+function drawWhyShift(svg, W, H, s, lit) {
+  const X = dft8(U0), xs = shifted(s), Xs = dft8(xs);
+  const CAP = {
+    shifted: String.raw`amber: the record started $s$ later, $x'_n=x_{n-s}$`,
+    reindex: String.raw`amber: the same 8 samples, counted from the old start: $m=n-s$`,
+    turn: String.raw`amber: each arrow turned by $-2\pi ks/8$: wave $k$ turns $k$ times as far`,
+    length: String.raw`amber: a turn keeps the length, so the bars $|X_k|^2$ stay` }[lit];
+  picCaption(svg, W, CAP, null);
+  const top = 24, rest = H - top, r1 = rest * 0.32, r2 = rest * 0.38;
+  const y1 = top, y2 = y1 + r1, y3 = y2 + r2, L = 34, w = W - L - 6;
+  const sx = n => L + (n + 0.5) * w / 8, sTop = y1 + 22, sBot = y2 - (lit === 'reindex' ? 32 : 20), Ys = v => sBot - v / 4.4 * (sBot - sTop);
+  if (lit === 'shifted') glowRect(svg, L, sTop - 4, w, sBot - sTop + 4, 2);
+  if (!CAP) svgTex(svg, 4, y1 + 10, 'grey: the record started $s=' + s + '$ samples later, $x\'_n=x_{n-s}$', { w: W, anchor: 'start', size: 15, fill: COL.text2 });
+  line(svg, L, Ys(0), L + w, Ys(0), { stroke: COL.grey });
+  xs.forEach((v, n) => {
+    line(svg, sx(n), Ys(0), sx(n), Ys(v), { stroke: COL.muted2, 'stroke-width': 2.5 });
+    dot(svg, sx(n), Ys(v), 4.5, COL.muted2, { 'data-item': 'mark', 'data-id': 'x-' + n });
+    svgText(svg, sx(n), sBot + 14, String(n), { 'text-anchor': 'middle', 'font-size': 13 });
+    if (lit === 'reindex') { glowRect(svg, sx(n) - 9, sBot + 19, 18, 14, 1); svgText(svg, sx(n), sBot + 30, String(((n - s) % 8 + 8) % 8), { 'text-anchor': 'middle', 'font-size': 13, fill: COL.amberInk }); }
+  });
+  svgTex(svg, 4, sBot + 9, '$n$', { w: 20, anchor: 'start', size: 13, fill: COL.muted });
+  if (lit === 'reindex') svgTex(svg, 4, sBot + 26, '$m$', { w: 20, anchor: 'start', size: 13, fill: COL.ink });
+  const dw = w / 5, Rd = Math.max(12, Math.min(dw / 2 - 8, (r2 - 36) / 2)), dy = y2 + 8 + Rd;
+  for (let k = 0; k < 5; k++) {
+    const cx = L + (k + 0.5) * dw, a0 = Math.atan2(X[k].im, X[k].re), a1 = Math.atan2(Xs[k].im, Xs[k].re), lr = Rd - 4;
+    dot(svg, cx, dy, Rd, COL.panel, { stroke: COL.line });
+    line(svg, cx - Rd, dy, cx + Rd, dy, { stroke: COL.soft2 });
+    let turn = -45 * k * s; turn = ((turn % 360) + 540) % 360 - 180; if (turn === -180) turn = 180;
+    if (lit === 'turn' && k > 0 && s > 0) {
+      const rr = Math.max(8, lr * 0.6), tot = -45 * k * s * PI / 180;
+      let d = ''; for (let i = 0; i <= 24; i++) { const a = a0 + tot * i / 24; d += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(1) + ' ' + (dy - rr * Math.sin(a)).toFixed(1); }
+      glowLine(svg, d, 7);
+    }
+    line(svg, cx, dy, cx + lr * Math.cos(a0), dy - lr * Math.sin(a0), { stroke: COL.grey, 'stroke-width': 2, 'stroke-dasharray': '4 3' });
+    arrow(svg, cx, dy, cx + lr * Math.cos(a1), dy - lr * Math.sin(a1), { color: COL.accent, w: 3, id: 'X-' + k });
+    svgTex(svg, cx, dy + Rd + 12, '$X_' + k + '$, turn $' + turn + '^\\circ$', { w: dw, size: 13, fill: COL.text2 });
+  }
+  const bTop = y3 + 36, bBot = H - 6, pk = Xs.slice(0, 5).map(pow2), pmax = 3.5;
+  const Yb = v => bBot - Math.min(v, pmax) / pmax * (bBot - bTop);
+  svgTex(svg, 4, y3 + 10, 'bars: $|X\'_k|^2$. Dashed grey: each arrow before the shift.', { w: W, anchor: 'start', size: 14, fill: COL.accentDeep });
+  line(svg, L, bBot, L + w, bBot, { stroke: COL.grey });
+  pk.forEach((v, k) => {
+    const cx = L + (k + 0.5) * dw, bw = Math.min(36, dw * 0.4);
+    if (lit === 'length') glowRect(svg, cx - bw / 2, Yb(v), bw, bBot - Yb(v), 3);
+    rect(svg, cx - bw / 2, Yb(v), bw, Math.max(0.5, bBot - Yb(v)), { fill: COL.accent, 'data-item': 'mark', 'data-id': 'P' + k });
+    svgText(svg, cx, Yb(v) - 4, sn(v, 4), { 'text-anchor': 'middle', 'font-size': 13, fill: COL.ink });
+  });
+}
+function slideWhyShift(widget, side) {
+  let s = 1, lit = '';
+  const sS = ctl('shift $s$', { id: 'shift', min: 0, max: 7, step: 1, value: s, fmt: v => String(v), onInput: v => { s = v; plot.redraw(); } });
+  const plot = proofLeft(widget, {
+    controls: [sS.el],
+    draw: (svg, W, H) => drawWhyShift(svg, W, H, s, lit),
+    tests: [
+      String.raw`$s=1$: $X_1$ turns $-45^\circ$, $X_2$ turns $-90^\circ$. Guess the turn of $X_3$ at $s=2$, then check.`,
+      String.raw`$X_0$ never turns, at any $s$. Can you see why? Cases are evidence, not proof.`],
+    model: String.raw`Starting $s$ samples later turns the arrow of wave $k$ by $-2\pi ks/8$: wave $k$ turns $k$ times as far. A turn keeps the length, so the bars cannot see the start.` });
+  proofRight(side, {
+    id: 'shift-phase',
+    goal: { tex: String.raw`X'_k=e^{-i2\pi ks/8}\,X_k,\ \text{ so }\ |X'_k|=|X_k|`, words: String.raw`for the record started $s$ later, $x'_n=x_{n-s}$; it wraps.` },
+    facts: [
+      { tex: String.raw`\textstyle X_k=\frac18\sum_nx_n\,e^{-i2\pi kn/8}`, ref: 'step 1' },
+      { words: 'multiplying multiplies lengths and adds angles', ref: 'Primer · Complex numbers, step 3' }],
+    lines: [
+      { tex: String.raw`\textstyle X'_k=\frac18\sum_nx_{n-s}\,e^{-i2\pi kn/8}`, move: 'Unfold the definition',
+        why: String.raw`$X_k$ of the shifted record`, choices: ['Name a piece', 'Use symmetry'], highlight: 'shifted' },
+      { tex: String.raw`\textstyle =\frac18\sum_mx_m\,e^{-i2\pi k(m+s)/8}`, move: 'Change variables',
+        why: String.raw`count from the old start, $m=n-s$; a wrapped $m$ changes nothing, as whole turns do nothing`, choices: ['Rearrange', 'Telescope'], highlight: 'reindex' },
+      { tex: String.raw`=e^{-i2\pi ks/8}\,X_k`, move: 'Rearrange',
+        why: String.raw`angles add; pull out the factor that has no $m$ in it`, choices: ['Add zero or multiply by one', 'Induction'], highlight: 'turn' },
+      { tex: String.raw`|X'_k|=1\cdot|X_k|`, move: 'Use an earlier result',
+        why: 'lengths multiply, and a pure turn has length 1', choices: ['Unfold the definition', 'Compare or bound'], highlight: 'length' }],
+    lookBack: [
+      { q: String.raw`Why does $X_0$ never turn?`,
+        a: String.raw`Its factor is $e^{-i2\pi\cdot0\cdot s/8}=1$. $X_0$ is the mean of the record, and moving the start does not change the mean.` },
+      { q: 'What did the proof throw away?',
+        a: String.raw`The angles, the phase. All 8 shifts share one power spectrum, and so does the record played backwards (each arrow is mirrored), so the spectrum alone cannot give the record back.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+}
+
+// ---------- 3. Spectra of two signals do not add ----------
+function slideAdd(widget, side) {
+  let phi = 60;
+  const sl = ctl('angle $\\varphi$', { id: 'phi', min: 0, max: 180, step: 5, value: phi, fmt: v => '$' + v + '^\\circ$', onInput: v => { phi = v; update(); } });
+  const rP = readout('sum-power', '$|X+Y|^2$');
+  const plot = plotBox((svg, W, H) => {
+    const a = phi * PI / 180, WL = W * 0.58;
+    const unit = Math.min(WL / 2.6, (H - 70) / 2.3), ox = 20 + unit * 0.2, oy = 40 + unit * 1.15;
+    const X = [1, 0], Y = [Math.cos(a), Math.sin(a)], Sx = X[0] + Y[0], Sy = X[1] + Y[1];
+    const P = (x, y) => [ox + x * unit, oy - y * unit];
+    svgTex(svg, 4, 12, 'one bin, two signals: grey $X$, the second arrow $Y$, blue the sum $X+Y$', { w: W - 8, anchor: 'start', size: 15, fill: COL.text2 });
+    line(svg, ox - 10, oy, ox + 2.2 * unit, oy, { stroke: COL.soft2 });
+    const [x1, y1] = P(1, 0), [x2, y2] = P(Sx, Sy);
+    // the sum first, wide and offset a little, so X and Y stay visible on top of it
+    const off = phi < 15 ? 7 : 0;
+    if (Math.hypot(Sx, Sy) > 0.02) arrow(svg, ox, oy + off, x2, y2 + off, { color: COL.accent, w: 4, id: 'sum' }); else dot(svg, ox, oy, 6, COL.accent);
+    arrow(svg, ox, oy, x1, y1, { color: COL.muted2, w: 3, id: 'X' });
+    arrow(svg, x1, y1, x2, y2, { color: COL.ink, w: 2.5, id: 'Y' });
+    // the angle between X and Y, at the joint
+    if (phi > 0) { let d = ''; for (let i = 0; i <= 20; i++) { const t = a * i / 20; d += (i ? 'L' : 'M') + (x1 + 0.28 * unit * Math.cos(t)).toFixed(1) + ' ' + (y1 - 0.28 * unit * Math.sin(t)).toFixed(1); } svgNode('path', { d, fill: 'none', stroke: COL.ink, 'stroke-width': 1.4 }, svg); }
+    if (phi >= 15) haloTex(svg, x1 + 0.42 * unit * Math.cos(a / 2), y1 - 0.42 * unit * Math.sin(a / 2), '$\\varphi$', { w: 30, size: 16, fill: COL.ink });
+    haloTex(svg, (ox + x1) / 2, oy + 16, '$X$', { w: 30, size: 15, fill: COL.text2 });
+    // bars: the sum of the powers, and the power of the sum
+    const bx0 = WL + 30, bw = (W - bx0 - 20) / 2 * 0.55, base = H - 40, top = 50, Yb = v => base - v / 4.4 * (base - top);
+    const vals = [[2, COL.grey, '$|X|^2+|Y|^2$'], [Math.pow(Math.hypot(Sx, Sy), 2), COL.accent, '$|X+Y|^2$']];
+    line(svg, bx0, base, W - 10, base, { stroke: COL.grey });
+    vals.forEach(([v, c, lab], i) => {
+      const cx = bx0 + (i + 0.5) * (W - bx0 - 10) / 2;
+      rect(svg, cx - bw / 2, Yb(v), bw, base - Yb(v), { fill: c, 'data-item': 'mark', 'data-id': i ? 'power-of-sum' : 'sum-of-powers' });
+      svgText(svg, cx, Yb(v) - 7, sn(v, 3), { 'text-anchor': 'middle', fill: COL.ink, 'font-size': 16, 'font-weight': 600 });
+      svgTex(svg, cx, base + 18, lab, { w: (W - bx0) / 2 + 10, size: 14, fill: COL.text2 });
+    });
+  });
+  function update() { const v = 2 + 2 * Math.cos(phi * PI / 180); rP.set('$1+1+2\\cos' + phi + '^\\circ=' + sn(v, 3) + '$'); plot.redraw(); }
+  widget.append(hh('div', 'sliders', sl.el), plot.wrap,
+    legend([{ kind: 'chip', color: 'var(--pal-grey)', text: 'grey bar: the powers added' }, { kind: 'chip', color: 'var(--pal-accent)', text: 'blue bar: the power of the sum' }]),
+    hh('div', 'readouts', rP.el));
+  sideStd(widget, side, {
+    case: 'Two speakers play the same note. Where the waves line up the sound is louder than both; where they are opposite it cancels.',
+    sym: String.raw`$X$, $Y$: the arrows of one bin for two signals, here both of length 1. $\varphi$: the angle between them. Arrows add like vectors, so this is $|u+v|^2=(u+v)\cdot(u+v)$ with $u\cdot v=|u|\,|v|\cos\varphi$ (Primer · Vectors, step 5).`,
+    tries: [
+      String.raw`Set $\varphi=0$: the arrows line up, and $|X+Y|^2=4$, not $1+1=2$.`,
+      String.raw`Set $\varphi=180^\circ$: they cancel, and the power of the sum is $0$.`,
+      String.raw`Set $\varphi=90^\circ$: now the powers do add, $1+1=2$.`],
+    take: 'The spectrum of a sum is not the sum of the spectra: powers add only when the arrows are at right angles.' });
+  update();
+}
+
+// ---------- 4. Hiss has a flat spectrum ----------
+const NF = 32, AVG_R = 50;
+let nfJ = 1, nfMode = 'one';
+const NF_AVG = (() => { const acc = new Array(NF / 2 + 1).fill(0); for (let j = 1; j <= AVG_R; j++) binPower(noiseRecord(NF, j)).forEach((v, k) => { acc[k] += v / AVG_R; }); return acc; })();
+function slideNoiseFloor(widget, side) {
+  const pick = choiceRow('bars:', [['one', 'one record'], ['avg', 'average of 50 records']], () => nfMode, id => { nfMode = id; update(); });
+  const newBtn = button('new-record', 'New record', () => { nfJ++; update(); });
+  const rM = readout('mean', 'average height of the bars $k=1$ to $15$');
+  const bars = () => (nfMode === 'one' ? binPower(noiseRecord(NF, nfJ)) : NF_AVG);
+  const pRec = plotBox((svg, W, H) => {
+    const x = noiseRecord(NF, nfJ);
+    const P = plotFrame(svg, W, H, { x0: -0.5, x1: NF - 0.5, y0: -3, y1: 3, L: 40, B: 26, T: 28 });
+    [-3, 0, 3].forEach(v => svgText(svg, P.L - 6, P.Y(v) + 5, String(v).replace('-', '−'), { 'text-anchor': 'end' }));
+    svgNode('path', { d: pathOf(P, x.map((v, n) => [n, v])), fill: 'none', stroke: COL.grey, 'stroke-width': 1.4 }, svg);
+    x.forEach((v, n) => dot(svg, P.X(n), P.Y(v), 3.5, COL.muted2, { 'data-item': 'mark', 'data-id': 'x-' + n }));
+    svgTex(svg, P.L, 12, 'grey: noise record ' + nfJ + ', $x_n$ for $n=0$ to $31$', { w: W - P.L, anchor: 'start', size: 15, fill: COL.text2 });
+  }, null, 0.8);
+  const pSpec = plotBox((svg, W, H) => {
+    const Pk = bars();
+    const P = plotFrame(svg, W, H, { x0: -0.5, x1: NF / 2 + 0.5, y0: 0, y1: 4, L: 40, B: 40, T: 28 });
+    [0, 1, 2, 3, 4].forEach(v => svgText(svg, P.L - 6, P.Y(v) + 5, String(v), { 'text-anchor': 'end' }));
+    for (let k = 0; k <= NF / 2; k += 2) svgText(svg, P.X(k), P.base + 18, String(k), { 'text-anchor': 'middle' });
+    const bw = P.pw / (NF / 2 + 1) * 0.6;
+    Pk.forEach((v, k) => rect(svg, P.X(k) - bw / 2, P.Y(v), bw, Math.max(0.5, P.base - P.Y(v)), { fill: COL.accent, 'data-item': 'mark', 'data-id': 'bin-' + k }));
+    line(svg, P.L, P.Y(1), W - P.R, P.Y(1), { stroke: COL.ink, 'stroke-width': 1.6, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'sigma2' });
+    haloTex(svg, W - P.R - 4, P.Y(1) - 14, '$\\sigma^2=1$', { w: 90, anchor: 'end', size: 15, fill: COL.ink });
+    svgTex(svg, P.L, 12, nfMode === 'one' ? 'blue bars: $P_k$ of this record (cut at 4)' : 'blue bars: $P_k$ averaged over 50 records', { w: W - P.L, anchor: 'start', size: 15, fill: COL.accentDeep });
+    svgTex(svg, (P.L + W - P.R) / 2, H - 9, '$k$, frequency bin, $f=k/32$', { w: 260, size: 14 });
+  }, null, 1.3);
+  function update() {
+    const Pk = bars(), mid = Pk.slice(1, NF / 2), mean = mid.reduce((p, q) => p + q, 0) / mid.length;
+    rM.set('$' + fx(mean, 2) + '$');
+    newBtn.disabled = nfMode === 'avg';
+    pick.paint(); pRec.redraw(); pSpec.redraw();
+  }
+  widget.append(hh('div', 'btnrow', pick.el, newBtn), pRec.wrap, pSpec.wrap,
+    legend([{ kind: 'chip', color: 'var(--pal-accent)', text: 'blue bars: power per bin' }, { kind: 'dash', color: 'var(--pal-ink)', text: 'dashed: $\\sigma^2$, the noise power per sample' }]),
+    hh('div', 'readouts', rM.el));
+  sideStd(widget, side, {
+    case: 'The hiss of a radio between stations sounds the same at every pitch.',
+    sym: String.raw`$x_n$: noise, a fresh random number at each sample with no link to the others. $\sigma^2$: the average of $x_n^2$, here $1$. $P_k=N|X_k|^2$: the power in bin $k$; the factor $N$ keeps the level the same for any record length.`,
+    name: '<i>white noise</i>: named after white light, which mixes all colours about equally.',
+    tries: [
+      String.raw`Press New record a few times: the bars jump about; the dashed line stays.`,
+      String.raw`Press average of 50 records: the bars settle near the dashed line, about the same height in every bin.`],
+    take: 'White noise puts the same average power in every bin, so its spectrum is flat, though one record looks ragged.' });
+  update();
+}
+
+// ---------- 5. Why it's true: every bin gets sigma^2 ----------
+const FLAT_R = [1, 3, 10, 30, 100, 300, 1000], NG = 4;
+const flatCache = {};
+function flatStats(R) {
+  if (flatCache[R]) return flatCache[R];
+  const G = Array.from({ length: NG }, () => new Array(NG).fill(0)), Pk = new Array(NG).fill(0);
+  for (let j = 1; j <= R; j++) {
+    const x = noiseRecord(NG, j);
+    for (let n = 0; n < NG; n++) for (let m = 0; m < NG; m++) G[n][m] += x[n] * x[m] / R;
+    for (let k = 0; k < NG; k++) { let re = 0, im = 0; for (let n = 0; n < NG; n++) { re += x[n] * Math.cos(TAU * k * n / NG); im -= x[n] * Math.sin(TAU * k * n / NG); } Pk[k] += (re * re + im * im) / NG / R; }
+  }
+  let off = 0; for (let n = 0; n < NG; n++) for (let m = 0; m < NG; m++) if (n !== m) off = Math.max(off, Math.abs(G[n][m]));
+  return (flatCache[R] = { G, Pk, off });
+}
+function drawWhyFlat(svg, W, H, R, lit) {
+  const st = flatStats(R);
+  const CAP = {
+    bin: String.raw`amber: $P_k$, the power in each bin`,
+    grid: String.raw`amber: all $N^2$ products $x_nx_m$, each with a turn`,
+    off: String.raw`amber: off the diagonal the averages go to $0$; on it, to $\sigma^2$`,
+    diag: String.raw`amber: only the $N$ diagonal cells are left: $N\sigma^2$, times $\tfrac1N$` }[lit];
+  picCaption(svg, W, CAP, String.raw`left: $x_nx_m$ averaged over $R=${R}$ records of $N=4$; right: $P_k$ averaged the same way`);
+  const top = 30, WL = W * 0.55;
+  const cg = Math.max(26, Math.min((H - top - 80) / NG, (WL - 50) / NG, 74));
+  const gx = 34 + Math.max(0, (WL - 34 - NG * cg) / 2), gy = top + 30;
+  if (lit === 'grid') glowRect(svg, gx, gy, NG * cg, NG * cg, 4);
+  const fs = Math.min(17, cg * 0.3);
+  for (let i = 0; i < NG; i++) {
+    svgTex(svg, gx + (i + 0.5) * cg, gy - 10, '$m=' + i + '$', { w: cg, size: 13, fill: COL.muted });
+    svgTex(svg, gx - 4, gy + (i + 0.5) * cg, '$n=' + i + '$', { w: 40, anchor: 'end', size: 13, fill: COL.muted });
+  }
+  for (let n = 0; n < NG; n++) for (let m = 0; m < NG; m++) {
+    const v = st.G[n][m], lightUp = (lit === 'off' && n !== m) || (lit === 'diag' && n === m);
+    rect(svg, gx + m * cg + 2, gy + n * cg + 2, cg - 4, cg - 4, { rx: 4, fill: lightUp ? COL.amberBg : (n === m ? COL.accentTint : COL.panel), stroke: n === m ? COL.accent : COL.line, 'stroke-width': n === m ? 2 : 1, 'data-item': 'mark', 'data-id': 'g-' + n + '-' + m });
+    svgText(svg, gx + (m + 0.5) * cg, gy + (n + 0.5) * cg + fs * 0.36, fx(v, 2).replace('-', '−'), { 'text-anchor': 'middle', 'font-size': fs, fill: lightUp ? COL.amberInk : COL.ink });
+  }
+  svgTex(svg, 4, gy + NG * cg + 18, 'outlined: the diagonal, $n=m$, the squares $x_n^2$', { w: WL, anchor: 'start', size: 14, fill: COL.text2 });
+  svgTex(svg, 4, gy + NG * cg + 38, 'largest cell off the diagonal: $' + fx(st.off, 2) + '$', { w: WL, anchor: 'start', size: 14, fill: COL.text2 });
+  const x0 = WL + 30, x1 = W - 8, Tp = top + 30, Bp = H - 34, pmax = 3;
+  const Y = v => Bp - Math.min(v, pmax) / pmax * (Bp - Tp), bwid = (x1 - x0) / NG;
+  if (lit === 'bin' || lit === 'diag') for (let k = 0; k < NG; k++) glowRect(svg, x0 + (k + 0.25) * bwid, Y(st.Pk[k]), bwid * 0.5, Bp - Y(st.Pk[k]), 3);
+  line(svg, x0, Bp, x1, Bp, { stroke: COL.grey }); line(svg, x0, Tp, x0, Bp, { stroke: COL.grey });
+  [0, 1, 2, 3].forEach(v => svgText(svg, x0 - 5, Y(v) + 4, String(v), { 'text-anchor': 'end', 'font-size': 13 }));
+  st.Pk.forEach((v, k) => {
+    rect(svg, x0 + (k + 0.25) * bwid, Y(v), bwid * 0.5, Math.max(0.5, Bp - Y(v)), { fill: COL.accent, 'data-item': 'mark', 'data-id': 'P' + k });
+    svgText(svg, x0 + (k + 0.5) * bwid, Y(v) - 5, fx(v, 2), { 'text-anchor': 'middle', 'font-size': 13, fill: COL.ink });
+    svgText(svg, x0 + (k + 0.5) * bwid, Bp + 15, String(k), { 'text-anchor': 'middle', 'font-size': 13 });
+  });
+  line(svg, x0, Y(1), x1, Y(1), { stroke: COL.ink, 'stroke-dasharray': '6 4', 'stroke-width': 1.5 });
+  haloTex(svg, x1 - 4, Tp - 12, 'dashed: $\\sigma^2=1$', { w: 120, anchor: 'end', size: 14, fill: COL.ink });
+  svgTex(svg, (x0 + x1) / 2, H - 9, '$k$, bin', { w: 80, size: 14 });
+  svgTex(svg, x0 + 4, Tp - 12, '$P_k$, cut at 3', { w: x1 - x0, anchor: 'start', size: 14, fill: COL.accentDeep });
+}
+function slideWhyFlat(widget, side) {
+  let ri = 0, lit = '';
+  const sR = ctl('records $R$', { id: 'records', min: 0, max: FLAT_R.length - 1, step: 1, value: ri, fmt: v => String(FLAT_R[v]), onInput: v => { ri = v; plot.redraw(); } });
+  const plot = proofLeft(widget, {
+    controls: [sR.el],
+    draw: (svg, W, H) => drawWhyFlat(svg, W, H, FLAT_R[ri], lit),
+    tests: [
+      String.raw`$R=1$: cells off the diagonal are as big as those on it. Drag $R$ to $1000$: off the diagonal they shrink toward $0$; on it they stay near $1$.`,
+      String.raw`Watch the bars: at $R=1000$ each sits near $\sigma^2=1$. Cases are evidence, not proof.`],
+    model: String.raw`$P_k$ adds all $N^2$ products $x_nx_m$, each with a turn. Two different samples multiply to plus as often as to minus, so those average to $0$. Only the $N$ squares stay.` });
+  proofRight(side, {
+    id: 'flat-noise',
+    goal: { tex: String.raw`\mathbb E\,P_k=\sigma^2`, words: String.raw`for every bin $k$ and every length $N$; $\mathbb E$: the average over many records.` },
+    facts: [
+      { words: String.raw`white noise: $\mathbb E[x_nx_m]=0$ for $n\ne m$, $\mathbb E[x_n^2]=\sigma^2$`, ref: 'step 4' },
+      { words: String.raw`$|z|^2=z\,\bar z$, as $(a+bi)(a-bi)=a^2+b^2$` }],
+    lines: [
+      { tex: String.raw`\textstyle P_k=\frac1N\big|\sum_nx_n\,w^n\big|^2,\ \ w=e^{-i2\pi k/N}`, move: 'Unfold the definition',
+        why: String.raw`$P_k=N|X_k|^2$, and $X_k$ carries $\tfrac1N$`, choices: ['Name a piece', 'Change variables'], highlight: 'bin' },
+      { tex: String.raw`\textstyle =\frac1N\sum_n\sum_mx_nx_m\,w^n\,\bar w^m`, move: 'Rearrange',
+        why: String.raw`$|z|^2=z\bar z$, then multiply out: one term per pair $n,m$`, choices: ['Telescope', 'Use symmetry'], highlight: 'grid' },
+      { tex: String.raw`\mathbb E[x_nx_m]=0\ (n\ne m),\quad \mathbb E[x_n^2]=\sigma^2`, move: 'Unfold the definition',
+        why: 'average every term (the average of a sum is the sum of the averages): white noise', choices: ['Compare or bound', 'Contradiction'], highlight: 'off' },
+      { tex: String.raw`\textstyle \mathbb EP_k=\frac1N\sum_n\sigma^2\,|w^n|^2=\sigma^2`, move: 'Rearrange',
+        why: String.raw`only the $N$ terms with $m=n$ stay, and each turn has length 1: $k$ drops out`, choices: ['Take a limit', 'Use an earlier result'], highlight: 'diag' }],
+    lookBack: [
+      { q: String.raw`Where did the proof use $N$?`,
+        a: String.raw`Nowhere: the level is $\sigma^2$ at any length. A longer record gives more bins, not steadier ones; one record stays ragged. Averaging many records steadies it.` },
+      { q: 'What if neighbouring samples are alike?',
+        a: String.raw`Then $\mathbb E[x_nx_{n\pm1}]$ is not $0$, and the two slants next to the diagonal stay. Low bins get more power, and the noise is no longer white.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+}
+
+// ---------- 6. A derivative blows up the noise ----------
+const NN = 512, SIGMA = 0.05;
+const COSN = new Float64Array(NN), SINN = new Float64Array(NN);
+for (let m = 0; m < NN; m++) { COSN[m] = Math.cos(TAU * m / NN); SINN[m] = Math.sin(TAU * m / NN); }
+// Plain sums S_k = sum_n x_n e^{sgn i 2 pi k n / N}; the page's X_k is S_k / N.
+function dft(re, im, sgn) {
+  const Or = new Float64Array(NN), Oi = new Float64Array(NN);
+  for (let k = 0; k < NN; k++) { let sr = 0, si = 0; for (let n = 0; n < NN; n++) { const idx = (k * n) % NN, c = COSN[idx], s = sgn * SINN[idx]; sr += re[n] * c - im[n] * s; si += re[n] * s + im[n] * c; } Or[k] = sr; Oi[k] = si; }
+  return { re: Or, im: Oi };
+}
+const BUMPS = [{ c: 200, a: 1.0, s: 18 }, { c: 360, a: 0.6, s: 18 }];
+const CLEAN = new Float64Array(NN), DTRUE = new Float64Array(NN), NOISY = new Float64Array(NN);
+(function build() {
+  const rnd = mulberry32(20261016);
+  for (let n = 0; n < NN; n++) {
+    let v = 0, dv = 0;
+    for (const b of BUMPS) { const t = n - b.c, g = Math.exp(-t * t / (2 * b.s * b.s)); v += b.a * g; dv += -b.a * t / (b.s * b.s) * g; }
+    CLEAN[n] = v; DTRUE[n] = dv; NOISY[n] = v + SIGMA * gauss(rnd);
+  }
+})();
+let XN = null;   // spectrum of the noisy record, computed on first use
+const fOfBin = k => (k <= NN / 2 ? k : k - NN) / NN;
+// Slope of the noisy record: multiply bin k by i 2 pi f_k, keep only |f| <= fc.
+function slopeOf(fc) {
+  if (!XN) XN = dft(NOISY, new Float64Array(NN), -1);
+  const re = new Float64Array(NN), im = new Float64Array(NN);
+  for (let k = 0; k < NN; k++) {
+    if (k === NN / 2) continue;
+    const f = fOfBin(k); if (Math.abs(f) > fc + 1e-12) continue;
+    const w = TAU * f; re[k] = -XN.im[k] * w; im[k] = XN.re[k] * w;
+  }
+  return Float64Array.from(dft(re, im, +1).re, v => v / NN);
+}
+const rms = a => { let s = 0; for (let n = 0; n < NN; n++) s += (a[n] - DTRUE[n]) ** 2; return Math.sqrt(s / NN); };
+const FC_LIST = [0.01, 0.015, 0.02, 0.025, 0.03, 0.04, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5];
+function slideDerivative(widget, side) {
+  let fi = FC_LIST.length - 1, slope = null;
+  const sl = ctl('smooth: keep $f$ below $f_c$', { id: 'cutoff', min: 0, max: FC_LIST.length - 1, step: 1, value: fi, fmt: v => '$f_c=' + FC_LIST[v] + '$', onInput: v => { fi = v; slope = null; update(); } });
+  const rE = readout('slope-error', 'typical slope error (rms)'), rT = readout('true-slope', 'largest true slope');
+  const getSlope = () => (slope || (slope = slopeOf(FC_LIST[fi])));
+  const pPos = plotBox((svg, W, H) => {
+    const P = plotFrame(svg, W, H, { x0: 0, x1: NN - 1, y0: -0.25, y1: 1.25, L: 46, B: 24, T: 28 });
+    [0, 1].forEach(v => svgText(svg, P.L - 6, P.Y(v) + 5, String(v), { 'text-anchor': 'end' }));
+    const pts = a => { const o = []; for (let n = 0; n < NN; n += 2) o.push([n, a[n]]); return o; };
+    svgNode('path', { d: pathOf(P, pts(NOISY)), fill: 'none', stroke: COL.muted2, 'stroke-width': 1.3, 'data-item': 'mark', 'data-id': 'noisy' }, svg);
+    svgNode('path', { d: pathOf(P, pts(CLEAN)), fill: 'none', stroke: COL.ink, 'stroke-width': 1.6, 'stroke-dasharray': '6 4' }, svg);
+    svgTex(svg, P.L, 12, 'position: grey, the noisy record; dashed, the clean bumps. The noise is hard to see.', { w: W - P.L, anchor: 'start', size: 15, fill: COL.text2 });
+  }, null, 0.8);
+  const pSl = plotBox((svg, W, H) => {
+    const s = getSlope();
+    const P = plotFrame(svg, W, H, { x0: 0, x1: NN - 1, y0: -0.13, y1: 0.13, L: 46, B: 30, T: 28 });
+    [-0.1, 0, 0.1].forEach(v => svgText(svg, P.L - 6, P.Y(v) + 5, String(v).replace('-', '−'), { 'text-anchor': 'end' }));
+    const pts = a => { const o = []; for (let n = 0; n < NN; n += 1) o.push([n, a[n]]); return o; };
+    svgNode('path', { d: pathOf(P, pts(s)), fill: 'none', stroke: COL.accent, 'stroke-width': 1.6, 'data-item': 'mark', 'data-id': 'slope' }, svg);
+    svgNode('path', { d: pathOf(P, pts(DTRUE)), fill: 'none', stroke: COL.ink, 'stroke-width': 2.2, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'true-slope' }, svg);
+    svgTex(svg, P.L, 12, 'slope: blue, from the noisy record; dashed, the true slope', { w: W - P.L, anchor: 'start', size: 15, fill: COL.accentDeep });
+    svgTex(svg, (P.L + W - P.R) / 2, H - 8, '$n$, sample', { w: 120, size: 14 });
+  }, null, 1.2);
+  function update() {
+    rE.set('$' + fx(rms(getSlope()), 3) + '$');
+    rT.set('$' + fx(Math.max(...DTRUE.map(Math.abs)), 3) + '$');
+    pPos.redraw(); pSl.redraw();
+  }
+  widget.append(hh('div', 'sliders', sl.el), pPos.wrap, pSl.wrap, hh('div', 'readouts', rE.el, rT.el));
+  sideStd(widget, side, {
+    case: 'Work out speed from a jittery GPS position, and the speed jumps wildly while the car moves smoothly.',
+    sym: String.raw`$u_n$: a position, two smooth bumps plus noise of size $\sigma=0.05$. A wave’s slope is $2\pi f$ times its height (Primer · Waves, step 12): slow waves give gentle slopes, fast wiggles steep ones. $f_c$: smoothing keeps the waves slower than $f_c$ and drops the rest.`,
+    tries: [
+      String.raw`Start at $f_c=0.5$, no smoothing: the noise hides in the position, yet the blue slope is lost in jumps three times the true slope.`,
+      String.raw`Set $f_c=0.025$: the blue slope follows the dashed one.`,
+      String.raw`Raise $f_c$ to $0.2$: the jumps come back.`],
+    take: 'A slope boosts fast wiggles, and noise is full of them, so smooth first and take the slope after.' });
+  update();
+}
+
+// ---------- 7. A derivative is a filter with gain 2 pi f ----------
+const CLEAN_P = (() => { const X = dft(CLEAN, new Float64Array(NN), -1); return Array.from({ length: NN / 2 + 1 }, (_, k) => (X.re[k] * X.re[k] + X.im[k] * X.im[k]) / NN); })();
+const CROSS_K = CLEAN_P.findIndex((p, k) => k > 0 && p < SIGMA * SIGMA);
+const F_LIST = [0.002, 0.005, 0.01, 0.02, 0.027, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5];
+const dBp = p => 10 * Math.log10(Math.max(p, 1e-20));
+function powerAxes(svg, W, H, x0, x1, Tp, Bp) {
+  const lo = -80, hi = 5, fl = 0.002, fh = 0.5;
+  const X = v => x0 + Math.log(v / fl) / Math.log(fh / fl) * (x1 - x0), Y = v => Bp - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (Bp - Tp);
+  line(svg, x0, Bp, x1, Bp, { stroke: COL.grey }); line(svg, x0, Tp, x0, Bp, { stroke: COL.grey });
+  [0.002, 0.01, 0.05, 0.1, 0.5].forEach(v => svgText(svg, X(v), Bp + 15, String(v), { 'text-anchor': 'middle', 'font-size': 13 }));
+  [-80, -60, -40, -20, 0].forEach(v => svgText(svg, x0 - 5, Y(v) + 4, String(v).replace('-', '−'), { 'text-anchor': 'end', 'font-size': 13 }));
+  const path = fn => { let d = '', first = true; for (let k = 1; k <= NN / 2; k++) { const v = k / NN; if (v < fl) continue; d += (first ? 'M' : 'L') + X(v).toFixed(1) + ' ' + Y(fn(v, k)).toFixed(1); first = false; } return d; };
+  return { X, Y, path };
+}
+function slideGain(widget, side) {
+  let fi = F_LIST.length - 1;
+  const sl = ctl('$f$', { id: 'f', min: 0, max: F_LIST.length - 1, step: 1, value: fi, fmt: v => String(F_LIST[v]), onInput: v => { fi = v; update(); } });
+  const rG = readout('gain', 'power gain $(2\\pi f)^2$'), rR = readout('vs-001', 'compared with $f=0.01$');
+  const plot = plotBox((svg, W, H) => {
+    const f = F_LIST[fi], s2 = SIGMA * SIGMA;
+    const A = powerAxes(svg, W, H, 52, W - 10, 34, H - 40);
+    svgTex(svg, (52 + W - 10) / 2, H - 10, '$f$ on a log axis; power in dB', { w: 300, size: 14 });
+    svgTex(svg, 52, 12, 'power per bin, after the derivative', { w: W - 60, anchor: 'start', size: 15, fill: COL.text2 });
+    svgNode('path', { d: A.path(() => dBp(s2)), fill: 'none', stroke: COL.grey, 'stroke-width': 1.6, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'noise-before' }, svg);
+    svgNode('path', { d: A.path(v => dBp(s2 * (TAU * v) ** 2)), fill: 'none', stroke: COL.accent, 'stroke-width': 2.8, 'data-item': 'mark', 'data-id': 'noise-after' }, svg);
+    svgNode('path', { d: A.path((v, k) => dBp(CLEAN_P[k] * (TAU * v) ** 2)), fill: 'none', stroke: COL.ink, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'bumps-after' }, svg);
+    line(svg, A.X(f), 34, A.X(f), H - 40, { stroke: COL.ink, 'stroke-dasharray': '3 3' });
+    dot(svg, A.X(f), A.Y(dBp(s2 * (TAU * f) ** 2)), 5, COL.accent, { stroke: COL.bg, 'stroke-width': 2 });
+    haloTex(svg, W - 14, A.Y(dBp(s2)) + 13, 'dashed: noise before, $\\sigma^2$', { w: 230, anchor: 'end', size: 14, fill: COL.text2 });
+    haloTex(svg, W - 14, A.Y(dBp(s2 * PI * PI)) - 13, 'blue: noise after', { w: 200, anchor: 'end', size: 14, fill: COL.accentDeep });
+    haloTex(svg, A.X(0.05), A.Y(-66), 'thin line: the bumps after', { w: 190, anchor: 'start', size: 14, fill: COL.ink });
+  });
+  function update() {
+    const f = F_LIST[fi], g = (TAU * f) ** 2;
+    rG.set('$(2\\pi\\cdot' + f + ')^2=' + (g < 0.1 ? g.toPrecision(2) : sn(g, 2)) + '$');
+    rR.set('$' + sn(g / (TAU * 0.01) ** 2, 2) + '$ times as much');
+    plot.redraw();
+  }
+  widget.append(hh('div', 'sliders', sl.el), plot.wrap,
+    legend([{ kind: 'dash', color: 'var(--pal-grey)', text: 'noise before' }, { kind: 'line', color: 'var(--pal-accent)', text: 'noise after the derivative' }, { kind: 'line', color: 'var(--pal-ink)', text: 'the bumps after' }]),
+    hh('div', 'readouts', rG.el, rR.el));
+  sideStd(widget, side, {
+    case: 'Step 6 in frequency: the derivative is a filter, and its gain grows with frequency.',
+    sym: String.raw`A derivative multiplies the wave $e^{i2\pi fn}$ by $i2\pi f$ (Primer · Complex numbers, step 11): a quarter turn, $2\pi f$ times longer. Power is length squared. Noise starts at $\sigma^2$ in every bin (step 4). dB and the log axis: Primer · Logarithms, steps 9 and 7.`,
+    tries: [
+      String.raw`Keep $f=0.5$: the gain is $\pi^2=9.87$. The fastest noise grows almost tenfold.`,
+      String.raw`Set $f=0.01$: the gain is $0.0039$, so the top bin gains $2500$ times more.`,
+      String.raw`Find where the thin line drops under the blue one: near $f=0.027$. Above it the slope is mostly noise.`],
+    take: String.raw`A derivative multiplies power by $(2\pi f)^2$, so most of its output comes from high-frequency noise unless you cut it off.` });
+  update();
+}
+
+// ---------- 8. Why it's true: noise power after a derivative ----------
+function drawWhyBoost(svg, W, H, f, lit) {
+  const w = TAU * f, s2 = SIGMA * SIGMA;
+  const CAP = {
+    dial: String.raw`amber: the slope's arrow, a quarter turn ahead and $\omega$ times as long`,
+    name: String.raw`amber: $X'_k=i\omega X_k$, the slope's arrow for wave $k$`,
+    gain: String.raw`amber: the power grows by $\omega^2$, the gap between the two noise lines`,
+    curve: String.raw`amber: the noise after the derivative, $(2\pi f)^2\sigma^2$` }[lit];
+  picCaption(svg, W, CAP, String.raw`left: one bin's arrow before and after the derivative; right: power in dB`);
+  const top = 30, Dw = Math.min(W * 0.34, H - top - 70), Rd = Dw / 2 - 6, cx = Dw / 2 + 2, cy = top + 10 + Dw / 2;
+  const r0 = Rd / PI, a0 = PI / 6, a1 = a0 + PI / 2;
+  dot(svg, cx, cy, Rd, COL.panel, { stroke: COL.line });
+  line(svg, cx - Rd, cy, cx + Rd, cy, { stroke: COL.soft2 }); line(svg, cx, cy - Rd, cx, cy + Rd, { stroke: COL.soft2 });
+  const bx = cx + w * r0 * Math.cos(a1), by = cy - w * r0 * Math.sin(a1);
+  if (lit === 'dial') { glowLine(svg, 'M' + cx + ' ' + cy + 'L' + bx.toFixed(1) + ' ' + by.toFixed(1), 12); dot(svg, bx, by, 7, COL.amberBg, { stroke: COL.amber }); }
+  arrow(svg, cx, cy, cx + r0 * Math.cos(a0), cy - r0 * Math.sin(a0), { color: COL.muted2, w: 3, id: 'X' });
+  if (w * r0 > 3) arrow(svg, cx, cy, bx, by, { color: COL.accent, w: 3, id: 'iwX' }); else dot(svg, bx, by, 2.5, COL.accent);
+  svgTex(svg, 2, cy + Rd + 16, 'grey: $X_k$; blue: $X\'_k=i\\omega X_k$', { w: Dw + 50, anchor: 'start', size: 14, fill: lit === 'name' ? COL.amberInk : COL.accentDeep, bg: lit === 'name' ? COL.amberBg : null });
+  svgTex(svg, 2, cy + Rd + 38, '$\\omega=' + fx(w, 3) + '$, $\\omega^2=' + (w * w < 0.1 ? (w * w).toPrecision(2) : fx(w * w, 2)) + '$', { w: Dw + 50, anchor: 'start', size: 14, fill: COL.ink });
+  const x0 = Dw + 56, x1 = W - 8, Tp = top + 20, Bp = H - 34;
+  const A = powerAxes(svg, W, H, x0, x1, Tp, Bp);
+  svgTex(svg, (x0 + x1) / 2, H - 9, '$f$ on a log axis; power in dB', { w: x1 - x0 + 30, size: 14 });
+  if (lit === 'curve') glowLine(svg, A.path(v => dBp(s2 * (TAU * v) ** 2)), 9);
+  svgNode('path', { d: A.path(() => dBp(s2)), fill: 'none', stroke: COL.grey, 'stroke-width': 1.5, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'noise-before' }, svg);
+  svgNode('path', { d: A.path(v => dBp(s2 * (TAU * v) ** 2)), fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'noise-after' }, svg);
+  svgNode('path', { d: A.path((v, k) => dBp(CLEAN_P[k] * (TAU * v) ** 2)), fill: 'none', stroke: COL.ink, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'bumps-after' }, svg);
+  const yb = A.Y(dBp(s2)), ya = A.Y(dBp(s2 * w * w));
+  if (lit === 'gain') glowLine(svg, 'M' + A.X(f).toFixed(1) + ' ' + yb.toFixed(1) + 'L' + A.X(f).toFixed(1) + ' ' + ya.toFixed(1), 10);
+  line(svg, A.X(f), Tp, A.X(f), Bp, { stroke: COL.ink, 'stroke-dasharray': '3 3', 'data-item': 'mark', 'data-id': 'f' });
+  dot(svg, A.X(f), ya, 4.5, COL.accent); dot(svg, A.X(f), yb, 4, COL.grey);
+  haloTex(svg, x1, A.Y(dBp(s2)) + 13, 'dashed: noise before', { w: 200, anchor: 'end', size: 13, fill: COL.text2 });
+  haloTex(svg, x1, A.Y(dBp(s2 * PI * PI)) - 13, 'blue: noise after', { w: 180, anchor: 'end', size: 13, fill: COL.accentDeep });
+  haloTex(svg, A.X(0.05), A.Y(-68), 'thin line: the bumps after', { w: 180, anchor: 'start', size: 13, fill: COL.ink });
+}
+function slideWhyBoost(widget, side) {
+  let fi = 2, lit = '';
+  const sF = ctl('$f$', { id: 'f', min: 0, max: F_LIST.length - 1, step: 1, value: fi, fmt: v => String(F_LIST[v]), onInput: v => { fi = v; plot.redraw(); } });
+  const plot = proofLeft(widget, {
+    controls: [sF.el],
+    draw: (svg, W, H) => drawWhyBoost(svg, W, H, F_LIST[fi], lit),
+    tests: [
+      String.raw`At $f=0.01$ the blue arrow is $0.063$ times the grey one, a quarter turn ahead. Guess the power gain at $f=0.25$, then check.`,
+      String.raw`At $f=0.5$ the blue arrow is $\pi$ times the grey one. Cases are evidence, not proof.`],
+    model: String.raw`A derivative turns each wave's arrow a quarter turn and stretches it by $\omega=2\pi f$. Noise has the same power at every $f$, so after the stretch most of it sits at high $f$.` });
+  proofRight(side, {
+    id: 'noise-boost',
+    goal: { tex: String.raw`\mathbb E\,P'_k=(2\pi f)^2\,\sigma^2`, words: String.raw`$P'_k$: the power of the slope in bin $k$, $f=\tfrac kN$.` },
+    facts: [
+      { tex: String.raw`\textstyle x_n=\sum_kX_k\,e^{i\omega_kn}`, ref: 'Primer · Fourier series, step 10' },
+      { tex: String.raw`\tfrac{d}{dn}e^{i\omega n}=i\omega\,e^{i\omega n}`, ref: 'Primer · Complex numbers, step 11' },
+      { tex: String.raw`\mathbb EP_k=\sigma^2`, ref: 'step 5' }],
+    lines: [
+      { tex: String.raw`\textstyle x'_n=\sum_ki\omega_kX_k\,e^{i\omega_kn}`, move: 'Use an earlier result',
+        why: String.raw`each wave's slope is $i\omega$ times the wave, $\omega_k=2\pi f$; slopes add`, choices: ['Unfold the definition', 'Take a limit'], highlight: 'dial' },
+      { tex: String.raw`X'_k=i\omega_k\,X_k`, move: 'Name a piece',
+        why: String.raw`the slope's arrow for wave $k$`, choices: ['Change variables', 'Rearrange'], highlight: 'name' },
+      { tex: String.raw`P'_k=N|X'_k|^2=\omega_k^2\,P_k`, move: 'Rearrange',
+        why: String.raw`lengths multiply, $|i\omega|=\omega$; power is length squared`, choices: ['Compare or bound', 'Telescope'], highlight: 'gain' },
+      { tex: String.raw`\mathbb EP'_k=\omega_k^2\,\sigma^2`, move: 'Use an earlier result',
+        why: String.raw`white noise has $\mathbb EP_k=\sigma^2$ in every bin (step 5)`, choices: ['Unfold the definition', 'Induction'], highlight: 'curve' }],
+    lookBack: [
+      { q: 'Where should the smoothing cut?',
+        a: String.raw`Where the bumps' power falls under the boosted noise: near $f=${(CROSS_K / NN).toFixed(3)}$ for these bumps (bin ${CROSS_K} of ${NN}). Step 6's $f_c=0.025$ sits just below.` },
+      { q: 'What does a second derivative do?',
+        a: String.raw`Two quarter turns: $(i\omega)^2=-\omega^2$, so the noise power grows as $\omega^4$, $\pi^4\approx97$ times at $f=\tfrac12$. Smoothing matters even more.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); }, { primerMoves: PRIMER_MOVES, endNote: NEXT4 });
+}
+
+// ---------- slides ----------
+const SLIDES = [
+  { id: 'power-spectrum', title: 'The spectrum ignores where you start', tag: 'Used in L16 17:55–19:29',
+    question: 'What does the power spectrum keep, and what does it throw away?',
+    formula: String.raw`$$\text{power in bin }k=|X_k|^2$$`, mount: slidePower },
+  { id: 'why-shift-phase', proof: true, title: String.raw`Why it's true: a shift turns $X_k$ and keeps its length`, tag: 'Used in L16 17:55–19:29',
+    question: 'Why does starting later turn each arrow, but never change its length?', mount: slideWhyShift },
+  { id: 'spectra-add', title: 'Spectra of two signals do not add', tag: 'Used in L16 24:45–25:16',
+    question: 'Is the spectrum of a sum the sum of the spectra?',
+    formula: String.raw`$$\begin{aligned}|X+Y|^2=\;&|X|^2+|Y|^2\\&+2\,|X|\,|Y|\cos\varphi\end{aligned}$$`, mount: slideAdd },
+  { id: 'noise-floor', title: 'Hiss has a flat spectrum', tag: 'Used in L16 27:23–29:00 · L17 15:42–16:13',
+    question: 'How is the power of random noise spread over frequency?',
+    formula: String.raw`$$\text{average of }P_k=\sigma^2\ \text{ in every bin}$$`, mount: slideNoiseFloor },
+  { id: 'why-flat-noise', proof: true, title: String.raw`Why it's true: every bin gets $\sigma^2$`, tag: 'Used in L16 27:23–29:00 · L17 15:42–16:13',
+    question: 'Why does every bin of white noise hold the same power on average?', mount: slideWhyFlat },
+  { id: 'noise-and-derivative', title: 'A derivative blows up the noise', tag: 'Used in L17 15:42–16:44 · L16 ch.',
+    question: 'What happens when you take the slope of noisy data?',
+    formula: String.raw`$$\tfrac{d}{dn}\cos2\pi fn=-2\pi f\,\sin2\pi fn$$`, mount: slideDerivative },
+  { id: 'derivative-gain', title: 'The derivative is a filter with gain $2\\pi f$', tag: 'Used in L17 16:44 · L16 ch.',
+    question: 'How much does a derivative boost each frequency?',
+    formula: String.raw`$$\text{power after}=(2\pi f)^2\times\text{power before}$$`, mount: slideGain },
+  { id: 'why-noise-boost', proof: true, title: String.raw`Why it's true: noise power grows as $(2\pi f)^2$`, tag: 'Used in L17 15:42–16:44',
+    question: String.raw`Why does the noise power after a derivative grow as $(2\pi f)^2$?`, mount: slideWhyBoost },
+];
+
+startDeck();
+</script>
+</body>
+</html>

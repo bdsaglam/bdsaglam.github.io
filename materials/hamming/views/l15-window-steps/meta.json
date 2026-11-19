@@ -1,0 +1,7 @@
+{
+  "title": "Windows: multiplying is convolving",
+  "group": "l15",
+  "about": "Why multiplying convolves, what a finite record does to two lines, and how von Hann's and Hamming's windows trade leakage.",
+  "w": 1280,
+  "h": 720
+}

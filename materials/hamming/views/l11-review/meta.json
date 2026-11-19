@@ -1,0 +1,7 @@
+{
+  "title": "Lecture 11 review: Huffman codes, parity, and the weighted check",
+  "group": "l11",
+  "about": "Review by doing: merge a Huffman tree, test the swap argument, compare two spreads, flip bits, and break a mod-37 check.",
+  "w": 1280,
+  "h": 720
+}

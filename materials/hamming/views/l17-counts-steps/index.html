@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>The physicist's counts</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors come from the theme palette (../../components/theme.js): grey for exact values and inputs, blue for
+   outputs and the reader's choice, amber only for proof lights, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --tint:var(--pal-soft-hover); --rim:var(--pal-soft-3);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.widget>*{max-width:100%;min-width:0}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.case{margin:0;font-size:16px}
+.formula{font-size:clamp(18px,1.7vw,24px)}
+.formula .katex-display{margin:.2em 0}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.echo{margin:0;font-size:16px;line-height:1.35}
+.echo .src{color:var(--muted);font-size:14px}
+.kicker{font-size:14px;color:var(--muted);margin:0 0 2px}
+.blk{display:flex;flex-direction:column;gap:2px}
+
+/* Controls, readouts, legend */
+.sliders{display:flex;gap:8px 20px;flex-wrap:wrap;width:100%;align-items:center}
+.btnrow{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px;flex-wrap:wrap}
+.slide-ctl input{width:clamp(120px,12vw,190px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:44px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);color:var(--fg);border-radius:8px;cursor:pointer;font-size:16px;line-height:1.3}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 10px;border-radius:10px;background:var(--pal-soft);font-size:16px;overflow-wrap:anywhere;overflow:hidden}
+.readout .k{color:var(--pal-text-2);font-size:15px}
+.readout .val{font-size:17px;font-weight:600;line-height:1.55}
+.readouts.inline{flex:1 1 280px;width:auto}
+.readouts.inline .readout{display:flex;gap:2px 8px;align-items:baseline;flex-wrap:wrap;flex:1 1 140px}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.readout.bad .k{color:var(--red)}
+.legend{display:flex;gap:4px 16px;flex-wrap:wrap;font-size:16px;color:var(--pal-text-2);align-items:center;padding-bottom:6px}
+.sw{display:inline-block;width:22px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:16px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.ldot{display:inline-block;width:7px;height:7px;border-radius:50%;vertical-align:middle;margin:0 8px 0 4px}
+.ltri{display:inline-block;width:0;height:0;vertical-align:middle;margin:0 7px 0 3px;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--accent)}
+.ltick{display:inline-block;width:3px;height:14px;vertical-align:middle;margin:0 8px 0 4px}
+
+/* Plots fill the height left in the widget column */
+.fill{flex:1 1 0;min-height:90px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.takeholder{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.takeholder .takeaway{align-self:stretch}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide,.slide.wide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.side-proof{grid-template-columns:minmax(0,9fr) minmax(0,11fr)}
+.slide.proof-slide .side,.slide.side-proof .side{justify-content:flex-start}
+.fill.proofpic{min-height:150px}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,9vw,140px)}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px;font-size:16px}
+.test .tries{gap:3px}
+.model{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+
+/* Decision slides: the problem and its sketch, three cards and the reveal on the left; question, formula,
+   try-steps, AI echo and takeaway on the right. */
+.slide.decision{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);gap:clamp(20px,2.6vw,40px)}
+.decision .widget{gap:6px}
+.decision .side{justify-content:space-evenly;gap:clamp(8px,1.6vh,16px)}
+.decision h2{font-size:clamp(20px,1.85vw,27px)}
+.decision .q{margin:0;font-size:clamp(17px,1.45vw,20px);font-weight:600;line-height:1.35}
+.decision .fx{margin:0;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--tint);font-size:clamp(17px,1.5vw,21px);line-height:1.4}
+.decision .ai{margin:0;font-size:16px;line-height:1.4}
+.decision .ai .src{color:var(--muted);font-size:14px}
+.decision .takeaway{padding:10px 14px;line-height:1.4}
+.decision .tries{gap:5px;font-size:16px;line-height:1.4}
+.decision .hold{color:var(--muted);font-style:italic;background:var(--tint);border:1px dashed var(--line);border-radius:6px;padding:8px 12px;margin:0;font-size:16px;line-height:1.4}
+.prob{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:6px 14px;background:var(--tint);font-size:16px;line-height:1.4}
+.prob.has-sketch{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:4px 14px;align-items:center}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob p{margin:0}
+.prob .sketch{position:relative;height:clamp(104px,18vh,136px);min-width:0}
+.prob .sketch .fill{position:absolute;inset:0;min-height:0}
+.opts{flex:0 0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.5vw,7px)}
+.opt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:0 14px;padding:clamp(5px,0.6vw,9px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;gap:3px;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:16px}
+.opt .letter{font-weight:700;color:var(--accent)}
+.opt .who{font-size:14px;color:var(--muted);text-align:right}
+.opt .body{font-size:clamp(16px,1.3vw,18px);line-height:1.3}
+.opt .asm{margin:0;font-size:16px;line-height:1.3;color:var(--muted)}
+.opt .verdict{font-size:16px;line-height:1.3;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.chooser{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.chooser .who{color:var(--pal-accent-deep);font-weight:600}
+.opt.chooser .letter{color:var(--pal-accent-deep)}
+.reveal{flex:1 1 auto;min-height:0;border:1px solid var(--line);border-radius:10px;padding:6px 14px;font-size:16px;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.reveal.idle{background:var(--tint);color:var(--muted)}
+.rv{margin:0;line-height:1.35}
+.rv .k{font-weight:650;color:var(--pal-accent-deep)}
+.rv .t{color:var(--muted);font-size:14px;white-space:nowrap}
+.rv.hold{color:var(--muted)}
+.decision .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.decision .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent);padding:6px 16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.tries,.takeaway,.case,.echo,.test,.model{line-height:1.25}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:19px}
+  h2{font-size:20px}
+  .question{font-size:16px}
+  .fill{min-height:80px}
+  .readout{padding:2px 8px}
+  .readout .val{line-height:1.45}
+  .fill.proofpic{min-height:130px}
+  .model{padding:5px 10px}
+  .test .tries{gap:1px}
+  .btn{padding:3px 10px}
+  .decision h2{font-size:20px}
+  .decision .side{gap:4px}
+  .decision .tries{gap:2px;line-height:1.3}
+  .decision .takeaway{padding:6px 12px}
+  .decision .fx{padding:5px 12px}
+  .decision .hold{padding:5px 10px}
+  .reveal{gap:2px;padding:4px 12px}
+  .rv{line-height:1.25}
+  .opts{gap:3px}
+  .opt{padding:3px 12px}
+  .opt .body,.opt .asm,.opt .verdict{line-height:1.22}
+  .prob{padding:3px 12px;line-height:1.28}
+  .prob .sketch{height:96px}
+}
+</style>
+</head>
+<body>
+<header>Lecture 17 · The physicist's counts</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// Numbers on these slides come from lectures/17-digital-filters-part-iv/checks.py and were re-run with node
+// (workspace/l17-materials-2026-10-24/l17-counts-steps/numbers.mjs). Noise: mulberry32, seeds noted below.
+
+// ---------- palette and redraw ----------
+let COL = {};
+const PAL_NAMES = ['bg', 'ink', 'fg', 'text-2', 'muted', 'muted-2', 'grey', 'guide', 'grid', 'line', 'panel', 'soft', 'soft-2',
+  'accent', 'accent-2', 'accent-3', 'accent-deep', 'accent-tint', 'accent-soft', 'on-accent', 'grey-bar', 'slate-2',
+  'amber', 'amber-bg', 'amber-ink', 'red'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+
+// ---------- DOM helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false }], throwOnError: false };
+function tex(node) { if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH); return node; }
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function hh(tag, cls, ...kids) { const e = h(tag, cls); for (const k of kids) if (k) e.append(k); return e; }
+function mark(e, kind, id, title) { e.dataset.item = kind; if (id != null) e.dataset.id = id; if (title != null) e.dataset.title = title; return e; }
+function emit(kind, data) {
+  try { if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {}); }
+  catch (e) { /* the view works without the bridge */ }
+}
+function fx(x, d) { const y = Math.abs(x) < 0.5 * Math.pow(10, -d) ? 0 : x; return y.toFixed(d); }
+function sn(x, d) { return String(+fx(x, d == null ? 3 : d)); }
+
+// ---------- controls ----------
+// A labelled range input. o: {id, min, max, step, value, fmt(v) -> TeX-ready text, onInput(v)}.
+function ctl(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = setTex(h('span'), label);
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.id);
+  const val = h('span', 'val');
+  const show = v => setTex(val, o.fmt(v));
+  inp.addEventListener('input', () => { show(+inp.value); o.onInput(+inp.value); });
+  show(o.value);
+  wrap.append(lab, inp, val);
+  return { el: wrap, input: inp, set(v) { inp.value = v; show(v); } };
+}
+// A row of buttons that pick one choice. choices: [[id, label], ...]; getCur() gives the current id.
+function choiceRow(label, choices, getCur, onPick) {
+  const row = hh('div', 'btnrow', label ? setTex(h('span', 'lab'), label) : null);
+  const btns = choices.map(([id, text]) => {
+    const b = mark(h('button', 'btn'), 'control', id);
+    setTex(b, text);
+    b.addEventListener('click', () => { onPick(id); paint(); });
+    row.append(b);
+    return [id, b];
+  });
+  function paint() { btns.forEach(([id, b]) => b.classList.toggle('on', id === getCur())); }
+  paint();
+  return { el: row, paint };
+}
+function button(id, label, onClick) {
+  const b = mark(h('button', 'btn'), 'control', id);
+  setTex(b, label);
+  b.addEventListener('click', onClick);
+  return b;
+}
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = setTex(h('div', 'k'), label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); }, label(t) { setTex(k, t); } };
+}
+// Legend: items {color (CSS), text, kind: 'line' | 'dash' | 'chip' | 'dot' | 'tri' | 'tick'}.
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    let sw;
+    if (it.kind === 'chip') { sw = h('span', 'chip'); sw.style.background = it.color; }
+    else if (it.kind === 'dot') { sw = h('span', 'ldot'); sw.style.background = it.color; }
+    else if (it.kind === 'tri') { sw = h('span', 'ltri'); sw.style.borderTopColor = it.color; }
+    else if (it.kind === 'tick') { sw = h('span', 'ltick'); sw.style.background = it.color; }
+    else { sw = h('span', 'sw'); sw.style.borderTop = '3px ' + (it.kind === 'dash' ? 'dashed' : 'solid') + ' ' + it.color; }
+    s.append(sw, setTex(h('span'), it.text));
+    d.append(s);
+  }
+  return d;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function caseLine(text) { return setTex(h('p', 'case'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+// The takeaway appears after the first try: on the first click, drag or slider move in the widget, or on "Show".
+function takeBox(widget, text) {
+  const holder = h('div', 'takeholder');
+  const btn = mark(h('button', 'btn'), 'control', 'show-takeaway');
+  setTex(btn, 'Show the takeaway');
+  const tk = setTex(h('p', 'takeaway'), text);
+  tk.hidden = true;
+  const show = () => { tk.hidden = false; btn.hidden = true; };
+  btn.addEventListener('click', show);
+  for (const ev of ['input', 'click', 'pointerdown']) widget.addEventListener(ev, show);
+  holder.append(btn, tk);
+  return holder;
+}
+// An AI echo under the takeaway: the mechanism in a few sentences, the source small.
+function echoBlock(text, src) {
+  const p = setTex(h('p', 'echo'), text);
+  if (src) p.append(' ', h('span', 'src', '(' + src + ')'));
+  return hh('div', 'blk', h('div', 'kicker', 'Same move in AI research'), p);
+}
+// The side column of a content slide, after the frame's tag, title, question and formula.
+function sideStd(widget, side, o) {
+  if (o.case) side.querySelector('.question').after(caseLine(o.case));
+  if (o.sym) { const f = side.querySelector('.formula'); const s = sym(o.sym); if (f) f.before(s); else side.append(s); }
+  if (o.tries) side.append(triesList(o.tries));
+  if (o.take) side.append(takeBox(widget, o.take));
+  if (o.echo) side.append(echoBlock(o.echo, o.src));
+}
+
+// ---------- SVG helpers ----------
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) { return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 }); }
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted, 'font-size': 14 }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label inside an SVG: a foreignObject holding a rendered formula. o: {w, ht, anchor, size, fill, bg, bold}.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc + (o.bold ? ';font-weight:600' : ''));
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 6px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// The same label with a halo in the page color, so it reads over a curve or bars.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  return fo;
+}
+function line(svg, x1, y1, x2, y2, o) { return svgNode('line', Object.assign({ x1, y1, x2, y2 }, o || {}), svg); }
+function dot(svg, x, y, r, fill, o) { return svgNode('circle', Object.assign({ cx: x, cy: y, r, fill }, o || {}), svg); }
+function rect(svg, x, y, w, ht, o) { return svgNode('rect', Object.assign({ x, y, width: Math.max(0, w), height: Math.max(0, ht) }, o || {}), svg); }
+function glowRect(svg, x, y, w, ht, pad) {
+  pad = pad == null ? 4 : pad;
+  return rect(svg, x - pad, y - pad, w + 2 * pad, ht + 2 * pad, { rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 });
+}
+function glowLine(svg, d, wdt) { return svgNode('path', { d, fill: 'none', stroke: COL.amberBg, 'stroke-width': wdt || 10, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg); }
+// The top row of a proof picture: what the amber part is while a line is lit, else a plain hint.
+function picCaption(svg, W, litText, plainText) {
+  if (litText) return svgTex(svg, W / 2, 12, litText, { w: W - 4, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  if (plainText) return svgTex(svg, 4, 12, plainText, { w: W - 8, anchor: 'start', size: 15, fill: COL.text2 });
+  return null;
+}
+// A plot that takes the height left in its parent. draw(svg, W, H) runs on every resize and redraw.
+function plotBox(draw, cls, weight) {
+  const wrap = h('div', 'fill' + (cls ? ' ' + cls : ''));
+  if (weight) wrap.style.flex = weight + ' 1 0';
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 40) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// Linear scales for a box. o: {x0, x1, y0, y1, L, R, T, B} (pixels inside W x H). y values are clamped.
+function scales(W, H, o) {
+  const L = o.L, R = o.R, T = o.T, B = o.B, pw = W - L - R, ph = H - T - B, base = T + ph;
+  const X = x => L + (x - o.x0) / (o.x1 - o.x0) * pw;
+  const Y = y => base - (Math.max(o.y0, Math.min(o.y1, y)) - o.y0) / (o.y1 - o.y0) * ph;
+  return { X, Y, L, R, T, B, pw, ph, base, W, H };
+}
+function axes(svg, P) {
+  line(svg, P.L, P.base, P.W - P.R, P.base, { stroke: COL.grey });
+  line(svg, P.L, P.T, P.L, P.base, { stroke: COL.grey });
+}
+function polyline(P, pts) { return pts.map((p, i) => (i ? 'L' : 'M') + P.X(p[0]).toFixed(1) + ' ' + P.Y(p[1]).toFixed(1)).join(''); }
+
+// ---------- proof slides ----------
+function proofRight(side, spec, test, onLight) {
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = test;
+  el.lookBackHint = 'Look back: under the picture.';
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+function testBlock(title, items) { return hh('div', 'test', h('p', 'part', title), triesList(items)); }
+function modelLine(text) { const m = h('p', 'model'); m.append(h('span', 'part', 'The picture: '), tex(h('span', '', text))); return m; }
+
+// =================================================================================================
+// ---------- numbers: counts, the made-up record, spectra ----------
+const PI = Math.PI, TAU = 2 * PI;
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+// A Poisson count with mean mu (Knuth's product of uniforms, in pieces of at most 200 so exp(-mu) never underflows).
+function poisson(rnd, mu) {
+  let n = 0;
+  while (mu > 0) {
+    const m = Math.min(mu, 200); mu -= m;
+    const L = Math.exp(-m); let p = 1;
+    for (;;) { p *= rnd(); if (p <= L) break; n++; }
+  }
+  return n;
+}
+// The made-up record (Hamming gives no counts): 256 energy channels, three peaks on a broad hump.
+// mu_k = 30 + 300 exp(-((k-128)/70)^2/2) + 150 sum over c in {70,125,185} of exp(-((k-c)/13)^2/2):
+// 86.4 at channel 0, 479.7 at channel 125 (checks.py).
+const NCH = 256, TRUE_PEAKS = [70, 125, 185];
+const MU = Float64Array.from({ length: NCH }, (_, k) => {
+  let m = 30 + 300 * Math.exp(-0.5 * ((k - 128) / 70) ** 2);
+  for (const c of TRUE_PEAKS) m += 150 * Math.exp(-0.5 * ((k - c) / 13) ** 2);
+  return m;
+});
+const MU_TOP = 125, MU_EDGE = 0;
+// One run of the record: a Poisson count in every channel. Seed s gives the same run on every slide; steps 1, 5
+// and 6 open on REC_SEED (peaks found at f_c = 0.0125, 0.025, 0.1, 0.2: 1, 3, 7, 33).
+const REC_SEED = 5;
+function recordRun(s) { const r = mulberry32(5000 + s); return Float64Array.from(MU, m => poisson(r, m)); }
+const COSN = Float64Array.from({ length: NCH }, (_, j) => Math.cos(TAU * j / NCH));
+const SINN = Float64Array.from({ length: NCH }, (_, j) => Math.sin(TAU * j / NCH));
+// X_k = sum_n x_n e^{-i 2 pi k n / N} for k = 0..N/2.
+function dftHalf(x) {
+  const re = new Float64Array(NCH / 2 + 1), im = new Float64Array(NCH / 2 + 1);
+  for (let k = 0; k <= NCH / 2; k++) {
+    let a = 0, b = 0;
+    for (let n = 0; n < NCH; n++) { const j = (k * n) % NCH; a += x[n] * COSN[j]; b -= x[n] * SINN[j]; }
+    re[k] = a; im[k] = b;
+  }
+  return { re, im };
+}
+// Keep the waves with f <= fc (f = k/256 cycles per channel); with deriv, multiply each by i 2 pi f first.
+// The same smoothing as checks.py (rfft, mask, irfft).
+function lowpass(x, fc, deriv, X) {
+  X = X || dftHalf(x);
+  const y = new Float64Array(NCH);
+  for (let k = 0; k <= NCH / 2; k++) {
+    const f = k / NCH;
+    if (f > fc + 1e-12) continue;
+    let a = X.re[k], b = X.im[k];
+    if (deriv) { const w = TAU * f; const a2 = -b * w; b = a * w; a = a2; }
+    const wgt = (k === 0 || k === NCH / 2) ? 1 : 2;
+    for (let n = 0; n < NCH; n++) { const j = (k * n) % NCH; y[n] += wgt * (a * COSN[j] - b * SINN[j]) / NCH; }
+  }
+  return y;
+}
+// Peaks: downward zero crossings of the smoothed slope, in channels 8 to 247 (as checks.py).
+function findPeaks(d) { const out = []; for (let n = 8; n < 247; n++) if (d[n] > 0 && d[n + 1] <= 0) out.push(n); return out; }
+function spreadOf(a) { const m = a.reduce((s, v) => s + v, 0) / a.length; return Math.sqrt(a.reduce((s, v) => s + (v - m) * (v - m), 0) / (a.length - 1)); }
+// Exact spread of sqrt(n) for a Poisson count n with mean mu: sums over the probabilities.
+function sqrtSpread(mu) {
+  const top = Math.ceil(mu + 40 * Math.sqrt(mu) + 60);
+  let lf = 0, m1 = 0, m2 = 0;
+  for (let n = 0; n <= top; n++) {
+    if (n > 1) lf += Math.log(n);
+    const p = Math.exp(n * Math.log(mu) - mu - lf);
+    m1 += p * Math.sqrt(n); m2 += p * n;
+  }
+  return Math.sqrt(m2 - m1 * m1);
+}
+// Power of the noise-free record in square-root units, P_k = |X_k|^2/N (bins 1..10: 1710, 146, 5.53, 74.3, 31.1,
+// 1.31, 0.057, 0.027, 0.148, 0.023). One run adds the noise floor 1/4, the variance of sqrt(n).
+const REC_P = (() => { const X = dftHalf(Float64Array.from(MU, Math.sqrt)); return Array.from({ length: NCH / 2 + 1 }, (_, k) => (X.re[k] ** 2 + X.im[k] ** 2) / NCH); })();
+
+// Nice ticks between a and b, about n of them.
+function niceTicks(a, b, n) {
+  const raw = (b - a) / n, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+  const st = (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10) * p, out = [];
+  for (let v = Math.ceil(a / st) * st; v <= b + 1e-9; v += st) out.push(+v.toFixed(10));
+  return out;
+}
+
+// The record with its jitter band. o: {run (counts), compact}. Top: one run as dots, the mean as a grey line,
+// the band mu +- sqrt(mu). Bottom: the jitter n - mu with the band +- sqrt(mu). Compact (a sketch): the jitter only.
+function bandPath(P, f) {
+  const up = [], dn = [];
+  for (let k = 0; k < NCH; k++) { const [lo, hi] = f(k); up.push([k, hi]); dn.push([k, lo]); }
+  return { fill: polyline(P, up) + polyline(P, dn.reverse()).replace('M', 'L') + 'Z', up: polyline(P, up), dn: polyline(P, dn) };
+}
+function drawJitter(svg, P, run, r) {
+  const b = bandPath(P, k => { const s = Math.sqrt(MU[k]); return [-s, s]; });
+  svgNode('path', { d: b.fill, fill: COL.accentTint, stroke: 'none', 'data-item': 'mark', 'data-id': 'jitter-band' }, svg);
+  svgNode('path', { d: b.up, fill: 'none', stroke: COL.accent, 'stroke-width': 1.2 }, svg);
+  svgNode('path', { d: b.dn, fill: 'none', stroke: COL.accent, 'stroke-width': 1.2 }, svg);
+  line(svg, P.L, P.Y(0), P.W - P.R, P.Y(0), { stroke: COL.grey });
+  line(svg, P.L, P.T, P.L, P.base, { stroke: COL.grey });
+  for (let k = 0; k < NCH; k++) dot(svg, P.X(k), P.Y(run[k] - MU[k]), r, COL.accent);
+  const sT = Math.sqrt(MU[MU_TOP]), sE = Math.sqrt(MU[MU_EDGE]);
+  line(svg, P.X(MU_TOP), P.Y(sT), P.X(MU_TOP), P.Y(-sT), { stroke: COL.ink, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'spread-top' });
+  line(svg, P.X(3), P.Y(sE), P.X(3), P.Y(-sE), { stroke: COL.ink, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'spread-edge' });
+}
+function drawRecord(svg, W, H, o) {
+  const run = o.run;
+  if (o.compact) {
+    const P = scales(W, H, { x0: 0, x1: NCH - 1, y0: -64, y1: 64, L: 8, R: 6, T: 20, B: 18 });
+    drawJitter(svg, P, run, 1.4);
+    haloTex(svg, P.X(MU_TOP) + 6, P.Y(46), 'peak, $480$: $\\pm22$', { w: 130, anchor: 'start', size: 13, fill: COL.ink });
+    haloTex(svg, P.X(5) + 2, P.Y(46), 'edge, $86$: $\\pm9$', { w: 120, anchor: 'start', size: 13, fill: COL.ink });
+    svgTex(svg, 4, 9, 'jitter $n-\\mu$ and the band $\\pm\\sqrt\\mu$', { w: W - 8, anchor: 'start', size: 13, fill: COL.text2 });
+    svgText(svg, (P.L + W - P.R) / 2, H - 3, 'energy channel', { 'text-anchor': 'middle', 'font-size': 13 });
+    return;
+  }
+  const L = 46, R = 12, T = 30, B = 36, gap = 30;
+  const ph = H - T - B - gap, h1 = Math.round(ph * 0.55), h2 = ph - h1;
+  const P1 = scales(W, T + h1, { x0: 0, x1: NCH - 1, y0: 40, y1: 600, L, R, T, B: 0 });
+  const P2 = scales(W, T + h1 + gap + h2, { x0: 0, x1: NCH - 1, y0: -64, y1: 64, L, R, T: T + h1 + gap, B: 0 });
+  const b = bandPath(P1, k => { const s = Math.sqrt(MU[k]); return [MU[k] - s, MU[k] + s]; });
+  svgNode('path', { d: b.fill, fill: COL.accentTint, stroke: 'none', 'data-item': 'mark', 'data-id': 'band' }, svg);
+  axes(svg, P1);
+  [100, 300, 500].forEach(v => svgText(svg, L - 6, P1.Y(v) + 5, String(v), { 'text-anchor': 'end' }));
+  [-40, 0, 40].forEach(v => svgText(svg, L - 6, P2.Y(v) + 5, String(v).replace('-', '−'), { 'text-anchor': 'end' }));
+  [0, 64, 128, 192, 255].forEach(v => svgText(svg, P2.X(v), P2.base + 16, String(v), { 'text-anchor': v === 255 ? 'end' : 'middle' }));
+  for (let k = 0; k < NCH; k++) dot(svg, P1.X(k), P1.Y(run[k]), 1.7, COL.accent);
+  svgNode('path', { d: polyline(P1, Array.from(MU, (v, k) => [k, v])), fill: 'none', stroke: COL.slate2, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'mean' }, svg);
+  drawJitter(svg, P2, run, 1.7);
+  haloTex(svg, P1.X(MU_TOP) + 14, P1.Y(MU[MU_TOP]) - 14, 'tallest peak: $\\mu=480$', { w: 190, anchor: 'start', size: 14, fill: COL.ink });
+  haloTex(svg, P1.X(4), P1.Y(MU[MU_EDGE]) - 34, 'edge: $\\mu=86$', { w: 120, anchor: 'start', size: 14, fill: COL.ink });
+  haloTex(svg, P2.X(MU_TOP) + 6, P2.Y(44), 'jitter $\\pm22$', { w: 110, anchor: 'start', size: 14, fill: COL.ink });
+  haloTex(svg, P2.X(3) + 6, P2.Y(44), 'jitter $\\pm9$', { w: 100, anchor: 'start', size: 14, fill: COL.ink });
+  svgTex(svg, L, 12, 'a made-up record like the physicist’s: one run in $256$ energy channels', { w: W - L, anchor: 'start', size: 15, fill: COL.text2 });
+  svgTex(svg, L, P1.base + gap / 2 + 1, 'the jitter of that run, $n-\\mu$, in each channel', { w: W - L, anchor: 'start', size: 15, fill: COL.text2 });
+  svgText(svg, W - R, H - 3, 'energy channel', { 'text-anchor': 'end' });
+}
+
+// ---------- 1. Big counts jitter more ----------
+const MU1 = [1, 2, 4, 9, 25, 50, 100, 200, 400, 1000];
+// 500 runs of one count; batch b (the "New runs" press) and mu fix the seed.
+function histRuns(mu, b) { const r = mulberry32(7919 * b + 31 * mu + 1); return Array.from({ length: 500 }, () => poisson(r, mu)); }
+function slideJitter(widget, side) {
+  let mi = MU1.indexOf(25), batch = 1, runs = null, rec = null;
+  const getRuns = () => runs || (runs = histRuns(MU1[mi], batch));
+  const getRec = () => rec || (rec = recordRun(REC_SEED + batch - 1));
+  const sl = ctl('average count', { id: 'mu', min: 0, max: MU1.length - 1, step: 1, value: mi, fmt: v => '$\\mu=' + MU1[v] + '$', onInput: v => { mi = v; runs = null; update(); } });
+  const bNew = button('new-runs', 'New runs', () => { batch++; runs = null; rec = null; update(); });
+  const rS = readout('spread', 'spread of the $500$ runs');
+  const rQ = readout('sqrt-mu', '$\\sqrt\\mu$');
+  const rR = readout('relative', 'relative spread, $\\sqrt\\mu/\\mu$');
+  const hist = plotBox((svg, W, H) => {
+    const mu = MU1[mi], xs = getRuns(), s = Math.sqrt(mu);
+    const x1 = Math.ceil(Math.max(2 * mu, mu + 4 * s)), bw = x1 <= 60 ? 1 : Math.ceil(x1 / 50);
+    const nb = Math.floor(x1 / bw) + 1, cnt = new Array(nb).fill(0);
+    for (const v of xs) { const j = Math.floor(v / bw); if (j < nb) cnt[j]++; }
+    const ymax = Math.max(...cnt) * 1.2;
+    const P = scales(W, H, { x0: -0.5, x1: nb * bw - 0.5, y0: 0, y1: ymax, L: 46, R: 12, T: 30, B: 40 });
+    rect(svg, P.X(mu - s), P.T, P.X(mu + s) - P.X(mu - s), P.ph, { fill: COL.accentTint, 'data-item': 'mark', 'data-id': 'band' });
+    line(svg, P.X(mu - s), P.T, P.X(mu - s), P.base, { stroke: COL.accent, 'stroke-width': 1.5 });
+    line(svg, P.X(mu + s), P.T, P.X(mu + s), P.base, { stroke: COL.accent, 'stroke-width': 1.5 });
+    cnt.forEach((c, j) => { if (c) rect(svg, P.X(j * bw - 0.5) + 0.5, P.Y(c), Math.max(1, P.X(bw) - P.X(0) - 1), P.base - P.Y(c), { fill: COL.grey, 'data-item': 'mark', 'data-id': 'bar-' + j }); });
+    axes(svg, P);
+    line(svg, P.X(mu), P.T, P.X(mu), P.base, { stroke: COL.ink, 'stroke-width': 1.5, 'stroke-dasharray': '5 4' });
+    niceTicks(0, x1, 6).forEach(v => svgText(svg, P.X(v), P.base + 16, String(v), { 'text-anchor': 'middle' }));
+    niceTicks(0, ymax * 0.95, 3).forEach(v => svgText(svg, P.L - 6, P.Y(v) + 5, String(v), { 'text-anchor': 'end' }));
+    haloTex(svg, P.X(mu + s) + 4, P.T + 12, '$\\mu\\pm\\sqrt\\mu$', { w: 110, anchor: 'start', size: 15, fill: COL.accentDeep });
+    haloTex(svg, P.X(mu) - 4, P.T + 12, '$\\mu$', { w: 30, anchor: 'end', size: 15, fill: COL.ink });
+    svgTex(svg, P.L, 12, 'grey bars: how often each count came up in $500$ runs', { w: W - P.L, anchor: 'start', size: 15, fill: COL.text2 });
+    svgTex(svg, (P.L + W - P.R) / 2, H - 9, 'count $n$ in one run' + (bw > 1 ? ' (bars ' + bw + ' wide)' : ''), { w: 260, size: 14 });
+  }, null, 0.8);
+  const recP = plotBox((svg, W, H) => drawRecord(svg, W, H, { run: getRec() }), null, 1.2);
+  function update() {
+    const mu = MU1[mi], s = Math.sqrt(mu);
+    rS.set('$' + fx(spreadOf(getRuns()), 2) + '$');
+    rQ.set('$' + sn(s, 2) + '$');
+    rR.set('$' + sn(100 / s, 1) + '\\%$');
+    hist.redraw(); recP.redraw();
+  }
+  widget.append(hh('div', 'sliders', sl.el, bNew), hist.wrap,
+    hh('div', 'readouts', rS.el, rQ.el, rR.el), recP.wrap,
+    legend([{ kind: 'dot', color: 'var(--pal-accent)', text: 'blue dots: one run' },
+      { kind: 'line', color: 'var(--pal-slate-2)', text: 'grey line: the mean $\\mu$ in each channel' },
+      { kind: 'chip', color: 'var(--pal-accent-tint)', text: 'shaded: $\\mu\\pm\\sqrt\\mu$' }]));
+  sideStd(widget, side, {
+    // Pointers: p-distributions step 2 (variance and standard deviation) and step 7 (counts: variance = mean); not built yet.
+    case: 'A Geiger counter: count its clicks in one second, again and again. A weak source gives 4, 2, 5, 3, 6; a strong one 380, 415, 407, 396.',
+    sym: String.raw`A spread is how far values typically fall from their average. $\mu$: the count you would get on average. $n$: the count of one run. A count’s variance, its spread squared, equals its mean, so its spread is about $\sqrt\mu$ (a fact about counts of rare, independent events; taken on trust here).`,
+    tries: [
+      String.raw`Set $\mu=4$: the spread is about $2$, half the count. Set $\mu=400$: about $20$, a twentieth. A hundred times the count, ten times the jitter.`,
+      String.raw`In the record, the band is about $\pm22$ under the tallest peak ($480$ counts) and $\pm9$ at the edges ($86$).`],
+    take: String.raw`A count near $\mu$ jitters by about $\sqrt\mu$, so one record is noisier at its peaks than in its valleys.` });
+  update();
+}
+
+// ---------- decision sketches ----------
+// Two axes side by side: the physicist's counts against energy, Kaiser's voltage against time.
+function drawAxisSketch(svg, W, H) {
+  const half = (W - 14) / 2, fs = 13;
+  const panel = (x0, title, xl, yl, pts, y0, y1, isDots) => {
+    const P = scales(x0 + half, H, { x0: 0, x1: 1, y0, y1, L: x0 + 18, R: 4, T: 22, B: 20 });
+    axes(svg, P);
+    svgNode('path', { d: polyline(P, pts), fill: 'none', stroke: COL.slate2, 'stroke-width': 1.8 }, svg);
+    if (isDots) pts.forEach((p, i) => { if (i % 6 === 0) dot(svg, P.X(p[0]), P.Y(p[1] + (((i * 37) % 11) - 5) * 9), 1.8, COL.accent); });
+    svgText(svg, x0 + 18, 13, title, { 'font-size': fs, fill: COL.ink, 'font-weight': 600 });
+    svgText(svg, (P.L + P.W - P.R) / 2, H - 4, xl, { 'text-anchor': 'middle', 'font-size': fs });
+    svgText(svg, x0 + 12, (P.T + P.base) / 2, yl, { 'text-anchor': 'middle', 'font-size': fs, transform: 'rotate(-90 ' + (x0 + 12) + ' ' + ((P.T + P.base) / 2) + ')' });
+  };
+  panel(0, 'the physicist', 'energy channel', 'counts', Array.from(MU, (v, k) => [k / (NCH - 1), v]), 40, 560, true);
+  const wave = Array.from({ length: 120 }, (_, i) => { const t = i / 119; return [t, Math.sin(TAU * 3 * t) * 0.7 + 0.25 * Math.sin(TAU * 8 * t + 1)]; });
+  panel(half + 14, 'Kaiser', 'time', 'voltage', wave, -1.1, 1.1, false);
+}
+// What one run's spectrum looks like on average: the record's power plus the flat noise floor 1/4, log scale.
+function drawSpectrumSketch(svg, W, H) {
+  const fs = 13, lo = Math.log10(0.1), hi = Math.log10(3000);
+  const P = scales(W, H, { x0: 0, x1: 0.5, y0: lo, y1: hi, L: 34, R: 8, T: 18, B: 20 });
+  const bw = P.pw / (NCH / 2);
+  for (let k = 1; k <= NCH / 2; k++) {
+    const v = Math.log10(REC_P[k] + 0.25);
+    rect(svg, P.X(k / NCH) - bw / 2, P.Y(v), Math.max(1, bw - 0.6), P.base - P.Y(v), { fill: k <= 6 ? COL.accent : COL.grey });
+  }
+  axes(svg, P);
+  line(svg, P.L, P.Y(Math.log10(0.25)), W - P.R, P.Y(Math.log10(0.25)), { stroke: COL.ink, 'stroke-dasharray': '4 3', 'stroke-width': 1.3 });
+  haloTex(svg, W - P.R - 2, P.Y(Math.log10(0.25)) - 11, 'noise, $\\tfrac14$', { w: 90, anchor: 'end', size: fs, fill: COL.ink });
+  haloTex(svg, P.X(0.012) + 6, P.Y(Math.log10(500)), 'signal', { w: 60, anchor: 'start', size: fs, fill: COL.accentDeep });
+  [[0.1, '0.1'], [10, '10'], [1000, '1000']].forEach(([v, t]) => svgText(svg, P.L - 4, P.Y(Math.log10(v)) + 4, t, { 'text-anchor': 'end', 'font-size': 12 }));
+  [[0, '0'], [0.25, '¼'], [0.5, '½']].forEach(([v, t]) => svgText(svg, P.X(v), H - 5, t, { 'text-anchor': 'middle', 'font-size': fs }));
+  svgTex(svg, P.X(0.36), H - 9, '$f$', { w: 30, size: fs, fill: COL.muted });
+  svgText(svg, P.L, 11, 'power, log scale', { 'font-size': fs, fill: COL.text2 });
+}
+
+// ---------- decision slides ----------
+const D_TRIES = ['Read the problem.', 'Pick what you would do before he says it.', 'When he says it, read every verdict.'];
+const DECISIONS = {
+  'pick-energy-axis': {
+    problem: String.raw`The physicist has counts in 256 energy channels. Kaiser has always thought of a signal as a voltage against time, with energy the area under its square (14:37). Here energy is the axis itself, and Kaiser stays confused for days (15:09).`,
+    sketch: drawAxisSketch,
+    formula: String.raw`$y_n=\sum_k c_k\,u_{n+k}$`,
+    symbols: String.raw`Kaiser’s filter: weights $c_k$ slide along the samples $u_n$ (Primer · Signals: filters, step 2).`,
+    chooser: 0, who: 'Hamming',
+    options: [
+      { text: 'Tell him: the energy axis is time, and the counts are the voltage.',
+        assumes: 'the filter theory uses only equally spaced samples and a rule that is the same at every place, never what the axis means.',
+        verdict: 'Kaiser designs it at once; “frequency” now means cycles per channel.' },
+      { text: 'Build a filter theory for energy spectra first.',
+        assumes: 'a new axis needs a new theory.',
+        verdict: 'Weeks of work that end with the same formulas.' },
+      { text: 'Let the physicist design the filter himself; he knows his axis.',
+        assumes: 'whoever owns the axis should do the math.',
+        verdict: 'He is not a filter designer. The expert’s skill is needed; only his framing is wrong.' }],
+    reveal: [
+      { k: "Hamming's move", v: '“This is time and that’s voltage.”', t: '15:42' },
+      { k: 'What it bought', v: 'Kaiser writes the program: cutoff in, differentiator designed, window applied, data processed.', t: '17:16' },
+      { k: 'What it cost', v: 'Nothing in the math, only days of confusion; the book calls it “the curse of the expert”. He comes back to it at 36:33 (“knowledge in one compartment”) and 39:40.', t: 'book' }],
+    takeaway: 'Strip a problem to what the math uses; what the axis is called is not part of it.' },
+  'pick-cutoff': {
+    problem: String.raw`A derivative boosts high frequencies, so Kaiser’s filter must keep only the signal’s band (Primer · Signals: spectra, steps 6 and 7). One run is noisy, and it takes a week, so it cannot be repeated much (13:36).`,
+    sketch: drawSpectrumSketch,
+    formula: String.raw`keep $f<f_c$, drop $f_c\le f\le\tfrac12$`,
+    symbols: String.raw`$f$: cycles per channel. $f_c$: the cutoff. The sketch is in square-root units, where the noise floor is $\tfrac14$ (step 6 says why).`,
+    chooser: 1, who: 'Hamming',
+    options: [
+      { text: String.raw`Use a standard cutoff: half the band, $f_c=\tfrac14$.`,
+        assumes: 'one rule fits any data.',
+        verdict: String.raw`Keeps $10$ times the noise power of $f_c=\tfrac1{40}$; for the derivative, $1000$ times (step 4).` },
+      { text: 'Get the physicist’s model, make synthetic data, read the edge off its spectrum, then check it on one real run.',
+        assumes: 'the model is roughly right, and two routes that agree confirm each other.',
+        verdict: String.raw`Both put the signal below $f=\tfrac1{40}$, $\tfrac1{20}$ of the band: “theory and practice agree” (16:13).` },
+      { text: 'Try cutoffs on the data and keep the one whose derivative looks best.',
+        assumes: 'the eye can tell signal from noise.',
+        verdict: String.raw`Then the cutoff decides what you see: from $1$ peak to about $30$ on one run (step 5).` }],
+    reveal: [
+      { k: "Hamming's move", v: '“Let’s model this and calculate some pseudo data based on your model, and I will calculate the power spectrum.”', t: '15:42' },
+      { k: 'What it bought', v: 'A real run gives “the same thing”: an edge fixed before any derivative is seen, checked two ways. Book: “What luck! (Perhaps the luck should be attributed to the excellence of the experimenter.)”', t: '16:20' },
+      { k: 'What it cost', v: 'You need a model. He kept the physicist’s Gaussian peaks though he suspected Cauchy shapes (“the difference would be too small”); the real run is the check.', t: 'book' }],
+    takeaway: 'Take the design number from the model, and use the data to check it.' },
+  'pick-sqrt': {
+    problem: String.raw`Counts of 480 jitter by about 22, counts of 86 by about 9 (step 1). The filter’s theory (one response for every channel, Kaiser’s design, one flat noise floor) treats every value as equally noisy.`,
+    sketch: (svg, W, H) => drawRecord(svg, W, H, { run: recordRun(REC_SEED), compact: true }),
+    formula: String.raw`$y_k=\sum_j c_j\,v_{k+j}$, same $c_j$ at every $k$`,
+    symbols: String.raw`$n_k$: the count in channel $k$; $v_k$: the filter’s input.`,
+    chooser: 2, who: 'Hamming',
+    options: [
+      { text: String.raw`Feed it the raw counts $n_k$.`,
+        assumes: 'every count is equally reliable.',
+        verdict: String.raw`The peaks’ noise dominates: the noise floor is $480$ under a peak, $86$ at the edges.` },
+      { text: 'Weight each count by one over its variance.',
+        assumes: 'the tool must change to fit the data.',
+        verdict: 'Right in principle, but weights that change by channel have no single response; Kaiser’s design fails.' },
+      { text: String.raw`Filter the square roots $\sqrt{n_k}$.`,
+        assumes: 'a transform can make the noise the same everywhere.',
+        verdict: String.raw`Every $\sqrt{n_k}$ jitters by about $\tfrac12$: one fixed filter fits every channel, with one noise floor, $\tfrac14$.` }],
+    reveal: [
+      { k: "Hamming's move", v: '“He should really work in square root of the n sub k because they are the numbers which will have equal variance.”', t: '18:25, estimate' },
+      { k: 'What it bought', v: '“The ultimate information out of his data … he will not have trouble with noise.”', t: '18:47' },
+      { k: 'What it cost', v: String.raw`A transform and its inverse; squared back, a smoothed $\sqrt n$ is slightly low ($\mathbb E\sqrt n-\sqrt\mu=-0.044$ at $\mu=9$). He leaned on him “four or five or six times”.`, t: '18:47' }],
+    ai: String.raw`Low-light photos have count noise. The usual pipeline takes $2\sqrt{n+3/8}$ (Anscombe), whose spread is about $1$ above a few counts, runs a denoiser built for even Gaussian noise, and inverts: variance $0.999$ at $\mu=4$, $1.000$ at $100$.`,
+    src: 'Mäkitalo and Foi, IEEE TIP 2011',
+    takeaway: 'When the data break a tool’s assumption, transform the data until they meet it, and keep the tool.' },
+};
+const DSTATE = {};
+Object.keys(DECISIONS).forEach(id => { DSTATE[id] = { pick: null, open: false }; });
+// Reveal a decision once; later calls change nothing. by: 'user' (a pick or the button) or 'cue'.
+function revealDecision(id, by) {
+  const st = DSTATE[id];
+  if (!st || st.open) return false;
+  st.open = true;
+  emit('view.action', { action: 'reveal', step: id, by: by });
+  return true;
+}
+function mountDecision(s, widget, side) {
+  const D = DECISIONS[s.id], st = DSTATE[s.id], open = st.open;
+  const redraw = () => goTo(cur, true);
+  const prob = mark(h('div', 'prob' + (D.sketch ? ' has-sketch' : '')), 'problem', s.id);
+  prob.append(hh('p', '', h('span', 'lead', 'The problem.'), document.createTextNode(' '), setTex(h('span'), D.problem)));
+  if (D.sketch) { const sk = h('div', 'sketch'); const p = plotBox(D.sketch); sk.append(p.wrap); prob.append(sk); }
+  const opts = h('div', 'opts');
+  D.options.forEach((o, k) => {
+    const L = 'ABC'[k];
+    const card = mark(h('div', 'opt'), 'card', L, o.text.replace(/\$/g, ''));
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-disabled', open ? 'true' : 'false');
+    card.tabIndex = open ? -1 : 0;
+    card.classList.toggle('on', st.pick === L);
+    card.classList.toggle('chooser', open && k === D.chooser);
+    const who = [];
+    if (st.pick === L) who.push('Your pick');
+    if (open && k === D.chooser) who.push(D.who);
+    const top = hh('div', 'top', h('span', 'letter', L), h('span', 'who', who.join(', ')));
+    const asm = setTex(h('p', 'asm'), 'Assumes: ' + o.assumes);
+    const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'Verdict after your pick.');
+    card.append(hh('div', 'lhs', top, setTex(h('div', 'body'), o.text)), hh('div', 'rhs', asm, verdict));
+    card.addEventListener('click', () => {
+      if (DSTATE[s.id].open) return;
+      st.pick = L;
+      emit('view.action', { action: 'pick', step: s.id, option: L, correct: k === D.chooser });
+      revealDecision(s.id, 'user');
+      redraw();
+    });
+    opts.append(card);
+  });
+  const rev = mark(h('div', 'reveal'), 'reveal', s.id);
+  if (!open) {
+    rev.classList.add('idle');
+    for (const r of D.reveal) rev.append(hh('p', 'rv hold', h('span', 'k', r.k + '. '), h('span', '', 'Shown after your pick.')));
+    const btn = mark(h('button', 'btn primary', 'Show answer'), 'control', 'show-answer');
+    btn.addEventListener('click', () => { if (revealDecision(s.id, 'user')) redraw(); });
+    rev.append(hh('div', 'actions', btn));
+  } else {
+    for (const r of D.reveal) {
+      const p = hh('p', 'rv', h('span', 'k', r.k + '. '));
+      p.append(setTex(h('span'), r.v), h('span', 't', ' (' + r.t + ')'));
+      rev.append(p);
+    }
+  }
+  widget.append(prob, opts, rev);
+  side.append(setTex(h('p', 'fx'), D.formula));
+  if (D.symbols) side.append(sym(D.symbols));
+  side.append(hh('div', 'blk', h('div', 'kicker', 'Try it'), hh('ol', 'tries', ...D_TRIES.map(t => h('li', '', t)))));
+  if (D.ai) {
+    if (open) {
+      const p = setTex(h('p', 'ai'), D.ai);
+      p.append(' ', h('span', 'src', '(' + D.src + ')'));
+      side.append(hh('div', 'blk', h('div', 'kicker', 'Same move in AI research'), p));
+    } else side.append(hh('div', 'blk', h('div', 'kicker', 'Same move in AI research'), h('p', 'hold ai', 'Shown after your pick.')));
+  }
+  side.append(open ? setTex(h('p', 'takeaway'), D.takeaway) : h('p', 'hold', 'Takeaway: shown after your pick.'));
+}
+
+// ---------- 4. How much noise does the cutoff remove? ----------
+const FC4 = [0.005, 0.01, 0.0125, 0.02, 0.025, 0.05, 0.1, 0.125, 0.2, 0.25, 0.3, 0.4, 0.5];
+function fcTex(v) {
+  const F = { 0.025: '\\tfrac1{40}', 0.25: '\\tfrac14', 0.5: '\\tfrac12', 0.125: '\\tfrac18' };
+  return '$f_c=' + v + (F[v] ? '=' + F[v] : '') + '$';
+}
+const pctStr = p => String(+p.toPrecision(3));
+function slideNinety(widget, side) {
+  let fi = FC4.indexOf(0.25), mode = 'flat', lit = '';
+  const sl = ctl('cutoff', { id: 'fc', min: 0, max: FC4.length - 1, step: 1, value: fi, fmt: v => fcTex(FC4[v]), onInput: v => { fi = v; update(); } });
+  const pick = choiceRow('noise of', [['flat', 'the counts'], ['deriv', 'their derivative']], () => mode, id => { mode = id; update(); });
+  const rK = readout('kept', 'share kept'), rR = readout('removed', 'share removed');
+  const plot = plotBox((svg, W, H) => {
+    const fc = FC4[fi], d = mode === 'deriv';
+    const g = f => (d ? (TAU * f) ** 2 : 1);           // noise power at f, in units of sigma^2
+    const P = scales(W, H, { x0: 0, x1: 0.5, y0: 0, y1: d ? 11 : 1.45, L: 46, R: 14, T: 30, B: 40 });
+    const CAP = { flat: 'amber: the kept rectangle, $f_c$ wide, out of $\\tfrac12$', rising: 'amber: the area under $(2\\pi f)^2\\sigma^2$ up to $f_c$, out of all of it' }[lit];
+    picCaption(svg, W, CAP, 'noise power at each frequency $f$; the cutoff keeps $f<f_c$');
+    const area = (a, b) => { const pts = [[a, 0]]; for (let i = 0; i <= 60; i++) { const f = a + (b - a) * i / 60; pts.push([f, g(f)]); } pts.push([b, 0]); return polyline(P, pts) + 'Z'; };
+    if (lit) svgNode('path', { d: area(0, fc), fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 3 }, svg);
+    svgNode('path', { d: area(fc, 0.5), fill: COL.soft2, 'data-item': 'mark', 'data-id': 'removed' }, svg);
+    if (!lit) svgNode('path', { d: area(0, fc), fill: COL.accent3, 'data-item': 'mark', 'data-id': 'kept' }, svg);
+    axes(svg, P);
+    const curve = []; for (let i = 0; i <= 100; i++) { const f = 0.5 * i / 100; curve.push([f, g(f)]); }
+    svgNode('path', { d: polyline(P, curve), fill: 'none', stroke: COL.ink, 'stroke-width': 2.4, 'data-item': 'mark', 'data-id': 'noise-line' }, svg);
+    line(svg, P.X(fc), P.T, P.X(fc), P.base, { stroke: COL.accent, 'stroke-width': 2 });
+    [0, 0.1, 0.2, 0.3, 0.4, 0.5].forEach(v => svgText(svg, P.X(v), P.base + 16, String(v), { 'text-anchor': 'middle' }));
+    svgTex(svg, (P.L + W - P.R) / 2, H - 9, '$f$, cycles per channel', { w: 200, size: 14 });
+    (d ? [0, 5, 10] : [0, 1]).forEach(v => svgTex(svg, P.L - 6, P.Y(v), v === 0 ? '$0$' : (v === 1 ? '$\\sigma^2$' : '$' + v + '\\sigma^2$'), { w: 44, anchor: 'end', size: 14, fill: COL.muted }));
+    if (d) haloTex(svg, P.X(0.44) - 24, P.Y(g(0.44)) + 4, 'noise after a derivative: $(2\\pi f)^2\\sigma^2$', { w: 300, anchor: 'end', size: 15, fill: COL.ink });
+    else haloTex(svg, P.X(fc > 0.3 ? 0.15 : 0.4), P.Y(1) - 14, 'flat noise: $\\sigma^2$ at every $f$', { w: 220, size: 15, fill: COL.ink });
+    haloTex(svg, P.X(fc) + (fc > 0.4 ? -5 : 5), P.T + 9, '$f_c$', { w: 40, anchor: fc > 0.4 ? 'end' : 'start', size: 15, fill: COL.accentDeep });
+    if (fc < 0.5) svgTex(svg, (P.X(fc) + P.X(0.5)) / 2, (d ? P.Y(1.2) : P.Y(0.5)), 'removed', { w: 100, size: 15, fill: COL.ink, bg: COL.panel });
+    const inside = P.X(fc) - P.L > 70;
+    svgTex(svg, inside ? (P.L + P.X(fc)) / 2 : P.X(fc) + 6, d ? P.Y(Math.max(0.7, g(fc) / 3)) : P.Y(0.25), 'kept', { w: 60, anchor: inside ? 'middle' : 'start', size: 15, fill: COL.accentDeep, bg: COL.panel });
+  });
+  function update() {
+    const fc = FC4[fi], s = mode === 'deriv' ? (2 * fc) ** 3 : 2 * fc, p = 100 * s;
+    rK.label(mode === 'deriv' ? 'share kept, $(2f_c)^3$' : 'share kept, $2f_c$');
+    rK.set('$' + String(+s.toPrecision(3)) + '$, so $' + pctStr(p) + '\\%$');
+    rR.set('$' + (p >= 100 ? '0' : String(+(100 - p).toPrecision(p < 0.1 ? 6 : 4))) + '\\%$');
+    pick.paint(); plot.redraw();
+  }
+  const test = testBlock('Test it', [
+    String.raw`Set $f_c=\tfrac1{40}$: $5\%$ kept, $95\%$ removed, the book’s “about 95% of the noise”.`,
+    String.raw`Press their derivative: $0.0125\%$ kept. Its noise sits at the top of the band, where the cutoff throws it away.`,
+    String.raw`Predict the derivative’s share at half the band, $f_c=\tfrac14$, then set it. Cases are evidence, not proof.`]);
+  widget.append(hh('div', 'sliders', sl.el, pick.el), plot.wrap, hh('div', 'readouts', rK.el, rR.el), test,
+    modelLine(String.raw`power is the area under the noise line. Flat noise makes a rectangle, so the kept share is $f_c$ out of $\tfrac12$. After a derivative the area piles up at the top of the band, past the cutoff.`));
+  side.querySelector('.question').after(caseLine('A radio’s hiss covers every pitch; keep the lowest twentieth of the pitches and you keep a twentieth of the hiss.'));
+  side.append(sym(String.raw`$\sigma^2$: the noise power at each $f$. $f_c$: the cutoff; the band runs from $0$ to $\tfrac12$.`));
+  proofRight(side, {
+    id: 'shares-kept',
+    goal: { tex: String.raw`\text{share kept}=2f_c,\ \text{or }(2f_c)^3\text{ after a derivative}` },
+    facts: [
+      { words: String.raw`power is the area under the noise line; a derivative multiplies the power at $f$ by $(2\pi f)^2$`, ref: 'Primer · Signals: spectra, steps 4 and 7' },
+      { words: String.raw`the area under $f^2$ up to $a$ is $\frac{a^3}{3}$`, ref: 'Primer · Integrals: area, step 6' }],
+    lines: [
+      { tex: String.raw`\dfrac{\sigma^2 f_c}{\sigma^2\cdot\frac12}=2f_c`, move: 'Unfold the definition', choices: ['Rearrange', 'Name a piece'],
+        why: 'power is the area under the noise line; a flat line makes rectangles', highlight: 'flat' },
+      { tex: String.raw`\dfrac{\int_0^{f_c}(2\pi f)^2\sigma^2df}{\int_0^{1/2}(2\pi f)^2\sigma^2df}=\dfrac{f_c^3/3}{(\frac12)^3/3}=(2f_c)^3`, move: 'Use an earlier result', choices: ['Change variables', 'Compare or bound'],
+        why: String.raw`area under $f^2$: $\frac{f^3}{3}$; the constants cancel`, highlight: 'rising' }],
+    lookBack: [
+      { q: String.raw`At $f_c=\tfrac1{40}$ the derivative keeps $\tfrac1{8000}$ of its noise power, so its spread falls by $\sqrt{8000}=89$. Where did you see that factor?`,
+        a: String.raw`Primer · Signals: spectra, step 6: the slope error falls from $0.098$ with no smoothing to $0.001$ at $f_c=0.025$, about $90$ times smaller.` }] },
+    test, key => {
+      lit = key || '';
+      if (lit === 'flat') mode = 'flat';
+      if (lit === 'rising') mode = 'deriv';
+      update();
+    });
+  side.append(takeBox(widget, String.raw`A cutoff keeps the share $2f_c$ of flat noise, and of a derivative’s noise the cube of that share.`));
+  update();
+}
+
+// ---------- 5. Move the cutoff, change the answer ----------
+const FC5 = [0.0125, 0.016, 0.02, 0.025, 0.03, 0.04, 0.05, 0.07, 0.1, 0.15, 0.2, 0.3, 0.5];
+function slidePeaks(widget, side) {
+  let fi = FC5.indexOf(0.025), seed = REC_SEED, x = null, X = null;
+  const getX = () => { if (!x) { x = Float64Array.from(recordRun(seed), Math.sqrt); X = dftHalf(x); } return x; };
+  const sl = ctl('cutoff', { id: 'fc', min: 0, max: FC5.length - 1, step: 1, value: fi, fmt: v => fcTex(FC5[v]), onInput: v => { fi = v; update(); } });
+  const bNew = button('new-run', 'New run', () => { seed++; x = null; update(); });
+  const rP = readout('peaks', 'peaks found');
+  let pk = [], sm = null, dv = null;
+  const plot = plotBox((svg, W, H) => {
+    const xs = getX();
+    const L = 46, R = 12, T = 26, B = 36, gap = 28, ph = H - T - B - gap, h1 = Math.round(ph * 0.64), h2 = ph - h1;
+    const P1 = scales(W, T + h1, { x0: 0, x1: NCH - 1, y0: 6, y1: 26, L, R, T, B: 0 });
+    const dm = Math.max(0.05, ...Array.from(dv, Math.abs)) * 1.1;
+    const P2 = scales(W, T + h1 + gap + h2, { x0: 0, x1: NCH - 1, y0: -dm, y1: dm, L, R, T: T + h1 + gap, B: 0 });
+    axes(svg, P1);
+    line(svg, L, P2.T, L, P2.base, { stroke: COL.grey });
+    line(svg, L, P2.Y(0), W - R, P2.Y(0), { stroke: COL.grey });
+    [10, 15, 20, 25].forEach(v => svgText(svg, L - 6, P1.Y(v) + 5, String(v), { 'text-anchor': 'end' }));
+    [0, 64, 128, 192, 255].forEach(v => svgText(svg, P2.X(v), P2.base + 16, String(v), { 'text-anchor': v === 255 ? 'end' : 'middle' }));
+    for (let k = 0; k < NCH; k++) dot(svg, P1.X(k), P1.Y(xs[k]), 1.7, COL.grey);
+    TRUE_PEAKS.forEach(c => line(svg, P1.X(c), P1.base, P1.X(c), P1.base - 16, { stroke: COL.slate2, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'true-' + c }));
+    svgNode('path', { d: polyline(P1, Array.from(sm, (v, k) => [k, v])), fill: 'none', stroke: COL.accent, 'stroke-width': 2.6, 'data-item': 'mark', 'data-id': 'smoothed' }, svg);
+    for (const p of pk) {
+      const px = P1.X(p + 0.5), py = P1.Y(Math.max(sm[p], sm[p + 1])) - 7;
+      svgNode('path', { d: `M${px - 5.5} ${py - 9}L${px + 5.5} ${py - 9}L${px} ${py}Z`, fill: COL.accent, stroke: COL.bg, 'stroke-width': 1, 'data-item': 'mark', 'data-id': 'peak-' + p }, svg);
+    }
+    svgNode('path', { d: polyline(P2, Array.from(dv, (v, k) => [k, v])), fill: 'none', stroke: COL.accent, 'stroke-width': 1.8, 'data-item': 'mark', 'data-id': 'slope' }, svg);
+    for (const p of pk) dot(svg, P2.X(p + 0.5), P2.Y(0), 3.2, COL.accent, { stroke: COL.bg, 'stroke-width': 1 });
+    svgTex(svg, L, 12, 'one run of the made-up record, $\\sqrt n$ in each channel, and its smoothed curve', { w: W - L, anchor: 'start', size: 15, fill: COL.text2 });
+    svgTex(svg, L, P1.base + gap / 2 + 1, 'slope of the smoothed curve: a peak where it crosses $0$ going down', { w: W - L, anchor: 'start', size: 15, fill: COL.text2 });
+    svgText(svg, W - R, H - 3, 'energy channel', { 'text-anchor': 'end' });
+    svgText(svg, L - 6, P2.Y(0) + 5, '0', { 'text-anchor': 'end' });
+    haloTex(svg, P1.X(TRUE_PEAKS[0]) - 6, P1.base - 9, 'true peaks', { w: 100, anchor: 'end', size: 14, fill: COL.slate2 });
+  }, null, 1);
+  function update() {
+    const xs = getX(), fc = FC5[fi];
+    sm = lowpass(xs, fc, false, X); dv = lowpass(xs, fc, true, X); pk = findPeaks(dv);
+    rP.set('$' + pk.length + '$ (true: $3$)', pk.length !== 3);
+    plot.redraw();
+  }
+  widget.append(hh('div', 'sliders', sl.el, bNew), plot.wrap,
+    legend([{ kind: 'dot', color: 'var(--pal-grey)', text: 'grey dots: one run' },
+      { kind: 'line', color: 'var(--pal-accent)', text: 'blue: smoothed, only $f\\le f_c$ kept' },
+      { kind: 'tri', color: 'var(--pal-accent)', text: 'a peak found' },
+      { kind: 'tick', color: 'var(--pal-slate-2)', text: 'true peaks (known: the data are synthetic)' }]),
+    hh('div', 'readouts', rP.el));
+  sideStd(widget, side, {
+    case: 'The physicist moved the cutoff “one place or another to see if he couldn’t get better results” (17:46).',
+    sym: String.raw`The cutoff sets how much noise reaches the slope (step 4). A peak: where the smoothed slope crosses $0$ going down. The dots are $\sqrt n$, which evens out the noise (step 6 says why).`,
+    tries: [
+      String.raw`At $f_c=\tfrac1{40}$, the model’s edge: $3$ peaks, the true ones.`,
+      String.raw`Slide to $0.1$: $7$ peaks on the first run. At $0.2$, about $30$.`,
+      String.raw`Slide to $0.0125$: the three peaks blur into one; $1$ found.`],
+    take: 'If you choose the cutoff after looking, the cutoff chooses the answer: fix it in advance, or count each adjustment as a degree of freedom in the error bars.',
+    echo: String.raw`Score $20$ equally good hyperparameter settings on one test set: the best looks $1.87$ standard errors better than it is, the expected largest of $20$ noisy scores. Choose on validation data; look at the test set once.`,
+    src: 'mean of the largest of 20 normal draws' });
+  update();
+}
+
+// ---------- 7. Why it's true: a square root evens out the jitter ----------
+const MU7 = [4, 9, 16, 25, 50, 100, 200, 400, 700, 1000];
+function slideWhySqrt(widget, side) {
+  let mi = MU7.indexOf(200), lit = '';
+  const sl = ctl('average count', { id: 'mu', min: 0, max: MU7.length - 1, step: 1, value: mi, fmt: v => '$\\mu=' + MU7[v] + '$', onInput: v => { mi = v; update(); } });
+  const rS = readout('sqrt-spread', 'spread of $\\sqrt n$, exact');
+  const rT = readout('slope', 'tangent slope $\\frac{1}{2\\sqrt\\mu}$');
+  // The picture: a window of the same size at every mu (80 counts wide, 5 units of sqrt n tall) that follows mu,
+  // so the count's band visibly widens with mu while its image through the curve keeps its height.
+  const plot = plotBox((svg, W, H) => {
+    const mu = MU7[mi], s = Math.sqrt(mu), a = mu - s, b = mu + s, ya = Math.sqrt(a), yb = Math.sqrt(b), m = 1 / (2 * s);
+    const X0 = Math.max(0, mu - 40), Y0 = Math.max(0, s - 2.5);
+    const P = scales(W, H, { x0: X0, x1: X0 + 80, y0: Y0, y1: Y0 + 5, L: 44, R: 12, T: 30, B: 50 });
+    const CAP = {
+      tangent: String.raw`amber: the tangent at $\mu$, slope $\frac{1}{2\sqrt\mu}$`,
+      bands: String.raw`amber: the spread of $n$, times the slope, is the spread of $\sqrt n$`,
+      equal: String.raw`amber: the image is $2\sqrt\mu\cdot\frac{1}{2\sqrt\mu}=1$ tall, at every $\mu$` }[lit];
+    picCaption(svg, W, CAP, 'the same window at every $\\mu$: $80$ counts wide, $5$ units of $\\sqrt n$ tall');
+    const clipId = 'win-clip';
+    svgNode('rect', { x: P.L, y: P.T, width: P.pw, height: P.ph }, svgNode('clipPath', { id: clipId }, svgNode('defs', {}, svg)));
+    const xa = P.X(a), xb = P.X(b), ytop = P.Y(yb), ybot = P.Y(ya);
+    rect(svg, xa, P.T, xb - xa, P.ph, { fill: COL.accentTint, 'data-item': 'mark', 'data-id': 'x-band' });
+    rect(svg, P.L, ytop, P.pw, ybot - ytop, { fill: COL.accentTint, 'data-item': 'mark', 'data-id': 'y-band' });
+    if (lit === 'bands') glowRect(svg, xa, P.base - 5, xb - xa, 10, 3);
+    if (lit === 'bands' || lit === 'equal') glowRect(svg, P.L - 5, ytop, 10, ybot - ytop, 3);
+    if (lit === 'equal') glowRect(svg, P.L, ytop, P.pw, ybot - ytop, 1);
+    axes(svg, P);
+    niceTicks(X0, X0 + 80, 5).forEach(v => svgText(svg, P.X(v), P.base + 16, String(v), { 'text-anchor': 'middle' }));
+    niceTicks(Y0, Y0 + 5, 5).forEach(v => svgText(svg, P.L - 8, P.Y(v) + 5, String(v), { 'text-anchor': 'end' }));
+    svgTex(svg, W - P.R, H - 9, 'count $n$', { w: 100, anchor: 'end', size: 14 });
+    haloTex(svg, P.L + 6, P.T + 9, '$\\sqrt n$', { w: 40, anchor: 'start', size: 14, fill: COL.muted });
+    line(svg, xa, P.base, xb, P.base, { stroke: COL.accent, 'stroke-width': 5, 'data-item': 'mark', 'data-id': 'x-bracket' });
+    line(svg, P.L, ytop, P.L, ybot, { stroke: COL.accent, 'stroke-width': 5, 'data-item': 'mark', 'data-id': 'y-bracket' });
+    const cpts = []; for (let i = 0; i <= 200; i++) { const xv = X0 + 80 * i / 200; cpts.push([xv, Math.sqrt(xv)]); }
+    const curveD = cpts.map((q, i) => (i ? 'L' : 'M') + P.X(q[0]).toFixed(1) + ' ' + (P.base - (q[1] - Y0) / 5 * P.ph).toFixed(1)).join('');
+    const tY = xv => P.base - (s + m * (xv - mu) - Y0) / 5 * P.ph;
+    const tline = `M${P.X(X0)} ${tY(X0)}L${P.X(X0 + 80)} ${tY(X0 + 80)}`;
+    if (lit === 'tangent') glowLine(svg, tline, 11).setAttribute('clip-path', 'url(#' + clipId + ')');
+    const g = svgNode('g', { 'clip-path': 'url(#' + clipId + ')' }, svg);
+    // guides from the band's ends up to the curve and across to the image
+    for (const [xv, yv] of [[a, ya], [b, yb]]) svgNode('path', { d: `M${P.X(xv)} ${P.base}L${P.X(xv)} ${P.Y(yv)}L${P.L} ${P.Y(yv)}`, fill: 'none', stroke: COL.muted, 'stroke-dasharray': '3 3', 'stroke-width': 1.3 }, g);
+    svgNode('path', { d: curveD, fill: 'none', stroke: COL.slate2, 'stroke-width': 2.6, 'data-item': 'mark', 'data-id': 'curve' }, g);
+    svgNode('path', { d: tline, fill: 'none', stroke: COL.accent, 'stroke-width': 2.2, 'stroke-dasharray': '8 4', 'data-item': 'mark', 'data-id': 'tangent' }, g);
+    dot(svg, P.X(mu), P.Y(s), 4.5, COL.accent, { stroke: COL.bg, 'stroke-width': 1.5 });
+    // labels where the marks sit
+    const bx = Math.min(Math.max((xa + xb) / 2, P.L + 120), W - P.R - 120);
+    svgTex(svg, bx, P.base + 34, 'band $\\mu\\pm\\sqrt\\mu$: $' + sn(2 * s, 1) + '$ wide', { w: 240, size: 15, fill: COL.accentDeep, bold: true });
+    const right = mu <= 25;
+    haloTex(svg, right ? W - P.R - 6 : P.L + 10, ytop - 13, 'its image: $' + fx(yb - ya, 2) + '$ tall, so $\\pm\\tfrac12$', { w: 260, anchor: right ? 'end' : 'start', size: 15, fill: COL.accentDeep, bold: true });
+  }, 'proofpic');
+  function update() {
+    const mu = MU7[mi];
+    rS.set('$' + fx(sqrtSpread(mu), 3) + '$');
+    rT.set('$' + sn(1 / (2 * Math.sqrt(mu)), 4) + '$');
+    plot.redraw();
+  }
+  const test = testBlock('Test it', [
+    String.raw`Guess the spread of $\sqrt n$ at $\mu=400$, then set it: $0.500$. At $\mu=9$: $0.513$.`,
+    String.raw`$\mu=25$ and $\mu=100$: $0.504$ and $0.501$, the same for counts four times apart. Cases are evidence, not proof.`]);
+  widget.append(hh('div', 'sliders', sl.el, hh('div', 'readouts inline', rS.el, rT.el)), plot.wrap,
+    legend([{ kind: 'line', color: 'var(--pal-slate-2)', text: 'grey: the curve $\\sqrt n$' }, { kind: 'dash', color: 'var(--pal-accent)', text: 'blue dashed: its tangent at $\\mu$' },
+      { kind: 'chip', color: 'var(--pal-accent-tint)', text: 'shaded: the band and its image' }]),
+    test, modelLine('the square root is flatter where counts are bigger, and exactly flat enough to cancel their bigger jitter.'));
+  proofRight(side, {
+    id: 'sqrt-evens',
+    goal: { words: String.raw`if $n$ is near $\mu$ with spread $\sqrt\mu$, then $\sqrt n$ has spread about $\tfrac12$, whatever $\mu$.` },
+    facts: [
+      { words: String.raw`a count near $\mu$ has spread $\sqrt\mu$`, ref: 'step 1' },
+      { words: 'near $\\mu$ a smooth curve is close to its tangent line', ref: 'Primer · Derivatives, step 11' },
+      { words: String.raw`the slope of $\sqrt x$ is $\frac{1}{2\sqrt x}$: the slope of $y^2$ is $2y$, read the other way` }],
+    lines: [
+      { tex: String.raw`\sqrt n\approx\sqrt\mu+\dfrac{n-\mu}{2\sqrt\mu}`, move: 'Use an earlier result', choices: ['Take a limit', 'Change variables'],
+        why: String.raw`the tangent line at $\mu$, slope $\frac{1}{2\sqrt\mu}$`, highlight: 'tangent' },
+      { tex: String.raw`\text{spread of }\sqrt n\approx\dfrac{1}{2\sqrt\mu}\times\text{spread of }n`, move: 'Unfold the definition', choices: ['Compare or bound', 'Rearrange'],
+        why: String.raw`a spread is a typical distance from the average: the constant $\sqrt\mu$ moves both together; the factor stretches every distance`, highlight: 'bands' },
+      { tex: String.raw`=\dfrac{\sqrt\mu}{2\sqrt\mu}=\dfrac12`, move: 'Rearrange', choices: ['Telescope', 'Use symmetry'],
+        why: String.raw`put in the spread $\sqrt\mu$ of $n$; $\sqrt\mu$ cancels`, highlight: 'equal' }],
+    lookBack: [
+      { q: 'Where does it fail?',
+        a: String.raw`When $n$ wanders far from $\mu$, the tangent is a poor guide: spread $0.63$ at $\mu=1$, $0.55$ at $4$, $0.504$ at $25$.` },
+      { q: 'At 29:15 Hamming names noise that grows like the value itself, as in floating point numbers. Which transform evens that?',
+        a: String.raw`The log: slope $\frac1\mu$ times a spread proportional to $\mu$ is a constant. Noise of $10\%$: spread $0.100$ in log units at $50$ and at $5000$.` },
+      { q: 'What did the proof use about counts?',
+        a: String.raw`Only spread $=\sqrt{\text{mean}}$. Any noise with that law is evened out by the square root.` }] },
+    test, key => { lit = key || ''; plot.redraw(); });
+  update();
+}
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'counts-jitter', kind: 'content', tag: 'Lecture 12:00 to 13:03', title: 'Big counts jitter more',
+    question: 'How much does a count change from run to run, and where is the physicist’s record noisiest?',
+    formula: String.raw`$$\text{spread of }n\approx\sqrt\mu,\qquad\frac{\text{spread}}{\mu}\approx\frac{1}{\sqrt\mu}$$`, mount: slideJitter },
+  { id: 'pick-energy-axis', kind: 'decision', tag: 'Lecture 14:37, answer 15:42', title: 'The expert thinks signals live in time. What do you tell him?',
+    question: 'Kaiser cannot apply his filter theory to counts against energy. How do you unblock him?' },
+  { id: 'pick-cutoff', kind: 'decision', tag: 'Lecture 13:03, answer 16:20', title: 'Where does the signal end and the noise begin?',
+    question: 'The derivative must cut off high frequencies. How do you find where to cut?' },
+  { id: 'ninety-five', kind: 'sideproof', tag: 'Lecture 16:44 to 17:16', title: 'How much noise does the cutoff remove?',
+    question: 'Hamming says about 95% of the noise goes. Where does 95% come from, and what about the derivative?',
+    mount: slideNinety },
+  { id: 'cutoff-picks-peaks', kind: 'content', wide: true, tag: 'Lecture 17:46 to 18:25', title: 'Move the cutoff, change the answer',
+    question: 'If you may move the cutoff after seeing the result, what can you find?',
+    formula: String.raw`$$\sqrt n\ \xrightarrow{\ \text{keep } f\le f_c\ }\ \text{smooth}\ \xrightarrow{\ \text{slope}\ }\ \text{peaks}$$`, mount: slidePeaks },
+  { id: 'pick-sqrt', kind: 'decision', tag: 'Lecture 17:16, answer 18:25', title: 'Counts of very different sizes go into one filter. What do you feed it?',
+    question: 'The filter adds neighbouring values with fixed weights. What should those values be?' },
+  { id: 'why-sqrt', kind: 'proof', tag: 'Lecture 19:18 to 25:01', title: 'Why it’s true: a square root evens out the jitter',
+    question: String.raw`Why does $\sqrt n$ jitter by about $\tfrac12$, whatever the count?`, mount: slideWhySqrt },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i, same) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  COL = readPalette();
+  const widget = h('div', 'widget');
+  const side = h('div', 'side');
+  side.append(h('div', 'tag', s.tag), setTex(h('h2'), s.title));
+  side.append(setTex(h('p', s.kind === 'decision' ? 'q' : 'question'), s.question));
+  if (s.formula) side.append(setTex(h('div', 'formula'), s.formula));
+  const cls = 'slide' + ({ proof: ' proof-slide', decision: ' decision', sideproof: ' side-proof' }[s.kind] || '') + (s.wide ? ' wide' : '');
+  const sec = mark(h('section', cls), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  if (s.kind === 'decision') mountDecision(s, widget, side);
+  else s.mount(widget, side);
+  tex(sec);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state. {step} goes to the step and does nothing if it is shown. {step, reveal: true}
+// also reveals that decision, once; a revealed decision stays revealed.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i < 0) return;
+  const changed = msg.reveal === true && SLIDES[i].kind === 'decision' && revealDecision(SLIDES[i].id, 'cue');
+  if (i !== cur || changed) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt') && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); e.target.click(); return;
+    }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

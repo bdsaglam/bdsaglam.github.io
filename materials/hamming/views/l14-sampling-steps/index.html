@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Why sinusoids, and what sampling does</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-panel);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(17px,1.6vw,22px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.where{margin:0;font-size:16px}
+.where b{color:var(--accent)}
+.takeaway{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.takeaway .take-body{margin:0}
+.takeaway .btn{font-size:15px;padding:3px 10px}
+.closing{margin:0;font-size:17px;font-weight:600}
+.next{margin:0;font-size:16px;color:var(--muted)}
+
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(120px,11vw,170px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:52px}
+.btn{font:inherit;padding:5px 11px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.chips{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center;width:100%}
+.chips .lab{font-size:15px;color:var(--muted);margin-right:2px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 130px;min-width:0;padding:4px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.fixsvg{display:block;width:100%;height:120px}
+.proof{display:flex;flex-direction:column;width:100%}
+.proof-line{display:grid;grid-template-columns:30px minmax(0,1fr);gap:0 8px;align-items:center;padding:2px 0;border-bottom:1px solid var(--pal-soft-3)}
+.proof-num{font:15px ui-monospace,Menlo,monospace;color:var(--muted)}
+.proof-eq{font-size:16px;min-width:0}
+.proof-why{grid-column:2;margin:0;color:var(--muted);font-size:16px;line-height:1.2}
+/* Dark only: a dimmed, not yet read line stays at 4.5:1 (light keeps its look). */
+.proof .actions{padding-top:4px}
+.contrast{display:grid;grid-template-columns:max-content repeat(5,1fr);gap:3px 6px;align-items:center;font-size:16px}
+.contrast .c{text-align:center;font:15px ui-monospace,Menlo,monospace;padding:2px 0;border-radius:4px;background:var(--pal-soft)}
+.contrast .l{font-size:15px;padding-right:6px;white-space:nowrap}
+.contrast .c.dup{background:var(--chip)}
+.matrix{font-size:clamp(18px,1.8vw,24px)}
+
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:4px}
+  .tries{gap:3px}
+  .sym,.where,.tries{line-height:1.2}
+  .proof-line{padding:1px 0}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:18px}
+  .fixsvg{height:104px}
+  h2{font-size:20px}
+  .readout{padding:3px 8px}
+}
+</style>
+</head>
+<body>
+<header>Lecture 14, Digital Filters Part I</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Back</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// ---------- helpers ----------
+const TAU = 2 * Math.PI;
+const PL = 52, PR = 14;                       // plot margins used by every x axis here
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+const $ = s => document.querySelector(s);
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+// Palette read at paint time: SVG attributes take no var(), so every draw reads COL afresh.
+const PAL_NAMES = ['ink', 'text-2', 'text-3', 'muted', 'grid', 'soft-3', 'guide', 'grey', 'accent', 'accent-2',
+  'panel', 'on-accent', 'bg', 'amber', 'amber-bg', 'amber-ink', 'soft', 'soft-2', 'line', 'red', 'fg'];
+let COL = {};
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];                     // the current slide's plots, redrawn on a theme switch
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG (a foreignObject holding a rendered formula).
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = `0 0 3px ${COL.bg}, 0 0 3px ${COL.bg}, 0 0 2px ${COL.bg}`;
+  return fo;
+}
+// x axis: a line, ticks (numbers or TeX strings) and a label. y is the axis line.
+function xAxis(svg, W, y, o, ticks, label) {
+  const pw = W - PL - PR;
+  const X = x => PL + (x - o.x0) / (o.x1 - o.x0) * pw;
+  svgNode('line', { x1: PL, y1: y, x2: W - PR, y2: y, stroke: COL.grey }, svg);
+  for (const t of ticks) {
+    svgNode('line', { x1: X(t.v).toFixed(1), y1: y, x2: X(t.v).toFixed(1), y2: y + 4, stroke: COL.grey }, svg);
+    svgTex(svg, X(t.v), y + 16, t.s, { w: 90, size: 14, fill: COL.text3 });
+  }
+  if (label) svgTex(svg, PL + pw / 2, y + 36, label, { w: 420, size: 15 });
+}
+// Stems over x positions xs with values vs, in a row from top to top+rowH.
+function stemRow(svg, W, top, rowH, xs, vs, o) {
+  const pw = W - PL - PR;
+  const X = x => PL + (x - o.x0) / (o.x1 - o.x0) * pw;
+  const yr = o.yr, Y = v => top + 8 + (yr[1] - v) / (yr[1] - yr[0]) * (rowH - 16);
+  const zero = Y(0);
+  svgNode('line', { x1: PL, y1: zero.toFixed(1), x2: W - PR, y2: zero.toFixed(1), stroke: COL.line }, svg);
+  svgNode('line', { x1: PL, y1: top, x2: PL, y2: top + rowH, stroke: COL.grey }, svg);
+  svgText(svg, PL - 6, Y(yr[1]) + 5, String(yr[1]), { 'text-anchor': 'end', 'font-size': 13 });
+  svgText(svg, PL - 6, Y(yr[0]) + 5, String(yr[0]), { 'text-anchor': 'end', 'font-size': 13 });
+  xs.forEach((x, i) => {
+    const c = o.color(i), px = X(x).toFixed(1), py = Y(vs[i]).toFixed(1);
+    svgNode('line', { x1: px, y1: zero.toFixed(1), x2: px, y2: py, stroke: c, 'stroke-width': 1.6 }, svg);
+    svgNode('circle', { cx: px, cy: py, r: 3.5, fill: c, 'data-item': 'mark', 'data-id': (o.id || 'stem') + '-' + x }, svg);
+  });
+  if (o.label) haloTex(svg, PL + 8, top + 12, o.label, { w: 320, anchor: 'start', size: 15, fill: COL.ink });
+}
+// A labelled range input.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmt = o.fmt || String;
+  const api = {
+    el: wrap, input: inp,
+    get value() { return +inp.value; },
+    set value(v) { inp.value = v; api.show(); },
+    show() { setTex(val, fmt(+inp.value)); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A row of toggle buttons. items: [[id, TeX label]]. onPick(id) runs on click.
+function chipRow(caption, items, current, onPick, kind) {
+  const row = h('div', 'chips');
+  if (caption) row.append(setTex(h('span', 'lab'), caption));
+  const btns = items.map(([id, label]) => {
+    const b = mark(h('button', 'btn'), kind || 'control', id);
+    setTex(b, label);
+    b.addEventListener('click', () => { paint(id); onPick(id); });
+    row.append(b);
+    return [id, b];
+  });
+  function paint(id) { btns.forEach(([k, b]) => b.classList.toggle('on', k === id)); }
+  paint(current);
+  return { el: row, paint };
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) sw.style.background = it.color;
+    else sw.style.borderTop = '2px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize.
+function fillPlot(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    const svg = svgRoot(w, ht);
+    COL = readPalette();
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// A fixed-height SVG for small bar strips.
+function fixedPlot(box, w, ht, draw) {
+  const svg = svgRoot(w, ht);
+  svg.setAttribute('class', 'fixsvg');
+  svg.style.width = '100%';
+  svg.style.height = '120px';
+  COL = readPalette();
+  draw(svg);
+  box.append(svg);
+  const plot = { svg, redraw: () => { COL = readPalette(); svg.replaceChildren(); draw(svg); } };
+  PLOTS.push(plot);
+  return plot;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function whereLine(text, lead) {
+  const p = h('p', 'where');
+  const s = h('span');
+  setTex(s, text);
+  p.append(h('b', '', lead || 'Where you meet it: '), s);
+  return p;
+}
+// The takeaway: a button first, then the sentence. It shows after the user has tried the widget.
+function takeReveal(text) {
+  const box = h('div', 'takeaway');
+  const btn = mark(h('button', 'btn'), 'control', 'show-takeaway');
+  setTex(btn, 'Show the takeaway');
+  const body = setTex(h('p', 'take-body'), text);
+  body.hidden = true;
+  btn.addEventListener('click', () => { body.hidden = false; btn.hidden = true; });
+  box.append(btn, body);
+  return box;
+}
+// A derivation shown one line at a time. Unrevealed lines dim; the column keeps its height.
+function proofLines(steps) {
+  let shown = 0;
+  const rows = steps.map(([eq, why], i) => mark(hh('div', 'proof-line', h('span', 'proof-num', (i + 1) + '.'),
+    setTex(h('div', 'proof-eq'), eq), setTex(h('p', 'proof-why'), why)), 'line', 'line-' + (i + 1)));
+  const next = mark(h('button', 'btn', 'Next line'), 'control', 'next-line');
+  next.addEventListener('click', () => { shown = Math.min(steps.length, shown + 1); render(); });
+  function render() {
+    rows.forEach((r, i) => r.classList.toggle('dim', i >= shown));
+    next.disabled = shown >= steps.length;
+    next.textContent = shown >= steps.length ? 'Derivation done' : 'Next line';
+  }
+  render();
+  return hh('div', 'proof', ...rows, hh('div', 'actions', next));
+}
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* the view works without the bridge */ }
+}
+// Seeded uniform numbers in [-1, 1] (mulberry32).
+function seeded(seed, n) {
+  let a = seed >>> 0; const out = [];
+  for (let i = 0; i < n; i++) {
+    a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    out.push((((t ^ t >>> 14) >>> 0) / 4294967296) * 2 - 1);
+  }
+  return out;
+}
+const alias = f => Math.abs(f - Math.round(f));          // |a|: the frequency a sampled sinusoid looks like
+const signedAlias = f => f - Math.round(f);               // a: keeps the sign, sin flips with it
+const f4 = x => x.toFixed(4);
+
+// ---------- step 1: eigen ----------
+function slideEigen(widget, side) {
+  let f = 0.1, filt = 'avg3', inp = 'cos';
+  const FILT = { avg3: [[-1, 1 / 3], [0, 1 / 3], [1, 1 / 3]], lag: [[-1, 0.5], [0, 0.5]] };
+  const u = n => inp === 'cos' ? Math.cos(TAU * f * n)
+    : inp === 'sq' ? Math.pow(n / 40, 2)
+    : inp === 'step' ? (n >= 20 ? 1 : 0)
+    : Math.exp(-Math.pow(n - 20, 2) / 18);
+  const y = n => FILT[filt].reduce((s, [k, c]) => s + c * u(n + k), 0);
+  const xs = Array.from({ length: 41 }, (_, i) => i);
+  const fg = chipRow('Filter:', [['avg3', String.raw`3-point average`], ['lag', String.raw`lagging average`]], filt,
+    id => { filt = id; update(); });
+  const fi = chipRow('Input:', [['cos', String.raw`$\cos 2\pi f n$`], ['sq', String.raw`$n^2$ (scaled)`],
+    ['step', 'step'], ['bump', 'Gaussian bump']], inp, id => { inp = id; update(); });
+  const sf = slider(String.raw`$f$, for the cosine`, { id: 'f', name: 'frequency', min: 0, max: 0.5, step: 0.01, value: f,
+    fmt: v => v.toFixed(2), onInput: v => { f = v; update(); } });
+  const rA = readout('ratio-20', String.raw`$y_{20}/u_{20}$`);
+  const rB = readout('ratio-24', String.raw`$y_{24}/u_{24}$`);
+  const rH3 = readout('h3', String.raw`$H(f)$, 3-point`);
+  const rHl = readout('hlag', String.raw`$|H(f)|$, lagging`);
+  widget.append(fg.el, fi.el, hh('div', 'sliders', sf.el), legend([
+    { color: 'var(--pal-muted)', text: String.raw`grey stems: input $u_n$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue stems: output $y_n$` }]));
+  const plot = fillPlot(widget, (svg, W, Hh) => {
+    const rowH = (Hh - 46) / 2;
+    const yr = inp === 'cos' ? [-1.15, 1.15] : [-0.1, 1.15];
+    const o = { x0: 0, x1: 40, yr };
+    stemRow(svg, W, 0, rowH, xs, xs.map(u), Object.assign({ id: 'in', label: String.raw`input $u_n$`, color: () => COL.muted }, o));
+    stemRow(svg, W, rowH, rowH, xs, xs.map(y), Object.assign({ id: 'out', label: String.raw`output $y_n$`, color: () => COL.accent }, o));
+    xAxis(svg, W, Hh - 46, Object.assign({}, o), [0, 10, 20, 30, 40].map(v => ({ v, s: String(v) })), String.raw`$n$, sample number`);
+  });
+  widget.append(hh('div', 'readouts', rA.el, rB.el, rH3.el, rHl.el));
+  function update() {
+    const ratio = n => Math.abs(u(n)) < 0.05 ? '–' : f4(y(n) / u(n));
+    rA.set(ratio(20));
+    rB.set(ratio(24));
+    rH3.set(f4((1 + 2 * Math.cos(TAU * f)) / 3));
+    rHl.set(f4(Math.abs(Math.cos(Math.PI * f))));
+    plot.redraw();
+  }
+  side.append(
+    sym(String.raw`$u_n$: input at sample $n$. $y_n$: output. $c_k$: filter weights. Example: the 3-point average has $c_k=\tfrac13$ for $k=-1,0,1$.`),
+    triesList([
+      String.raw`Keep the cosine at $f=0.1$. The ratio $y_n/u_n$ stays $0.8727$.`,
+      String.raw`Pick $n^2$. The ratio $1+\tfrac{2}{3n^2}$ changes with $n$.`,
+      String.raw`Pick the lagging average. The wave comes out half a sample late.`]),
+    proofLines([
+      [String.raw`$u_n=e^{i2\pi fn}$`, String.raw`One complex sinusoid. $f$ is in rotations per sample.`],
+      [String.raw`$y_n=e^{i2\pi fn}\sum_k c_k\,e^{i2\pi fk}=H(f)\,u_n$`, String.raw`Factor out $e^{i2\pi fn}$. The rest is the eigenvalue $H(f)$.`]]),
+    takeReveal(String.raw`A filter multiplies each sinusoid by one number, its eigenvalue $H(f)$.`));
+  update();
+}
+
+// ---------- step 2: poly ----------
+function slidePoly(widget, side) {
+  let p = 5;
+  const RED = { 5: { 3: 5, 1: -4 }, 6: { 4: 5, 2: -4 }, 7: { 3: 21, 1: -20 } };   // reduced form on t = -2..2
+  const ts = [-2, -1, 0, 1, 2];
+  const pick = chipRow('Power:', [['p5', '$p=5$'], ['p6', '$p=6$'], ['p7', '$p=7$']], 'p5',
+    id => { p = +id.slice(1); update(); });
+  const rDeg = readout('degree', String.raw`degree of the reduced form`);
+  const rGap = readout('gap', String.raw`largest gap at the dots`);
+  const cSvg = svgRoot(600, 120);
+  const contrast = h('div', 'contrast');
+  const cos8 = ts.map(t => Math.cos(TAU * 0.8 * t)), cos2 = ts.map(t => Math.cos(TAU * 0.2 * t));
+  const cell = (v, dup) => h('span', 'c' + (dup ? ' dup' : ''), v.toFixed(3));
+  contrast.append(setTex(h('span', 'l'), String.raw`$\cos(2\pi\cdot0.8\,n)$`), ...cos8.map(v => cell(v, false)),
+    setTex(h('span', 'l'), String.raw`$\cos(2\pi\cdot0.2\,n)$`), ...cos2.map(v => cell(v, true)));
+  const contrastRow = hh('div', 'contrast-box', setTex(h('p', 'sym'), String.raw`Contrast, samples at $n=-2,\dots,2$:`), contrast);
+  widget.append(pick.el, hh('div', 'readouts', rDeg.el, rGap.el), legend([
+    { color: 'var(--pal-grey)', text: String.raw`grey: $t^p$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue: lowest-degree polynomial through the same dots` },
+    { color: 'var(--pal-ink)', chip: true, text: String.raw`filled dots: samples at $t=-2,\dots,2$` }]));
+  const plot = fillPlot(widget, drawMain);
+  const bars = fixedPlot(widget, 600, 120, drawBars);
+  widget.append(contrastRow);
+  function reduced(q) { return ts.length && RED[q]; }
+  function evalPoly(c, t) { let s = 0; for (const k in c) s += c[k] * Math.pow(t, +k); return s; }
+  function drawMain(svg, W, Hh) {
+    const dom = 2.2, o = { x0: -dom, x1: dom };
+    let ymax = 0;
+    for (let i = 0; i <= 200; i++) { const t = -dom + 2 * dom * i / 200; ymax = Math.max(ymax, Math.abs(Math.pow(t, p)), Math.abs(evalPoly(RED[p], t))); }
+    ymax *= 1.1;
+    const AXY = Hh - 46;
+    const X = t => PL + (t - o.x0) / (o.x1 - o.x0) * (W - PL - PR);
+    const Y = v => 6 + (ymax - v) / (2 * ymax) * (AXY - 12);
+    svgNode('line', { x1: PL, y1: Y(0), x2: W - PR, y2: Y(0), stroke: COL.line }, svg);
+    svgNode('line', { x1: X(0), y1: 6, x2: X(0), y2: AXY, stroke: COL.line }, svg);
+    svgText(svg, PL - 6, Y(ymax) + 5, String(Math.round(ymax)), { 'text-anchor': 'end', 'font-size': 13 });
+    svgText(svg, PL - 6, Y(-ymax) + 5, String(-Math.round(ymax)), { 'text-anchor': 'end', 'font-size': 13 });
+    const path = (fn, color, id) => {
+      let d = '';
+      for (let i = 0; i <= 120; i++) { const t = -dom + 2 * dom * i / 120; d += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(fn(t)).toFixed(1); }
+      svgNode('path', { d, fill: 'none', stroke: color, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': id }, svg);
+    };
+    path(t => Math.pow(t, p), COL.grey, 'power');
+    path(t => evalPoly(RED[p], t), COL.accent, 'reduced');
+    for (const t of ts) svgNode('circle', { cx: X(t).toFixed(1), cy: Y(Math.pow(t, p)).toFixed(1), r: 5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'dot-' + t }, svg);
+    xAxis(svg, W, AXY, o, [-2, -1, 0, 1, 2].map(v => ({ v, s: String(v) })), String.raw`$t$, sample time`);
+  }
+  function drawBars(svg) {
+    const base = 64, sc = 24 / 21;
+    svgTex(svg, 300, 12, String.raw`grey: $t^p$ has one term; blue: its reduced form, coefficient by degree`, { w: 560, size: 14 });
+    svgNode('line', { x1: 30, y1: base, x2: 590, y2: base, stroke: COL.grey }, svg);
+    for (let d = 0; d <= 7; d++) {
+      const x = 58 + d * 68;
+      const bx = x - 14;
+      if (d === p) {
+        svgNode('rect', { x: bx, y: base - sc * 1, width: 28, height: sc * 1, fill: COL.grey, 'data-item': 'mark', 'data-id': 'before' }, svg);
+        svgText(svg, x + 18, base - 4, '1', { 'font-size': 13, fill: COL.ink });
+      }
+      const c = RED[p][d];
+      if (c !== undefined) {
+        const hgt = Math.abs(c) * sc;
+        svgNode('rect', { x: bx, y: c > 0 ? base - hgt : base, width: 28, height: hgt, fill: COL.accent, 'data-item': 'mark', 'data-id': 'after-' + d }, svg);
+        svgText(svg, x + 18, c > 0 ? base - hgt / 2 + 4 : base + hgt / 2 + 4, String(c), { 'font-size': 13, fill: COL.ink });
+      }
+      svgTex(svg, x, 106, String.raw`$t^{${d}}$`, { w: 60, size: 14, fill: COL.text3 });
+    }
+  }
+  function update() {
+    let gap = 0;
+    for (const t of ts) gap = Math.max(gap, Math.abs(Math.pow(t, p) - evalPoly(RED[p], t)));
+    rGap.set(String(Math.round(gap * 1e9) / 1e9));
+    rDeg.set(String(Math.max(...Object.keys(RED[p]).map(Number))));
+    plot.redraw();
+    bars.redraw();
+  }
+  side.append(
+    sym(String.raw`$t$: sample time, $t=-2,\dots,2$. Example: at $t=2$, $t^5=32$, and $5t^3-4t=32$ too.`),
+    triesList([
+      String.raw`Pick $p=5$. The blue curve meets the grey one at the five dots, with degree 3.`,
+      String.raw`Pick $p=6$, then $p=7$. Each power becomes two terms.`,
+      String.raw`Read the contrast. Both cosines give the same five numbers.`]),
+    takeReveal(String.raw`Sampling sends one frequency to one frequency, so the basis stays clean.`));
+  update();
+}
+
+// ---------- step 3: fold ----------
+function slideFold(widget, side) {
+  let f = 0.8, kind = 'cos';
+  const sf = slider(String.raw`$f$, cycles per sample`, { id: 'f', name: 'frequency', min: 0, max: 2, step: 0.01, value: f,
+    fmt: v => v.toFixed(2), onInput: v => { f = v; presets.paint(null); update(); } });
+  const presets = chipRow('Presets:', [['p08', '$f=0.8$'], ['p13', '$f=1.3$'], ['phalf', String.raw`$f=\tfrac12$`], ['p10', String.raw`$10$ Hz at $12$ per second`]],
+    null, id => {
+      const v = { p08: 0.8, p13: 1.3, phalf: 0.5, p10: 10 / 12 }[id];
+      f = v; sf.value = v; sf.show(); presets.paint(id); update();
+    }, 'preset');
+  const fk = chipRow('Wave:', [['cos', String.raw`$\cos$`], ['sin', String.raw`$\sin$`]], kind, id => { kind = id; update(); });
+  const rA = readout('alias', String.raw`signed alias $a=f-\operatorname{round}(f)$`);
+  const rB = readout('looks', 'the samples look like');
+  widget.append(fk.el, presets.el, hh('div', 'sliders', sf.el), legend([
+    { color: 'var(--pal-muted)', text: String.raw`grey: input $\cos 2\pi f t$ or $\sin 2\pi f t$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue: the slow wave through the same dots` },
+    { color: 'var(--pal-ink)', chip: true, text: String.raw`filled dots: samples at whole $t$` }]));
+  const plot = fillPlot(widget, drawFold);
+  widget.append(hh('div', 'readouts', rA.el, rB.el));
+  const fn = kind === 'cos' ? Math.cos : Math.sin;
+  function drawFold(svg, W, Hh) {
+    const AXY = Hh - 46, split = Math.round(AXY * 0.62), ox = { x0: 0, x1: 6 };
+    const X = t => PL + (t - ox.x0) / (ox.x1 - ox.x0) * (W - PL - PR);
+    const Yw = v => 6 + (1.25 - v) / 2.5 * (split - 12);
+    svgNode('line', { x1: PL, y1: Yw(0), x2: W - PR, y2: Yw(0), stroke: COL.line }, svg);
+    const a = signedAlias(f), fnk = kind === 'cos' ? Math.cos : Math.sin;
+    let d1 = '', d2 = '';
+    for (let i = 0; i <= 240; i++) {
+      const t = 6 * i / 240;
+      d1 += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Yw(fnk(TAU * f * t)).toFixed(1);
+      d2 += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Yw(fnk(TAU * a * t)).toFixed(1);
+    }
+    svgNode('path', { d: d1, fill: 'none', stroke: COL.grey, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'input' }, svg);
+    svgNode('path', { d: d2, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'alias' }, svg);
+    for (let n = 0; n <= 6; n++) svgNode('circle', { cx: X(n).toFixed(1), cy: Yw(fnk(TAU * f * n)).toFixed(1), r: 5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'sample-' + n }, svg);
+    xAxis(svg, W, split + 2, ox, [0, 1, 2, 3, 4, 5, 6].map(v => ({ v, s: String(v) })), String.raw`$t$, whole samples`);
+    // fold map: f on the x axis (0 to 2), alias |a| on the y axis (0 to 1/2)
+    const m0 = split + 46, mH = Hh - 46 - m0 - 14, mx = fv => PL + fv / 2 * (W - PL - PR);
+    const my = av => m0 + (0.5 - av) / 0.5 * mH;
+    svgNode('line', { x1: PL, y1: my(0), x2: W - PR, y2: my(0), stroke: COL.line }, svg);
+    svgNode('line', { x1: PL, y1: my(0.5), x2: PL, y2: my(0), stroke: COL.grey }, svg);
+    svgText(svg, PL - 6, my(0.5) + 5, '0.5', { 'text-anchor': 'end', 'font-size': 13 });
+    svgText(svg, PL - 6, my(0) + 5, '0', { 'text-anchor': 'end', 'font-size': 13 });
+    let zz = '';
+    for (let i = 0; i <= 200; i++) { const fv = 2 * i / 200; zz += (i ? 'L' : 'M') + mx(fv).toFixed(1) + ' ' + my(alias(fv)).toFixed(1); }
+    svgNode('path', { d: zz, fill: 'none', stroke: COL.accent, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'fold-map' }, svg);
+    svgNode('line', { x1: mx(f).toFixed(1), y1: my(0), x2: mx(f).toFixed(1), y2: my(alias(f)).toFixed(1), stroke: COL.ink, 'stroke-dasharray': '4 3' }, svg);
+    svgNode('circle', { cx: mx(f).toFixed(1), cy: my(alias(f)).toFixed(1), r: 6, fill: COL.ink, 'data-item': 'mark', 'data-id': 'marker' }, svg);
+    xAxis(svg, W, Hh - 46, { x0: 0, x1: 2 }, [0, 0.5, 1, 1.5, 2].map(v => ({ v, s: String(v) })), String.raw`$f$, cycles per sample. Height: the alias $|a|$`);
+  }
+  function update() {
+    const a = signedAlias(f);
+    rA.set(String.raw`$a=${a.toFixed(2)}$, so $|a|=${Math.abs(a).toFixed(2)}$`);
+    const sgn = a < 0 ? '-' : '';
+    const txt = kind === 'cos' ? String.raw`$\cos(2\pi\cdot ${Math.abs(a).toFixed(2)}\,n)$`
+      : String.raw`$${sgn}\sin(2\pi\cdot ${Math.abs(a).toFixed(2)}\,n)$`;
+    rB.set(txt);
+    plot.redraw();
+  }
+  side.append(
+    sym(String.raw`$f$: cycles per sample. $a$: the alias, $f$ minus its nearest whole number. Example: $f=0.8$, $a=-0.2$.`),
+    triesList([
+      String.raw`Keep $f=0.8$, cos. The blue wave has $|a|=0.2$; both hit the dots.`,
+      String.raw`Switch to sin: $\sin(2\pi\cdot0.8\,n)=-\sin(2\pi\cdot0.2\,n)$. The sign flips.`,
+      String.raw`Set $f=\tfrac12$. Sine samples are all $0$; cosine samples alternate $\pm1$.`]),
+    proofLines([
+      [String.raw`$\cos\big(2\pi(k+a)n\big)=\cos(2\pi kn+2\pi an)$`, String.raw`Split $f=k+a$. At whole $n$, $2\pi kn$ is full turns.`],
+      [String.raw`$=\cos(2\pi an)$`, String.raw`Full turns change nothing. Sin works the same way.`]]),
+    takeReveal(String.raw`Aliasing is a trig identity at whole times; only $|f|\le\tfrac12$ survives.`));
+  update();
+}
+
+// ---------- step 4: rotation ----------
+function slideRotation(widget, side) {
+  let n = 5, f = 0.1, m = 12, nk = 7;
+  const THETA = 1;                                   // RoPE angle per token, radians
+  const Q = { re: 1, im: 0.5 }, K = { re: 0.6, im: -0.8 };
+  const qk = { re: Q.re * K.re + Q.im * K.im, im: Q.im * K.re - Q.re * K.im };  // q times conj(k)
+  const score = (mm, nn) => { const d = (mm - nn) * THETA; return qk.re * Math.cos(d) - qk.im * Math.sin(d); };
+  const sn = slider(String.raw`$n$, sample`, { id: 'n', name: 'sample', min: 0, max: 16, step: 1, value: n,
+    fmt: v => String(v), onInput: v => { n = v; update(); } });
+  const sf = slider(String.raw`$f$, rotations per sample`, { id: 'f', name: 'frequency', min: 0, max: 0.5, step: 0.01, value: f,
+    fmt: v => v.toFixed(2), onInput: v => { f = v; update(); } });
+  const rM = readout('m', String.raw`query position $m$`);
+  const rN = readout('k', String.raw`key position $n$`);
+  const rS = readout('score', String.raw`score $\operatorname{Re}(q\bar k\,e^{i(m-n)\theta})$`);
+  const rT = readout('theta', String.raw`$\theta=1$ rad per token $=0.159$ rotations`);
+  const shiftBoth = mark(h('button', 'btn'), 'control', 'shift-both'); setTex(shiftBoth, String.raw`Shift both by $5$`);
+  const shiftQ = mark(h('button', 'btn'), 'control', 'shift-query'); setTex(shiftQ, String.raw`Shift only the query by $5$`);
+  const reset = mark(h('button', 'btn'), 'control', 'reset'); setTex(reset, 'Reset');
+  shiftBoth.addEventListener('click', () => { m += 5; nk += 5; update(); });
+  shiftQ.addEventListener('click', () => { m += 5; update(); });
+  reset.addEventListener('click', () => { m = 12; nk = 7; update(); });
+  widget.append(hh('div', 'sliders', sn.el, sf.el), legend([
+    { color: 'var(--pal-grey)', text: String.raw`grey dots: earlier steps` },
+    { color: 'var(--pal-accent)', chip: true, text: String.raw`blue dot: step $n$ on the circle, and its real part (cos) on the right` }]));
+  const plot = fillPlot(widget, drawRot);
+  widget.append(hh('div', 'chips', setTex(h('span', 'lab'), 'RoPE check:'), shiftBoth, shiftQ, reset),
+    hh('div', 'readouts', rM.el, rN.el, rS.el, rT.el));
+  function drawRot(svg, W, Hh) {
+    const AXY = Hh - 46, half = (W - PL - PR) * 0.42;
+    const cx = PL + half / 2 + 10, cy = AXY / 2, R = Math.min(half / 2, AXY / 2) - 16;
+    svgNode('circle', { cx, cy, r: R, fill: 'none', stroke: COL.line }, svg);
+    svgNode('line', { x1: cx - R - 8, y1: cy, x2: cx + R + 8, y2: cy, stroke: COL.soft2 }, svg);
+    svgNode('line', { x1: cx, y1: cy - R - 8, x2: cx, y2: cy + R + 8, stroke: COL.soft2 }, svg);
+    for (let k = 0; k <= n; k++) {
+      const a = TAU * f * k;
+      svgNode('circle', { cx: (cx + R * Math.cos(a)).toFixed(1), cy: (cy - R * Math.sin(a)).toFixed(1), r: 3, fill: COL.grey }, svg);
+    }
+    const a = TAU * f * n;
+    svgNode('circle', { cx: (cx + R * Math.cos(a)).toFixed(1), cy: (cy - R * Math.sin(a)).toFixed(1), r: 7, fill: COL.accent, 'data-item': 'mark', 'data-id': 'point' }, svg);
+    svgTex(svg, cx, AXY - 6, String.raw`$e^{i2\pi fn}$, $n=${n}$`, { w: 200, size: 14, fill: COL.ink });
+    // the real part against n
+    const X0 = PL + half + 26, pw = W - X0 - PR, rows = AXY;
+    const X = k => X0 + k / 16 * pw, Y = v => 10 + (1.15 - v) / 2.3 * (rows - 20);
+    svgNode('line', { x1: X0, y1: Y(0), x2: W - PR, y2: Y(0), stroke: COL.line }, svg);
+    for (let k = 0; k <= 16; k++) {
+      const v = Math.cos(TAU * f * k), hi = k === n;
+      svgNode('line', { x1: X(k).toFixed(1), y1: Y(0), x2: X(k).toFixed(1), y2: Y(v).toFixed(1), stroke: hi ? COL.accent : COL.grey, 'stroke-width': hi ? 2.5 : 1.5 }, svg);
+      svgNode('circle', { cx: X(k).toFixed(1), cy: Y(v).toFixed(1), r: hi ? 5 : 3, fill: hi ? COL.accent : COL.muted }, svg);
+    }
+    svgTex(svg, X0 + pw / 2, Y(1.1) + 2, String.raw`real part $\cos 2\pi f n$ against $n$`, { w: 300, size: 14, fill: COL.text3 });
+    svgTex(svg, X(0), AXY - 6, '0', { w: 30, size: 14 });
+    svgTex(svg, X(16), AXY - 6, '16', { w: 30, size: 14 });
+  }
+  function update() {
+    rM.set(String(m));
+    rN.set(String(nk));
+    rS.set(f4(score(m, nk)));
+    plot.redraw();
+  }
+  side.append(
+    setTex(h('div', 'formula matrix'), String.raw`$$\begin{pmatrix}\cos\omega&-\sin\omega\\ \sin\omega&\cos\omega\end{pmatrix}$$`),
+    sym(String.raw`$\omega=2\pi f$. The vectors are $q=1+0.5i$ and $k=0.6-0.8i$. The rotation matrix has eigenvalues $e^{\pm i\omega}$.`),
+    triesList([
+      String.raw`Move $n$. Each step turns the dot by $2\pi f$. Its real part is the cosine.`,
+      String.raw`Click Shift both by $5$. The score stays at $1.1115$: it depends on $m-n$ only.`,
+      String.raw`Click Shift only the query by $5$. The score changes.`]),
+    whereLine(String.raw`RoPE (Su et al., 2021, arXiv:2104.09864) rotates queries and keys by position. The slowest pair in a 128-dim head has a period of about $54{,}400$ tokens.`, 'RoPE: '),
+    takeReveal(String.raw`A shift is a rotation, and a complex exponential makes it one multiply.`));
+  update();
+}
+
+// ---------- step 5: samples per cycle ----------
+const C = {
+  mul: (a, b) => ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re }),
+  add: (a, b) => ({ re: a.re + b.re, im: a.im + b.im }),
+  sc: (a, s) => ({ re: a.re * s, im: a.im * s }),
+  abs: a => Math.hypot(a.re, a.im),
+};
+// Roots of z^4 + c1 z^3 + c2 z^2 + c3 z + c4 (complex coefficients), Durand-Kerner.
+function roots4(cs) {
+  let z = [0, 1, 2, 3].map(k => { let r = { re: 1, im: 0 }; for (let i = 0; i < k; i++) r = C.mul(r, { re: 0.4, im: 0.9 }); return r; });
+  const p = x => { let r = { re: 1, im: 0 }; for (const c of cs) r = C.add(C.mul(r, x), c); return r; };
+  for (let it = 0; it < 800; it++) {
+    z = z.map((zi, i) => {
+      let den = { re: 1, im: 0 };
+      z.forEach((zj, j) => { if (j !== i) den = C.mul(den, C.add(zi, C.sc(zj, -1))); });
+      const q = p(zi);
+      const d = den.re * den.re + den.im * den.im;
+      const r = { re: (q.re * den.re + q.im * den.im) / d, im: (q.im * den.re - q.re * den.im) / d };
+      return C.add(zi, C.sc(r, -1));
+    });
+  }
+  return z;
+}
+// ABM4 PECE on y'' + y = 0, y(0) = 1, y'(0) = 0, with exact starting values (as in Hamming's check).
+function abm4(N, steps) {
+  const hs = TAU / N, F = s => [s[1], -s[0]];
+  const ys = [0, 1, 2, 3].map(i => [Math.cos(i * hs), -Math.sin(i * hs)]);
+  const fs = ys.map(F);
+  for (let n = 3; n < steps; n++) {
+    const p = [0, 1].map(k => ys[n][k] + hs / 24 * (55 * fs[n][k] - 59 * fs[n - 1][k] + 37 * fs[n - 2][k] - 9 * fs[n - 3][k]));
+    const fp = F(p);
+    const c = [0, 1].map(k => ys[n][k] + hs / 24 * (9 * fp[k] + 19 * fs[n][k] - 5 * fs[n - 1][k] + fs[n - 2][k]));
+    ys.push(c); fs.push(F(c));
+  }
+  return ys;
+}
+function rk4(N, steps) {
+  const hs = TAU / N, F = s => [s[1], -s[0]];
+  const out = [[1, 0]];
+  let s = [1, 0];
+  for (let n = 0; n < steps; n++) {
+    const k1 = F(s), st = (a, k, c) => [a[0] + c * k[0], a[1] + c * k[1]];
+    const k2 = F(st(s, k1, hs / 2)), k3 = F(st(s, k2, hs / 2)), k4 = F(st(s, k3, hs));
+    s = [0, 1].map(k => s[k] + hs / 6 * (k1[k] + 2 * k2[k] + 2 * k3[k] + k4[k]));
+    out.push(s);
+  }
+  return out;
+}
+function slideSamples(widget, side) {
+  let N = 8, method = 'abm4';
+  const NS = [5, 6, 7, 8, 10, 12, 16];
+  const chipsN = chipRow('Samples per cycle, $N$:', NS.map(v => ['n' + v, String(v)]), 'n8', id => { N = +id.slice(1); update(); }, 'preset');
+  const chipsM = chipRow('Method:', [['abm4', 'ABM4 PECE'], ['rk4', 'RK4']], 'abm4', id => { method = id; update(); });
+  const r1 = readout('err1', String.raw`max error, $1$ cycle`);
+  const r3 = readout('err3', String.raw`max error, $3$ cycles`);
+  const rR = readout('root', String.raw`largest root $|r|$`);
+  widget.append(chipsN.el, chipsM.el, legend([
+    { color: 'var(--pal-grey)', text: String.raw`grey curve: $\cos t$, the exact answer` },
+    { color: 'var(--pal-accent)', chip: true, text: String.raw`blue dots: the numerical $y_n$ at $t_n=nh$, $h=2\pi/N$` }]));
+  const plot = fillPlot(widget, drawSamp);
+  widget.append(hh('div', 'readouts', r1.el, r3.el, rR.el));
+  let sol = null, errs = null;
+  function compute() {
+    const steps = 3 * N;
+    const ys = method === 'abm4' ? abm4(N, steps) : rk4(N, steps);
+    let e1 = 0, e3 = 0;
+    for (let i = 0; i <= steps; i++) {
+      const e = Math.abs(ys[i][0] - Math.cos(i * TAU / N));
+      if (i <= N) e1 = Math.max(e1, e);
+      e3 = Math.max(e3, e);
+    }
+    let root;
+    const hs = TAU / N;
+    if (method === 'abm4') {
+      const q = { re: 0, im: hs }, q2 = C.mul(q, q);
+      const a0 = C.add({ re: 1, im: 0 }, C.add(C.sc(q, 28 / 24), C.sc(q2, 495 / 576)));
+      const a1 = C.add(C.sc(q2, -531 / 576), C.sc(q, -5 / 24));
+      const a2 = C.add(C.sc(q2, 333 / 576), C.sc(q, 1 / 24));
+      const a3 = C.sc(q2, -81 / 576);
+      const zs = roots4([C.sc(a0, -1), C.sc(a1, -1), C.sc(a2, -1), C.sc(a3, -1)]);
+      root = Math.max(...zs.map(C.abs));
+    } else {
+      const z = { re: 0, im: hs };
+      const z2 = C.mul(z, z), z3 = C.mul(z2, z), z4 = C.mul(z3, z);
+      const R = C.add(C.add({ re: 1, im: 0 }, z), C.add(C.sc(z2, 0.5), C.add(C.sc(z3, 1 / 6), C.sc(z4, 1 / 24))));
+      root = C.abs(R);
+    }
+    return { ys, steps, e1, e3, root };
+  }
+  function drawSamp(svg, W, Hh) {
+    const AXY = Hh - 46, yr = 2.5, tmax = 3 * TAU;
+    const X = t => PL + t / tmax * (W - PL - PR);
+    const Y = v => 8 + (yr - v) / (2 * yr) * (AXY - 16);
+    svgNode('line', { x1: PL, y1: Y(0), x2: W - PR, y2: Y(0), stroke: COL.line }, svg);
+    svgNode('line', { x1: PL, y1: 8, x2: PL, y2: AXY, stroke: COL.grey }, svg);
+    svgText(svg, PL - 6, Y(yr) + 5, '2.5', { 'text-anchor': 'end', 'font-size': 13 });
+    svgText(svg, PL - 6, Y(-yr) + 5, '-2.5', { 'text-anchor': 'end', 'font-size': 13 });
+    let d = '';
+    for (let i = 0; i <= 300; i++) { const t = tmax * i / 300; d += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(Math.cos(t)).toFixed(1); }
+    svgNode('path', { d, fill: 'none', stroke: COL.grey, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'exact' }, svg);
+    sol.ys.forEach((s, i) => {
+      const t = i * TAU / N, v = s[0];
+      const off = Math.abs(v) > yr;
+      const vv = off ? Math.sign(v) * yr : v;
+      svgNode('circle', { cx: X(t).toFixed(1), cy: Y(vv).toFixed(1), r: 4.5, fill: off ? COL.red : COL.accent, 'data-item': 'mark', 'data-id': 'step-' + i }, svg);
+    });
+    xAxis(svg, W, AXY, { x0: 0, x1: tmax }, [[0, '0'], [TAU, '$2\\pi$'], [2 * TAU, '$4\\pi$'], [3 * TAU, '$6\\pi$']].map(([v, s]) => ({ v, s })), String.raw`$t$, three cycles`);
+    if (sol.ys.some(s => Math.abs(s[0]) > yr)) svgTex(svg, W - PR - 150, 22, String.raw`red: off the chart`, { w: 220, anchor: 'end', size: 14, fill: COL.red });
+  }
+  function update() {
+    sol = compute();
+    r1.set(f4(sol.e1));
+    r3.set(f4(sol.e3));
+    rR.set(f4(sol.root));
+    plot.redraw();
+  }
+  side.append(
+    setTex(h('div', 'formula'), String.raw`$$y''+y=0,\quad y(0)=1,\ y'(0)=0$$`),
+    sym(String.raw`$N$: samples per cycle; step $h=2\pi/N$. The exact answer is $y=\cos t$. Example: $N=8$ gives $h=\pi/4$.`),
+    triesList([
+      String.raw`ABM4 at $N=8$: the error over one cycle is $0.062$.`,
+      String.raw`Pick $N=6$: error $0.254$ over one cycle, $1.46$ over three. Largest root $1.198$.`,
+      String.raw`Switch to RK4 at $N=6$: one-cycle error $0.048$, about five times less.`]),
+    takeReveal(String.raw`Samples per cycle turn an error bound nobody can compute into a question the client can answer.`));
+  update();
+}
+
+// ---------- step 6: bandpass ----------
+function slideBand(widget, side) {
+  let a = 1.1, w = 0.3;
+  const sa = slider(String.raw`$a$, lower edge of the band`, { id: 'a', name: 'band lower edge', min: 0, max: 1.5, step: 0.01, value: a,
+    fmt: v => v.toFixed(2), onInput: v => { a = v; update(); } });
+  const sw = slider(String.raw`$w$, band width`, { id: 'w', name: 'band width', min: 0.05, max: 0.5, step: 0.01, value: w,
+    fmt: v => v.toFixed(2), onInput: v => { w = v; update(); } });
+  const rBand = readout('band', String.raw`band $[a,\,b]$`);
+  const rImg = readout('image', String.raw`image in $[0,\tfrac12]$`);
+  const rDir = readout('dir', 'orientation');
+  widget.append(hh('div', 'sliders', sa.el, sw.el), legend([
+    { color: 'var(--pal-accent)', chip: true, text: String.raw`blue ramp: the band, where the signal lives` },
+    { color: 'var(--pal-line)', chip: true, text: String.raw`grey: zones $[k-\tfrac12,\,k+\tfrac12]$` },
+    { color: 'var(--pal-accent)', text: String.raw`arrows: where the band lands; grey dot: its lower end` }]));
+  const plot = fillPlot(widget, drawBand);
+  widget.append(hh('div', 'readouts', rBand.el, rImg.el, rDir.el));
+  function pieces() {
+    const b = a + w, br = [a];
+    for (let k = 1; k <= 2; k++) if (k > a && k < b) br.push(k);
+    br.push(b);
+    const out = [];
+    for (let i = 0; i + 1 < br.length; i++) {
+      const p = br[i], q = br[i + 1], mid = (p + q) / 2, k = Math.round(mid);
+      out.push({ p, q, from: alias(p), to: alias(q), up: mid > k });
+    }
+    return out;
+  }
+  function drawBand(svg, W, Hh) {
+    const AXY = Hh - 46, split = Math.round(AXY * 0.6);
+    const X = f => PL + f / 2 * (W - PL - PR);
+    const zones = [[0, 0.5, COL.soft], [0.5, 1.5, COL.soft2], [1.5, 2, COL.soft]];
+    zones.forEach(([p, q, c], i) => {
+      svgNode('rect', { x: X(p).toFixed(1), y: 4, width: (X(q) - X(p)).toFixed(1), height: split - 4, fill: c }, svg);
+      svgTex(svg, (X(p) + X(q)) / 2, 16, String.raw`zone ${i}`, { w: 90, size: 14, fill: COL.text3 });
+    });
+    const Ys = v => 30 + (1 - v) * (split - 40);
+    const steps = 60;
+    let d = `M${X(a).toFixed(1)} ${Ys(0).toFixed(1)}`;
+    for (let i = 0; i <= steps; i++) {
+      const f = a + w * i / steps;
+      d += `L${X(f).toFixed(1)} ${Ys((f - a) / w).toFixed(1)}`;
+    }
+    d += `L${X(a + w).toFixed(1)} ${Ys(0).toFixed(1)}Z`;
+    svgNode('path', { d, fill: COL.accent, 'fill-opacity': 0.35, stroke: COL.accent, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'band' }, svg);
+    svgNode('line', { x1: PL, y1: Ys(0), x2: W - PR, y2: Ys(0), stroke: COL.grey }, svg);
+    svgNode('line', { x1: X(a), y1: 30, x2: X(a), y2: Ys(0), stroke: COL.ink, 'stroke-dasharray': '4 3' }, svg);
+    svgNode('line', { x1: X(a + w), y1: 30, x2: X(a + w), y2: Ys(0), stroke: COL.ink, 'stroke-dasharray': '4 3' }, svg);
+    xAxis(svg, W, split, { x0: 0, x1: 2 }, [0, 0.5, 1, 1.5, 2].map(v => ({ v, s: String(v) })), String.raw`$f$, cycles per sample`);
+    // the image on [0, 1/2], below the spectrum axis
+    const Xi = v => PL + v / 0.5 * (W - PL - PR);
+    const imgTop = split + 50, base = imgTop + 78;
+    svgTex(svg, W - PR, imgTop + 4, String.raw`image of the band on $[0,\tfrac12]$`, { w: 320, anchor: 'end', size: 14, fill: COL.text3 });
+    svgNode('line', { x1: PL, y1: base, x2: W - PR, y2: base, stroke: COL.grey }, svg);
+    [0, 0.25, 0.5].forEach(v => svgTex(svg, Xi(v), base + 16, String(v), { w: 50, size: 14, fill: COL.text3 }));
+    const ps = pieces();
+    ps.forEach((pc, i) => {
+      const y = imgTop + 30 + i * 26;
+      const x1 = Xi(pc.from), x2 = Xi(pc.to), dir = x2 >= x1 ? 1 : -1;
+      svgNode('circle', { cx: x1.toFixed(1), cy: y, r: 4, fill: COL.grey }, svg);
+      svgNode('line', { x1: x1.toFixed(1), y1: y, x2: (x2 - dir * 8).toFixed(1), y2: y, stroke: COL.accent, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'piece-' + i }, svg);
+      svgNode('polygon', { points: [[x2, y], [x2 - dir * 10, y - 6], [x2 - dir * 10, y + 6]].map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' '), fill: COL.accent }, svg);
+    });
+  }
+  function update() {
+    const ps = pieces();
+    rBand.set(String.raw`$[${a.toFixed(2)},\,${(a + w).toFixed(2)}]$`);
+    if (ps.length === 1) {
+      const pc = ps[0], lo = Math.min(pc.from, pc.to), hi = Math.max(pc.from, pc.to);
+      rImg.set(String.raw`$[${lo.toFixed(2)},\,${hi.toFixed(2)}]$`);
+      rDir.set(pc.up ? 'upright' : 'reversed');
+    } else {
+      rImg.set(String.raw`$[0,\,${Math.max(...ps.map(p => Math.max(p.from, p.to))).toFixed(2)}]$, twice`, false);
+      rDir.set('folds onto itself', true);
+    }
+    plot.redraw();
+  }
+  side.append(
+    setTex(h('div', 'formula'), String.raw`$$\cos A\cos B=\tfrac12\big[\cos(A-B)+\cos(A+B)\big]$$`),
+    sym(String.raw`Zone $k$ is $[k-\tfrac12,\,k+\tfrac12]$; sampling folds it onto $[0,\tfrac12]$. Example: $[1.1,\,1.4]$ is in zone 1.`),
+    triesList([
+      String.raw`Keep the band at $[1.1,\,1.4]$. It lands on $[0.1,\,0.4]$, upright.`,
+      String.raw`Move it to $[1.6,\,1.9]$. It lands on $[0.1,\,0.4]$, reversed.`,
+      String.raw`Move it across $f=1$, to $[0.8,\,1.2]$. Two pieces land on top of each other.`]),
+    takeReveal(String.raw`If a band sits inside one zone, sampling alone brings it down. Crossing an edge folds it.`));
+  update();
+}
+
+// ---------- step 7: cnn aliasing ----------
+function slideCnn(widget, side) {
+  let f = 0.4, inp = 'cos', blur = false;
+  const RND = seeded(11, 22);                              // u_n for n = -3..18
+  const u = n => inp === 'cos' ? Math.cos(TAU * f * n) : RND[n + 3];
+  const v = n => blur ? (u(n - 1) + 2 * u(n) + u(n + 1)) / 4 : u(n);
+  const sf = slider(String.raw`$f$, cycles per input sample`, { id: 'f', name: 'frequency', min: 0, max: 0.5, step: 0.01, value: f,
+    fmt: v => v.toFixed(2), onInput: x => { f = x; update(); } });
+  const ci = chipRow('Input:', [['cos', String.raw`cosine at $f$`], ['rand', 'seeded random']], inp, id => { inp = id; update(); });
+  const bl = mark(h('button', 'btn'), 'control', 'blur');
+  setTex(bl, String.raw`Blur first: $[1,2,1]/4$`);
+  bl.addEventListener('click', () => { blur = !blur; bl.classList.toggle('on', blur); update(); });
+  const rMis = readout('mismatch', String.raw`change when the input moves 1 sample: $\mathrm{RMS}(y'-y)$`);
+  const rAl = readout('alias', String.raw`$2f$ per output sample, and its alias`);
+  const rG = readout('gain', String.raw`blur gain $H(f)=\cos^2\pi f$`);
+  widget.append(ci.el, hh('div', 'chips', bl), hh('div', 'sliders', sf.el), legend([
+    { color: 'var(--pal-accent)', chip: true, text: String.raw`blue: kept samples (even $n$) and the output $y_m$` },
+    { color: 'var(--pal-ink)', chip: true, text: String.raw`solid stems: the shifted output $y'_m$` }]));
+  const plot = fillPlot(widget, drawCnn);
+  widget.append(hh('div', 'readouts', rMis.el, rAl.el, rG.el));
+  const ys = () => { const out = [], sh = []; for (let m = 0; m < 8; m++) { out.push(v(2 * m)); sh.push(v(2 * m - 1)); } return { out, sh }; };
+  function drawCnn(svg, W, Hh) {
+    const AXY = Hh - 46, rowH = (AXY - 4) / 4;
+    const xs = Array.from({ length: 16 }, (_, i) => i), xo = { x0: -0.5, x1: 15.5 };
+    const yr = inp === 'cos' ? [-1.1, 1.1] : [-1.1, 1.1];
+    stemRow(svg, W, 0, rowH, xs, xs.map(u), Object.assign({ id: 'in', yr, label: String.raw`input $u_n$`,
+      color: i => i % 2 === 0 ? COL.accent : COL.grey }, xo));
+    stemRow(svg, W, rowH, rowH, xs, xs.map(v), Object.assign({ id: 'filt', yr, label: blur ? String.raw`after blur $v_n$` : String.raw`after blur: off, $v_n=u_n$`,
+      color: i => i % 2 === 0 ? COL.accent : COL.grey }, xo));
+    const o = ys(), mx = [0, 1, 2, 3, 4, 5, 6, 7].map(m => 2 * m);
+    stemRow(svg, W, rowH * 2, rowH, mx, o.out, Object.assign({ id: 'out', yr, label: String.raw`output $y_m=v_{2m}$, stride 2`, color: () => COL.accent }, xo));
+    stemRow(svg, W, rowH * 3, rowH, mx, o.sh, Object.assign({ id: 'shift', yr, label: String.raw`input moved by 1: $y'_m=v_{2m-1}$`, color: () => COL.ink }, xo));
+    xAxis(svg, W, AXY, xo, [0, 2, 4, 6, 8, 10, 12, 14].map(x => ({ v: x, s: String(x) })), String.raw`input sample $n$ (outputs sit under $n=2m$)`);
+  }
+  function update() {
+    const o = ys();
+    let s = 0;
+    for (let m = 0; m < 8; m++) s += Math.pow(o.sh[m] - o.out[m], 2);
+    rMis.set(f4(Math.sqrt(s / 8)));
+    const g = Math.pow(Math.cos(Math.PI * f), 2);
+    rAl.set(String.raw`$2f=${(2 * f).toFixed(2)}$, alias $${alias(2 * f).toFixed(2)}$`);
+    rG.set(f4(g));
+    plot.redraw();
+  }
+  side.append(
+    setTex(h('div', 'formula'), String.raw`$$y_m=v_{2m},\qquad y'_m=v_{2m-1}$$`),
+    sym(String.raw`$u_n$: input; $v_n$: after blur, if on; $m$: output. Example: output $m=3$ reads $n=6$; after a 1-sample move it reads $n=5$.`),
+    triesList([
+      String.raw`Keep $f=0.4$. The output wiggles slowly: $0.8$ per output sample reads as $0.2$.`,
+      String.raw`Turn on blur. The change falls to $0.0955$ of its size: $H(0.4)=\cos^2(0.4\pi)$.`,
+      String.raw`Set $f=\tfrac12$. The output is all $+1$; the moved output is all $-1$.`]),
+    whereLine(String.raw`Zhang (2019), BlurPool, arXiv:1904.11486: blur before the stride.`, 'CNN link, not in the lecture: '),
+    takeReveal(String.raw`Downsampling is sampling, so filter before you sample.`));
+  update();
+}
+
+// ---------- deck ----------
+const SLIDES = [
+  { id: 'eigen', title: 'A filter scales each sinusoid', tag: 'Lecture 14, 08:25 to 10:34',
+    question: 'Which signals keep their shape through a filter?',
+    formula: String.raw`$$\textstyle H(f)=\sum_k c_k\,e^{i2\pi fk}$$`, mount: slideEigen },
+  { id: 'poly', title: 'Sampling keeps sinusoids, not powers', tag: 'Lecture 14, 08:58 to 09:30',
+    question: String.raw`Why do sinusoids survive sampling, while powers of $t$ do not?`,
+    formula: String.raw`$$t^{5}\equiv 5t^{3}-4t \quad\text{on } t=-2,\dots,2$$`, mount: slidePoly },
+  { id: 'fold', title: 'A high frequency lands on a lower one', tag: 'Lecture 14, 12:10 to 15:43',
+    question: 'Where does a high frequency go when you sample it?',
+    formula: String.raw`$$\cos\big(2\pi(k+a)n\big)=\cos(2\pi an)$$`, mount: slideFold },
+  { id: 'rotation', title: 'A shift is a rotation', tag: 'Lecture 14, 14:43 to 15:43',
+    question: String.raw`Why do engineers prefer $e^{i\omega n}$ to cos and sin?`, mount: slideRotation },
+  { id: 'samples-per-cycle', title: 'Samples per cycle set a solver step', tag: 'Lecture 14, 17:46 to 20:20',
+    question: "How fine must a solver's step be?", mount: slideSamples },
+  { id: 'bandpass', title: 'Sampling can bring a band down', tag: 'Lecture 14, 23:58 to 26:06',
+    question: 'Can sampling do the demodulation for you?', mount: slideBand },
+  { id: 'cnn-aliasing', title: 'A stride-2 layer is a sampler', tag: 'Lecture 14, 25:33: the CNN link is ours',
+    question: 'Why does a stride-2 layer break shift invariance?', mount: slideCnn },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  $('header').textContent = s.tag;
+  const side = hh('div', 'side',
+    setTex(h('h2'), s.title),
+    setTex(h('p', 'question'), s.question),
+    s.formula ? setTex(h('div', 'formula'), s.formula) : null);
+  const sec = mark(h('section', 'slide'), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  s.mount(widget, side);
+  if (cur === SLIDES.length - 1) {
+    side.append(setTex(h('p', 'next'), 'Next: a smoothing filter, seen as a window on the data (Lecture 14, 27:08).'));
+    if (!endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Square, triangle, cube: step by step</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: white page, one accent (blue), red only for a failing check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --hi:var(--pal-accent-tint); --chk:var(--pal-soft-3);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 28px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(8px,1.2vh,16px) 28px}
+footer{display:flex;align-items:center;gap:10px;padding:10px 28px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (60%), text on the right (40%). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(20px,2.6vw,44px)}
+.widget{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:clamp(10px,1.8vh,18px);overflow:auto}
+.widget>*{max-width:100%}
+.side{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(10px,1.8vh,18px)}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(24px,2.5vw,36px);line-height:1.2;margin:0;font-weight:650}
+.formula{font-size:clamp(24px,2.4vw,34px)}
+.formula .katex-display{margin:0.15em 0;text-align:left}
+.formula .katex-display>.katex{text-align:left}
+.line-txt{margin:0;font-size:clamp(17px,1.45vw,21px)}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:12px 32px;flex-wrap:wrap;justify-content:center}
+.slide-ctl{display:flex;align-items:center;gap:10px;font-size:18px}
+.slide-ctl input{width:220px;accent-color:var(--accent)}
+.slide-ctl .val{min-width:36px;font:18px ui-monospace,Menlo,monospace}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.chip{padding:6px 14px;border:1px solid var(--line);border-radius:999px;font:inherit;font-size:17px;background:var(--pal-panel);cursor:default}
+.chip.bad{border-color:var(--red);color:var(--red);font-weight:700;background:var(--pal-red-tint)}
+.chip.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn{font:inherit;padding:7px 16px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:default}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.readout{padding:12px 16px;border-radius:10px;background:var(--pal-soft);width:100%;max-width:660px;font-size:18px;line-height:1.5}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.chkbox{padding:10px 14px;border-radius:10px;background:var(--pal-soft);font-weight:600;font-size:18px}
+.chkbox.bad{background:var(--redbg);color:var(--red)}
+.note{color:var(--muted);font-size:17px;margin:0}
+.counter{font-size:19px;margin:0}
+
+/* Grids: larger cells, centered in the widget */
+.board{display:flex;flex-direction:column;gap:5px}
+.line{display:flex;gap:5px;align-items:center}
+.cell{width:56px;height:56px;flex:0 0 56px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font:600 20px ui-monospace,Menlo,monospace;background:var(--pal-panel);cursor:pointer;user-select:none}
+.cell.chk{background:var(--chk);color:var(--muted)}
+.cell.none{border-color:transparent;background:transparent;cursor:default}
+.cell.flip{box-shadow:inset 0 0 0 3px var(--red);color:var(--red)}
+.cell.band{background:var(--redbg)}
+.cell.hi{background:var(--hi)}
+.cell.dash{border:2px dashed var(--pal-ink)}
+.cell.loc{outline:3px solid var(--pal-ink);outline-offset:2px}
+.cell.adr{font-size:15px;letter-spacing:-.3px}
+.cell.flipo{outline:3px solid var(--red);outline-offset:2px;color:var(--red)}
+.rl,.cl{font-size:18px;color:var(--muted)}
+.rl{margin-left:8px;width:40px}
+.cl{width:56px;text-align:center}
+.rl.bad,.cl.bad{color:var(--red);font-weight:700}
+.tri .cell{width:50px;height:50px;flex-basis:50px;font-size:18px}
+.tri .line{gap:4px}
+.tri .board{gap:4px}
+.layers{display:flex;gap:clamp(16px,2.4vw,32px);flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.layers.small .cell{width:64px;height:64px;flex-basis:64px}
+.layer{display:flex;flex-direction:column;gap:6px;align-items:center}
+.lt{font-size:18px;color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px}
+
+/* Tables and bars */
+.tbl{border-collapse:collapse;font-size:18px;width:100%;max-width:660px}
+.tbl th,.tbl td{padding:8px 14px;border-bottom:1px solid var(--pal-soft-2);text-align:right}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl th{font-weight:600;color:var(--muted)}
+.tbl tr.hi td{background:var(--hi)}
+.barbox{width:100%;background:var(--pal-soft);border-radius:4px;height:16px;position:relative}
+.bar{height:16px;background:var(--pal-muted);border-radius:4px}
+.bar.need{background:var(--accent)}
+.barcell{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.barcell .barbox{width:170px}
+.bars{display:flex;flex-direction:column;gap:16px;width:100%;max-width:660px}
+.brow{display:flex;flex-direction:column;gap:6px;width:100%}
+.brow .bline{display:flex;gap:12px;align-items:center}
+.brow .bline .barbox{flex:1}
+.brow .bline b{min-width:36px;text-align:right;font-weight:600}
+</style>
+</head>
+<body>
+<header>Square, triangle, cube: step by step</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// LOGIC-START
+// Cells are keyed "r,c" with 1-based r and c. All parity is even (XOR = 0).
+function key(r, c) { return r + ',' + c; }
+function xorOf(g, cells) {
+  let p = 0;
+  for (const [r, c] of cells) p ^= g[key(r, c)];
+  return p;
+}
+
+// Square: 5x5 grid. Message bits are r,c <= 4.
+// Row check r covers all 5 cells of row r (the row's parity bit is in column 5).
+// Column check c covers all 5 cells of column c (the column's parity bit is in row 5).
+// The corner (5,5) is in row 5 and column 5, so both checks cover it.
+function sqRowCells(r) { const a = []; for (let c = 1; c <= 5; c++) a.push([r, c]); return a; }
+function sqColCells(c) { const a = []; for (let r = 1; r <= 5; r++) a.push([r, c]); return a; }
+function sqMsgCells() { const a = []; for (let r = 1; r <= 4; r++) for (let c = 1; c <= 4; c++) a.push([r, c]); return a; }
+
+function sqEncode(msgBit) {
+  const g = {};
+  for (const [r, c] of sqMsgCells()) g[key(r, c)] = msgBit(r, c) & 1;
+  for (let r = 1; r <= 4; r++) g[key(r, 5)] = xorOf(g, sqRowCells(r).slice(0, 4));
+  for (let c = 1; c <= 4; c++) g[key(5, c)] = xorOf(g, sqColCells(c).slice(0, 4));
+  g[key(5, 5)] = xorOf(g, sqMsgCells());
+  return g;
+}
+
+function sqFailing(g) {
+  const rows = [], cols = [];
+  for (let r = 1; r <= 5; r++) if (xorOf(g, sqRowCells(r))) rows.push(r);
+  for (let c = 1; c <= 5; c++) if (xorOf(g, sqColCells(c))) cols.push(c);
+  return { rows, cols };
+}
+
+// One error: exactly one failing row and one failing column; they cross at the error.
+function sqLocate(g) {
+  const f = sqFailing(g);
+  return f.rows.length === 1 && f.cols.length === 1 ? [f.rows[0], f.cols[0]] : null;
+}
+
+// Triangle: side 6. Cells (r,c), 1 <= c <= r <= 6. Diagonal (k,k) are the check bits.
+// Check k covers its L: row k (cells (k,1..k)) and column k (cells (k..6,k)). 6 cells per L.
+const TRI_N = 6;
+function triL(k) {
+  const a = [];
+  for (let c = 1; c <= k; c++) a.push([k, c]);
+  for (let r = k + 1; r <= TRI_N; r++) a.push([r, k]);
+  return a;
+}
+function triLRest(k) { // L without its diagonal check cell
+  return triL(k).filter(([r, c]) => !(r === c));
+}
+function triMsgCells() {
+  const a = [];
+  for (let r = 1; r <= TRI_N; r++) for (let c = 1; c < r; c++) a.push([r, c]);
+  return a;
+}
+function triAllCells() {
+  const a = [];
+  for (let r = 1; r <= TRI_N; r++) for (let c = 1; c <= r; c++) a.push([r, c]);
+  return a;
+}
+
+function triEncode(msgBit) {
+  const g = {};
+  for (const [r, c] of triMsgCells()) g[key(r, c)] = msgBit(r, c) & 1;
+  for (let k = 1; k <= TRI_N; k++) g[key(k, k)] = xorOf(g, triLRest(k));
+  return g;
+}
+
+function triFailing(g) {
+  const f = [];
+  for (let k = 1; k <= TRI_N; k++) if (xorOf(g, triL(k))) f.push(k);
+  return f;
+}
+
+// One error: a message bit (r,c) fails checks c and r (ascending: c < r): the crossing is (r,c).
+// A diagonal bit (k,k) fails only check k: the error is that bit.
+function triLocate(g) {
+  const f = triFailing(g);
+  if (f.length === 1) return [f[0], f[0]];
+  if (f.length === 2) return [f[1], f[0]];
+  return null;
+}
+
+// Redundancy = bits used / message bits = (m+1)(n+1) / (mn)
+function redundancy(m, n) { return (m + 1) * (n + 1) / (m * n); }
+// LOGIC-END
+
+// CUBE-LOGIC-START
+// A cube of side s in d dimensions. A cell is an array of d coordinates, each 0..s-1.
+// The overall check (the origin cell) covers every cell.
+// A slice check (i, j), for j = 1..s-1, covers every cell whose coordinate i is j.
+// Check cells are the origin and the axis cells (0,..,j,..,0), which lie on the axes.
+// Each axis cell lies in exactly one slice check, so there are 1 + d(s-1) checks.
+function cubeAll(d, s) {
+  const out = [];
+  (function rec(pre) {
+    if (pre.length === d) { out.push(pre); return; }
+    for (let v = 0; v < s; v++) rec(pre.concat([v]));
+  })([]);
+  return out;
+}
+function cubeKey(c) { return c.join(','); }
+function cubeIsCheck(c) { return c.filter(x => x !== 0).length <= 1; }
+function cubeCheckCount(d, s) { return 1 + d * (s - 1); }
+function cubeBitCount(d, s) { return Math.pow(s, d); }
+
+// Which checks fail. g maps cubeKey(cell) to 0 or 1.
+function cubeFailing(g, d, s) {
+  const cells = cubeAll(d, s);
+  let all = 0;
+  cells.forEach(c => { all ^= g[cubeKey(c)]; });
+  const slices = [];
+  for (let i = 0; i < d; i++) for (let j = 1; j < s; j++) {
+    let p = 0;
+    cells.forEach(c => { if (c[i] === j) p ^= g[cubeKey(c)]; });
+    if (p) slices.push([i, j]);
+  }
+  return { overall: all === 1, slices };
+}
+
+// One error: the overall check fails, and each axis has at most one failing slice.
+// A failing slice (i, j) sets coordinate i to j; an axis with no failing slice has coordinate 0.
+function cubeLocate(g, d, s) {
+  const f = cubeFailing(g, d, s);
+  if (!f.overall) return null;
+  const at = new Array(d).fill(0);
+  for (const [i, j] of f.slices) {
+    if (at[i] !== 0) return null;
+    at[i] = j;
+  }
+  return at;
+}
+
+// Message cells take msgBit(cell). Each axis check takes the parity of its slice's
+// message cells. The origin takes the parity of every other cell, so all checks pass.
+function cubeEncode(d, s, msgBit) {
+  const cells = cubeAll(d, s);
+  const origin = new Array(d).fill(0);
+  const g = {};
+  cells.forEach(c => { if (!cubeIsCheck(c)) g[cubeKey(c)] = msgBit(c) & 1; });
+  for (let i = 0; i < d; i++) for (let j = 1; j < s; j++) {
+    let p = 0;
+    cells.forEach(c => { if (c[i] === j && !cubeIsCheck(c)) p ^= g[cubeKey(c)]; });
+    const axis = new Array(d).fill(0);
+    axis[i] = j;
+    g[cubeKey(axis)] = p;
+  }
+  let p = 0;
+  cells.forEach(c => { if (cubeKey(c) !== cubeKey(origin)) p ^= g[cubeKey(c)]; });
+  g[cubeKey(origin)] = p;
+  return g;
+}
+// CUBE-LOGIC-END
+
+// ---------- page helpers ----------
+const $ = s => document.querySelector(s);
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. Without the CDN the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function ht(tag, cls, text) { return setTex(h(tag, cls), text); }
+const fmt = x => String(Number(x.toFixed(4)));
+// A subscripted name as TeX: L('R', 3) gives $R_{3}$.
+const L = (p, i) => '$' + p + '_{' + i + '}$';
+const SQ_MSG = [[1,0,1,1],[0,0,1,0],[1,1,0,0],[0,1,0,1]];
+const sqMsg = (r, c) => SQ_MSG[r - 1][c - 1];
+const triMsg = (r, c) => ((r * 5 + c * 3) % 4 < 2 ? 1 : 0);
+const sqId = (r, c) => 'sq-' + r + '-' + c;
+const triId = (r, c) => 'tri-' + r + '-' + c;
+
+function cellEl(id, k, v, cls, onclick) {
+  const e = h('div', 'cell' + (cls ? ' ' + cls : ''), String(v));
+  e.dataset.item = 'bit';
+  e.dataset.id = id;
+  e.dataset.key = k;
+  if (onclick) e.addEventListener('click', onclick);
+  return e;
+}
+
+function applyHi(root, set) {
+  root.querySelectorAll('.cell[data-key]').forEach(e => e.classList.toggle('hi', set.has(e.dataset.key)));
+}
+function lineSet(kind, idx, nR, nC) {
+  const s = new Set();
+  if (kind === 'row') for (let c = 1; c <= nC; c++) s.add(key(idx, c));
+  if (kind === 'col') for (let r = 1; r <= nR; r++) s.add(key(r, idx));
+  return s;
+}
+
+// Square board: rows of cells, a row label after each row, a column label row below.
+function sqBoard(o) {
+  const board = h('div', 'board');
+  for (let r = 1; r <= o.rows; r++) {
+    const line = h('div', 'line');
+    for (let c = 1; c <= o.cols; c++) line.appendChild(o.cell(r, c));
+    if (o.rowLabel) {
+      const info = o.rowLabel(r);
+      const lab = setTex(h('span', 'rl' + (info.bad ? ' bad' : '')), info.text);
+      lab.dataset.item = 'check';
+      lab.dataset.id = 'row-' + r;
+      line.appendChild(lab);
+    }
+    if (o.hover) {
+      line.addEventListener('mouseenter', () => o.hover('row', r));
+      line.addEventListener('mouseleave', () => o.hover(null));
+    }
+    board.appendChild(line);
+  }
+  if (o.colLabel) {
+    const cl = h('div', 'line');
+    for (let c = 1; c <= o.cols; c++) {
+      const info = o.colLabel(c);
+      const lab = setTex(h('span', 'cl' + (info.bad ? ' bad' : '')), info.text);
+      lab.dataset.item = 'check';
+      lab.dataset.id = 'col-' + c;
+      if (o.hover) {
+        lab.addEventListener('mouseenter', () => o.hover('col', c));
+        lab.addEventListener('mouseleave', () => o.hover(null));
+      }
+      cl.appendChild(lab);
+    }
+    board.appendChild(cl);
+  }
+  return board;
+}
+
+// Triangle board: a staircase; cells with c > r are empty.
+function triBoard(cellFn) {
+  const board = h('div', 'board tri');
+  for (let r = 1; r <= TRI_N; r++) {
+    const line = h('div', 'line');
+    for (let c = 1; c <= TRI_N; c++) line.appendChild(c <= r ? cellFn(r, c) : h('div', 'cell none'));
+    board.appendChild(line);
+  }
+  return board;
+}
+
+// A labelled range input. The label is TeX.
+function slider(label, lo, hi, val, step, id, onInput) {
+  const inp = h('input');
+  inp.type = 'range'; inp.min = String(lo); inp.max = String(hi); inp.step = String(step); inp.value = String(val);
+  inp.dataset.item = 'control'; inp.dataset.id = id;
+  const out = h('span', 'val', String(val));
+  inp.addEventListener('input', () => { out.textContent = inp.value; onInput(+inp.value); });
+  const wrap = h('label', 'slide-ctl');
+  wrap.append(setTex(h('span'), label), inp, out);
+  return { wrap, inp, out };
+}
+
+// A table with TeX headers. Returns the table and its body.
+function tableEl(heads) {
+  const t = h('table', 'tbl'), thead = h('thead'), tr = h('tr');
+  heads.forEach(x => tr.append(ht('th', '', x)));
+  thead.append(tr);
+  const tbody = h('tbody');
+  t.append(thead, tbody);
+  return { t, tbody };
+}
+
+// ---------- slides ----------
+// Each slide mounts into a fresh box every time it is entered, so its widget resets.
+
+function slide1(box) {
+  const data = [1, 0, 1, 1, 0, 0];
+  const orig = data.concat([data.reduce((a, b) => a ^ b, 0)]);
+  let bits = orig.slice();
+  function render() {
+    box.innerHTML = '';
+    const fails = bits.reduce((a, b) => a ^ b, 0) === 1;
+    const row = h('div', 'line');
+    bits.forEach((v, i) => {
+      const cls = (i === 6 ? 'chk' : '') + (bits[i] !== orig[i] ? ' flip' : '');
+      row.appendChild(cellEl('p1-bit-' + (i + 1), 'p' + i, v, cls.trim(), () => { bits[i] ^= 1; logAction('flip', {cell: 'p1-bit-' + (i + 1)}); render(); }));
+    });
+    box.appendChild(row);
+    box.appendChild(h('div', 'note', 'Six data bits, then one parity bit (grey). Click any bit to flip it.'));
+    const chk = h('div', 'chkbox' + (fails ? ' bad' : ''), fails ? 'Even-parity check: fails' : 'Even-parity check: passes');
+    chk.dataset.item = 'check';
+    chk.dataset.id = 'p1-check';
+    box.appendChild(chk);
+    box.appendChild(ht('div', 'readout' + (fails ? ' bad' : ''), fails
+      ? 'One bit is wrong. The check cannot say which of the seven bits it is: every single flip looks the same.'
+      : 'The number of ones is even. Flip any one bit and the check fails.'));
+    const act = h('div', 'actions');
+    const reset = h('button', 'btn', 'Reset');
+    reset.addEventListener('click', () => { bits = orig.slice(); render(); });
+    act.appendChild(reset);
+    box.appendChild(act);
+  }
+  render();
+}
+
+function slide2(box) {
+  const g = sqEncode(sqMsg);
+  const DEF = 'Hover a row to see what its check covers.';
+  const ro = ht('div', 'readout', DEF);
+  const board = sqBoard({
+    rows: 4, cols: 5,
+    cell: (r, c) => cellEl(sqId(r, c), key(r, c), g[key(r, c)], c === 5 ? 'chk' : ''),
+    rowLabel: r => ({ text: L('R', r), bad: false }),
+    hover: (kind, idx) => {
+      if (!kind) { applyHi(board, new Set()); setTex(ro, DEF); return; }
+      applyHi(board, lineSet('row', idx, 4, 5));
+      setTex(ro, L('R', idx) + ' covers these five bits: four message bits and the parity bit at the end. With even parity, they hold an even number of ones.');
+    },
+  });
+  box.append(board, ro);
+}
+
+function slide3(box) {
+  const g = sqEncode(sqMsg);
+  const DEF = 'Hover a row or a column label. The corner (bottom right) belongs to both ' + L('R', 5) + ' and ' + L('C', 5) + '.';
+  const ro = ht('div', 'readout', DEF);
+  const board = sqBoard({
+    rows: 5, cols: 5,
+    cell: (r, c) => cellEl(sqId(r, c), key(r, c), g[key(r, c)], (r === 5 || c === 5) ? 'chk' : ''),
+    rowLabel: r => ({ text: L('R', r), bad: false }),
+    colLabel: c => ({ text: L('C', c), bad: false }),
+    hover: (kind, idx) => {
+      if (!kind) { applyHi(board, new Set()); setTex(ro, DEF); return; }
+      applyHi(board, lineSet(kind, idx, 5, 5));
+      const tail = idx === 5 ? ' It includes the corner.' : '';
+      setTex(ro, (kind === 'row' ? L('R', idx) : L('C', idx)) + ' covers the five bits in that ' + (kind === 'row' ? 'row' : 'column') + '.' + tail);
+    },
+  });
+  box.append(board, ro);
+}
+
+function slide4(box) {
+  const base = sqEncode(sqMsg);
+  let flipped = null;
+  function render() {
+    box.innerHTML = '';
+    const g = Object.assign({}, base);
+    if (flipped) g[flipped] ^= 1;
+    const f = sqFailing(g);
+    const loc = sqLocate(g);
+    box.appendChild(sqBoard({
+      rows: 5, cols: 5,
+      cell: (r, c) => {
+        const k = key(r, c), cls = [];
+        if (r === 5 || c === 5) cls.push('chk');
+        if (flipped === k) cls.push('flip');
+        if (f.rows.includes(r) || f.cols.includes(c)) cls.push('band');
+        if (loc && loc[0] === r && loc[1] === c) cls.push('loc');
+        return cellEl(sqId(r, c), k, g[k], cls.join(' '), () => { flipped = flipped === k ? null : k; logAction('flip', {cell: sqId(r, c)}); render(); });
+      },
+      rowLabel: r => ({ text: L('R', r), bad: f.rows.includes(r) }),
+      colLabel: c => ({ text: L('C', c), bad: f.cols.includes(c) }),
+    }));
+    const ro = h('div', 'readout');
+    if (!flipped) {
+      setTex(ro, 'No flip. All five row checks and all five column checks pass. Click any bit to flip it.');
+    } else if (loc) {
+      const [r, c] = loc;
+      const isChk = r === 5 || c === 5;
+      ro.classList.add('bad');
+      setTex(ro, L('R', r) + ' and ' + L('C', c) + ' fail. They cross at row $' + r + '$, column $' + c + '$: that is the error.' +
+        (isChk ? ' It is a check bit, so only its own row and column fail.' : ''));
+    } else {
+      ro.textContent = 'More than one bit is wrong.';
+    }
+    box.appendChild(ro);
+    const act = h('div', 'actions');
+    const fix = h('button', 'btn', 'Fix it');
+    fix.disabled = !flipped;
+    fix.addEventListener('click', () => { flipped = null; logAction('fix'); render(); });
+    act.appendChild(fix);
+    box.appendChild(act);
+  }
+  render();
+}
+
+function slide5(box) {
+  const base = sqEncode(sqMsg);
+  let flips = [];
+  let note = '';
+  function setFlips(list) { flips = list; note = ''; render(); }
+  function toggle(k) {
+    note = '';
+    if (flips.includes(k)) flips = flips.filter(x => x !== k);
+    else if (flips.length >= 2) note = 'Two flips at most. Click a flipped bit to undo it, or reset.';
+    else flips = flips.concat([k]);
+    if (!note) logAction('flip', {cell: 'sq-' + k.replace(',', '-')});
+    render();
+  }
+  function render() {
+    box.innerHTML = '';
+    const g = Object.assign({}, base);
+    flips.forEach(k => { g[k] ^= 1; });
+    const f = sqFailing(g);
+    const R = f.rows, C = f.cols;
+    const two = R.length === 2 && C.length === 2;
+    const cand = new Set();
+    if (two) R.forEach(r => C.forEach(c => cand.add(key(r, c))));
+    box.appendChild(sqBoard({
+      rows: 5, cols: 5,
+      cell: (r, c) => {
+        const k = key(r, c), cls = [];
+        if (r === 5 || c === 5) cls.push('chk');
+        if (flips.includes(k)) cls.push('flip');
+        if (R.includes(r) || C.includes(c)) cls.push('band');
+        if (cand.has(k)) cls.push('dash');
+        return cellEl(sqId(r, c), k, g[k], cls.join(' '), () => toggle(k));
+      },
+      rowLabel: r => ({ text: L('R', r), bad: R.includes(r) }),
+      colLabel: c => ({ text: L('C', c), bad: C.includes(c) }),
+    }));
+    let text, bad = false;
+    if (note) { text = note; bad = true; }
+    else if (flips.length === 0) text = 'No flips. All checks pass. Click up to two bits to flip them.';
+    else if (two) {
+      bad = true;
+      text = 'Rows ' + L('R', R[0]) + ' and ' + L('R', R[1]) + ' fail, and columns ' + L('C', C[0]) + ' and ' + L('C', C[1]) + ' fail. ' +
+        'That gives four crossings (dashed), and only two are real. ' +
+        'The two pairs are $(R_{' + R[0] + '}, C_{' + C[0] + '})$ with $(R_{' + R[1] + '}, C_{' + C[1] + '})$, and $(R_{' + R[0] + '}, C_{' + C[1] + '})$ with $(R_{' + R[1] + '}, C_{' + C[0] + '})$. The code cannot tell which pair.';
+    } else if (R.length === 0 && C.length === 2) {
+      bad = true;
+      text = 'No row fails. The two flips share a row, so their row parity cancels. Columns ' + L('C', C[0]) + ' and ' + L('C', C[1]) + ' fail, but with no failing row, there is nothing to cross them with. The code cannot tell which row holds the flips.';
+    } else if (C.length === 0 && R.length === 2) {
+      bad = true;
+      text = 'No column fails. The two flips share a column, so their column parity cancels. Rows ' + L('R', R[0]) + ' and ' + L('R', R[1]) + ' fail, but with no failing column, there is nothing to cross them with.';
+    } else {
+      bad = true;
+      text = 'Failing rows: ' + (R.map(x => L('R', x)).join(', ') || 'none') + '. Failing columns: ' + (C.map(x => L('C', x)).join(', ') || 'none') + '.';
+    }
+    box.appendChild(ht('div', 'readout' + (bad ? ' bad' : ''), text));
+    const act = h('div', 'actions');
+    const bA = h('button', 'btn', 'Case A: different rows and columns');
+    bA.addEventListener('click', () => setFlips([key(2, 1), key(4, 3)]));
+    const bB = h('button', 'btn', 'Case B: same row');
+    bB.addEventListener('click', () => setFlips([key(2, 1), key(2, 3)]));
+    const bR = h('button', 'btn', 'Reset');
+    bR.addEventListener('click', () => setFlips([]));
+    act.append(bA, bB, bR);
+    box.appendChild(act);
+  }
+  render();
+}
+
+function slide6(box) {
+  let m = 4, n = 4;
+  const ro = h('div', 'readout');
+  function upd() {
+    const used = (m + 1) * (n + 1), msg = m * n;
+    setTex(ro, String.raw`Bits used: $(${m}+1) \times (${n}+1) = ${used}$. Message bits: $${m} \times ${n} = ${msg}$. Redundancy: $\frac{${used}}{${msg}} = ${fmt(redundancy(m, n))}$.`);
+  }
+  const sl = h('div', 'sliders');
+  sl.append(slider('$m$', 1, 10, m, 1, 'm', v => { m = v; upd(); }).wrap,
+            slider('$n$', 1, 10, n, 1, 'n', v => { n = v; upd(); }).wrap);
+  const { t, tbody } = tableEl([String.raw`Shape $m \times n$`, 'Message bits', 'Bits used', 'Redundancy']);
+  [[1, 16], [2, 8], [4, 4]].forEach(([a, b]) => {
+    const tr = h('tr');
+    tr.dataset.item = 'row';
+    tr.dataset.id = a + 'x' + b;
+    tr.append(ht('td', '', String.raw`$${a} \times ${b}$`), h('td', '', String(a * b)),
+      h('td', '', String((a + 1) * (b + 1))), h('td', '', fmt(redundancy(a, b))));
+    tbody.append(tr);
+  });
+  box.append(sl, ro, t);
+  upd();
+}
+
+function slide7(box) {
+  const g = triEncode(triMsg);
+  const DEF = 'Hover a check or a bit to see its $L$. Click a check to pin it.';
+  let pinned = null;
+  let board = null;
+  const ro = ht('div', 'readout', DEF);
+  const chipEls = [];
+  function unionSet(ks) {
+    const s = new Set();
+    ks.forEach(k => triL(k).forEach(([r, c]) => s.add(key(r, c))));
+    return s;
+  }
+  function show(ks, text) { applyHi(board, unionSet(ks)); setTex(ro, text); }
+  function explainK(k) {
+    return 'Check $' + k + '$ covers row $' + k + '$ ($' + k + '$ cells) and column $' + k + '$ ($' + (TRI_N + 1 - k) + '$ cells). ' +
+      'They share the diagonal bit $(' + k + ',' + k + ')$, so $L_{' + k + '}$ has $' + TRI_N + '$ cells.';
+  }
+  function restore() {
+    if (pinned) show([pinned], explainK(pinned));
+    else { applyHi(board, new Set()); setTex(ro, DEF); }
+  }
+  board = triBoard((r, c) => {
+    const k = key(r, c);
+    const e = cellEl(triId(r, c), k, g[k], r === c ? 'chk' : '');
+    e.addEventListener('mouseenter', () => {
+      if (r === c) show([r], explainK(r));
+      else show([r, c], 'Bit $(' + r + ',' + c + ')$ sits in check $' + r + '$ and check $' + c + '$. Their two $L$ shapes cross at this bit.');
+    });
+    e.addEventListener('mouseleave', restore);
+    return e;
+  });
+  const chips = h('div', 'chips');
+  for (let k = 1; k <= TRI_N; k++) {
+    const ch = ht('span', 'chip', 'check $' + k + '$');
+    ch.dataset.item = 'check';
+    ch.dataset.id = 'tri-check-' + k;
+    ch.addEventListener('mouseenter', () => show([k], explainK(k)));
+    ch.addEventListener('mouseleave', restore);
+    ch.addEventListener('click', () => {
+      pinned = pinned === k ? null : k;
+      chipEls.forEach((el, i) => el.classList.toggle('on', i + 1 === pinned));
+      restore();
+    });
+    chipEls.push(ch);
+    chips.appendChild(ch);
+  }
+  box.append(board, chips, ro);
+}
+
+function slide8(box) {
+  const base = triEncode(triMsg);
+  let flipped = null;
+  function render() {
+    box.innerHTML = '';
+    const g = Object.assign({}, base);
+    if (flipped) g[flipped] ^= 1;
+    const fails = triFailing(g);
+    const loc = triLocate(g);
+    const bandSet = new Set();
+    fails.forEach(k => triL(k).forEach(([r, c]) => bandSet.add(key(r, c))));
+    box.appendChild(triBoard((r, c) => {
+      const k = key(r, c), cls = [];
+      if (r === c) cls.push('chk');
+      if (flipped === k) cls.push('flip');
+      if (bandSet.has(k)) cls.push('band');
+      if (loc && loc[0] === r && loc[1] === c) cls.push('loc');
+      return cellEl(triId(r, c), k, g[k], cls.join(' '), () => { flipped = flipped === k ? null : k; logAction('flip', {cell: triId(r, c)}); render(); });
+    }));
+    const chips = h('div', 'chips');
+    for (let k = 1; k <= TRI_N; k++) {
+      const ch = ht('span', 'chip' + (fails.includes(k) ? ' bad' : ''), 'check $' + k + '$');
+      ch.dataset.item = 'check';
+      ch.dataset.id = 'tri-check-' + k;
+      chips.appendChild(ch);
+    }
+    box.appendChild(chips);
+    const ro = h('div', 'readout');
+    if (!flipped) {
+      setTex(ro, 'No flip. All $' + TRI_N + '$ checks pass. Click any bit to flip it.');
+    } else if (loc) {
+      const [r, c] = loc;
+      ro.classList.add('bad');
+      if (r === c) {
+        setTex(ro, 'Only check $' + r + '$ fails. Its $L$ is the only one that fails, so the error is the check bit $(' + r + ',' + r + ')$ itself.');
+      } else {
+        setTex(ro, 'Checks $' + c + '$ and $' + r + '$ fail. Their $L$ shapes cross only at $(' + r + ',' + c + ')$: that is the error.');
+      }
+    } else {
+      ro.textContent = 'More than one bit is wrong.';
+    }
+    box.appendChild(ro);
+    const act = h('div', 'actions');
+    const fix = h('button', 'btn', 'Fix it');
+    fix.disabled = !flipped;
+    fix.addEventListener('click', () => { flipped = null; logAction('fix'); render(); });
+    act.appendChild(fix);
+    box.appendChild(act);
+  }
+  render();
+}
+
+function slide9(box) {
+  const rowsData = [];
+  const sq = k => ({ id: 'square-' + k, label: String.raw`Square $${k} \times ${k}$`, plain: 'Square ' + k + ' x ' + k, msg: k * k, checks: 2 * k + 1 });
+  const tri = n => ({ id: 'triangle-' + n, label: String.raw`Triangle $n = ${n}$`, plain: 'Triangle n = ' + n, msg: n * (n - 1) / 2, checks: n });
+  [sq(4), tri(6), tri(7)].forEach(x => {
+    x.total = x.msg + x.checks;
+    x.red = x.total / x.msg;
+    rowsData.push(x);
+  });
+  const { t, tbody } = tableEl(['Code', 'Message bits', 'Checks', 'Total bits', 'Redundancy']);
+  rowsData.forEach(x => {
+    const tr = h('tr');
+    tr.dataset.item = 'row';
+    tr.dataset.id = x.id;
+    tr.dataset.title = x.plain;
+    const bar = h('div', 'bar');
+    bar.style.width = (x.red / 1.6 * 100).toFixed(1) + '%';
+    const cellRed = h('td');
+    cellRed.append(h('div', 'barcell'));
+    cellRed.firstChild.append(h('div', 'barbox'), h('span', '', fmt(x.red)));
+    cellRed.firstChild.firstChild.append(bar);
+    tr.append(ht('td', '', x.label), h('td', '', String(x.msg)), h('td', '', String(x.checks)), h('td', '', String(x.total)), cellRed);
+    tbody.append(tr);
+  });
+  box.append(t);
+}
+
+// Slide 10: the 5 by 5 square, counted from 0. Origin at the top left.
+function slide10(box) {
+  const D = 2, S = 5;
+  const cells = cubeAll(D, S);
+  const DEF = 'Hover a check to see what it covers. The other $' +
+    (cubeBitCount(D, S) - cubeCheckCount(D, S)) + '$ cells hold the message.';
+  const ro = ht('div', 'readout', DEF);
+  const grid = h('div', 'board');
+  function show(pred, text) {
+    const set = new Set();
+    cells.forEach(c => { if (pred(c)) set.add(cubeKey(c)); });
+    applyHi(grid, set);
+    setTex(ro, text);
+  }
+  function reset() { applyHi(grid, new Set()); setTex(ro, DEF); }
+  for (let y = 0; y < S; y++) {
+    const line = h('div', 'line');
+    for (let x = 0; x < S; x++) {
+      const c = [x, y];
+      const e = kcell(c, cubeIsCheck(c) ? 'chk' : 'msg', '' + x + y, null);
+      if (cubeIsCheck(c)) {
+        let pred, text;
+        if (x === 0 && y === 0) {
+          pred = () => true;
+          text = 'The origin is the overall check. It covers all $' + (S * S) + '$ cells, the other checks included.';
+        } else if (y === 0) {
+          pred = q => q[0] === x;
+          text = 'Column check $' + x + '$ covers all $' + S + '$ cells in column $' + x + '$, its own check cell in the top row included.';
+        } else {
+          pred = q => q[1] === y;
+          text = 'Row check $' + y + '$ covers all $' + S + '$ cells in row $' + y + '$, its own check cell in the left column included.';
+        }
+        e.addEventListener('mouseenter', () => show(pred, text));
+        e.addEventListener('mouseleave', reset);
+      }
+      line.appendChild(e);
+    }
+    grid.appendChild(line);
+  }
+  box.append(ht('div', 'counter', String.raw`$2s - 1 = 2 \times ${S} - 1 = ${2 * S - 1}$ checks, out of $${cubeBitCount(D, S)}$ bits`), grid, ro);
+}
+
+// ---------- cube slides ----------
+function kcell(c, cls, label, onclick) {
+  const k = cubeKey(c);
+  const e = h('div', 'cell' + (cls ? ' ' + cls : ''), label || '');
+  e.dataset.item = 'bit';
+  e.dataset.id = 'cell-' + k;
+  e.dataset.key = k;
+  if (onclick) e.addEventListener('click', onclick);
+  return e;
+}
+
+function cubeChips(d, s, f) {
+  const wrap = h('div', 'chips');
+  const add = (text, bad, id) => {
+    const ch = ht('span', 'chip' + (bad ? ' bad' : ''), text);
+    ch.dataset.item = 'check';
+    ch.dataset.id = id;
+    wrap.appendChild(ch);
+  };
+  add('overall', f.overall, 'cube-overall');
+  for (let i = 0; i < d; i++) for (let j = 1; j < s; j++) {
+    const bad = f.slices.some(([a, b]) => a === i && b === j);
+    add('$' + 'xyz'[i] + ' = ' + j + '$', bad, 'cube-' + 'xyz'[i] + '-' + j);
+  }
+  return wrap;
+}
+
+// Slide 11: three layers of a 3 by 3 by 3 cube, z = 0, 1, 2. Click a cell to flip it.
+function slide11(box) {
+  const D = 3, S = 3;
+  const AX = 'xyz';
+  const cells = cubeAll(D, S);
+  const base = cubeEncode(D, S, c => (c[0] * c[1] + c[2]) & 1);
+  let flipped = null;
+  function render() {
+    box.innerHTML = '';
+    const g = Object.assign({}, base);
+    if (flipped) g[flipped] ^= 1;
+    const f = cubeFailing(g, D, S);
+    const loc = cubeLocate(g, D, S);
+    const band = new Set();
+    f.slices.forEach(([i, j]) => cells.forEach(c => { if (c[i] === j) band.add(cubeKey(c)); }));
+    const layers = h('div', 'layers');
+    for (let z = 0; z < S; z++) {
+      const Lb = h('div', 'layer');
+      Lb.appendChild(ht('div', 'lt', '$z = ' + z + '$'));
+      const board = h('div', 'board');
+      for (let y = 0; y < S; y++) {
+        const line = h('div', 'line');
+        for (let x = 0; x < S; x++) {
+          const c = [x, y, z], k = cubeKey(c), cls = ['adr'];
+          if (cubeIsCheck(c)) cls.push('chk');
+          if (band.has(k)) cls.push('band');
+          if (flipped === k) cls.push('flipo');
+          if (loc && cubeKey(loc) === k) cls.push('loc');
+          line.appendChild(kcell(c, cls.join(' '), '' + x + y + z, () => { flipped = flipped === k ? null : k; logAction('flip', {cell: 'cell-' + k}); render(); }));
+        }
+        board.appendChild(line);
+      }
+      Lb.appendChild(board);
+      layers.appendChild(Lb);
+    }
+    box.appendChild(layers);
+    box.appendChild(cubeChips(D, S, f));
+    const ro = h('div', 'readout');
+    if (!flipped) {
+      setTex(ro, 'No flip. All $' + cubeCheckCount(D, S) + '$ checks pass. Click any cell to flip it.');
+    } else if (loc) {
+      ro.classList.add('bad');
+      const names = (f.overall ? ['overall'] : []).concat(f.slices.map(([i, j]) => '$' + AX[i] + ' = ' + j + '$'));
+      setTex(ro, 'Failing checks: ' + names.join(', ') + '. So $(x,y,z) = (' + loc.join(',') + ')$ is the error.');
+    } else {
+      ro.textContent = 'More than one bit is wrong.';
+    }
+    box.appendChild(ro);
+    const act = h('div', 'actions');
+    const reset = h('button', 'btn', 'Reset');
+    reset.disabled = !flipped;
+    reset.addEventListener('click', () => { flipped = null; render(); });
+    act.appendChild(reset);
+    box.appendChild(act);
+  }
+  render();
+}
+
+// Slide 11b: how many checks a cube of side s needs, for d = 2 and d = 3.
+function slide11b(box) {
+  let s = 3;
+  const tblBox = h('div');
+  function countTable() {
+    const { t, tbody } = tableEl(['Dimensions $d$', 'Bits $s^{d}$', 'Checks $1 + d(s-1)$']);
+    [2, 3].forEach(d => {
+      const tr = h('tr');
+      tr.dataset.item = 'row';
+      tr.dataset.id = 'd' + d + '-s' + s;
+      tr.dataset.title = 'd = ' + d + ', side ' + s;
+      tr.append(ht('td', '', '$' + d + '$' + (d === 2 ? ' (square)' : ' (cube)')),
+        ht('td', '', String.raw`$${s}^{${d}} = ${cubeBitCount(d, s)}$`),
+        ht('td', '', String.raw`$1 + ${d}(${s} - 1) = ${cubeCheckCount(d, s)}$`));
+      tbody.append(tr);
+    });
+    return t;
+  }
+  function upd() { tblBox.replaceChildren(countTable()); }
+  box.append(slider('Side $s$', 2, 6, s, 1, 's', v => { s = v; upd(); }).wrap, tblBox);
+  upd();
+}
+
+// Slide 12: side 2. Eight corners labeled by address; one check per face.
+function slide12(box) {
+  const D = 3, S = 2;
+  const AX = 'xyz', COL = ['var(--pal-accent)', 'var(--pal-hue-green)', 'var(--pal-hue-orange)'];
+  const base = cubeEncode(D, S, c => (c[0] + c[1]) & 1);
+  let flipped = null;
+  function render() {
+    box.innerHTML = '';
+    const g = Object.assign({}, base);
+    if (flipped) g[flipped] ^= 1;
+    const f = cubeFailing(g, D, S);
+    const failAx = [0, 1, 2].map(i => f.slices.some(([a]) => a === i));
+    const layers = h('div', 'layers small');
+    for (let z = 0; z < S; z++) {
+      const Lb = h('div', 'layer');
+      Lb.appendChild(ht('div', 'lt', '$z = ' + z + '$'));
+      const board = h('div', 'board');
+      for (let y = 0; y < S; y++) {
+        const line = h('div', 'line');
+        for (let x = 0; x < S; x++) {
+          const c = [x, y, z], k = cubeKey(c), cls = ['adr'];
+          if (cubeIsCheck(c)) cls.push('chk');
+          if (flipped === k) cls.push('flipo');
+          const e = kcell(c, cls.join(' '), '' + x + y + z, () => { flipped = flipped === k ? null : k; logAction('flip', {cell: 'cell-' + k}); render(); });
+          const rings = [];
+          let w = 3;
+          for (let i = 0; i < D; i++) {
+            if (failAx[i] && c[i] === 1) { rings.push('inset 0 0 0 ' + w + 'px ' + COL[i]); w += 3; }
+          }
+          e.style.boxShadow = rings.join(', ');
+          line.appendChild(e);
+        }
+        board.appendChild(line);
+      }
+      Lb.appendChild(board);
+      layers.appendChild(Lb);
+    }
+    box.appendChild(layers);
+
+    const chips = h('div', 'chips');
+    const oc = h('span', 'chip' + (f.overall ? ' bad' : ''), 'overall: all eight corners');
+    oc.dataset.item = 'check';
+    oc.dataset.id = 'side2-overall';
+    chips.appendChild(oc);
+    for (let i = 0; i < D; i++) {
+      const ch = h('span', 'chip' + (failAx[i] ? ' bad' : ''));
+      const sw = h('span', 'sw');
+      sw.style.background = COL[i];
+      ch.append(sw, ht('span', '', 'face $' + AX[i] + ' = 1$'));
+      ch.dataset.item = 'check';
+      ch.dataset.id = 'side2-face-' + AX[i];
+      chips.appendChild(ch);
+    }
+    box.appendChild(chips);
+
+    const ro = h('div', 'readout');
+    if (!flipped) {
+      setTex(ro, 'No flip. All $4$ checks pass. Click a corner to flip it.');
+    } else {
+      ro.classList.add('bad');
+      const addr = failAx.map(v => (v ? 1 : 0));
+      if (!failAx.some(Boolean)) {
+        setTex(ro, 'Only the overall check fails. No face fails, so the error is at corner $000$.');
+      } else {
+        setTex(ro, 'Overall check fails. ' +
+          [0, 1, 2].map(i => 'Face $' + AX[i] + ' = 1$ ' + (failAx[i] ? 'fails' : 'passes') + ', so $' + AX[i] + ' = ' + addr[i] + '$.').join(' ') +
+          ' The address is $' + addr.join('') + '$, so the error is at corner $' + addr.join('') + '$.');
+      }
+    }
+    box.appendChild(ro);
+    const act = h('div', 'actions');
+    const reset = h('button', 'btn', 'Reset');
+    reset.disabled = !flipped;
+    reset.addEventListener('click', () => { flipped = null; render(); });
+    act.appendChild(reset);
+    box.appendChild(act);
+  }
+  render();
+}
+
+// Slide 12b: side 2 in d dimensions: 2^d bits, d + 1 checks.
+function slide12b(box) {
+  const { t, tbody } = tableEl(['Dimensions $d$', 'Bits $2^{d}$', 'Checks $d + 1$']);
+  [2, 3, 4, 7].forEach(d => {
+    const tr = h('tr');
+    tr.dataset.item = 'row';
+    tr.dataset.id = 'side2-d' + d;
+    tr.dataset.title = 'd = ' + d;
+    tr.append(h('td', '', String(d)), ht('td', '', String.raw`$2^{${d}} = ${cubeBitCount(d, 2)}$`),
+      ht('td', '', String.raw`$${d} + 1 = ${cubeCheckCount(d, 2)}$`));
+    tbody.append(tr);
+  });
+  box.append(t);
+}
+
+// Slide 13: counting. n + 1 checks give 2^(n+1) patterns; 2^n + 1 are needed.
+function slide13(box) {
+  let n = 3;
+  const bars = h('div', 'bars');
+  const ro = h('div', 'readout');
+  function brow(id, label, width, val, need) {
+    const row = h('div', 'brow');
+    row.dataset.item = 'bar';
+    row.dataset.id = id;
+    const bar = h('div', 'bar' + (need ? ' need' : ''));
+    bar.style.width = width;
+    const line = h('div', 'bline');
+    line.append(h('div', 'barbox'), h('b', '', String(val)));
+    line.firstChild.append(bar);
+    row.append(ht('div', '', label), line);
+    return row;
+  }
+  function upd() {
+    const have = Math.pow(2, n + 1), need = Math.pow(2, n) + 1, unused = have - need;
+    bars.replaceChildren(
+      brow('patterns', '$' + (n + 1) + '$ checks give $2^{' + (n + 1) + '}$ patterns', '100%', have, false),
+      brow('needed', 'Needed: no error, plus $2^{' + n + '}$ positions, so $2^{' + n + '} + 1$', (need / have * 100).toFixed(2) + '%', need, true));
+    setTex(ro, String.raw`Unused: $2^{n} - 1 = ${unused}$ of $2^{n+1} = ${have}$ patterns, $${Math.round(100 * unused / have)}\%$.`);
+  }
+  box.append(slider('$n$', 2, 10, n, 1, 'n', v => { n = v; upd(); }).wrap, bars, ro);
+  upd();
+}
+
+// Slide 13b: the fix. Positions 1 to 7 (corner 000 is dropped); check c_v covers the
+// positions whose binary number has the bit v set. Hover a check to see its positions.
+function slide13b(box) {
+  const M = 3, P = Math.pow(2, M) - 1;
+  const CHECKS = [1, 2, 4];
+  const DEF = 'Corner $000$ is not a position: it means no error. Hover a check to see the positions it covers.';
+  const ro = ht('div', 'readout', DEF);
+  const { t, tbody } = tableEl(['Position', 'Binary', '$c_{1}$', '$c_{2}$', '$c_{4}$']);
+  const rows = [];
+  for (let p = 1; p <= P; p++) {
+    const tr = h('tr');
+    tr.dataset.item = 'row';
+    tr.dataset.id = 'pos-' + p;
+    tr.dataset.title = 'Position ' + p;
+    tr.append(h('td', '', String(p)), h('td', '', p.toString(2).padStart(M, '0')));
+    CHECKS.forEach(v => tr.append(h('td', '', (p & v) ? '1' : '0')));
+    tbody.append(tr);
+    rows.push(tr);
+  }
+  const heads = t.querySelectorAll('th');
+  CHECKS.forEach((v, j) => {
+    const th = heads[j + 2];
+    th.dataset.item = 'check';
+    th.dataset.id = 'c-' + v;
+    const list = [];
+    for (let p = 1; p <= P; p++) if (p & v) list.push(p);
+    const show = () => {
+      rows.forEach((tr, i) => tr.classList.toggle('hi', (i + 1) & v ? true : false));
+      setTex(ro, 'Check $c_{' + v + '}$ covers the positions whose binary number has that bit set: ' + list.map(p => '$' + p + '$').join(', ') + '.');
+    };
+    const reset = () => { rows.forEach(tr => tr.classList.remove('hi')); setTex(ro, DEF); };
+    th.addEventListener('mouseenter', show);
+    th.addEventListener('mouseleave', reset);
+  });
+  box.append(t, ro);
+}
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'slide-1', title: 'One parity bit', tag: 'Lecture 12', mount: slide1,
+    formula: String.raw`$b_1 \oplus b_2 \oplus \cdots \oplus b_7 = 0$`,
+    lines: ['Six data bits and one even parity bit.', 'Flip any bit and the check fails.',
+      'It detects the error. It cannot locate it.'] },
+  { id: 'slide-2', title: 'Square: row checks', tag: 'Lecture 12 · 05:47', mount: slide2,
+    formula: String.raw`$b_{r,1} \oplus b_{r,2} \oplus \cdots \oplus b_{r,5} = 0$`,
+    lines: ['Put sixteen message bits in a four by four square.', 'Add a parity bit at the end of each row.',
+      'Each row then has an even number of ones.'] },
+  { id: 'slide-3', title: 'Square: column checks', tag: 'Lecture 12 · 05:47', mount: slide3,
+    formula: String.raw`$b_{1,c} \oplus b_{2,c} \oplus \cdots \oplus b_{5,c} = 0$`,
+    lines: ['Add a parity bit under each column.', 'The corner is covered by its row and its column.',
+      'Now there are twenty-five bits: sixteen message bits and nine checks.'] },
+  { id: 'slide-4', title: 'Square: locate the error', tag: 'Lecture 12 · 05:47', mount: slide4,
+    formula: String.raw`$(r,c) = R_r \cap C_c$`,
+    lines: ['Click a bit to flip it.', 'One failing row and one failing column cross at the error.',
+      'A check bit works the same way, through its own row and column.'] },
+  { id: 'slide-5', title: 'Square: two errors', tag: 'Lecture 12 · 05:47', mount: slide5,
+    formula: String.raw`$\{R_a, R_b\} \times \{C_x, C_y\}$`,
+    lines: ['Two flips in different rows and columns give four candidate crossings.',
+      'Only two of the four are real, and the code cannot tell which.',
+      'Two flips in one row cancel in that row, so no row fails.'] },
+  { id: 'slide-6', title: 'Square: cost', tag: 'Lecture 12 · 05:47', mount: slide6,
+    formula: String.raw`$\dfrac{(m+1)(n+1)}{mn}$`,
+    lines: ['Redundancy is bits used divided by message bits.', 'Closer to square is cheaper.',
+      'Bigger is cheaper too, but double errors get more likely.'] },
+  { id: 'slide-7', title: 'Triangle: layout', tag: 'Lecture 12 · 08:58', mount: slide7,
+    formula: String.raw`$L_k = \text{row } k \cup \text{column } k$`,
+    lines: ['Side six: six diagonal check bits and fifteen message bits.',
+      'Check $k$ covers its $L_{k}$: row $k$ and column $k$.',
+      'Each message bit $(r,c)$ sits in exactly two $L$ shapes: check $r$ and check $c$.'] },
+  { id: 'slide-8', title: 'Triangle: locate the error', tag: 'Lecture 12 · 08:58', mount: slide8,
+    formula: String.raw`$(r,c) = L_r \cap L_c$`,
+    lines: ['Click a bit to flip it.',
+      'A message bit $(r,c)$ fails checks $r$ and $c$, and their $L$ shapes cross there.',
+      'A diagonal check bit fails only its own check, so it is the error.'] },
+  { id: 'slide-9', title: 'Square vs triangle', tag: 'Lecture 12 · 08:58', mount: slide9,
+    formula: String.raw`$n$ checks for $\dfrac{n(n-1)}{2}$ bits`,
+    lines: ['For about the same message, the triangle needs fewer checks.',
+      String.raw`A square $k \times k$ needs $2k+1$ checks for $k^{2}$ bits.`] },
+  { id: 'slide-10', title: 'Square again, counted', tag: 'Lecture 12 · 10:01', mount: slide10,
+    formula: String.raw`$2s - 1$ checks`,
+    lines: ['Coordinates run from zero to four. The origin is top left.',
+      'Column checks sit in the top row, row checks in the left column.',
+      'The origin holds the overall check.'] },
+  { id: 'slide-11', title: 'Cube: three layers', tag: 'Lecture 12 · 10:01', mount: slide11,
+    formula: String.raw`$3s - 2 = 7$ checks`,
+    lines: ['Check cells sit on the three axes, counted from the origin.',
+      'Layer $z = 0$ holds five. Layers $z = 1$ and $z = 2$ hold one each.',
+      'Click any cell to flip it.'] },
+  { id: 'slide-11b', title: 'Cube: count the checks', tag: 'Lecture 12 · 10:01', mount: slide11b,
+    formula: String.raw`$1 + d(s-1)$ checks`,
+    lines: ['A cube of side $s$ in $d$ dimensions has $s^{d}$ bits.',
+      'One overall check, plus $s - 1$ slice checks for each axis.',
+      'For $d = 3$, that is $3s - 2$ checks.'] },
+  { id: 'slide-12', title: 'Side 2: one question per axis', tag: 'Lecture 12 · 10:34', mount: slide12,
+    formula: String.raw`$\text{address} = \overline{xyz}_{2}$`,
+    lines: ['Each face check covers the four corners with one coordinate equal to 1.',
+      'The overall check covers all eight corners.',
+      'A flipped corner fails its faces, and the failing faces spell its address.'] },
+  { id: 'slide-12b', title: 'Side 2: the count', tag: 'Lecture 12 · 10:34', mount: slide12b,
+    formula: String.raw`$2^{d}$ bits, $d + 1$ checks`,
+    lines: ['Side two: each axis adds one face check.',
+      'One overall check covers all the corners.',
+      "This is Hamming's $n + 1$ checks for $2^{n}$ bits."] },
+  { id: 'slide-13', title: 'Why it was not the best', tag: 'Lecture 12 · 11:38', mount: slide13,
+    formula: String.raw`$\dfrac{2^{n}+1}{2^{n+1}} \approx \tfrac{1}{2}$`,
+    lines: ['$n + 1$ checks can show $2^{n+1}$ patterns.',
+      'Only $2^{n} + 1$ are needed: no error, plus one per position.',
+      'Almost half the patterns are never used.'] },
+  { id: 'slide-13b', title: 'The fix: drop corner 000', tag: 'Lecture 12', mount: slide13b,
+    formula: String.raw`$2^{m} - 1$ positions, $m$ checks`,
+    lines: ['The overall check only separates no error from an error at corner $000$.',
+      'Drop corner $000$ and number the other corners $1$ to $2^{m}-1$.',
+      'Check $c_{v}$ covers each position with bit $v$ set. All $2^{m}$ patterns are used.'] },
+];
+
+// ---------- directed session: cues in, events out ----------
+// A cue names the state to show: {step: 'slide-N'}. A cue for the current slide does nothing,
+// so a resent cue never resets a widget. Events go out only on a real change, never on hover.
+const STEP_IDS = SLIDES.map(s => s.id);
+function emit(kind, data) {
+  try {
+    const p = window.fluid && typeof window.fluid.emit === 'function' ? window.fluid.emit(kind, data) : null;
+    if (p && p.catch) p.catch(() => {});
+  } catch (e) { /* no bridge: the view still works */ }
+}
+function logAction(action, extra) { emit('view.action', Object.assign({ action }, extra || {})); }
+function cue(msg) {
+  const i = msg && typeof msg.step === 'string' ? STEP_IDS.indexOf(msg.step) : -1;
+  if (i >= 0 && i !== cur) goTo(i);
+}
+
+let cur = 0;
+function goTo(i) {
+  const prev = cur;
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  const widget = h('div', 'widget');
+  const side = h('div', 'side');
+  side.append(h('div', 'tag', s.tag), h('h2', '', s.title));
+  if (s.formula) side.append(setTex(h('div', 'formula'), s.formula));
+  s.lines.forEach(t => side.append(setTex(h('p', 'line-txt'), t)));
+  const sec = h('section', 'slide');
+  sec.dataset.item = 'step';
+  sec.dataset.id = s.id;
+  sec.dataset.title = s.title;
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  s.mount(widget);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+  if (cur !== prev) emit('view.step', { step: s.id });
+}
+
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1) + ': ' + s.title);
+    b.title = s.title;
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=text],input[type=range],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(cue);
+})();
+</script>
+</body>
+</html>

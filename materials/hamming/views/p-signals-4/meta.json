@@ -1,0 +1,7 @@
+{
+  "title": "Primer · Signals: spectra, phase and noise",
+  "group": "p-signals",
+  "about": "Primer 0.12 (4 of 4): the power spectrum ignores where a record starts, spectra of a sum do not add, white noise has a flat spectrum, and a derivative boosts noise by (2 pi f)^2.",
+  "w": 1280,
+  "h": 720
+}

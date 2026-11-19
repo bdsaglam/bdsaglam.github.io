@@ -1,0 +1,7 @@
+{
+  "title": "Primer · Sampling and aliasing",
+  "group": "p-sampling",
+  "about": "Primer 0.07: sampling keeps readings, frequency as rotations per sample, how a fast wave can give the same dots as a slow one, samples per cycle, and rounding; each claim followed by its proof.",
+  "w": 1280,
+  "h": 720
+}

@@ -1,0 +1,1400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>The FFT: fast, accurate, periodic, and blind to phase</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors come from the theme palette (../../components/theme.js): grey for inputs and exact values, accent for
+   outputs and the reader's choice, amber only for proof lights, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --tint:var(--pal-soft-hover); --rim:var(--pal-soft-3);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.case{margin:0;font-size:16px}
+.formula{font-size:clamp(18px,1.7vw,24px)}
+.formula .katex-display{margin:.15em 0}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.recall b{color:var(--pal-text-2);font-weight:600}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.aiblk{display:flex;flex-direction:column;gap:2px;align-self:stretch}
+.kicker{font-size:14px;color:var(--muted);margin:0}
+.ai{margin:0;font-size:16px;line-height:1.35}
+.ai .src{color:var(--muted);font-size:14px}
+.ai code{font:14px ui-monospace,Menlo,monospace;background:var(--pal-soft);padding:0 3px;border-radius:3px}
+.predict{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;align-items:center}
+.predict .said{font-size:16px;color:var(--pal-text-2)}
+
+/* Controls, readouts, legend */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%;align-items:center}
+.btnrow{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px;flex-wrap:wrap}
+.slide-ctl input{width:clamp(120px,12vw,190px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:44px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);color:var(--fg);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 10px;border-radius:10px;background:var(--pal-soft);font-size:16px;overflow-wrap:anywhere;overflow:hidden}
+.readout.wide{flex-basis:100%}
+.readout .k{color:var(--pal-text-2);font-size:15px}
+.readout .val{font-size:17px;font-weight:600;line-height:1.55}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.readout.bad .k{color:var(--red)}
+.legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:16px;color:var(--pal-text-2);align-items:center}
+.sw{display:inline-block;width:22px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:16px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.note{margin:0;font-size:16px;color:var(--pal-text-2)}
+
+/* Plots fill the height left in the widget column */
+.fill{flex:1 1 0;min-height:90px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.takeholder{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.takeholder .takeaway{align-self:stretch}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side{justify-content:flex-start}
+.fill.proofpic{min-height:150px}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,9vw,140px)}
+.slide.proof-slide .sliders{gap:6px 16px}
+.slide.proof-slide .btn{padding:4px 10px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px}
+.test .tries{gap:3px}
+.model{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.picread{font-size:16px;color:var(--pal-text-2)}
+
+/* Decision slides: the problem, three cards and the reveal on the left; question, try-steps,
+   AI echo and takeaway on the right. */
+.slide.decision{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:clamp(20px,2.6vw,40px)}
+.decision .widget{gap:6px}
+.decision .side{justify-content:space-evenly;gap:clamp(8px,1.6vh,16px)}
+.decision h2{font-size:clamp(20px,1.9vw,26px)}
+.decision .q{margin:0;font-size:clamp(16px,1.4vw,19px);font-weight:600;line-height:1.35}
+.decision .fx{margin:0;padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:var(--tint);font-size:clamp(17px,1.5vw,20px);line-height:1.4}
+.decision .blk{display:flex;flex-direction:column;gap:3px}
+.decision .takeaway{padding:10px 14px;line-height:1.4}
+.decision .tries{gap:5px;font-size:clamp(16px,1.3vw,18px);line-height:1.4}
+.decision .hold{color:var(--muted);font-style:italic;background:var(--tint);border:1px dashed var(--line);border-radius:6px;padding:8px 12px;margin:0;font-size:16px;line-height:1.4}
+.prob{flex:0 0 auto;display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 12px;background:var(--tint);font-size:16px;line-height:1.38}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob p{margin:0;flex:1 1 0;min-width:0}
+.sketch{flex:0 0 clamp(150px,14vw,190px);height:clamp(92px,14vh,112px);position:relative}
+.sketch>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.opts{flex:0 0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.5vw,7px)}
+.opt{display:grid;grid-template-columns:minmax(0,0.85fr) minmax(0,1.15fr);gap:0 14px;padding:clamp(5px,0.6vw,9px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;gap:3px;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:16px}
+.opt .letter{font-weight:700;color:var(--pal-accent-deep)}
+.opt .who{font-size:14px;color:var(--muted);text-align:right}
+.opt .body{font-size:clamp(16px,1.3vw,18px);line-height:1.3}
+.opt .asm{margin:0;font-size:16px;line-height:1.3;color:var(--muted)}
+.opt .verdict{font-size:16px;line-height:1.3;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.chooser{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.chooser .who{color:var(--pal-accent-deep);font-weight:600}
+.opt.lesson{border:2px dashed var(--accent)}
+.opt.lesson .who{color:var(--pal-accent-deep);font-weight:600}
+.reveal{flex:1 1 auto;min-height:0;border:1px solid var(--line);border-radius:10px;padding:6px 14px;font-size:clamp(16px,1.35vw,18px);display:flex;flex-direction:column;justify-content:space-evenly;gap:5px}
+.reveal.idle{background:var(--tint);color:var(--muted)}
+.rv{margin:0;line-height:1.36}
+.rv .k{font-weight:650;color:var(--pal-accent-deep)}
+.rv .t{color:var(--muted);font-size:14px;white-space:nowrap}
+.rv.hold{color:var(--muted)}
+.decision .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.decision .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent);padding:6px 16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.tries,.takeaway,.case,.ai{line-height:1.25}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:17px}
+  .formula .katex-display{margin:0}
+  .side{gap:3px}
+  .question,.recall{line-height:1.25}
+  h2{font-size:20px}
+  .question{font-size:16px}
+  .fill{min-height:80px}
+  .readout{padding:2px 8px}
+  .readout .val{line-height:1.45}
+  .fill.proofpic{min-height:130px}
+  .model{padding:5px 10px}
+  .test .tries{gap:1px}
+  .btn{padding:4px 10px}
+  .decision h2{font-size:20px}
+  .decision .side{gap:6px}
+  .decision .tries{gap:2px;line-height:1.3}
+  .decision .takeaway{padding:6px 12px}
+  .decision .hold{padding:6px 10px;line-height:1.3}
+  .reveal{gap:3px;padding:4px 12px}
+  .rv{line-height:1.26}
+  .opts{gap:3px}
+  .opt{padding:4px 12px}
+  .opt .body,.opt .asm,.opt .verdict{line-height:1.22}
+  .prob{padding:4px 12px;line-height:1.28}
+}
+</style>
+</head>
+<body>
+<header id="head"></header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// Numbers on these slides are checked against lectures/16-digital-filters-part-iii/checks.py.
+
+// ---------- palette and redraw ----------
+// COL holds the palette for the SVG being drawn; plotBox reads it at every paint, so a draw always uses the
+// current theme. A theme switch redraws the current slide's plots and keeps every control's state.
+let COL = {};
+const PAL_NAMES = ['bg', 'ink', 'fg', 'text-2', 'muted', 'muted-2', 'grey', 'grey-blue', 'guide', 'grid', 'line', 'panel', 'soft', 'soft-2',
+  'accent', 'accent-2', 'accent-3', 'accent-deep', 'accent-tint', 'accent-soft', 'on-accent',
+  'amber', 'amber-bg', 'amber-ink', 'red'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+
+// ---------- DOM helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false }], throwOnError: false };
+// Render $...$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) { if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH); return node; }
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function hh(tag, cls, ...kids) { const e = h(tag, cls); for (const k of kids) if (k) e.append(k); return e; }
+function mark(e, kind, id, title) { e.dataset.item = kind; if (id != null) e.dataset.id = id; if (title != null) e.dataset.title = title; return e; }
+function emit(kind, data) {
+  try { if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {}); }
+  catch (e) { /* the view works without the bridge */ }
+}
+// Fixed decimals, with no minus sign on zero.
+function fx(x, d) { const y = Math.abs(x) < 0.5 * Math.pow(10, -d) ? 0 : x; return y.toFixed(d); }
+// A short number: up to d decimals, trailing zeros dropped.
+function sn(x, d) { return String(+fx(x, d == null ? 3 : d)); }
+// A number in TeX with a real minus sign.
+function nt(x, d) { return sn(x, d); }
+// Scientific notation as TeX: 1.30\times10^{-7}.
+function sciTex(x, d) {
+  if (!x) return '0';
+  let e = Math.floor(Math.log10(Math.abs(x))), m = (x / Math.pow(10, e)).toFixed(d);
+  if (Math.abs(+m) >= 10) { e += 1; m = (x / Math.pow(10, e)).toFixed(d); }
+  return m + '\\times10^{' + e + '}';
+}
+
+// ---------- controls ----------
+// A labelled range input. o: {id, min, max, step, value, fmt(v) -> TeX-ready text, onInput(v)}.
+function ctl(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = setTex(h('span'), label);
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.id);
+  const val = h('span', 'val');
+  const show = v => setTex(val, o.fmt(v));
+  inp.addEventListener('input', () => { show(+inp.value); o.onInput(+inp.value); });
+  show(o.value);
+  wrap.append(lab, inp, val);
+  return { el: wrap, input: inp, set(v) { inp.value = v; show(v); } };
+}
+// A row of buttons that pick one choice. choices: [[id, label], ...]; getCur() gives the current id.
+function choiceRow(label, choices, getCur, onPick) {
+  const row = hh('div', 'btnrow', label ? setTex(h('span', 'lab'), label) : null);
+  const btns = choices.map(([id, text]) => {
+    const b = mark(h('button', 'btn'), 'control', id);
+    setTex(b, text);
+    b.addEventListener('click', () => { onPick(id); paint(); });
+    row.append(b);
+    return [id, b];
+  });
+  function paint() { btns.forEach(([id, b]) => b.classList.toggle('on', id === getCur())); }
+  paint();
+  return { el: row, paint };
+}
+function button(id, label, onClick) {
+  const b = mark(h('button', 'btn'), 'control', id);
+  setTex(b, label);
+  b.addEventListener('click', onClick);
+  return b;
+}
+// A readout box: label and value are TeX-ready text.
+function readout(id, label, wide) {
+  const box = mark(h('div', 'readout' + (wide ? ' wide' : '')), 'readout', id);
+  const k = setTex(h('div', 'k'), label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); }, label(t) { setTex(k, t); } };
+}
+// Legend: items {color (CSS), text, kind: 'line' | 'dash' | 'chip'}.
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    let sw;
+    if (it.kind === 'chip') { sw = h('span', 'chip'); sw.style.background = it.color; }
+    else { sw = h('span', 'sw'); sw.style.borderTop = '3px ' + (it.kind === 'dash' ? 'dashed' : 'solid') + ' ' + it.color; }
+    s.append(sw, setTex(h('span'), it.text));
+    d.append(s);
+  }
+  return d;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function caseLine(text) { return setTex(h('p', 'case'), text); }
+// The one earlier fact a slide builds on, with its pointer.
+function recallLine(text) { const p = h('p', 'sym recall'); p.append(h('b', '', 'From before: ')); p.append(setTex(h('span'), text)); return p; }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => (t instanceof Node ? hh('li', '', t) : setTex(h('li'), t)))); }
+function aiBlock(ai) {
+  const p = h('p', 'ai');
+  p.innerHTML = ai.html;
+  tex(p);
+  p.append(' ', h('span', 'src', '(' + ai.src + ')'));
+  return hh('div', 'aiblk', h('p', 'kicker', ai.kicker || 'In AI research'), p);
+}
+// The takeaway appears after the first try: on the first click, drag or slider move in the widget, or on "Show".
+// An AI echo, when the slide has one, appears with it.
+function takeBox(widget, text, ai, aiHost) {
+  const holder = h('div', 'takeholder');
+  const btn = mark(h('button', 'btn'), 'control', 'show-takeaway');
+  setTex(btn, 'Show the takeaway');
+  const tk = setTex(h('p', 'takeaway'), text);
+  tk.hidden = true;
+  const aiEl = ai ? aiBlock(ai) : null;
+  if (aiEl) aiEl.hidden = true;
+  const show = () => { tk.hidden = false; btn.hidden = true; if (aiEl) aiEl.hidden = false; };
+  btn.addEventListener('click', show);
+  for (const ev of ['input', 'click', 'pointerdown']) widget.addEventListener(ev, show);
+  holder.append(btn, tk);
+  if (aiEl) (aiHost || holder).append(aiEl);
+  return holder;
+}
+// The side column of a content slide, after the frame's tag, title, question and formula.
+// o: {case, recall, sym, tries, take, ai}. The everyday case goes right under the question.
+function sideStd(widget, side, o) {
+  if (o.case) side.querySelector('.question').after(caseLine(o.case));
+  if (o.recall) side.append(recallLine(o.recall));
+  if (o.sym) side.append(sym(o.sym));
+  if (o.tries) side.append(triesList(o.tries));
+  if (o.take) side.append(takeBox(widget, o.take, o.ai, o.aiHost));
+}
+
+// ---------- SVG helpers ----------
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) { return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 }); }
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted, 'font-size': 14 }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label inside an SVG: a foreignObject holding a rendered formula. o: {w, ht, anchor, size, fill, bg, bold}.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc + (o.bold ? ';font-weight:600' : ''));
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 6px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// The same label with a halo in the page color, so it reads over a curve or bars.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  return fo;
+}
+function line(svg, x1, y1, x2, y2, o) { return svgNode('line', Object.assign({ x1, y1, x2, y2 }, o || {}), svg); }
+function dot(svg, x, y, r, fill, o) { return svgNode('circle', Object.assign({ cx: x, cy: y, r, fill }, o || {}), svg); }
+function rect(svg, x, y, w, ht, o) { return svgNode('rect', Object.assign({ x, y, width: Math.max(0, w), height: Math.max(0, ht) }, o || {}), svg); }
+// An arrow with a head. o: {color, w, dash, id, head}.
+function arrow(svg, x1, y1, x2, y2, o) {
+  const g = svgNode('g', { 'data-item': 'mark', 'data-id': o.id }, svg);
+  svgNode('line', { x1, y1, x2, y2, stroke: o.color, 'stroke-width': o.w || 2.5, 'stroke-dasharray': o.dash }, g);
+  const len = Math.hypot(x2 - x1, y2 - y1), hl = Math.min(o.head || 9, len * 0.45);
+  if (len > 3) {
+    const a = Math.atan2(y2 - y1, x2 - x1), s = hl / 2;
+    const bx = x2 - hl * Math.cos(a), by = y2 - hl * Math.sin(a);
+    svgNode('polygon', { points: [[x2, y2], [bx - s * Math.sin(a), by + s * Math.cos(a)], [bx + s * Math.sin(a), by - s * Math.cos(a)]].map(p => p.join(',')).join(' '), fill: o.color }, g);
+  }
+  return g;
+}
+// Amber marks what the newest proof line is about.
+function glowRect(svg, x, y, w, ht, pad) {
+  pad = pad == null ? 4 : pad;
+  return rect(svg, x - pad, y - pad, w + 2 * pad, ht + 2 * pad, { rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 });
+}
+function glowLine(svg, d, wdt) { return svgNode('path', { d, fill: 'none', stroke: COL.amberBg, 'stroke-width': wdt || 10, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg); }
+function glowCircle(svg, x, y, r) { return dot(svg, x, y, r, COL.amberBg, { stroke: COL.amber, 'stroke-width': 1.5 }); }
+// The top row of a proof picture: what the amber part is while a line is lit, else a plain hint.
+function picCaption(svg, W, litText, plainText) {
+  if (litText) return svgTex(svg, W / 2, 12, litText, { w: W - 4, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  if (plainText) return svgTex(svg, 4, 12, plainText, { w: W - 8, anchor: 'start', size: 15, fill: COL.text2 });
+  return null;
+}
+// A plot that takes the height left in its parent. draw(svg, W, H) runs on every resize and redraw.
+function plotBox(draw, cls, weight) {
+  const wrap = h('div', cls === 'sketch' ? 'sketch' : 'fill' + (cls ? ' ' + cls : ''));
+  if (weight) wrap.style.flex = weight + ' 1 0';
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 40) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// Axes for a plot. o: {x0, x1, y0, y1, L, R, T, B}. y values outside the range are clamped.
+function plotFrame(svg, W, H, o) {
+  const L = o.L == null ? 46 : o.L, R = o.R == null ? 14 : o.R, T = o.T == null ? 12 : o.T, B = o.B == null ? 40 : o.B;
+  const pw = W - L - R, ph = H - T - B, base = T + ph;
+  const X = x => L + (x - o.x0) / (o.x1 - o.x0) * pw;
+  const Y = y => base - (Math.max(o.y0, Math.min(o.y1, y)) - o.y0) / (o.y1 - o.y0) * ph;
+  line(svg, L, base, W - R, base, { stroke: COL.grey });
+  line(svg, L, T, L, base, { stroke: COL.grey });
+  if (o.y0 < 0 && o.y1 > 0) line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey, 'stroke-dasharray': '2 3' });
+  return { X, Y, L, R, T, B, pw, ph, base, W, H };
+}
+function pathOf(P, pts) { return pts.map((p, i) => (i ? 'L' : 'M') + P.X(p[0]).toFixed(1) + ' ' + P.Y(p[1]).toFixed(1)).join(''); }
+// Stems for values at n = 0 .. len-1. o: {vals, lo, hi, color, colorOf(n), id, label, labelFill, values, fmtVal(v, n),
+// band(n) -> true to shade, bandColor (color or function of n), L, R, T, B, ticks, nLabel(n) -> text or null, r}.
+function stems(svg, W, H, o) {
+  const len = o.vals.length, L = o.L == null ? 34 : o.L, R = o.R == null ? 10 : o.R, T = o.T == null ? 30 : o.T, B = o.B == null ? 22 : o.B;
+  const cw = (W - L - R) / len;
+  const X = n => L + (n + 0.5) * cw;
+  const Y = v => T + (o.hi - Math.max(o.lo, Math.min(o.hi, v))) / (o.hi - o.lo) * (H - T - B);
+  if (o.band) for (let n = 0; n < len; n++) if (o.band(n)) {
+    const bc = typeof o.bandColor === 'function' ? o.bandColor(n) : (o.bandColor || COL.accentTint);
+    if (bc) rect(svg, X(n) - cw / 2 + 2, T - 4, cw - 4, H - T - B + 8, { rx: 6, fill: bc });
+  }
+  line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey });
+  for (const t of (o.ticks || [])) svgText(svg, L - 6, Y(t) + 5, sn(t, 2).replace('-', '−'), { 'text-anchor': 'end' });
+  for (let n = 0; n < len; n++) {
+    const lab = o.nLabel ? o.nLabel(n) : String(n);
+    if (lab != null) svgText(svg, X(n), H - 5, lab, { 'text-anchor': 'middle', fill: COL.text2 });
+  }
+  const r = o.r == null ? 5.5 : o.r, sw = o.sw == null ? 3 : o.sw;
+  o.vals.forEach((v, n) => {
+    const c = o.colorOf ? o.colorOf(n) : o.color;
+    line(svg, X(n), Y(0), X(n), Y(v), { stroke: c, 'stroke-width': sw });
+    dot(svg, X(n), Y(v), r, c, { stroke: c, 'stroke-width': 1, 'data-item': 'mark', 'data-id': (o.id || 'stem') + '-' + n });
+    if (o.values) {
+      const up = v >= 0;
+      haloTex(svg, X(n), Y(v) + (up ? -15 : 15), o.fmtVal ? o.fmtVal(v, n) : sn(v, 2), { w: cw + 10, size: 14, fill: COL.ink });
+    }
+  });
+  if (o.label) svgTex(svg, L, 12, o.label, { w: W - L - 4, anchor: 'start', size: 15, fill: o.labelFill || COL.text2 });
+  return { X, Y, cw, L, T, B };
+}
+// A log axis: value -> y, for v in [lo, hi].
+function logY(lo, hi, top, base) {
+  const a = Math.log10(lo), b = Math.log10(hi);
+  return v => base - (Math.log10(Math.max(lo, Math.min(hi, v))) - a) / (b - a) * (base - top);
+}
+
+// ---------- complex numbers, random numbers, FFT ----------
+const PI = Math.PI, TAU = 2 * PI;
+const cis = t => ({ re: Math.cos(t), im: Math.sin(t) });
+const cplx = (re, im) => ({ re, im: im || 0 });
+const cxAdd = (a, b) => ({ re: a.re + b.re, im: a.im + b.im });
+const cxSub = (a, b) => ({ re: a.re - b.re, im: a.im - b.im });
+const cxMul = (a, b) => ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re });
+const cxScale = (a, s) => ({ re: a.re * s, im: a.im * s });
+const cxAbs = a => Math.hypot(a.re, a.im);
+const cxArg = a => Math.atan2(a.im, a.re);
+// a+bi as TeX, 3 decimals.
+function cxTex(z, d) {
+  d = d == null ? 3 : d;
+  const re = +fx(z.re, d), im = +fx(z.im, d);
+  if (im === 0) return String(re);
+  const b = (im < 0 ? '-' : '+') + Math.abs(im) + 'i';
+  return (re === 0 ? (im < 0 ? '-' : '') + Math.abs(im) + 'i' : re + b);
+}
+// mulberry32, the same stream as checks.py.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// In-place radix-2 FFT in double precision. sign -1: X_k = sum x_n e^{-i2pi kn/N}; +1: the inverse without 1/N.
+function fft64(re, im, sign) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+  }
+  for (let size = 2; size <= n; size <<= 1) {
+    const half = size >> 1, step = sign * TAU / size;
+    for (let j = 0; j < half; j++) {
+      const wr = Math.cos(step * j), wi = Math.sin(step * j);
+      for (let s = 0; s < n; s += size) {
+        const a = s + j, b = a + half;
+        const tr = wr * re[b] - wi * im[b], ti = wr * im[b] + wi * re[b];
+        re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
+      }
+    }
+  }
+}
+// U_k = (1/N) sum u_n e^{-i2pi kn/N}, k = 0 .. N-1, for N a power of 2.
+function dftU(u) {
+  const N = u.length, re = Float64Array.from(u), im = new Float64Array(N);
+  fft64(re, im, -1);
+  return Array.from(re, (r, k) => ({ re: r / N, im: im[k] / N }));
+}
+// Play samples at a given rate (Web Audio). Peak kept below 1.
+function playSamples(x, rate) {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    const buf = ctx.createBuffer(1, x.length, rate);
+    buf.getChannelData(0).set(Float32Array.from(x));
+    const src = ctx.createBufferSource();
+    src.buffer = buf; src.connect(ctx.destination);
+    src.onended = () => ctx.close();
+    src.start();
+  } catch (e) { /* no audio here */ }
+}
+
+// ---------- proof slides ----------
+// Left column of a proof slide: controls, the picture, the test, the mental model.
+function proofLeft(widget, o) {
+  if (o.controls && o.controls.length) widget.append(hh('div', 'sliders', ...o.controls));
+  const p = plotBox(o.draw, 'proofpic');
+  widget.append(p.wrap);
+  if (o.legend) widget.append(legend(o.legend));
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList(o.tests));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+  widget.append(test, model);
+  return { redraw: p.redraw, test };
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is done,
+// the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight) {
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = 'Look back: under the picture.';
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+
+// ======================================================================================
+// Lecture 16, view 2. In this view N counts samples. The default record is u = (4,3,1,0,1,0,2,3).
+const U8 = [4, 3, 1, 0, 1, 0, 2, 3];
+
+// ---------- 1. Add first, multiply once ----------
+const sizeOf = v => Math.round(Math.abs(v) * 1000) / 1000;           // 0, 0.707 or 1 for 8 samples
+function cosRow(k, N) { return Array.from({ length: N }, (_, n) => { const v = Math.cos(TAU * k * n / N); return Math.abs(v) < 1e-12 ? 0 : v; }); }
+// Multiplications for one cosine sum when samples that share a size are added first (x1 and x0 are free).
+function groupedMults(k, N) { return new Set(cosRow(k, N).map(sizeOf).filter(s => s !== 0 && s !== 1)).size; }
+function slideSamePrice(widget, side) {
+  let k = 1, grouped = false;
+  const u = U8;
+  const c = () => cosRow(k, 8);
+  const sizeCol = s => (s === 1 ? COL.ink : s === 0 ? COL.grey : COL.accent);
+  const sizeTint = s => (s === 1 ? COL.soft2 : s === 0 ? null : COL.accentTint);
+  const sl = ctl('wave $k$', { id: 'k', min: 0, max: 4, step: 1, value: k, fmt: v => String(v), onInput: v => { k = v; update(); } });
+  const tg = button('group', 'Group equal multipliers', () => { grouped = !grouped; update(); });
+  const rSum = readout('sum', 'the sum', true);
+  const rMul = readout('mults', 'multiplications for this sum');
+  const inP = plotBox((svg, W, H) => {
+    const cc = c();
+    stems(svg, W, H, { vals: u, lo: -0.6, hi: 5.2, color: COL.muted2, id: 'u', values: true, fmtVal: v => String(v),
+      band: grouped ? (n => sizeOf(cc[n]) !== 0) : null, bandColor: n => sizeTint(sizeOf(cc[n])),
+      label: grouped ? 'samples $u_n$. Same shade: added first, then multiplied once.' : 'the samples $u_n$', labelFill: COL.text2 });
+  }, null, 1);
+  const mP = plotBox((svg, W, H) => {
+    const cc = c();
+    stems(svg, W, H, { vals: cc, lo: -1.75, hi: 1.5, colorOf: n => sizeCol(sizeOf(cc[n])), id: 'c', values: true,
+      fmtVal: v => (v === 0 ? '0' : (v > 0 ? '+' : '−') + sn(Math.abs(v), 3)),
+      label: 'the multipliers $\\cos\\frac{2\\pi kn}{8}$ for wave $k=' + k + '$', labelFill: COL.ink, T: 34 });
+  }, null, 1);
+  function ledger() {
+    const cc = c(), total = cc.reduce((s, v, n) => s + v * u[n], 0);
+    const num = v => (v < 0 ? '(' + sn(v, 3) + ')' : sn(v, 3));
+    if (!grouped) return '$' + cc.map((v, n) => u[n] + '\\cdot' + num(v)).join('+') + '=' + sn(total, 3) + '$';
+    const sizes = [...new Set(cc.map(sizeOf))].filter(s => s !== 0).sort((a, b) => b - a);
+    const symb = [], nums = [], sums = [];
+    for (const s of sizes) {
+      const idx = cc.map((_, n) => n).filter(n => sizeOf(cc[n]) === s);
+      const sg = (n, i) => (cc[n] < 0 ? '-' : i ? '+' : '');
+      symb.push('(' + idx.map((n, i) => sg(n, i) + 'u_' + n).join('') + ')\\cdot' + sn(s, 3));
+      nums.push('(' + idx.map((n, i) => sg(n, i) + u[n]).join('') + ')\\cdot' + sn(s, 3));
+      sums.push(sn(idx.reduce((a, n) => a + Math.sign(cc[n]) * u[n], 0), 3) + '\\cdot' + sn(s, 3));
+    }
+    return '$' + symb.join('+') + '$ $=' + sums.join('+').replace(/\+-/g, '-') + '=' + sn(total, 3) + '$';
+  }
+  function update() {
+    rSum.set(ledger());
+    rMul.set('direct $8$, grouped $' + groupedMults(k, 8) + '$');
+    tg.classList.toggle('on', grouped);
+    inP.redraw(); mP.redraw();
+  }
+  widget.append(hh('div', 'sliders', sl.el, tg), inP.wrap, mP.wrap,
+    legend([{ kind: 'chip', color: 'var(--pal-ink)', text: 'size $1$: no multiplication' },
+      { kind: 'chip', color: 'var(--pal-accent)', text: 'size $0.707$' },
+      { kind: 'chip', color: 'var(--pal-grey)', text: 'size $0$: skipped' }]),
+    hh('div', 'readouts', rSum.el, rMul.el),
+    setTex(h('p', 'note'), 'With 16 samples, wave 1 has three sizes, $0.383$, $0.707$ and $0.924$: 3 multiplications instead of 16.'));
+  sideStd(widget, side, {
+    case: 'Three apples at $0.70$ each: you count the apples, then multiply once.',
+    recall: 'a coefficient is a sum of samples times cosines; here $u\\cdot\\cos1=7.24$ (Primer · Fourier series, step 4).',
+    sym: '$u$: 8 samples. $\\cos\\frac{2\\pi kn}{8}$: the multiplier of sample $n$ for wave $k$; its size is its value without the sign.',
+    tries: [
+      'Keep $k=1$, press Group: samples 1, 3, 5, 7 share the size $0.707$. Add them, then multiply once: $3+6\\cdot0.707=7.243$ (10:32).',
+      'Set $k=2$: every multiplier is $1$, $0$ or $-1$. No multiplication at all.',
+      'With 16 samples the saving grows: see the note under the sum.'],
+    take: 'Add the samples that share a multiplier, then multiply once. The FFT organizes this sharing for every frequency at once (Primer · Fourier series, step 12).' });
+  update();
+}
+
+// ---------- 2. Tukey asks again (decision) ----------
+function drawCards(svg, W, H) {
+  // left: a deck that must be re-sorted on every pass; right: the IBM 650 keeps program and data inside
+  const mid = W * 0.5, cw = Math.min(40, mid * 0.5), ch = cw * 0.5, x0 = mid / 2 - cw / 2 - 6, y0 = 24;
+  svgTex(svg, mid / 2, 10, 'cards', { w: mid, size: 13, fill: COL.ink, bold: true });
+  for (let i = 3; i >= 0; i--) rect(svg, x0 + i * 4, y0 + (3 - i) * 4, cw, ch, { rx: 3, fill: COL.panel, stroke: COL.muted, 'stroke-width': 1.2 });
+  svgTex(svg, mid / 2, H - 28, 're-sorted', { w: mid, size: 13, fill: COL.text2 });
+  svgTex(svg, mid / 2, H - 11, 'each pass', { w: mid, size: 13, fill: COL.text2 });
+  const bx = mid + 4, bw = W - bx - 2, by = y0 - 2;
+  svgTex(svg, bx + bw / 2, 10, 'later', { w: bw, size: 13, fill: COL.text2 });
+  rect(svg, bx, by, bw, 30, { rx: 7, fill: COL.soft, stroke: COL.accent, 'stroke-width': 1.5 });
+  svgTex(svg, bx + bw / 2, by + 15, 'IBM 650', { w: bw, size: 13, fill: COL.ink, bold: true });
+  svgTex(svg, bx + bw / 2, H - 28, 'all kept', { w: bw, size: 13, fill: COL.text2 });
+  svgTex(svg, bx + bw / 2, H - 11, 'inside', { w: bw, size: 13, fill: COL.text2 });
+}
+const D_TRIES = ['Read the problem.', 'Pick what you would do before he says it.', 'Read every verdict, not only yours.'];
+const DECISIONS = {
+  'fft-again': {
+    problem: 'Tukey’s idea finds all the coefficients in “butterfly” passes that add before they multiply (step 1). On Hamming’s card calculator each pass meant pulling, sorting and reloading the cards: far too costly (11:38). Years later he has an IBM 650, with program and data inside, and Tukey suggests the idea again.',
+    sketch: drawCards,
+    formula: '$N^2$ steps direct, $N\\log_2N$ by FFT',
+    chooser: 0, who: 'Hamming did this',
+    lesson: 1, lessonWho: 'What he advised later',
+    options: [
+      { text: 'Remember the verdict, “a bad idea”, and decline.',
+        assumes: 'the old verdict still holds.',
+        verdict: 'Bad only because of the card sorting, which the 650 removed. Cooley and Tukey published the FFT in 1965.' },
+      { text: 'Reopen the reasons: check each one against the new machine.',
+        assumes: '“impossible” rests on facts that can change.',
+        verdict: 'The only reason was the card sorting. On the 650: $1.3\\times10^5$ steps, not $10^8$, for 10,000 points.' },
+      { text: 'Keep the direct sums and wait for faster machines.',
+        assumes: 'raw speed will close the gap.',
+        verdict: 'A machine 750 times faster only ties at 10,000 points; at a million, 50,000 times.' }],
+    reveal: [
+      { k: 'His move', v: '“All I remember is it was a bad idea”: he did not do it.', t: '12:10' },
+      { k: 'What it cost', v: 'His 1961 book held every fact needed; he “could have done it easily”.', t: 'book' },
+      { k: 'What he learned', v: 'Any “cannot be done” rests on hypotheses: “go back through the reasons: are they still true?”', t: '12:42 to 13:45' }],
+    ai: 'Krizhevsky et al. wrote in 2012 that large convolutional networks “have still been prohibitively expensive to apply in large scale to high-resolution images”. Two GPUs and fast convolution code removed that reason: a top-5 error of $15.3\\%$, against $26.2\\%$ for the next entry.',
+    src: 'Krizhevsky, Sutskever, Hinton, NeurIPS 2012',
+    takeaway: 'Keep the reasons with every “impossible”, and when things change, re-check the reasons, not the verdict.' }
+};
+const DSTATE = {};
+Object.keys(DECISIONS).forEach(id => { DSTATE[id] = { pick: null, open: false }; });
+// Reveal a decision once; later calls change nothing. by: 'user' (a pick or the button) or 'cue'.
+function revealDecision(id, by) {
+  const st = DSTATE[id];
+  if (!st || st.open) return false;
+  st.open = true;
+  emit('view.action', { action: 'reveal', step: id, by: by });
+  return true;
+}
+function mountDecision(s, widget, side) {
+  const D = DECISIONS[s.id], st = DSTATE[s.id], open = st.open;
+  const redraw = () => goTo(cur, true);
+  const prob = mark(h('div', 'prob'), 'problem', s.id);
+  const pt = hh('p', '', h('span', 'lead', 'The problem.'), document.createTextNode(' '), setTex(h('span'), D.problem));
+  prob.append(pt);
+  if (D.sketch) prob.append(plotBox(D.sketch, 'sketch').wrap);
+  const opts = h('div', 'opts');
+  D.options.forEach((o, k) => {
+    const L = 'ABC'[k];
+    const card = mark(h('div', 'opt'), 'card', L, o.text.replace(/\$/g, ''));
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-disabled', open ? 'true' : 'false');
+    card.tabIndex = open ? -1 : 0;
+    card.classList.toggle('on', st.pick === L);
+    card.classList.toggle('chooser', open && k === D.chooser);
+    card.classList.toggle('lesson', open && k === D.lesson);
+    const who = [];
+    if (st.pick === L) who.push('Your pick');
+    if (open && k === D.chooser) who.push(D.who);
+    if (open && k === D.lesson) who.push(D.lessonWho);
+    const top = hh('div', 'top', h('span', 'letter', L), h('span', 'who', who.join(' · ')));
+    const asm = setTex(h('p', 'asm'), 'Assumes: ' + o.assumes);
+    const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'Verdict after your pick.');
+    card.append(hh('div', 'lhs', top, setTex(h('div', 'body'), o.text)), hh('div', 'rhs', asm, verdict));
+    card.addEventListener('click', () => {
+      if (DSTATE[s.id].open) return;
+      st.pick = L;
+      emit('view.action', { action: 'pick', step: s.id, option: L, hamming: k === D.chooser });
+      revealDecision(s.id, 'user');
+      redraw();
+    });
+    opts.append(card);
+  });
+  const rev = mark(h('div', 'reveal'), 'reveal', s.id);
+  if (!open) {
+    rev.classList.add('idle');
+    for (const r of D.reveal) rev.append(hh('p', 'rv hold', h('span', 'k', r.k + '. '), h('span', '', 'Shown after your pick.')));
+    const btn = mark(h('button', 'btn primary', 'Show answer'), 'control', 'show-answer');
+    btn.addEventListener('click', () => { if (revealDecision(s.id, 'user')) redraw(); });
+    rev.append(hh('div', 'actions', btn));
+  } else {
+    for (const r of D.reveal) {
+      const p = hh('p', 'rv', h('span', 'k', r.k + '. '));
+      p.append(setTex(h('span'), r.v), h('span', 't', ' (' + r.t + ')'));
+      rev.append(p);
+    }
+  }
+  widget.append(prob, opts, rev);
+  side.append(setTex(h('p', 'fx'), D.formula));
+  side.append(hh('div', 'blk', h('p', 'kicker', 'Try it'), hh('ol', 'tries', ...D_TRIES.map(t => h('li', '', t)))));
+  if (open) side.append(aiBlock({ html: D.ai, src: D.src, kicker: 'Same move in AI research' }));
+  else side.append(hh('div', 'blk', h('p', 'kicker', 'Same move in AI research'), h('p', 'hold', 'Shown after your pick.')));
+  side.append(open ? setTex(h('p', 'takeaway'), D.takeaway) : h('p', 'hold', 'Takeaway: shown after your pick.'));
+}
+
+// ---------- 3. Is the fast method less accurate? ----------
+// Single precision as in checks.py: round to float32 after every multiply and add; exact values in double.
+const ACC_NS = [64, 256, 1024, 4096], EPS32 = Math.pow(2, -23);
+const ACC = {};
+function accData(N) { const g = mulberry32(1); return Array.from({ length: N }, () => g() - 0.5); }
+function direct32(x) {
+  const N = x.length, re = new Float32Array(N), im = new Float32Array(N), cT = new Float32Array(N), sT = new Float32Array(N);
+  for (let j = 0; j < N; j++) { cT[j] = Math.cos(TAU * j / N); sT[j] = Math.sin(TAU * j / N); }
+  for (let n = 0; n < N; n++) {
+    const xn = Math.fround(x[n]);
+    for (let k = 0; k < N; k++) { const j = (k * n) % N; re[k] = re[k] + Math.fround(xn * cT[j]); im[k] = im[k] - Math.fround(xn * sT[j]); }
+  }
+  return [re, im];
+}
+function fft32(x) {
+  const N = x.length, L = Math.round(Math.log2(N)), re = new Float32Array(N), im = new Float32Array(N);
+  for (let i = 0; i < N; i++) { let r = 0; for (let b = 0; b < L; b++) r |= ((i >> b) & 1) << (L - 1 - b); re[i] = x[r]; }
+  for (let size = 2; size <= N; size *= 2) {
+    const half = size / 2, wr = new Float32Array(half), wi = new Float32Array(half);
+    for (let j = 0; j < half; j++) { wr[j] = Math.cos(TAU * j / size); wi[j] = -Math.sin(TAU * j / size); }
+    for (let s = 0; s < N; s += size) for (let j = 0; j < half; j++) {
+      const a = s + j, b = a + half;
+      const tr = Math.fround(Math.fround(wr[j] * re[b]) - Math.fround(wi[j] * im[b]));
+      const ti = Math.fround(Math.fround(wr[j] * im[b]) + Math.fround(wi[j] * re[b]));
+      const ra = re[a], ia = im[a];
+      re[b] = ra - tr; im[b] = ia - ti; re[a] = ra + tr; im[a] = ia + ti;
+    }
+  }
+  return [re, im];
+}
+function accuracy(N) {
+  if (ACC[N]) return ACC[N];
+  const x = accData(N), rr = Float64Array.from(x), ri = new Float64Array(N);
+  fft64(rr, ri, -1);
+  const rel = ([a, b]) => { let e = 0, s = 0; for (let k = 0; k < N; k++) { e += (a[k] - rr[k]) ** 2 + (b[k] - ri[k]) ** 2; s += rr[k] ** 2 + ri[k] ** 2; } return Math.sqrt(e / s); };
+  ACC[N] = { direct: rel(direct32(x)), fft: rel(fft32(x)) };
+  return ACC[N];
+}
+const ACC_SEEN = new Set([64]);
+let ACC_PRED = null;
+function slideAccuracy(widget, side) {
+  let N0 = 64, busy = false;
+  const rD = readout('err-direct', 'direct sums: error'), rF = readout('err-fft', 'FFT: error');
+  const rR = readout('ratio', 'FFT better by'), rS = readout('steps', 'steps, $N^2$ against $N\\log_2N$');
+  const plot = plotBox((svg, W, H) => {
+    const P = plotFrame(svg, W, H, { x0: 5.4, x1: 12.6, y0: Math.log10(4e-8), y1: Math.log10(2.2e-6), L: 64, R: 18, T: 30, B: 46 });
+    for (const e of [-7, -6]) {
+      line(svg, P.L, P.Y(e), W - P.R, P.Y(e), { stroke: COL.grid });
+      svgTex(svg, P.L - 6, P.Y(e), '$10^{' + e + '}$', { w: 56, anchor: 'end', size: 15, fill: COL.text2 });
+    }
+    svgTex(svg, P.L - 6, P.Y(Math.log10(3e-7)), '$3\\times10^{-7}$', { w: 64, anchor: 'end', size: 13, fill: COL.text2 });
+    for (const N of ACC_NS) {
+      const x = P.X(Math.log2(N));
+      line(svg, x, P.base, x, P.base + 5, { stroke: COL.grey });
+      svgTex(svg, x, P.base + 16, String(N), { w: 60, size: 15, fill: N === N0 ? COL.accentDeep : COL.text2, bold: N === N0 });
+    }
+    svgTex(svg, P.L + P.pw / 2, H - 9, '$N$ random samples (each mark 4 times the last)', { w: P.pw, size: 15, fill: COL.text2 });
+    svgTex(svg, P.L - 2, 12, 'error of the coefficients, on a log scale', { w: P.pw, anchor: 'start', size: 15, fill: COL.text2 });
+    const ye = P.Y(Math.log10(EPS32));
+    line(svg, P.L, ye, W - P.R, ye, { stroke: COL.muted, 'stroke-dasharray': '6 4', 'stroke-width': 1.5 });
+    const seen = ACC_NS.filter(N => ACC_SEEN.has(N) && ACC[N]);
+    const series = [['direct', COL.grey, COL.text2, 'direct'], ['fft', COL.accent, COL.accentDeep, 'FFT']];
+    for (const [key, c] of series) {
+      if (seen.length > 1) svgNode('path', { d: pathOf(P, seen.map(N => [Math.log2(N), Math.log10(ACC[N][key])])), fill: 'none', stroke: c, 'stroke-width': 2.5 }, svg);
+      for (const N of seen) dot(svg, P.X(Math.log2(N)), P.Y(Math.log10(ACC[N][key])), N === N0 ? 7 : 5, c, { 'data-item': 'mark', 'data-id': key + '-' + N });
+    }
+    if (ACC[N0]) {
+      // labels beside the chosen N: right of it for small N, left for large; FFT below its dot when under the dashed line
+      const a = ACC[N0], right = N0 <= 256, x = P.X(Math.log2(N0)) + (right ? 12 : -12), anc = right ? 'start' : 'end';
+      for (const [key, , tc, name] of series) {
+        const v = a[key], dy = key === 'direct' ? -16 : (v < EPS32 ? 16 : -16);
+        haloTex(svg, x, P.Y(Math.log10(v)) + dy, name + ' $' + sciTex(v, 1) + '$', { w: 160, anchor: anc, size: 15, fill: tc, bold: true });
+      }
+    }
+  });
+  const pick = choiceRow('$N$:', ACC_NS.map(N => ['n-' + N, String(N)]), () => 'n-' + N0, id => choose(+id.slice(2)));
+  function choose(N) {
+    if (busy) return;
+    N0 = N;
+    if (!ACC[N]) {
+      busy = true;
+      rD.set('computing…'); rF.set('computing…'); rR.set('…');
+      setTimeout(() => { accuracy(N); ACC_SEEN.add(N); busy = false; update(); }, 30);
+      pick.paint();
+      return;
+    }
+    ACC_SEEN.add(N);
+    update();
+  }
+  function update() {
+    const a = accuracy(N0);
+    rD.set('$' + sciTex(a.direct, 2) + '$'); rF.set('$' + sciTex(a.fft, 2) + '$');
+    rR.set('$' + sn(a.direct / a.fft, 1) + '$ times');
+    const big = v => (v < 1e5 ? v.toLocaleString('en-US').replace(/,/g, '{,}') : sciTex(v, 1));
+    rS.set('$' + big(N0 * N0) + '$ against $' + big(N0 * Math.log2(N0)) + '$');
+    pick.paint(); plot.redraw();
+  }
+  widget.append(pick.el, plot.wrap,
+    legend([{ kind: 'line', color: 'var(--pal-grey)', text: 'grey: the direct sums' }, { kind: 'line', color: 'var(--pal-accent)', text: 'blue: the FFT' },
+      { kind: 'dash', color: 'var(--pal-muted)', text: 'dashed: one rounding step, $1.2\\times10^{-7}$' }]),
+    hh('div', 'readouts', rD.el, rF.el, rR.el, rS.el));
+  // the prediction sits in the side column, as the first try
+  const said = h('span', 'said');
+  const PRED = [['pred-direct', 'direct sums'], ['pred-same', 'about the same'], ['pred-fft', 'FFT']];
+  const predRow = choiceRow('', PRED, () => ACC_PRED, id => {
+    ACC_PRED = id;
+    setTex(said, 'Noted. Now press $N=4096$ and compare.');
+    emit('view.action', { action: 'predict', step: 'fft-accuracy', choice: id.slice(5) });
+  });
+  predRow.el.classList.add('predict');
+  predRow.el.append(said);
+  if (ACC_PRED) setTex(said, 'Noted. Now press $N=4096$ and compare.');
+  const t1 = hh('div', '', setTex(h('span'), 'Predict: at $N=4096$, which error is smaller?'), predRow.el);
+  sideStd(widget, side, {
+    case: 'On a cheap calculator each addition rounds a little, so a long column collects more rounding.',
+    recall: 'the FFT takes $N\\log_2N$ steps, not $N^2$ (Primer · Fourier series, step 12).',
+    sym: 'Single precision keeps about 7 digits: one operation can round by $1.2\\times10^{-7}$. rms: root mean square.' });
+  side.append(triesList([t1,
+    '$N=64$: both errors are near one rounding step.',
+    'Press $256$, $1024$, $4096$. Each time the direct error about doubles, like $\\sqrt N$. Does the FFT’s?']));
+  side.append(takeBox(widget, 'The FFT is faster and also more accurate: each coefficient passes through $\\log_2N$ rounding stages, not $N$ additions. Hamming found the same (14:47).'));
+  update();
+}
+
+// ---------- 4. The FFT repeats your record ----------
+// u_n = R n/N + 0.1 sin(2 pi 6 n/N), N = 64; optionally minus its least-squares line.
+function seamRecord(R, remove) {
+  const N = 64, u = Array.from({ length: N }, (_, n) => R * n / N + 0.1 * Math.sin(TAU * 6 * n / N));
+  if (!remove) return u;
+  const nb = (N - 1) / 2, my = u.reduce((s, v) => s + v, 0) / N;
+  let sxx = 0, sxy = 0;
+  for (let n = 0; n < N; n++) { sxx += (n - nb) ** 2; sxy += (n - nb) * (u[n] - my); }
+  const b = sxy / sxx, a = my - b * nb;
+  return u.map((v, n) => v - a - b * n);
+}
+function seamAbs(R, remove) { return dftU(seamRecord(R, remove)).map(cxAbs); }
+function slideSeam(widget, side) {
+  let R = 0, remove = false;
+  const sl = ctl('climb $R$', { id: 'R', min: 0, max: 1, step: 0.05, value: R, fmt: v => sn(v, 2), onInput: v => { R = v; update(); } });
+  const tg = button('remove-line', 'Remove the fitted line', () => { remove = !remove; update(); });
+  const rSeam = readout('seam', 'jump at the seam, $u_{63}-u_0$'), r1 = readout('U1', '$|U_1|$'), r6 = readout('U6', '$|U_6|$, the wiggle');
+  const topP = plotBox((svg, W, H) => {
+    const u = seamRecord(R, remove);
+    const P = plotFrame(svg, W, H, { x0: -64, x1: 128, y0: -0.25, y1: 1.2, L: 40, R: 10, T: 30, B: 24 });
+    for (const t of [0, 1]) svgText(svg, P.L - 6, P.Y(t) + 5, String(t), { 'text-anchor': 'end', fill: COL.text2 });
+    rect(svg, P.X(-0.5), P.T, P.X(63.5) - P.X(-0.5), P.ph, { fill: COL.soft, opacity: 0.6 });
+    for (const c of [-1, 0, 1]) {
+      const pts = u.map((v, n) => [n + 64 * c, v]);
+      // join the copies: the last sample of one copy to the first of the next
+      svgNode('path', { d: pathOf(P, pts), fill: 'none', stroke: c === 0 ? COL.ink : COL.grey, 'stroke-width': c === 0 ? 2.2 : 1.6 }, svg);
+      if (c < 1) line(svg, P.X(63 + 64 * c), P.Y(u[63]), P.X(64 + 64 * c), P.Y(u[0]), { stroke: COL.grey, 'stroke-width': 1.6 });
+    }
+    const drop = u[63] - u[0];
+    for (const xs of [0, 64]) {
+      const ya = P.Y(u[63]), yb = P.Y(u[0]), cy = (ya + yb) / 2, ry = Math.abs(ya - yb) / 2 + 10;
+      svgNode('ellipse', { cx: P.X(xs - 0.5), cy, rx: 10, ry, fill: 'none', stroke: COL.ink, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'seam-' + xs }, svg);
+      haloTex(svg, P.X(xs - 0.5), Math.min(cy - ry - 10, P.T + P.ph - 20), Math.abs(drop) > 0.08 ? 'seam' : 'no jump', { w: 80, size: 14, fill: COL.ink, bold: true });
+    }
+    svgTex(svg, P.X(-32), P.T - 14, 'copy before', { w: 140, size: 14, fill: COL.text2 });
+    svgTex(svg, P.X(32), P.T - 14, remove ? 'your record minus its line' : 'your record, $n=0$ to $63$', { w: 220, size: 14, fill: COL.ink, bold: true });
+    svgTex(svg, P.X(96), P.T - 14, 'copy after', { w: 140, size: 14, fill: COL.text2 });
+    svgTex(svg, P.L + P.pw / 2, H - 9, 'what the FFT assumes: the record repeats forever', { w: P.pw, size: 14, fill: COL.text2 });
+  }, null, 1);
+  const botP = plotBox((svg, W, H) => {
+    const A = seamAbs(R, remove), lo = 1e-4, hi = 0.3;
+    const L = 52, Rr = 10, T = 30, B = 26, base = H - B, Y = logY(lo, hi, T, base), cw = (W - L - Rr) / 32;
+    const X = k => L + (k - 0.5) * cw;
+    line(svg, L, base, W - Rr, base, { stroke: COL.grey }); line(svg, L, T, L, base, { stroke: COL.grey });
+    for (const e of [-4, -3, -2, -1]) {
+      line(svg, L, Y(Math.pow(10, e)), W - Rr, Y(Math.pow(10, e)), { stroke: COL.grid });
+      svgTex(svg, L - 4, Y(Math.pow(10, e)), '$10^{' + e + '}$', { w: 50, anchor: 'end', size: 14, fill: COL.text2 });
+    }
+    for (let k = 1; k <= 32; k++) {
+      const v = A[k];
+      if (v > lo) rect(svg, X(k) - cw * 0.36, Y(v), cw * 0.72, base - Y(v), { fill: k === 6 ? COL.accentDeep : COL.accent, 'data-item': 'mark', 'data-id': 'bar-' + k });
+    }
+    const curve = []; for (let k = 1; k <= 32; k += 0.25) curve.push((curve.length ? 'L' : 'M') + X(k).toFixed(1) + ' ' + Y(1 / (TAU * k)).toFixed(1));
+    svgNode('path', { d: curve.join(''), fill: 'none', stroke: COL.ink, 'stroke-width': 1.6, 'stroke-dasharray': '6 4' }, svg);
+    haloTex(svg, X(10), Y(1 / (TAU * 10)) - 16, 'dashed: $\\frac{1}{2\\pi k}$', { w: 140, anchor: 'start', size: 15, fill: COL.ink, ht: 30 });
+    if (A[6] > lo) haloTex(svg, X(6), Math.max(T + 8, Y(A[6]) - 12), 'wiggle', { w: 70, size: 14, fill: COL.accentDeep, bold: true });
+    for (const k of [1, 6, 16, 24, 32]) svgTex(svg, X(k), H - 12, (k === 1 ? '$k=$ ' : '') + k, { w: 50, size: 14, fill: COL.text2 });
+    svgTex(svg, L, 12, 'bars: $|U_k|$, how much of wave $k$, on a log scale', { w: W - L, anchor: 'start', size: 15, fill: COL.accentDeep });
+  }, null, 1.15);
+  function update() {
+    const u = seamRecord(R, remove), A = seamAbs(R, remove);
+    rSeam.set('$' + sn(u[63] - u[0], 3) + '$'); r1.set('$' + fx(A[1], 4) + '$'); r6.set('$' + fx(A[6], 4) + '$');
+    tg.classList.toggle('on', remove);
+    topP.redraw(); botP.redraw();
+  }
+  const aiHost = h('div', 'aihost');
+  widget.append(hh('div', 'sliders', sl.el, tg), topP.wrap, botP.wrap, hh('div', 'readouts', rSeam.el, r1.el, r6.el), aiHost);
+  sideStd(widget, side, {
+    case: 'Wallpaper repeats one tile. If the tile’s right edge does not match its left edge, every repeat shows a seam.',
+    recall: 'a tone that does not fit the record leaks into every bin (Primer · Signals: convolution, step 6).',
+    sym: 'A plane climbs by $R$ while its wings vibrate 6 times; $N=64$.',
+    tries: [
+      '$R=0$: one bar, at $k=6$. The copies join without a jump.',
+      '$R=1$: a sawtooth, and every bar lights, falling like $\\frac1{2\\pi k}$. At $k=6$ trend and wiggle partly cancel: $0.050$ drops to $0.026$ (Primer · Signals: spectra, step 3).',
+      'Press Remove: the seam goes and $k=6$ is back to $0.049$, but small bars stay at $k=1$ to $5$. You see the data minus a line, not the wiggle (24:45).'],
+    take: 'The FFT repeats your record like a tile: a trend becomes a sawtooth whose leak falls only like $1/k$, and removing it changes what is left.',
+    aiHost,
+    ai: { html: 'Long-convolution language models such as Hyena convolve $L$ tokens with a filter of length $L$ by FFT: $L\\log L$ steps, not $L^2$. The FFT treats the sequence as one tile, so the last tokens would wrap into the outputs of the first. The code pads to twice the length, <code>fft_size = 2 * seqlen</code>, and keeps the first $L$ outputs.',
+      src: 'HazyResearch safari, hyena.py, fftconv_ref' } });
+  update();
+}
+
+// ---------- 5. Why it's true: a trend leaks like 1/k ----------
+function rampAbs(N, k) { return cxAbs(dftU(Array.from({ length: N }, (_, n) => n / N))[k]); }
+function drawWhyRamp(svg, W, H, k, lit) {
+  const N = 8, w = cis(-TAU * k / N);
+  const CAP = {
+    shift: 'amber: the multiples of $w^m$ in $S$, and in the same sum moved one slot, $wS$',
+    pairs: 'amber: slot by slot, $S-wS$ keeps one $w^m$; the last slot has no partner',
+    cancel: 'amber: the seven small arrows add to $-1$, the leftover is $-7$: in all $-8$',
+    chord: 'amber: the chord from $1$ to $w$, $|1-w|=2\\sin\\frac{\\pi k}{8}$' }[lit];
+  picCaption(svg, W, CAP, 'blue: the arrows of $S-wS$, head to tail. Table: how many $w^m$ each sum holds.');
+  const top = 30, tH = Math.max(78, Math.min(100, H * 0.3)), midB = H - tH - 4;
+  // the arrows of S - wS: w^1 .. w^7 head to tail, then the leftover -(N-1) w^N = -7, drawn shortened
+  const pts = [cplx(0)];
+  let z = cplx(0);
+  for (let m = 1; m < N; m++) { z = cxAdd(z, cis(-TAU * k * m / N)); pts.push(z); }
+  const flat = Math.abs(w.im) < 1e-9;
+  const cwW = W * 0.62, padX = 16, padY = 30;
+  const xs = pts.map(p => p.re), ys = pts.map(p => p.im).concat([1.15, -1.15]);
+  const xmin = Math.min(...xs), xmax = Math.max(...xs), ymin = Math.min(...ys), ymax = Math.max(...ys);
+  const sc = Math.min((midB - top - 2 * padY) / (ymax - ymin), (cwW * 0.42) / (xmax - xmin), 62);
+  const ox = cwW - padX - 34 - xmax * sc, oy = top + padY + ((midB - top - 2 * padY) - (ymax - ymin) * sc) / 2 + ymax * sc;
+  const PX = q => ox + q.re * sc, PY = q => oy - q.im * sc;
+  // arrows that retrace a path are moved a little so each one shows; for k = N/2 they step down a zigzag
+  const lapOff = m => { const lap = Math.floor((m - 1) * k / N); return 4 * lap; };
+  const zig = j => (flat ? 7 * j : 0);
+  const seg = m => flat ? [PX(pts[m - 1]), PY(pts[m - 1]) + zig(m - 1), PX(pts[m]), PY(pts[m]) + zig(m)]
+    : [PX(pts[m - 1]) + lapOff(m), PY(pts[m - 1]) + lapOff(m), PX(pts[m]) + lapOff(m), PY(pts[m]) + lapOff(m)];
+  const x1 = PX(pts[N - 1]), yL = PY(pts[N - 1]) + zig(N - 1), full = (N - 1) * sc, room = x1 - padX - 4;
+  const x2 = x1 - Math.min(full, room), cut = full > room;
+  if (lit === 'cancel') {
+    const d = []; for (let m = 1; m < N; m++) { const q = seg(m); d.push('M' + q[0] + ' ' + q[1] + 'L' + q[2] + ' ' + q[3]); }
+    glowLine(svg, d.join(''), 10);
+    glowLine(svg, 'M' + x1 + ' ' + yL + 'L' + x2 + ' ' + yL, 12);
+  }
+  for (let m = 1; m < N; m++) { const q = seg(m); arrow(svg, q[0], q[1], q[2], q[3], { color: COL.accent, w: 2.4, head: 8, id: 'w-' + m }); }
+  arrow(svg, x1, yL, x2, yL, { color: COL.ink, w: 2.8, head: 11, id: 'leftover' });
+  if (cut) {   // a break mark: the leftover is drawn shorter than 7 units
+    const xm = (x1 + x2) / 2;
+    rect(svg, xm - 5, yL - 6, 10, 12, { fill: COL.bg });
+    for (const dx of [-5, 5]) line(svg, xm + dx - 3, yL + 7, xm + dx + 3, yL - 7, { stroke: COL.ink, 'stroke-width': 1.8 });
+  }
+  dot(svg, PX(cplx(0)), PY(cplx(0)), 4, COL.ink);
+  const yBot = Math.max(...pts.map((p, j) => PY(p) + zig(j)));
+  haloTex(svg, PX(cplx((xmin + xmax) / 2)), yBot + 17, '$w^1+\\dots+w^7=-1$', { w: 170, size: 14, fill: COL.accentDeep });
+  haloTex(svg, PX(cplx(0)) + (flat ? -7 : 7), PY(cplx(0)) - 13, 'start $0$', { w: 70, anchor: flat ? 'end' : 'start', size: 13, fill: COL.text2 });
+  haloTex(svg, x1 - 8, yL - 15, 'leftover $-7$' + (cut ? ' (shortened)' : ''), { w: 200, anchor: 'end', size: 14, fill: COL.ink });
+  haloTex(svg, x2 - 2, yL + 16, 'end: $S-wS=-8$', { w: 140, anchor: 'start', size: 14, fill: COL.ink, bold: true });
+  // unit circle with the N arrows w^m and the chord from 1 to w
+  const ccx = cwW + (W - cwW) / 2, rr = Math.max(24, Math.min((W - cwW) / 2 - 46, (midB - top - 30 - 42) / 2));
+  const ccy = top + 30 + rr;
+  svgTex(svg, ccx, top + 6, 'the 8 arrows $w^m$, and a chord', { w: W - cwW + 10, size: 14, fill: COL.text2 });
+  dot(svg, ccx, ccy, rr, 'none', { stroke: COL.line, 'stroke-width': 1.5 });
+  const spots = {};
+  for (let m = 0; m < N; m++) {
+    const q = cis(-TAU * k * m / N), x = ccx + rr * q.re, y = ccy - rr * q.im;
+    if (lit === 'cancel' && m > 0) glowLine(svg, 'M' + ccx + ' ' + ccy + 'L' + x + ' ' + y, 7);
+    line(svg, ccx, ccy, x, y, { stroke: m === 0 ? COL.ink : COL.accent, 'stroke-width': 1.6 });
+    dot(svg, x, y, 3, m === 0 ? COL.ink : COL.accent);
+    const key = Math.round(x) + ',' + Math.round(y);
+    (spots[key] = spots[key] || { x, y, ms: [] }).ms.push(m);
+  }
+  for (const sp of Object.values(spots)) {
+    const dx = sp.x - ccx, dy = sp.y - ccy, d = Math.hypot(dx, dy) || 1;
+    const side = dx / d > 0.5 ? 'start' : dx / d < -0.5 ? 'end' : 'middle';
+    svgTex(svg, sp.x + dx / d * 8 + (side === 'start' ? 2 : side === 'end' ? -2 : 0), sp.y + dy / d * 12, sp.ms.join(','), { w: 60, anchor: side, size: 13, fill: COL.text2 });
+  }
+  const w1x = ccx + rr * w.re, w1y = ccy - rr * w.im;
+  if (lit === 'chord') glowLine(svg, 'M' + (ccx + rr) + ' ' + ccy + 'L' + w1x + ' ' + w1y, 10);
+  line(svg, ccx + rr, ccy, w1x, w1y, { stroke: COL.ink, 'stroke-width': 2.6 });
+  svgTex(svg, ccx, ccy + rr + 28, 'chord $|1-w|=' + fx(2 * Math.sin(PI * k / N), 3) + '$', { w: W - cwW + 10, size: 14, fill: COL.ink });
+  // slot table: the multiple of w^m in S, in wS, and in S - wS
+  const y0 = H - tH, lw = 70, cw = (W - lw - 4) / (N + 1), rh = (tH - 22) / 3;
+  for (let m = 0; m <= N; m++) svgTex(svg, lw + (m + 0.5) * cw, y0 + 9, '$w^{' + m + '}$', { w: cw, size: 14, fill: COL.text2 });
+  const rows = [
+    ['$S$', m => (m < N ? String(m) : ''), 'shift'],
+    ['$wS$', m => (m > 0 ? String(m - 1) : ''), 'shift'],
+    ['$S-wS$', m => (m === 0 ? '0' : m < N ? '1' : '−7'), 'pairs']];
+  rows.forEach(([lab, val, key], r) => {
+    const yy = y0 + 20 + r * rh;
+    if (lit === key || (lit === 'cancel' && r === 2)) glowRect(svg, lw + 2, yy + 1, (N + 1) * cw - 4, rh - 2, 1);
+    svgTex(svg, lw - 6, yy + rh / 2, lab, { w: lw, anchor: 'end', size: 15, fill: COL.ink });
+    for (let m = 0; m <= N; m++) {
+      const t = val(m), big = r === 2 && m === N;
+      if (t) svgText(svg, lw + (m + 0.5) * cw, yy + rh / 2 + 5, t, { 'text-anchor': 'middle', 'font-size': 15, fill: big ? COL.ink : COL.text2, 'font-weight': big ? 700 : 400 });
+    }
+  });
+  line(svg, lw + N * cw, y0 + 16, lw + N * cw, H - 2, { stroke: COL.line, 'stroke-dasharray': '3 3' });
+}
+function slideWhyRamp(widget, side) {
+  let k = 3, lit = '';
+  const rd = h('span', 'picread');
+  const sk = ctl('$k$', { id: 'k', min: 1, max: 4, step: 1, value: k, fmt: v => String(v), onInput: v => { k = v; show(); plot.redraw(); } });
+  function show() { setTex(rd, '$N=8$, $|U_' + k + '|$: FFT $' + fx(rampAbs(8, k), 4) + '$, formula $' + fx(1 / (16 * Math.sin(PI * k / 8)), 4) + '$'); }
+  show();
+  const plot = proofLeft(widget, {
+    controls: [sk.el, rd],
+    draw: (svg, W, H) => drawWhyRamp(svg, W, H, k, lit),
+
+    tests: [
+      'Guess $|U_2|/|U_1|$ for $N=64$ from step 4’s bars: $0.0797/0.1592=0.501$, about one half.',
+      '$N=8$, $k=3$: the formula gives $0.0676$, the FFT $0.0676$. Cases are evidence, not proof.'],
+    model: 'The ramp’s sum and the same sum moved one slot differ by $N-1$ equal arrows, which nearly cancel, and one big arrow left over at the seam.' });
+  proofRight(side, {
+    id: 'ramp-leak',
+    goal: { tex: '|U_k|=\\frac{1}{2N\\sin(\\pi k/N)}', words: 'for the ramp $u_n=\\frac nN$, $0<k<N$. Name $w=e^{-i2\\pi k/N}$, $S=\\sum_n n\\,w^n$; then $U_k=S/N^2$.' },
+    facts: [
+      { words: 'the $N$ arrows $w^m$ add to $0$; $w^N=1$', ref: 'Primer · Fourier series, step 3' },
+      { tex: '|1-e^{i\\theta}|=2\\sin\\tfrac\\theta2', ref: 'Primer · Complex numbers, step 10' }],
+    lines: [
+      { tex: '(1-w)S=\\textstyle\\sum_n n\\,w^n-\\sum_n n\\,w^{n+1}', move: 'Compute it two ways',
+        why: '$S$ minus $wS$, as for the geometric sum (Series, step 4)', choices: ['Rearrange', 'Name a piece'], highlight: 'shift' },
+      { tex: '=\\textstyle\\sum_{m=1}^{N-1}w^m-(N-1)\\,w^N', move: 'Rearrange',
+        why: 'put $m=n+1$ in the second sum; slot $m$ keeps $m-(m-1)=1$; the last term has no partner', choices: ['Telescope', 'Change variables'], highlight: 'pairs' },
+      { tex: '=-1-(N-1)=-N', move: 'Use an earlier result',
+        why: 'all $N$ arrows add to $0$, so those from $m=1$ add to $-1$; and $w^N=1$', choices: ['Unfold the definition', 'Take a limit'], highlight: 'cancel' },
+      { tex: '|U_k|=\\frac{|S|}{N^2}=\\frac{N}{N^2|1-w|}=\\frac{1}{2N\\sin(\\pi k/N)}', move: 'Use an earlier result',
+        why: 'the chord $|1-w|=2\\sin\\frac{\\pi k}{N}$', choices: ['Rearrange', 'Compare or bound'], highlight: 'chord' }],
+    lookBack: [
+      { q: 'Why $1/k$?', a: 'For $k$ much smaller than $N$, $\\sin\\frac{\\pi k}{N}\\approx\\frac{\\pi k}{N}$, so $|U_k|\\approx\\frac{1}{2\\pi k}$ for every $N$: double $k$, half the bar. A jump gives $1/k$ (Primer · Fourier series, step 9), and the seam is the jump.' },
+      { q: 'Which line holds the seam?', a: 'Line 2’s leftover $(N-1)\\,w^N$: the last sample has no partner. It is the drop from nearly $1$ back to $0$.' },
+      { q: 'What about $k=0$?', a: '$U_0=\\frac{N-1}{2N}=0.492$ for $N=64$: the mean. The formula holds for $0<k<N$.' }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+}
+
+// ---------- 6. Same spectrum, different sound ----------
+// The click: 1 at n = 32 of 64. Scrambled: |U_k| kept, angles random for k = 1..31 (mulberry32), U_{64-k} = conj U_k.
+function scrambled(seed, N) {
+  N = N || 64;
+  const g = mulberry32(seed), ph = new Float64Array(N / 2);
+  for (let k = 1; k < N / 2; k++) ph[k] = TAU * g();
+  if (N === 64) {
+    const x = [];
+    for (let n = 0; n < N; n++) { let s = 1 + (n % 2 ? -1 : 1); for (let k = 1; k < N / 2; k++) s += 2 * Math.cos(TAU * k * n / N + ph[k]); x.push(s / N); }
+    return { x, ph };
+  }
+  const re = new Float64Array(N), im = new Float64Array(N);
+  re[0] = 1; re[N / 2] = 1;
+  for (let k = 1; k < N / 2; k++) { re[k] = Math.cos(ph[k]); im[k] = Math.sin(ph[k]); re[N - k] = re[k]; im[N - k] = -im[k]; }
+  fft64(re, im, 1);
+  return { x: Array.from(re, v => v / N), ph };
+}
+const clickRec = () => Array.from({ length: 64 }, (_, n) => (n === 32 ? 1 : 0));
+const peakOf = x => Math.max(...x.map(Math.abs));
+const rmsOf = x => Math.sqrt(x.reduce((s, v) => s + v * v, 0) / x.length);
+let HISS_SEED = 3;
+function slideClick(widget, side) {
+  let mode = 'click', seed = HISS_SEED;
+  const rec = () => (mode === 'click' ? { x: clickRec(), ph: null } : scrambled(seed));
+  const pick = choiceRow('', [['click', 'Click'], ['scrambled', 'Scrambled']], () => mode, id => {
+    if (id === 'scrambled') { if (mode === 'scrambled') seed += 1; HISS_SEED = seed; }
+    mode = id; update();
+  });
+  const listen = button('listen', 'Listen', () => {
+    const rate = 8000;
+    if (mode === 'click') { const x = new Array(rate).fill(0); x[rate / 2] = 0.5; playSamples(x, rate); }
+    else { const x = scrambled(seed, 8192).x, p = peakOf(x); playSamples(x.map(v => 0.5 * v / p), rate); }
+  });
+  const rP = readout('peak', 'peak, $\\max|u_n|$'), rR = readout('rms', 'rms, root mean square');
+  const recP = plotBox((svg, W, H) => {
+    const x = rec().x, L = 40, R = 10, T = 28, B = 22, cw = (W - L - R) / 64;
+    const Y = v => T + (1.08 - v) / 1.48 * (H - T - B);
+    line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey });
+    for (const t of [0, 1]) svgText(svg, L - 6, Y(t) + 5, String(t), { 'text-anchor': 'end', fill: COL.text2 });
+    x.forEach((v, n) => {
+      const X = L + (n + 0.5) * cw;
+      line(svg, X, Y(0), X, Y(v), { stroke: COL.accent, 'stroke-width': 2 });
+      dot(svg, X, Y(v), 2.6, COL.accent, { 'data-item': 'mark', 'data-id': 'x-' + n });
+    });
+    for (const n of [0, 16, 32, 48, 63]) svgText(svg, L + (n + 0.5) * cw, H - 5, String(n), { 'text-anchor': 'middle', fill: COL.text2 });
+    svgTex(svg, L, 12, mode === 'click' ? 'the record: a click, $1$ at $n=32$' : 'the record: the same lengths, random angles', { w: W - L, anchor: 'start', size: 15, fill: COL.accentDeep });
+  }, null, 1.1);
+  const dialP = plotBox((svg, W, H) => {
+    // two rows: k = 0..16 and 17..32
+    const r = rec(), PER = 17, L = 40, cw = (W - L - 10) / PER, rowH = (H - 26) / 2;
+    const rad = Math.max(6, Math.min(cw / 2 - 3, rowH / 2 - 9));
+    for (let k = 0; k <= 32; k++) {
+      const row = k < PER ? 0 : 1, col = k - row * PER, cx = L + (col + 0.5) * cw, cy = 24 + row * rowH + rad + 2;
+      const ang = mode === 'click' ? -PI * k : (k === 0 || k === 32 ? 0 : r.ph[k]);
+      dot(svg, cx, cy, rad, COL.panel, { stroke: COL.line });
+      arrow(svg, cx, cy, cx + (rad - 2) * Math.cos(ang), cy - (rad - 2) * Math.sin(ang), { color: COL.accent, w: 2, head: 6, id: 'angle-' + k });
+      svgText(svg, cx, cy + rad + 13, String(k), { 'text-anchor': 'middle', fill: COL.text2, 'font-size': 12 });
+    }
+    svgTex(svg, L, 11, 'the angle of each arrow $U_k$, $k=0$ to $32$; the rest mirror them', { w: W - L, anchor: 'start', size: 15, fill: COL.accentDeep });
+  }, null, 0.95);
+  const barP = plotBox((svg, W, H) => {
+    const K = 33, L = 40, R = 10, T = 28, B = 22, cw = (W - L - R) / K, top = 3.2e-4;
+    const Y = v => T + (top - v) / top * (H - T - B);
+    line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey });
+    for (let k = 0; k < K; k++) rect(svg, L + k * cw + cw * 0.15, Y(1 / 4096), cw * 0.7, Y(0) - Y(1 / 4096), { fill: COL.grey, 'data-item': 'mark', 'data-id': 'power-' + k });
+    for (const k of [0, 8, 16, 24, 32]) svgText(svg, L + (k + 0.5) * cw, H - 5, String(k), { 'text-anchor': 'middle', fill: COL.text2 });
+    svgTex(svg, L, 12, 'the power spectrum: every bar $|U_k|^2=\\left(\\tfrac1{64}\\right)^2=2.44\\times10^{-4}$, in both', { w: W - L, anchor: 'start', size: 15, fill: COL.text2, ht: 28 });
+  }, null, 0.6);
+  function update() {
+    const x = rec().x;
+    rP.set('$' + sn(peakOf(x), 3) + '$'); rR.set('$' + sn(rmsOf(x), 3) + '$');
+    pick.paint(); recP.redraw(); dialP.redraw();
+  }
+  widget.append(hh('div', 'sliders', pick.el, listen, setTex(h('span', 'note'), 'Each press of Scrambled draws new angles.')), recP.wrap, dialP.wrap, barP.wrap, hh('div', 'readouts', rP.el, rR.el));
+  sideStd(widget, side, {
+    case: 'A hand clap and the hiss of a radio both light every bar of an equalizer display.',
+    recall: 'the power spectrum keeps each arrow’s length and drops its angle (Primer · Signals: spectra, step 1).',
+    sym: 'Click: $1$ at $n=32$, else $0$; $N=64$. Scrambled: the same lengths, random angles; mirror pairs stay mirrored, so the record stays real.',
+    tries: [
+      'Click: one spike and flat bars; the angles flip in step, $0^\\circ$, $180^\\circ$, $0^\\circ$, …',
+      'Press Scrambled: the same flat bars, but a hiss over all 64 samples: peak $0.37$, not $1$; rms the same, $0.125$.',
+      'Press Listen for each: a tick, then a hiss that fills the second.'],
+    take: 'The phases decide when things happen; without them a spectrum cannot tell a click from a hiss.' });
+  update();
+}
+
+// ---------- 7. Why it's true: the spectrum keeps about half the numbers ----------
+function drawWhyHalf(svg, W, H, kSel, lit) {
+  const N = 8, U = dftU(U8);
+  const CAP = {
+    mirror: 'amber: each bottom arrow mirrors the one above it, $U_{8-k}=\\overline{U_k}$',
+    real: 'amber: $U_0$ and $U_4$ lie on the real axis for every record ($U_2$ only by chance here)',
+    count: 'amber: $1+1+2\\cdot3=8$ real numbers, as many as the samples',
+    lost: 'amber: the spectrum keeps the 5 lengths; the 3 angles of $U_1,U_2,U_3$ are lost' }[lit];
+  picCaption(svg, W, CAP, 'the 8 arrows $U_k$ of $u=(4,3,1,0,1,0,2,3)$, mirror pairs one above the other');
+  const cw = W / 5, lab = 40, tagH = (lit === 'count' || lit === 'lost') ? 18 : 0;
+  const rad = Math.max(20, Math.min(cw / 2 - 14, (H - 30 - 2 * (lab + tagH) - 24) / 4));
+  const y1 = 30 + 6 + rad, y2 = y1 + rad + lab + tagH + 18 + rad;
+  const sc = (rad - 4) / 0.95;
+  const pos = k => (k <= 4 ? [cw * (k + 0.5), y1] : [cw * (8 - k + 0.5), y2]);
+  // mirror joins
+  for (let k = 1; k <= 3; k++) {
+    const [x, ya] = pos(k), yb = pos(8 - k)[1];
+    if (lit === 'mirror') glowLine(svg, `M${x} ${ya + rad + 4}L${x} ${yb - rad - 4}`, 8);
+    line(svg, x, ya + rad + lab - 2 + tagH, x, yb - rad - 4, { stroke: COL.muted, 'stroke-dasharray': '4 3', 'stroke-width': 1.4 });
+    svgTex(svg, x + 6, (ya + rad + lab + tagH + yb - rad) / 2, 'mirror', { w: 70, anchor: 'start', size: 13, fill: COL.text2 });
+  }
+  for (let k = 0; k < N; k++) {
+    const [cx, cy] = pos(k), z = U[k], faded = (lit === 'count' || lit === 'lost') && k > 4;
+    const g = svgNode('g', { opacity: faded ? 0.45 : 1 }, svg);
+    if ((lit === 'real' && (k === 0 || k === 4)) || (lit === 'mirror' && k !== 0 && k !== 4)) glowCircle(g, cx, cy, rad + 5);
+    if (k === kSel || k === (N - kSel) % N) dot(g, cx, cy, rad + 3, 'none', { stroke: COL.accent, 'stroke-width': 2.5 });
+    dot(g, cx, cy, rad, COL.panel, { stroke: COL.line });
+    line(g, cx - rad, cy, cx + rad, cy, { stroke: COL.soft2 }); line(g, cx, cy - rad, cx, cy + rad, { stroke: COL.soft2 });
+    let len = cxAbs(z) * sc, clip = false;
+    if (len > rad - 2) { len = rad - 2; clip = true; }
+    const a = cxArg(z), ex = cx + len * Math.cos(a), ey = cy - len * Math.sin(a);
+    if (lit === 'lost' && k >= 1 && k <= 3) {
+      const ar = Math.min(rad * 0.55, 22);
+      svgNode('path', { d: `M${cx + ar} ${cy} A${ar} ${ar} 0 0 ${a > 0 ? 0 : 1} ${cx + ar * Math.cos(a)} ${cy - ar * Math.sin(a)}`, fill: 'none', stroke: COL.amber, 'stroke-width': 3 }, g);
+    }
+    arrow(g, cx, cy, ex, ey, { color: k <= 4 ? COL.accent : COL.grey, w: 2.4, head: 8, id: 'U-' + k });
+    if (clip) svgTex(g, cx + rad - 2, cy - 12, 'off scale', { w: 70, anchor: 'end', size: 12, fill: COL.text2 });
+    svgTex(g, cx, cy + rad + 11, '$U_' + k + '$', { w: cw, size: 15, fill: k <= 4 ? COL.accentDeep : COL.ink });
+    svgTex(g, cx, cy + rad + 29, '$' + cxTex(z, 3) + '$', { w: cw, size: 13, fill: COL.text2 });
+    if (tagH && k <= 4) {
+      const t = lit === 'count' ? (k === 0 || k === 4 ? '1 number' : '2 numbers') : (k === 0 || k === 4 ? 'length kept' : 'angle lost');
+      svgTex(g, cx, cy + rad + 47, t, { w: cw, size: 13, fill: COL.amberInk, bg: COL.amberBg });
+    }
+  }
+  if (lit === 'count') { svgTex(svg, cw * 4.5, y2 - 10, 'bottom row:', { w: cw - 4, size: 14, fill: COL.text2 }); svgTex(svg, cw * 4.5, y2 + 10, 'no new numbers', { w: cw - 4, size: 14, fill: COL.text2 }); }
+  if (lit === 'lost') svgTex(svg, cw * 4.5, y2, '$5$ kept, $3$ lost', { w: cw - 4, size: 14, fill: COL.text2 });
+}
+function slideWhyHalf(widget, side) {
+  let k = 3, lit = '';
+  const U = dftU(U8);
+  const rd = h('span', 'picread');
+  const sk = ctl('$k$', { id: 'k', min: 0, max: 7, step: 1, value: k, fmt: v => String(v), onInput: v => { k = v; show(); plot.redraw(); } });
+  function show() {
+    const m = (8 - k) % 8;
+    setTex(rd, m === k ? '$U_' + k + '=' + cxTex(U[k]) + '$ is its own mirror: real' : '$U_' + k + '=' + cxTex(U[k]) + '$, $U_' + m + '=' + cxTex(U[m]) + '$');
+  }
+  show();
+  const plot = proofLeft(widget, {
+    controls: [sk.el, rd],
+    draw: (svg, W, H) => drawWhyHalf(svg, W, H, k, lit),
+    tests: [
+      'Guess for $N=8$: how many powers does the spectrum keep? Count the top row: $5$, for $k=0$ to $4$.',
+      '$N=64$: $33$ kept, $31$ angles lost, $48\\%$ of the numbers. Cases are evidence, not proof.'],
+    model: 'Half the arrows mirror the other half, so they add no new numbers. What is left holds exactly the $N$ numbers of the samples, and the power spectrum keeps only the lengths.' });
+  proofRight(side, {
+    id: 'half-lost',
+    goal: { words: 'for $N$ real samples, $N$ even, the power spectrum keeps $\\frac N2+1$ numbers, and $\\frac N2-1$ angles are lost. Hamming’s $2N$ samples are our $N$.' },
+    facts: [
+      { tex: 'U_{N-k}=\\overline{U_k}', ref: 'Primer · Fourier series, step 11' },
+      { words: 'the $N$ samples and the $N$ coefficients rebuild each other', ref: 'Primer · Fourier series, step 10' }],
+    lines: [
+      { tex: 'U_{N-k}=\\overline{U_k}', move: 'Use an earlier result',
+        why: 'the second half of the arrows mirrors the first', choices: ['Use symmetry', 'Rearrange'], highlight: 'mirror' },
+      { tex: 'U_0=\\tfrac1N\\textstyle\\sum u_n,\\ \\ U_{N/2}=\\tfrac1N\\sum(-1)^nu_n\\ \\text{are real}', move: 'Unfold the definition',
+        why: 'at $k=0$ and $k=\\frac N2$ every $e^{-i2\\pi kn/N}$ is $\\pm1$', choices: ['Use symmetry', 'Rearrange'], highlight: 'real' },
+      { tex: '1+1+2\\left(\\tfrac N2-1\\right)=N\\ \\text{real numbers}', move: 'Compute it two ways',
+        why: '$U_0$, $U_{N/2}$, and two numbers for each of $U_1,\\dots,U_{N/2-1}$: the same count as the samples', choices: ['Rearrange', 'Induction'], highlight: 'count' },
+      { tex: '|U_0|^2,\\dots,|U_{N/2}|^2:\\ \\tfrac N2+1\\ \\text{numbers}', move: 'Unfold the definition',
+        why: 'a power is a squared length; the $\\frac N2-1$ angles are gone', choices: ['Rearrange', 'Compare or bound'], highlight: 'lost' }],
+    lookBack: [
+      { q: 'How much is lost for $10{,}000$ samples?', a: '$5{,}001$ powers kept and $4{,}999$ angles lost: half. Hamming: “almost half the information” (18:57).' },
+      { q: 'Which records share the click’s spectrum?', a: 'Every record whose arrows all have length $\\tfrac1{64}$: the hiss of step 6, and the click moved anywhere (Primer · Signals: spectra, step 2).' },
+      { q: 'Do $U_0$ and $U_{N/2}$ lose anything?', a: 'Only their sign: $U_0$ and $-U_0$ give the same power.' }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+}
+
+// ---------- 8. Does the ear hear phase? ----------
+const TONE_K = 10, TONE_F = 220;
+function tonePhases(mode) {
+  if (mode === 'aligned') return new Array(TONE_K).fill(0);
+  if (mode === 'random') { const g = mulberry32(5); return Array.from({ length: TONE_K }, () => TAU * g()); }
+  return Array.from({ length: TONE_K }, (_, i) => PI * (i + 1) * i / TONE_K);   // Schroeder: pi k(k-1)/10
+}
+// x at t periods of the fundamental.
+function toneAt(ph, t) { let s = 0; for (let k = 1; k <= TONE_K; k++) s += Math.cos(TAU * k * t + ph[k - 1]); return s; }
+const TONE = {};
+function toneStats(mode) {
+  if (TONE[mode]) return TONE[mode];
+  const ph = tonePhases(mode);
+  let pk = 0;
+  for (let i = 0; i <= 20000; i++) pk = Math.max(pk, Math.abs(toneAt(ph, i / 20000)));
+  const rms = Math.sqrt(TONE_K / 2);
+  return (TONE[mode] = { peak: pk, rms, crest: pk / rms });
+}
+function slideTone(widget, side) {
+  let mode = 'aligned';
+  const pick = choiceRow('phases:', [['aligned', 'Aligned'], ['random', 'Random'], ['spread', 'Spread out']], () => mode, id => { mode = id; update(); });
+  const listen = button('listen', 'Listen', () => {
+    const ph = tonePhases(mode), rate = 8000, n = rate, x = new Array(n), g = 0.12 / Math.sqrt(TONE_K / 2);
+    for (let i = 0; i < n; i++) { const fade = Math.min(1, i / 160, (n - 1 - i) / 160); x[i] = g * fade * toneAt(ph, TONE_F * i / rate); }
+    playSamples(x, rate);
+  });
+  const rP = readout('peak', 'peak'), rR = readout('rms', 'rms'), rC = readout('crest', 'peak / rms');
+  const waveP = plotBox((svg, W, H) => {
+    const ph = tonePhases(mode), st = toneStats(mode), T1 = 1000 / TONE_F;
+    const P = plotFrame(svg, W, H, { x0: 0, x1: 2 * T1, y0: -11, y1: 11.5, L: 40, R: 12, T: 28, B: 40 });
+    for (const t of [-10, 0, 10]) svgText(svg, P.L - 6, P.Y(t) + 5, String(t).replace('-', '−'), { 'text-anchor': 'end', fill: COL.text2 });
+    for (const s of [1, -1]) line(svg, P.L, P.Y(s * st.rms), W - P.R, P.Y(s * st.rms), { stroke: COL.muted, 'stroke-dasharray': '5 4' });
+    const pts = [];
+    for (let i = 0; i <= 900; i++) { const t = 2 * i / 900; pts.push([t * T1, toneAt(ph, t)]); }
+    svgNode('path', { d: pathOf(P, pts), fill: 'none', stroke: COL.accent, 'stroke-width': 2 }, svg);
+    let im = 0; pts.forEach((p, i) => { if (Math.abs(p[1]) > Math.abs(pts[im][1])) im = i; });
+    haloTex(svg, P.X(pts[im][0]) + 8, P.Y(pts[im][1]) + (pts[im][1] > 0 ? 6 : -6), 'peak $' + sn(st.peak, 2) + '$', { w: 110, anchor: 'start', size: 14, fill: COL.accentDeep, bold: true });
+    line(svg, P.X(T1), P.T, P.X(T1), P.base, { stroke: COL.line, 'stroke-dasharray': '3 3' });
+    [0, T1, 2 * T1].forEach((t, i) => svgTex(svg, P.X(t), P.base + 14, sn(t, 1) + ' ms', { w: 70, size: 14, fill: COL.text2, anchor: ['start', 'middle', 'end'][i] }));
+    svgTex(svg, P.L + P.pw / 2, H - 9, 'time: two periods of $4.5$ ms', { w: P.pw, size: 14, fill: COL.text2 });
+    svgTex(svg, P.L, 12, 'the waveform $x(t)$; dashed: $\\pm$rms', { w: W - P.L, anchor: 'start', size: 15, fill: COL.accentDeep });
+  }, null, 1.5);
+  const barP = plotBox((svg, W, H) => {
+    const L = 40, R = 12, T = 28, B = 22, cw = (W - L - R) / TONE_K;
+    const Y = v => T + (0.62 - v) / 0.62 * (H - T - B);
+    line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey });
+    for (let k = 1; k <= TONE_K; k++) {
+      rect(svg, L + (k - 1) * cw + cw * 0.2, Y(0.5), cw * 0.6, Y(0) - Y(0.5), { fill: COL.grey, 'data-item': 'mark', 'data-id': 'harm-' + k });
+      svgText(svg, L + (k - 0.5) * cw, H - 5, String(TONE_F * k), { 'text-anchor': 'middle', fill: COL.text2 });
+    }
+    svgTex(svg, L, 12, 'power of each harmonic, in Hz: all $\\tfrac12$, in every mode', { w: W - L, anchor: 'start', size: 15, fill: COL.text2 });
+  }, null, 0.7);
+  function update() {
+    const st = toneStats(mode);
+    rP.set('$' + fx(st.peak, 3) + '$'); rR.set('$' + fx(st.rms, 3) + '$'); rC.set('$' + fx(st.crest, 2) + '$');
+    pick.paint(); waveP.redraw();
+  }
+  widget.append(hh('div', 'sliders', pick.el, listen), waveP.wrap, barP.wrap, hh('div', 'readouts', rP.el, rR.el, rC.el));
+  sideStd(widget, side, {
+    case: 'A held violin note sounds much the same from any seat, though the hall shifts its overtones against each other.',
+    recall: 'the click and the hiss share a spectrum and sound different (step 6).',
+    sym: 'A $220$ Hz note: 10 harmonics of height $1$. $\\varphi_k$: the phase of harmonic $k$, where its wave starts.',
+    tries: [
+      'Aligned: a sharp spike each period, peak/rms $4.47$. Spread out: an even wave, $1.92$. The bars stay put.',
+      'Listen to each: the same pitch, a close sound; Aligned may sound a bit buzzier. The ear “does to some extent detect a phase” (21:01).',
+      'In step 6 the phases moved sound across a whole second; here they only reshape each $4.5$ ms period.'],
+    take: 'For a steady sound the ear mostly ignores phase, so a voice line could drop it. When timing carries the message (a click, a radar echo, phase modulation) the phase is the message.' });
+  update();
+}
+
+// ---------- slides ----------
+const SLIDES = [
+  { id: 'same-price', title: 'Add first, multiply once', tag: 'Lecture 07:55 to 11:07',
+    question: 'How can a Fourier sum use fewer multiplications?',
+    formula: '$$\\textstyle\\sum_{n=0}^{7}u_n\\cos\\frac{2\\pi kn}{8}$$', mount: slideSamePrice },
+  { id: 'fft-again', kind: 'decision', title: 'Tukey asks again. What do you do?', tag: 'Lecture 11:07, answer 12:10',
+    question: 'An idea failed on your old machine. Years later, on a new machine, someone suggests it again. What do you do?' },
+  { id: 'fft-accuracy', title: 'Is the fast method less accurate?', tag: 'Lecture 14:16 to 15:49',
+    question: 'Tricks that save work usually lose digits. Does the FFT?',
+    formula: '$$\\text{error}=\\frac{\\text{rms}(\\text{computed}-\\text{exact})}{\\text{rms}(\\text{exact})}$$', mount: slideAccuracy },
+  { id: 'seam-trend', title: 'The FFT repeats your record', tag: 'Lecture 15:49 to 16:53 · again 23:40 to 25:46',
+    question: 'What does the FFT assume outside your record, and what does that do to a trend?',
+    formula: '$$u_n=R\\,\\frac nN+0.1\\sin\\frac{2\\pi\\cdot6n}{N}$$', mount: slideSeam },
+  { id: 'why-ramp-leaks', kind: 'proof', title: 'Why it’s true: a trend leaks like $1/k$', tag: 'Lecture 16:53 to 17:55 · book p. 120',
+    question: 'Why does a straight-line record leak into every bin, and by how much?', mount: slideWhyRamp },
+  { id: 'click-and-hiss', title: 'Same spectrum, different sound', tag: 'Lecture 17:55 to 18:57',
+    question: 'The power spectrum keeps how much of each frequency there is. What does the phase it drops hold?',
+    formula: '$$|U_k|=\\tfrac{1}{64}\\ \\text{ for every }k$$', mount: slideClick },
+  { id: 'why-half', kind: 'proof', title: 'Why it’s true: the spectrum keeps about half the numbers', tag: 'Lecture 18:57 to 19:29',
+    question: 'For $N$ real samples, how many numbers does the power spectrum keep, and how many does it lose?', mount: slideWhyHalf },
+  { id: 'steady-tone', title: 'Does the ear hear phase?', tag: 'Lecture 19:29 to 22:04',
+    question: 'The telephone company threw phase away. When can you do that, and when not?',
+    formula: '$$x(t)=\\textstyle\\sum_{k=1}^{10}\\cos\\big(2\\pi\\cdot220k\\,t+\\varphi_k\\big)$$', mount: slideTone },
+];
+
+// ---------- frame ----------
+let cur = 0, shownId = null, endSent = false;
+function goTo(i, same) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const dec = s.kind === 'decision';
+  const side = hh('div', 'side',
+    h('div', 'tag', s.tag),
+    setTex(h('h2'), s.title),
+    setTex(h('p', dec ? 'q' : 'question'), s.question),
+    s.formula ? setTex(h('div', 'formula'), s.formula) : null);
+  const cls = 'slide' + (s.kind === 'proof' ? ' proof-slide' : dec ? ' decision' : '');
+  const sec = mark(h('section', cls), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  if (dec) mountDecision(s, widget, side); else s.mount(widget, side);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state. {step} goes to the step and does nothing if it is shown. {step, reveal: true}
+// also reveals that decision, once; a revealed decision stays revealed.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i < 0) return;
+  const changed = msg.reveal === true && SLIDES[i].kind === 'decision' && revealDecision(SLIDES[i].id, 'cue');
+  if (i !== cur || changed) goTo(i);
+}
+(function init() {
+  setTex($('#head'), 'Lecture 16 · The FFT: fast, accurate, periodic, and blind to phase. Here $N$ counts samples.');
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],input[type=number],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt') && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); e.target.click(); return;
+    }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

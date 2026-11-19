@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Lecture 4 review: History of computers, software</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: grey for exact values and inputs, blue for outputs and the reader's choice,
+   amber for what the newest proof line is about, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft); --red:var(--pal-red);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Content slide: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(5px,0.9vh,9px);overflow:hidden}
+.widget>*{max-width:100%;min-width:0}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(17px,1.5vw,22px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.where{margin:0;font-size:16px}
+.where b{color:var(--accent)}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;transition:opacity .2s}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 22px;flex-wrap:wrap;width:100%;align-items:center}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(110px,10vw,160px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:50px;white-space:nowrap}
+.btn{font:inherit;padding:5px 11px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px;line-height:1.3}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{color:var(--muted);cursor:default;opacity:.6}
+.btnrow{display:flex;gap:6px 8px;align-items:center;flex-wrap:wrap}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 120px;min-width:0;padding:3px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.legend{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.note{min-height:34px;display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;font-size:16px;padding:2px 10px;border-radius:8px;background:var(--pal-soft);border:1px solid var(--pal-grid)}
+.note.ask{background:var(--pal-amber-row);border-color:var(--pal-amber-bg)}
+.note .good{color:var(--accent);font-weight:600}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(18px,2.2vw,34px)}
+.slide.proof-slide h2{font-size:clamp(20px,1.75vw,26px)}
+.slide.proof-slide .side{gap:clamp(4px,0.8vh,9px)}
+.slide.proof-slide .side{justify-content:flex-start}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,8vw,130px)}
+.slide.proof-slide .slide-ctl .val{min-width:40px}
+.slide.proof-slide .sliders{gap:6px 14px}
+.slide.proof-slide .fill{min-height:180px}
+.readouts.inline .readout{display:flex;gap:4px 8px;align-items:baseline;flex-wrap:wrap}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px;font-size:16px}
+.test .tries{gap:3px}
+.model{margin:0;padding:7px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+
+/* Decision slides: the problem, three cards and the reveal on the left; question, try-steps,
+   AI echo and takeaway on the right. */
+.slide.decision{grid-template-columns:minmax(0,2.05fr) minmax(0,1fr);gap:clamp(20px,2.6vw,40px)}
+.decision .widget{gap:6px}
+.decision .side{justify-content:space-evenly;gap:clamp(8px,1.8vh,18px)}
+.decision h2{font-size:clamp(23px,2.3vw,32px)}
+.decision .q{margin:0;font-size:clamp(17px,1.55vw,21px);font-weight:600;line-height:1.35}
+.decision .fx{margin:0;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--pal-soft);font-size:clamp(17px,1.6vw,22px);line-height:1.4}
+.decision .kicker{font-size:14px;color:var(--muted);margin:0 0 3px}
+.decision .blk{display:flex;flex-direction:column;gap:3px}
+.decision .ai{margin:0;font-size:16px;line-height:1.4}
+.decision .ai .src{color:var(--muted);font-size:14px}
+.decision .takeaway{padding:11px 14px;line-height:1.4}
+.decision .tries{gap:6px;font-size:clamp(16px,1.35vw,18px);line-height:1.4}
+.decision .hold{color:var(--muted);font-style:italic;background:var(--pal-soft);border:1px dashed var(--line);border-radius:6px;padding:9px 12px;margin:0;font-size:16px;line-height:1.4}
+.prob{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:6px 14px;background:var(--pal-soft);font-size:16px;line-height:1.4}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob p{margin:0}
+.opts{flex:0 0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.5vw,8px)}
+.opt{display:grid;grid-template-columns:minmax(0,0.78fr) minmax(0,1.22fr);gap:0 14px;padding:clamp(6px,0.7vw,10px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;gap:3px;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:16px}
+.opt .letter{font-weight:700;color:var(--accent)}
+.opt .who{font-size:14px;color:var(--muted);text-align:right}
+.opt .body{font-size:clamp(16px,1.4vw,19px);line-height:1.3}
+.opt .asm{margin:0;font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--muted)}
+.opt .verdict{font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.chooser{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.chooser .who{color:var(--pal-accent-deep);font-weight:600}
+.reveal{flex:1 1 auto;min-height:0;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:clamp(16px,1.25vw,18px);display:flex;flex-direction:column;justify-content:center;gap:6px}
+.reveal.idle{background:var(--pal-soft);color:var(--muted)}
+.rv{margin:0;line-height:1.38}
+.rv .k{font-weight:650;color:var(--accent)}
+.rv .t{color:var(--muted);font-size:14px;white-space:nowrap}
+.rv.hold{color:var(--muted)}
+.decision .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.decision .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent);padding:6px 16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:4px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.where,.tries,.test,.model{line-height:1.22}
+  .readout{padding:2px 8px}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:18px}
+  h2{font-size:20px}
+  .fill{min-height:100px}
+  .note{min-height:30px;padding:1px 8px}
+  .model{padding:5px 10px}
+  .btn{padding:3px 9px}
+  .slide-ctl input{width:100px}
+  .slide.proof-slide .slide-ctl input{width:64px}
+  .slide.proof-slide .slide-ctl .val{min-width:30px}
+  .slide.proof-slide .sliders{gap:4px 10px}
+  .slide.proof-slide .fill{min-height:165px}
+  .decision h2{font-size:23px}
+  .decision .side{gap:7px}
+  .decision .tries{gap:2px;line-height:1.3}
+  .decision .takeaway{padding:7px 12px}
+  .reveal{gap:3px;padding:5px 12px}
+  .rv{line-height:1.28}
+  .opts{gap:3px}
+  .opt{padding:4px 12px}
+  .opt .body,.opt .asm,.opt .verdict{line-height:1.25}
+  .prob{padding:4px 12px;line-height:1.3}
+}
+
+/* Lecture 4 review: bit strips, word cells, the code line, gain rows */
+.strips{display:flex;flex-direction:column;gap:12px}
+.strip{display:flex;flex-direction:column;gap:6px}
+.slab{font-size:16px;color:var(--muted)}
+.cells{display:flex;gap:10px;flex-wrap:wrap}
+.grp{display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--pal-soft)}
+.bits{font:18px ui-monospace,Menlo,monospace;letter-spacing:.08em}
+.dig{font:700 26px ui-monospace,Menlo,monospace;color:var(--accent)}
+.fixbox{display:flex;flex-direction:column;gap:6px}
+.wrow{display:flex;flex-direction:column;gap:4px}
+.wrow .cells{flex-wrap:nowrap;gap:3px}
+.cell{width:clamp(22px,2.2vw,30px);height:clamp(28px,3.4vh,36px);display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:5px;font:600 17px ui-monospace,Menlo,monospace;background:var(--pal-soft)}
+.cell.bad{color:var(--red);border-color:var(--red);background:var(--pal-red-bg)}
+.note-line{font-size:16px;color:var(--muted)}
+.sentence{font-size:clamp(19px,1.7vw,24px);line-height:1.5;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);overflow-wrap:anywhere;font-family:ui-monospace,Menlo,monospace}
+.blk2{display:flex;flex-direction:column;gap:6px}
+.kicker{font-size:14px;color:var(--muted)}
+.code{display:flex;flex-direction:column;gap:4px;padding:8px 12px;border-radius:8px;background:var(--pal-soft);font-family:ui-monospace,Menlo,monospace;font-size:18px}
+.codeline .lab{color:var(--muted);font-family:system-ui,sans-serif;font-size:16px}
+.codeline .src{font-weight:600}
+.gainrows{display:flex;flex-direction:column;gap:4px}
+.gainrow{display:flex;align-items:center;gap:8px;font-size:16px}
+.gainrow .btn{min-width:58px}
+.gname{color:var(--fg)}
+.gsrc{color:var(--muted);font-size:14px;margin-left:auto;white-space:nowrap}
+.gains{margin:0;padding-left:26px;font-size:16px;display:flex;flex-direction:column;gap:2px}
+
+.strips{flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-evenly;gap:12px}
+.stack{flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-evenly;gap:10px}
+.bits{font-size:22px}
+.dig{font-size:34px}
+.grp{padding:10px 14px}
+.cell{width:clamp(26px,2.6vw,36px);height:clamp(30px,4.2vh,42px);font-size:19px}
+.sentence{flex:1 1 auto;display:flex;align-items:center;font-size:clamp(22px,2.1vw,28px)}
+.gains{gap:0;line-height:1.25}
+.gainrow .btn{min-width:58px;padding:2px 8px}
+.gainrow{line-height:1.3}
+.gains{flex:1 1 auto;justify-content:space-evenly}
+</style>
+</head>
+<body>
+<header id="head">Lecture 4 review · History of Computers: Software</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// ---------- palette and redraw ----------
+// COL holds the palette for the SVG being drawn. fillPlot reads it at every paint, so a draw uses the current
+// theme. A theme switch redraws every plot on the slide and keeps each control's state.
+let COL = {};
+const PAL_NAMES = ['ink', 'text-2', 'muted', 'grid', 'guide', 'grey', 'accent', 'accent-2', 'panel', 'on-accent',
+  'bg', 'amber', 'amber-bg', 'amber-ink', 'fg', 'soft', 'soft-2', 'line', 'accent-soft', 'amber-row', 'red', 'red-bg'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];   // the plots on the current slide
+window.addEventListener('fluid-themechange', () => { COL = readPalette(); PLOTS.forEach(p => p.redraw()); });
+
+// ---------- DOM and drawing helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted, 'font-size': 14 }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula. o.bg paints a background.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 5px');
+  if (o.halo) span.setAttribute('style', 'text-shadow:0 0 3px var(--pal-bg),0 0 3px var(--pal-bg),0 0 2px var(--pal-bg)');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+const haloTex = (parent, x, y, s, o) => svgTex(parent, x, y, s, Object.assign({ halo: true }, o || {}));
+function path(svg, pts, attrs, close) {
+  const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + (close ? 'Z' : '');
+  return svgNode('path', Object.assign({ d: d, fill: 'none' }, attrs), svg);
+}
+function dot(svg, x, y, color, r) {
+  return svgNode('circle', { cx: x, cy: y, r: r || 5, fill: color, stroke: COL.panel, 'stroke-width': 1.5 }, svg);
+}
+// Tick label: KaTeX if it has $, plain text otherwise.
+function tick(svg, x, y, s, anchor) {
+  return s.indexOf('$') >= 0 ? svgTex(svg, x, y, s, { w: 80, size: 14, anchor: anchor || 'middle', fill: COL.muted }) :
+    svgText(svg, x, y + 5, s, { 'text-anchor': anchor || 'middle' });
+}
+// A labelled range input. label and the value text are LaTeX-ready.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmtv = o.fmt || String;
+  const api = {
+    el: wrap, input: inp,
+    get value() { return +inp.value; },
+    set(v) { inp.value = v; api.show(); },
+    show() { setTex(val, fmtv(+inp.value)); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text) { setTex(v, text); }, label(text) { setTex(k, text); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) { sw.style.background = it.color; if (it.ring) { sw.style.background = 'var(--pal-panel)'; sw.style.border = '2px solid ' + it.color; sw.style.borderRadius = '50%'; sw.style.width = '13px'; sw.style.height = '13px'; } }
+    else sw.style.borderTop = (it.width || 2) + 'px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize and may
+// return a geometry object (wrap._geo) that the pointer handlers use.
+function fillPlot(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    wrap._geo = draw(svg, w, ht) || null;
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+function noticeLine(text) { const p = h('p', 'where'); p.append(h('b', '', 'Notice: ')); p.append(setTex(h('span'), text)); return p; }
+// Session events. With no bridge, nothing is sent and the view still works.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* no bridge */ }
+}
+
+
+// ---------- numbers and display helpers ----------
+// Checked with node and Python: see design.md, "Numbers".
+const fixed = (v, d) => (Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v).toFixed(d);
+const short = (v, d) => { let s = fixed(v, d == null ? 3 : d); if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, ''); return s === '-0' ? '0' : s; };
+// A number in scientific form, as KaTeX: 0.0037 -> 3.7 x 10^{-3}.
+function sci(v) {
+  const s = v.toExponential(9);
+  const [m0, e] = s.split('e');
+  const m = m0.replace(/\.?0+$/, '');
+  return '$' + m + String.raw`\times 10^{` + Number(e) + '}$';
+}
+
+// ---------- slide: bases ----------
+function slideBases(widget, side) {
+  let n = 1000;
+  const bitsOf = v => v.toString(2).padStart(12, '0');
+  const groups = (b, size) => { const g = []; for (let i = 0; i < b.length; i += size) g.push(b.slice(i, i + size)); return g; };
+  const strip = (label, b, size, digits) => {
+    const row = h('div', 'strip');
+    row.append(h('div', 'slab', label));
+    const cells = h('div', 'cells');
+    groups(b, size).forEach((g, i) => cells.append(hh('div', 'grp', h('div', 'bits', g), h('div', 'dig', digits[i]))));
+    row.append(cells);
+    return row;
+  };
+  const sl = slider('$n$', { id: 'n', name: 'the number, 0 to 4095, twelve bits', min: 0, max: 4095, step: 1, value: n,
+    fmt: v => '$' + v + '$', onInput: v => { n = v; update(); } });
+  const rDec = readout('dec', 'decimal');
+  const rBin = readout('bin', 'binary, 12 bits');
+  const rOct = readout('oct', 'octal, 4 digits');
+  const rHex = readout('hex', 'hexadecimal, 3 digits');
+  const box = h('div', 'strips');
+  widget.append(hh('div', 'sliders', sl.el));
+  widget.append(box);
+  widget.append(hh('div', 'note', h('span', '', 'Blue digit: one octal digit (3 bits) or one hex digit (4 bits), under the bits it stands for.')));
+  widget.append(hh('div', 'readouts', rDec.el, rBin.el, rOct.el, rHex.el));
+  function update() {
+    const b = bitsOf(n);
+    const oct = n.toString(8).padStart(4, '0');
+    const hex = n.toString(16).toUpperCase().padStart(3, '0');
+    box.replaceChildren(strip('octal: groups of 3 bits', b, 3, oct.split('')), strip('hex: groups of 4 bits', b, 4, hex.split('')));
+    rDec.set(String(n));
+    rBin.set(groups(b, 4).join(' '));
+    rOct.set(oct);
+    rHex.set(hex);
+  }
+  update();
+  side.append(
+    sym('Binary is the base 2 form, octal the base 8 form, hexadecimal the base 16 form. The same number, three ways to write it.'),
+    triesList([
+      'Set $n$ to 1000. Find each octal digit under its group of 3 bits.',
+      'Set $n$ to 4095: twelve 1s. Which octal and hex digits appear?',
+      'Predict first: how many octal digits does any 12-bit number need? Check the strip.']),
+    takeLine('Octal and hex are the same bits in shorter groups, so they are shorter to write and to check.'));
+}
+
+// ---------- slide: fixed-vs-floating ----------
+const FX = { xs: [0.0037, 0.037, 0.37, 3.7], ys: [52, 5200, 520000, 5200000] };
+const WORD_LIM = 10n ** 10n;   // a 10-digit word, as on the decimal IBM 650
+// Digits of a BigInt that stands for v * 10^f, as a decimal with f places.
+function decOf(s, f) {
+  const neg = s < 0n;
+  const a = (neg ? -s : s).toString().padStart(f + 1, '0');
+  const int = a.slice(0, a.length - f), frac = a.slice(a.length - f);
+  return (neg ? '-' : '') + int + (f > 0 ? '.' + frac : '');
+}
+function slideFixedFloat(widget, side) {
+  let xi = 0, yi = 3, f = 2;
+  const sX = slider('small $x$', { id: 'x-small', name: 'small number x, index into 0.0037 ... 3.7', min: 0, max: 3, step: 1, value: xi,
+    fmt: v => '$' + FX.xs[v] + '$', onInput: v => { xi = v; update(); } });
+  const sY = slider('large $y$', { id: 'y-large', name: 'large number y, index into 52 ... 5200000', min: 0, max: 3, step: 1, value: yi,
+    fmt: v => '$' + FX.ys[v] + '$', onInput: v => { yi = v; update(); } });
+  const sF = slider('fixed point: $f$ places', { id: 'f-places', name: 'digits after the decimal point in fixed point', min: 0, max: 9, step: 1, value: f,
+    fmt: v => '$f=' + v + '$', onInput: v => { f = v; update(); } });
+  const fx = h('div', 'fixbox'), fl = h('div', 'fixbox');
+  const rXf = readout('xf', 'fixed: $x$ stored');
+  const rYf = readout('yf', 'fixed: $y$ stored');
+  const rPf = readout('pf', 'fixed: $x \\times y$');
+  const rPl = readout('pl', 'floating: $x \\times y$');
+  const rXl = readout('xl', 'floating: $x$, $y$');
+  const note = h('div', 'note');
+  const wordRow = (label, digits) => {
+    const row = h('div', 'wrow');
+    row.append(h('div', 'slab', label));
+    const cells = h('div', 'cells');
+    for (const c of digits) cells.append(h('div', 'cell' + (c === '!' ? ' bad' : ''), c));
+    row.append(cells);
+    return row;
+  };
+  widget.append(hh('div', 'sliders', sX.el, sY.el), hh('div', 'sliders', sF.el));
+  widget.append(hh('div', 'stack', fx, fl), note);
+  widget.append(hh('div', 'readouts', rXf.el, rYf.el, rPf.el));
+  widget.append(hh('div', 'readouts', rXl.el, rPl.el));
+  function update() {
+    const x = FX.xs[xi], y = FX.ys[yi], P = Math.pow(10, f), PB = BigInt(Math.round(P));
+    const sxB = BigInt(Math.round(x * P)), syB = BigInt(Math.round(y * P));
+    const ox = sxB >= WORD_LIM || sxB <= -WORD_LIM, oy = syB >= WORD_LIM || syB <= -WORD_LIM;
+    const exX = Math.abs(x * P - Math.round(x * P)) < 1e-9;
+    const pB = ox || oy ? null : sxB * syB / PB;
+    const op = pB === null ? true : pB >= WORD_LIM || pB <= -WORD_LIM;
+    const exP = !op && Math.abs(Number(pB) / P - x * y) < 1e-9 * Math.max(1, x * y);
+    // cells: 10 digits per word; an overflow shows ! in every cell
+    const cellsOf = (s, ov) => ov ? Array(10).fill('!') : s.toString().padStart(10, '0').split('');
+    fx.replaceChildren(wordRow('x, fixed', cellsOf(sxB, ox)), wordRow('y, fixed', cellsOf(syB, oy)));
+    const prodDigits = (x * y).toExponential(9).split('e')[0].replace('.', '').split('');
+    fl.replaceChildren(wordRow('x times y, floating', prodDigits));
+    rXf.set(ox ? 'does not fit' : '$' + decOf(sxB, f) + '$' + (exX ? '' : ' (digits lost)'));
+    rYf.set(oy ? 'does not fit' : '$' + decOf(syB, f) + '$');
+    rPf.set(op ? 'does not fit' : '$' + decOf(pB, f) + '$' + (exP ? '' : ' (digits lost)'));
+    rXl.set(sci(x) + ', ' + sci(y));
+    rPl.set(sci(x * y));
+    let msg;
+    if (ox || oy) msg = 'Does not fit: the word holds 10 digits. At this $f$, a number needs more.';
+    else if (!exX) msg = 'Digits lost: the small number $x$ lost its last digits at this scale.';
+    else msg = 'Both numbers kept at this scale.';
+    note.replaceChildren(setTex(h('span'), msg));
+    tex(note);
+  }
+  update();
+  side.append(
+    sym('A 10-digit word, as in the 650 (16:48). Floating point keeps 10 digits and an exponent for each number.'),
+    triesList([
+      'Keep $f=2$ and $x=0.0037$. Which digits of $x$ survive?',
+      'Set $f=4$: $x$ keeps its digits. Then raise $y$ to 5200000. What happens?',
+      'Predict first: is there any $f$ that keeps both? Move $f$ from 0 to 9 and check.']),
+    takeLine('Fixed point gives every number one scale. Floating point gives each number its own.'));
+}
+
+// ---------- slide: redundancy ----------
+const RED_TEXT = 'The quick brown fox jumps over the lazy dog near the old red barn.';
+function slideRedundancy(widget, side) {
+  let p = 0, alt = false;
+  const chars = [...RED_TEXT];
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const letters = [];
+  chars.forEach((c, i) => { if (/[a-z]/i.test(c)) letters.push(i); });
+  const rank = {};
+  letters.forEach(i => { rank[i] = rnd(); });
+  const N = letters.length;
+  const sl = slider('letters deleted', { id: 'deleted', name: 'share of letters deleted at random', min: 0, max: 80, step: 5, value: p,
+    fmt: v => v + '%', onInput: v => { p = v; update(); } });
+  const sentence = h('div', 'sentence');
+  const rCount = readout('count', 'letters deleted');
+  const rShare = readout('share', 'share of letters');
+  const code = h('div', 'code');
+  const codeBtn = mark(h('button', 'btn', 'Change one symbol'), 'control', 'change-symbol');
+  codeBtn.addEventListener('click', () => { alt = !alt; update(); });
+  const codeNote = h('div', 'note');
+  function update() {
+    const cut = p / 100;
+    const del = letters.filter(i => rank[i] < cut).length;
+    sentence.replaceChildren(document.createTextNode(chars.map((c, i) => (rank[i] !== undefined && rank[i] < cut) ? '_' : c).join('')));
+    rCount.set(del + ' of ' + N);
+    rShare.set(p + '%');
+    code.replaceChildren(
+      hh('div', 'codeline', h('span', 'lab', 'dense code: '), h('span', 'src', alt ? 'y = a - b' : 'y = a + b')),
+      hh('div', 'codeline', h('span', 'lab', 'the same line, one symbol changed: '), h('span', 'src', 'both run')));
+    codeNote.replaceChildren(setTex(h('span'), alt ? 'Both lines are valid. Only one symbol changed, and nothing warns you.' : 'Press the button. Count how many symbols you must check.'));
+  }
+  widget.append(
+    hh('div', 'sliders', sl.el),
+    h('div', 'note-line', 'Underscore: a deleted letter. Read the sentence at each share.'),
+    sentence,
+    hh('div', 'readouts', rCount.el, rShare.el),
+    hh('div', 'blk2', h('div', 'kicker', 'A dense code, not APL: one symbol carries the meaning'), code, hh('div', 'btnrow', codeBtn), codeNote));
+  update();
+  side.append(
+    sym('Hamming: spoken English is about 60% redundant, written about 40% (25:06, 25:38).'),
+    triesList([
+      'Set the share to 30%. Can you still follow the sentence?',
+      'Go to 60%, then 80%. Where does it break for you?',
+      'Press "Change one symbol". Which line did you mean?']),
+    takeLine('Redundancy lets a reader catch errors. A dense code has no spare parts to catch them with.'));
+}
+
+// ---------- slide: compounding gains ----------
+const GAINS = [
+  { name: 'assembler over machine code', r: 2, tex: '2', src: 'transcript 35:06' },
+  { name: 'C over assembler', r: 3, tex: '3', src: 'transcript 35:06' },
+  { name: 'time sharing over batch', r: 1.5, tex: '1.5', src: 'transcript 35:06 (caption garbled); book' },
+  { name: 'UNIX over monitor', r: 1.5, tex: '1.5', src: 'transcript 35:06' },
+  { name: 'system QA over debugging', r: 2, tex: '2', src: 'transcript 35:06' },
+  { name: 'prototyping over top-down', r: 1.3, tex: '1.3', src: 'book only' },
+  { name: 'C++ over C', r: 2, tex: '2', src: 'transcript 35:06 ("almost 2")' },
+  { name: 'reuse', r: 1.5, tex: '1.5', src: 'transcript 35:06' }];
+function slideCompounding(widget, side) {
+  const on = GAINS.map(() => true);
+  const list = h('ol', 'gains');
+  const rTot = readout('total', 'total gain, all gains on the list');
+  const rYear = readout('year', 'per year, if spread over 30 years (book)');
+  const note = h('div', 'note');
+  const btns = GAINS.map((g, k) => {
+    const b = mark(h('button', 'btn on'), 'control', 'gain-' + (k + 1));
+    b.addEventListener('click', () => { on[k] = !on[k]; update(); });
+    b._k = k;
+    return b;
+  });
+  const gainRows = h('div', 'gainrows');
+  GAINS.forEach((g, k) => {
+    const row = h('div', 'gainrow');
+    row.append(btns[k]);
+    setTex(btns[k], 'on');
+    row.append(hh('span', 'gname', h('span', '', g.name + ': ')), setTex(h('span', 'gtex'), '$' + g.tex + '$'), h('span', 'gsrc', g.src));
+    gainRows.append(row);
+  });
+  function update() {
+    let run = 1;
+    list.replaceChildren();
+    GAINS.forEach((g, k) => {
+      if (on[k]) run *= g.r;
+      btns[k].classList.toggle('on', on[k]);
+      setTex(btns[k], on[k] ? 'on' : 'off');
+      const li = setTex(h('li'), GAINS[k].name + ': running total $' + short(run, 1) + '$');
+      list.append(li);
+    });
+    const total = run;
+    rTot.set('$' + short(total, 1) + '$');
+    rYear.set(short((Math.pow(total, 1 / 30) - 1) * 100, 1) + '%');
+    note.replaceChildren(setTex(h('span'), 'Hamming: "approximately 90, let\'s say 100" (35:06). His stated factors give $105$; the table\'s running total gives $90$ (book).'));
+    tex(note);
+  }
+  widget.append(gainRows, hh('div', 'readouts', rTot.el, rYear.el), list, note);
+  update();
+  side.append(
+    sym('A productivity ratio of $2$ means twice the work done in the same time.'),
+    triesList([
+      'Predict first: with all eight gains on, is the total nearer 10, 100 or 1000?',
+      'Turn off the 3:1 gain (C over assembler). How far does the total fall?',
+      'Turn off every gain except the three 2:1 gains. What is the total?']),
+    takeLine('Small gains multiply. Eight of them make a factor near 100.'));
+}
+
+const D_TRIES = ['Read the problem.', 'Pick what you would do before he says it.', 'Read every verdict, not only yours.'];
+// ---------- decision slides ----------
+const DECISIONS = {
+  'why-interpreter': {
+    problem: 'The IBM 650 does fixed point only (16:48). Hamming wants floating point. IBM says it will supply the floating-point subroutines "some day".',
+    chooser: 1, who: 'Hamming',
+    options: [
+      { text: 'Wait for IBM to supply floating-point subroutines.',
+        assumes: 'the vendor will deliver in time.',
+        verdict: 'IBM said "some day". Hamming: that "was not enough for me" (book, ch. 4).' },
+      { text: 'Write a small program that reads each instruction and does it with floating-point rules.',
+        assumes: 'a few rules on top of the machine can give you the machine you need.',
+        verdict: 'His choice: an interpreter that makes the two-address fixed-point machine act like a three-address floating-point one (16:48 to 19:22).' },
+      { text: 'Scale every number by hand, so none overflows.',
+        assumes: 'you can know every size before the run.',
+        verdict: 'Hamming: with floating point you do not know where each number goes or how far it shifts until the run (19:22).' }],
+    reveal: [
+      { k: "Hamming's move", v: 'An interpreter loop: fetch the instruction at the current address, run its subroutine, step to the next address.', t: '17:19' },
+      { k: 'What it bought', v: 'Floating point, three addresses and index registers that the machine did not have (book, ch. 4).', t: 'book' },
+      { k: 'What it cost', v: 'Speed: an interpreter translates the same instruction again each time it meets it.', t: '18:51' }],
+    takeaway: 'When the machine lacks a feature, you can add it in software, at a cost in speed.' },
+  'experts-resist': {
+    problem: 'FORTRAN came out, and almost all programmers opposed it (book, ch. 4; 07:55). They gave three objections (08:27).',
+    chooser: 2, who: 'Hamming',
+    options: [
+      { text: 'It could not be done: no translator could be written well enough.',
+        assumes: 'a translator from formulas is harder than it is.',
+        verdict: 'It was built, and FORTRAN was "successful far beyond anyone\'s expectations" (book, ch. 4).' },
+      { text: 'It was too wasteful: the translated program uses too much machine time.',
+        assumes: 'machine time is the only cost that counts.',
+        verdict: 'Hamming\'s group wrote in FORTRAN, then rewrote only the inner loop in machine code: about ten times the output of the others (book, ch. 4).' },
+      { text: 'Professionals are slow to use their own expertise, even when a better tool is in front of them.',
+        assumes: 'skill in the old way is the measure of a programmer.',
+        verdict: 'Hamming\'s answer. The shoemaker\'s children go without shoes (book, ch. 4).' }],
+    reveal: [
+      { k: "Hamming's answer", v: 'Professionals are slow to use their own expertise for their own work.', t: 'book' },
+      { k: 'What he did', v: 'FORTRAN first, then only the inner loop in machine code. About ten times the output of the others.', t: 'book' },
+      { k: 'What the experts said', v: 'FORTRAN was "not for real programmers" (book, ch. 4).', t: 'book' }],
+    takeaway: 'Experts are slow to use their own expertise for their own work.' },
+  'design-for-humans': {
+    problem: 'Hamming compares a language built by logicians (ALGOL, Ada) with one built to fit people (FORTRAN) (09:29, 10:29).',
+    chooser: 2, who: 'Hamming',
+    options: [
+      { text: 'Machine speed: the program that runs fastest.',
+        assumes: 'machine time is the expensive part.',
+        verdict: 'On the 701 machine time was the cost (06:22). Hamming now says humans cost more (49:12).' },
+      { text: 'Short code: the fewest symbols to write.',
+        assumes: 'less to write means less to get wrong.',
+        verdict: 'APL is this kind. One changed letter gives a different valid program, so the error passes unseen (24:35 to 25:06).' },
+      { text: 'How people think, and how often people make mistakes.',
+        assumes: 'the language must fit the person, not the other way round.',
+        verdict: 'Hamming\'s answer. FORTRAN, designed to fit people, lasted. ALGOL, designed logically, did not (09:29).' }],
+    reveal: [
+      { k: "Hamming's move", v: 'Look at the people who will use it, and ask how they think. Design for them.', t: '09:29' },
+      { k: 'What it bought', v: 'Languages built for people kept their users. Logical ones "don\'t get their language to last long."', t: '09:29' },
+      { k: 'What it cost', v: 'Humans make errors, so a language needs redundancy, and redundancy takes time to write (book, ch. 4).', t: '26:08' }],
+    takeaway: 'Judge a language by how well it fits the human animal as it is (book, ch. 4).' }
+};
+const DSTATE = {};
+Object.keys(DECISIONS).forEach(id => { DSTATE[id] = { pick: null, open: false }; });
+
+// Reveal a decision once; later calls change nothing. by: 'user' (a pick or the button) or 'cue'.
+function revealDecision(id, by) {
+  const st = DSTATE[id];
+  if (!st || st.open) return false;
+  st.open = true;
+  emit('view.action', { action: 'reveal', step: id, by: by });
+  return true;
+}
+function mountDecision(s, widget, side, sec) {
+  const D = DECISIONS[s.id], st = DSTATE[s.id], open = st.open;
+  const redraw = () => goTo(cur, true);
+  const prob = mark(h('div', 'prob'), 'problem', s.id);
+  prob.append(hh('p', '', h('span', 'lead', 'The problem.'), document.createTextNode(' '), setTex(h('span'), D.problem)));
+  const opts = h('div', 'opts');
+  D.options.forEach((o, k) => {
+    const L = 'ABC'[k];
+    const card = mark(h('div', 'opt'), 'card', L, o.text.replace(/\$/g, ''));
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-disabled', open ? 'true' : 'false');
+    card.tabIndex = open ? -1 : 0;
+    card.classList.toggle('on', st.pick === L);
+    card.classList.toggle('chooser', open && k === D.chooser);
+    const who = [];
+    if (st.pick === L) who.push('Your pick');
+    if (open && k === D.chooser) who.push(D.who);
+    const top = hh('div', 'top', h('span', 'letter', L), h('span', 'who', who.join(', ')));
+    const asm = setTex(h('p', 'asm'), 'Assumes: ' + o.assumes);
+    const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'Verdict after your pick.');
+    card.append(hh('div', 'lhs', top, setTex(h('div', 'body'), o.text)), hh('div', 'rhs', asm, verdict));
+    card.addEventListener('click', () => {
+      if (DSTATE[s.id].open) return;
+      st.pick = L;
+      emit('view.action', { action: 'pick', step: s.id, option: L, correct: k === D.chooser });
+      revealDecision(s.id, 'user');
+      redraw();
+    });
+    opts.append(card);
+  });
+  const rev = mark(h('div', 'reveal'), 'reveal', s.id);
+  if (!open) {
+    rev.classList.add('idle');
+    for (const r of D.reveal) rev.append(hh('p', 'rv hold', h('span', 'k', r.k + '. '), h('span', '', 'Shown after your pick.')));
+    const btn = mark(h('button', 'btn primary', 'Show answer'), 'control', 'show-answer');
+    btn.addEventListener('click', () => { if (revealDecision(s.id, 'user')) redraw(); });
+    rev.append(hh('div', 'actions', btn));
+  } else {
+    for (const r of D.reveal) {
+      const p = hh('p', 'rv', h('span', 'k', r.k + '. '));
+      p.append(setTex(h('span'), r.v), h('span', 't', ' (' + r.t + ')'));
+      rev.append(p);
+    }
+  }
+  widget.append(prob, opts, rev);
+  if (D.formula) side.append(setTex(h('p', 'fx'), D.formula));
+  if (D.symbols) side.append(sym(D.symbols));
+  side.append(hh('div', 'blk', h('div', 'kicker', 'Try it'), hh('ol', 'tries', ...D_TRIES.map(t => h('li', '', t)))));
+  if (D.ai) {
+    if (open) {
+      const p = setTex(h('p', 'ai'), D.ai);
+      p.append(' ', h('span', 'src', '(' + D.src + ')'));
+      side.append(hh('div', 'blk', h('div', 'kicker', 'Same move in AI research'), p));
+    } else side.append(hh('div', 'blk', h('div', 'kicker', 'Same move in AI research'), h('p', 'hold ai', 'Shown after your pick.')));
+  }
+  side.append(open ? takeLine(D.takeaway) : h('p', 'hold', 'Takeaway: shown after your pick.'));
+}
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'bases', kind: 'content', tag: 'Lecture 03:13 (absolute addresses); book, ch. 4', title: 'Octal and hex are the same bits in groups',
+    question: 'Early programs were written in absolute binary. What do octal and hex save you?', mount: slideBases },
+  { id: 'why-interpreter', kind: 'decision', tag: 'Lecture 16:20, answer 17:19', title: 'How do you get floating point on a fixed-point machine?',
+    question: 'The IBM 650 only does fixed point. What would you do?' },
+  { id: 'fixed-vs-floating', kind: 'content', tag: 'Lecture 16:48 to 19:22', title: 'One scale for every number?',
+    question: 'Can one fixed decimal point keep every digit of a small number and a large one?', mount: slideFixedFloat },
+  { id: 'redundancy', kind: 'content', tag: 'Lecture 25:06 to 25:38', title: 'How much of a sentence can you lose?',
+    question: 'Drop letters at random. How far can you go before the sentence stops being readable?', mount: slideRedundancy },
+  { id: 'experts-resist', kind: 'decision', tag: 'Lecture 07:25, answer 08:27', title: 'Why did expert programmers refuse FORTRAN?',
+    question: 'Almost every professional programmer opposed FORTRAN. Which reason is his?' },
+  { id: 'design-for-humans', kind: 'decision', tag: 'Lecture 08:58, answer 09:29', title: 'What should a programming language be built for?',
+    question: 'Machine speed, short code, or the people who write and read it? Pick the one to protect first.' },
+  { id: 'compounding-gains', kind: 'content', tag: 'Lecture 35:06 to 35:39', title: 'Eight gains that multiply',
+    question: 'Each gain is a productivity ratio. What is the total when they multiply?', mount: slideCompounding }
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i, same) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const side = h('div', 'side');
+  side.append(h('div', 'tag', s.tag), setTex(h('h2'), s.title));
+  side.append(setTex(h('p', s.kind === 'decision' ? 'q' : 'question'), s.question));
+  if (s.symbols) side.append(sym(s.symbols));
+  const cls = 'slide' + (s.kind === 'proof' ? ' proof-slide' : s.kind === 'decision' ? ' decision' : '');
+  const sec = mark(h('section', cls), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  if (s.kind === 'decision') mountDecision(s, widget, side, sec);
+  else s.mount(widget, side);
+  // On a content slide the takeaway is dimmed until the user has tried a control.
+  const tk = s.kind === 'content' ? side.querySelector('.takeaway') : null;
+  if (tk) {
+    tk.classList.add('dim');
+    const openTk = () => tk.classList.remove('dim');
+    sec.addEventListener('input', openTk);
+    sec.addEventListener('click', e => { if (e.target.closest('[data-item="control"],[data-item="preset"]')) openTk(); });
+    sec.addEventListener('pointerdown', e => { if (e.target.closest('[data-item="control"]')) openTk(); });
+  }
+  tex(sec);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state. {step} goes to the step and does nothing if it is shown. {step, reveal: true}
+// also reveals that decision, once; a revealed decision stays revealed.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i < 0) return;
+  const changed = msg.reveal === true && SLIDES[i].kind === 'decision' && revealDecision(SLIDES[i].id, 'cue');
+  if (i !== cur || changed) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt') && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); e.target.click(); return;
+    }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

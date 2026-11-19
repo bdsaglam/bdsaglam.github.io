@@ -1,0 +1,7 @@
+{
+  "title": "Integration, a filter that must grow",
+  "group": "l16",
+  "about": "Integration as a filter with unbounded gain at zero frequency, Hamming's new definition of stability, why the error grows like n squared on the moon, and why polynomial growth is acceptable.",
+  "w": 1280,
+  "h": 720
+}

@@ -1,0 +1,7 @@
+{
+  "title": "Reading a spectrum: processing, noise, and linear tools",
+  "group": "l16",
+  "about": "What white noise in and a spectrum out tells you about a box, how standard processing makes a false peak, why sampled noise looks white, why oversampling helps, and what a flat spectrum does not prove.",
+  "w": 1280,
+  "h": 720
+}

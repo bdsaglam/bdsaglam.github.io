@@ -1,0 +1,7 @@
+{
+  "title": "Primer · Feedback: recursive filters and amplifiers",
+  "group": "p-feedback",
+  "about": "Primer 0.16 (3 of 3): a recursive filter feeds back its output and remembers forever; its gain H(f) is a ratio; it is stable when its roots lie inside the unit circle; negative feedback makes an amplifier's gain 1/beta (Black); positive feedback amplifies errors and squeals.",
+  "w": 1280,
+  "h": 720
+}

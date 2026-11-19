@@ -1,0 +1,7 @@
+{
+  "title": "Lecture 10 review: Coding theory I",
+  "group": "l10",
+  "about": "Review Lecture 10 by doing: decode and split bit strings, build a prefix code as a tree, compare average lengths, and prove Kraft's and McMillan's sums.",
+  "w": 1280,
+  "h": 720
+}

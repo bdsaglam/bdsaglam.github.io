@@ -1,0 +1,1186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>A ratio and its echo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors come from the theme palette (../../components/theme.js): grey for inputs and exact values, blue for
+   outputs and the reader's choice, amber only for proof lights, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg); --tint:var(--pal-soft-hover);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (about 57%), text on the right. */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:clamp(18px,2.4vw,40px)}
+.slide.wide-side{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.widget>*{max-width:100%;min-width:0}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.case{margin:0;font-size:16px}
+.known{margin:0;font-size:16px;color:var(--pal-text-2)}
+.formula{font-size:clamp(17px,1.6vw,23px)}
+.formula .katex-display{margin:.15em 0}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.side p .katex,.side li .katex{white-space:nowrap}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.ai{margin:0;font-size:16px;line-height:1.35;color:var(--pal-text-2)}
+.ai .kick{color:var(--muted);font-weight:600}
+.ai .src{color:var(--muted);font-size:14px}
+
+/* Controls, readouts, legend */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%;align-items:center}
+.btnrow{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px;flex-wrap:wrap}
+.slide-ctl input{width:clamp(120px,12vw,190px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:44px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);color:var(--fg);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 10px;border-radius:10px;background:var(--pal-soft);font-size:16px;overflow-wrap:anywhere;overflow:hidden}
+.readout .k{color:var(--pal-text-2);font-size:15px}
+.readout .val{font-size:17px;font-weight:600;line-height:1.55}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.readout.bad .k{color:var(--red)}
+.legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:16px;color:var(--pal-text-2);align-items:center}
+.sw{display:inline-block;width:22px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:16px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.ring{display:inline-block;width:13px;height:13px;vertical-align:middle;margin-right:6px;border-radius:50%;border:2px solid var(--pal-ink)}
+.pt{display:inline-block;width:8px;height:8px;vertical-align:middle;margin:0 8px 0 4px;border-radius:50%}
+
+/* Plots fill the height left in the widget column */
+.fill{flex:1 1 0;min-height:90px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.takeholder{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.takeholder .takeaway,.takeholder .ai{align-self:stretch}
+.duo{flex:1 1 0;min-height:0;display:flex;gap:12px}
+.duo>.lcol{flex:0 0 38%;min-width:0;display:flex;flex-direction:column;gap:6px}
+.lcol>.fill.disk{flex:1 1 0;min-height:0;touch-action:none;cursor:grab}
+.readouts.inline{flex-direction:column;gap:4px}
+.readouts.inline .readout{flex:0 0 auto;display:flex;justify-content:space-between;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
+.duo>.col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side{justify-content:flex-start}
+.fill.proofpic{min-height:150px}
+.slide.proof-slide .sliders{gap:6px 16px}
+.slide.proof-slide .btn{padding:4px 10px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px}
+.test .tries{gap:3px}
+.model{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+
+/* Decision slides (as in Lecture 15): the problem, three cards and the reveal on the left; question,
+   the claim, try-steps and takeaway on the right. */
+.slide.decision{grid-template-columns:minmax(0,2.05fr) minmax(0,1fr);gap:clamp(20px,2.6vw,40px)}
+.decision .widget{gap:6px}
+.decision .side{justify-content:space-evenly;gap:clamp(8px,1.8vh,18px)}
+.decision h2{font-size:clamp(23px,2.3vw,32px)}
+.decision .q{margin:0;font-size:clamp(17px,1.55vw,21px);font-weight:600;line-height:1.35}
+.decision .fx{margin:0;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--tint);font-size:clamp(16px,1.4vw,19px);line-height:1.4}
+.decision .fx .katex-display{margin:.25em 0}
+.decision .kicker{font-size:14px;color:var(--muted);margin:0 0 3px}
+.decision .blk{display:flex;flex-direction:column;gap:3px}
+.decision .takeaway{padding:11px 14px;line-height:1.4}
+.decision .tries{gap:6px;font-size:clamp(16px,1.35vw,18px);line-height:1.4}
+.decision .hold{color:var(--muted);font-style:italic;background:var(--tint);border:1px dashed var(--line);border-radius:6px;padding:9px 12px;margin:0;font-size:16px;line-height:1.4}
+.prob{flex:0 0 auto;display:flex;gap:12px;align-items:stretch;border:1px solid var(--line);border-radius:10px;padding:6px 14px;background:var(--tint);font-size:16px;line-height:1.4}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob p{margin:0;flex:1 1 0;align-self:center}
+.prob .fill{flex:0 0 36%;min-height:96px}
+.opts{flex:0 0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.5vw,8px)}
+.opt{display:grid;grid-template-columns:minmax(0,0.78fr) minmax(0,1.22fr);gap:0 14px;padding:clamp(6px,0.7vw,10px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;gap:3px;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:16px}
+.opt .letter{font-weight:700;color:var(--accent)}
+.opt .who{font-size:14px;color:var(--muted);text-align:right}
+.opt .body{font-size:clamp(16px,1.4vw,19px);line-height:1.3}
+.opt .asm{margin:0;font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--muted)}
+.opt .verdict{font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.chooser{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.chooser .who{color:var(--pal-accent-deep);font-weight:600}
+.opt.chooser .letter{color:var(--pal-accent-deep)}
+.reveal{flex:1 1 auto;min-height:0;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:clamp(16px,1.25vw,18px);display:flex;flex-direction:column;justify-content:center;gap:6px}
+.reveal.idle{background:var(--tint);color:var(--muted)}
+.rv{margin:0;line-height:1.38}
+.rv .k{font-weight:650;color:var(--accent)}
+.rv .t{color:var(--muted);font-size:14px;white-space:nowrap}
+.rv.hold{color:var(--muted)}
+.decision .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.decision .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent);padding:6px 16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.tries,.takeaway,.case,.known,.ai{line-height:1.25}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:18px}
+  h2{font-size:20px}
+  .question{font-size:16px}
+  .fill{min-height:70px}
+  .readout{padding:2px 8px}
+  .readout .val{line-height:1.45}
+  .fill.proofpic{min-height:130px}
+  .model{padding:5px 10px}
+  .test .tries{gap:1px}
+  .btn{padding:4px 10px}
+  .decision h2{font-size:23px}
+  .decision .side{gap:7px}
+  .decision .tries{gap:2px;line-height:1.3}
+  .decision .takeaway{padding:7px 12px}
+  .reveal{gap:3px;padding:5px 12px}
+  .rv{line-height:1.28}
+  .opts{gap:3px}
+  .opt{padding:4px 12px}
+  .opt .body,.opt .asm,.opt .verdict{line-height:1.25}
+  .prob{padding:4px 12px;line-height:1.3}
+  .prob .fill{min-height:84px}
+}
+</style>
+</head>
+<body>
+<header>Lecture 17 · A ratio and its echo</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// Numbers: lectures/17-digital-filters-part-iv/checks.py (view 2 blocks) and
+// workspace/l17-materials-2026-10-24/l17-echo-steps/checks.js (node, written apart from this file).
+// Primer pointers: Primer · Feedback (p-feedback-1..3) has no built views yet; its pointers below use the
+// step order of lectures/p-feedback/design.md, and each carries the view and step id in a comment.
+
+// ---------- palette and redraw ----------
+// COL holds the palette for the SVG being drawn; plotBox reads it at every paint, so a draw always uses the
+// current theme. A theme switch redraws the current slide's plots and keeps every control's state.
+let COL = {};
+const PAL_NAMES = ['bg', 'ink', 'fg', 'text-2', 'muted', 'muted-2', 'grey', 'grey-blue', 'guide', 'grid', 'line', 'panel', 'soft', 'soft-2',
+  'accent', 'accent-2', 'accent-3', 'accent-deep', 'accent-tint', 'accent-soft', 'on-accent',
+  'amber', 'amber-bg', 'amber-ink', 'red', 'red-bg'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+// A palette color with alpha, e.g. rgbaOf(COL.accent, 0.5). Takes #rgb, #rrggbb or rgb(...).
+function rgbaOf(c, a) {
+  let r = 0, g = 0, b = 0;
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c.trim());
+  if (m) {
+    let hx = m[1]; if (hx.length === 3) hx = hx.split('').map(x => x + x).join('');
+    const n = parseInt(hx, 16); r = n >> 16; g = (n >> 8) & 255; b = n & 255;
+  } else {
+    const v = (c.match(/[\d.]+/g) || [0, 0, 0]).map(Number); [r, g, b] = v;
+  }
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+}
+
+// ---------- DOM helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false }], throwOnError: false };
+// Render $...$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) { if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH); return node; }
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function hh(tag, cls, ...kids) { const e = h(tag, cls); for (const k of kids) if (k) e.append(k); return e; }
+function mark(e, kind, id, title) { e.dataset.item = kind; if (id != null) e.dataset.id = id; if (title != null) e.dataset.title = title; return e; }
+function emit(kind, data) {
+  try { if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {}); }
+  catch (e) { /* the view works without the bridge */ }
+}
+// Fixed decimals, with no minus sign on zero.
+function fx(x, d) { const y = Math.abs(x) < 0.5 * Math.pow(10, -d) ? 0 : x; return y.toFixed(d); }
+// A short number: up to d decimals, trailing zeros dropped.
+function sn(x, d) { return String(+fx(x, d == null ? 3 : d)); }
+// Two significant digits for small numbers: 0.35, 0.0097.
+function sig2(x) { return x >= 0.1 ? x.toFixed(2) : x.toPrecision(2); }
+// A tiny or huge number as TeX: 2\times10^{-14}.
+function expTex(x) {
+  if (x === 0) return '0';
+  const [m, e] = x.toExponential(0).split('e');
+  return (m === '1' ? '' : m + '\\times') + '10^{' + (+e) + '}';
+}
+
+// ---------- controls ----------
+// A labelled range input. o: {id, min, max, step, value, fmt(v) -> TeX-ready text, onInput(v)}.
+function ctl(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = setTex(h('span'), label);
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.id);
+  const val = h('span', 'val');
+  const show = v => setTex(val, o.fmt(v));
+  inp.addEventListener('input', () => { show(+inp.value); o.onInput(+inp.value); });
+  show(o.value);
+  wrap.append(lab, inp, val);
+  return { el: wrap, input: inp, set(v) { inp.value = v; show(v); } };
+}
+// A row of buttons that pick one choice. choices: [[id, label], ...]; getCur() gives the current id.
+function choiceRow(label, choices, getCur, onPick, kind) {
+  const row = hh('div', 'btnrow', label ? setTex(h('span', 'lab'), label) : null);
+  const btns = choices.map(([id, text]) => {
+    const b = mark(h('button', 'btn'), kind || 'control', id);
+    setTex(b, text);
+    b.addEventListener('click', () => { onPick(id); paint(); });
+    row.append(b);
+    return [id, b];
+  });
+  function paint() { btns.forEach(([id, b]) => b.classList.toggle('on', id === getCur())); }
+  paint();
+  return { el: row, paint };
+}
+function button(id, label, onClick) {
+  const b = mark(h('button', 'btn'), 'control', id);
+  setTex(b, label);
+  b.addEventListener('click', onClick);
+  return b;
+}
+// A readout box: label and value are TeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = setTex(h('div', 'k'), label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); }, label(t) { setTex(k, t); } };
+}
+// Legend: items {color (CSS), text, kind: 'line' | 'dash' | 'chip' | 'ring' | 'pt'}.
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    let sw;
+    if (it.kind === 'chip') { sw = h('span', 'chip'); sw.style.background = it.color; }
+    else if (it.kind === 'ring') { sw = h('span', 'ring'); if (it.color) sw.style.borderColor = it.color; }
+    else if (it.kind === 'pt') { sw = h('span', 'pt'); sw.style.background = it.color; }
+    else { sw = h('span', 'sw'); sw.style.borderTop = '3px ' + (it.kind === 'dash' ? 'dashed' : 'solid') + ' ' + it.color; }
+    s.append(sw, setTex(h('span'), it.text));
+    d.append(s);
+  }
+  return d;
+}
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+// The takeaway (and the AI echo under it) appears after the first try: on the first click, drag or slider
+// move in the widget, or on "Show the takeaway".
+function takeBox(widget, text, ai) {
+  const holder = h('div', 'takeholder');
+  const btn = mark(h('button', 'btn'), 'control', 'show-takeaway');
+  setTex(btn, 'Show the takeaway');
+  const tk = setTex(h('p', 'takeaway'), text);
+  const parts = [tk];
+  if (ai) {
+    const p = h('p', 'ai');
+    p.append(h('span', 'kick', 'Same idea in AI research. '), setTex(h('span'), ai.text), ' ', h('span', 'src', '(' + ai.src + ')'));
+    parts.push(p);
+  }
+  parts.forEach(e => { e.hidden = true; });
+  const show = () => { parts.forEach(e => { e.hidden = false; }); btn.hidden = true; };
+  btn.addEventListener('click', show);
+  for (const ev of ['input', 'click', 'pointerdown']) widget.addEventListener(ev, show);
+  holder.append(btn, ...parts);
+  return holder;
+}
+// The side column of a content slide, after the frame's tag, title and question:
+// the everyday case, the earlier fact it builds on, the symbols, the formula, the tries, the takeaway.
+function sideStd(widget, side, o) {
+  if (o.case) side.append(setTex(h('p', 'case'), o.case));
+  if (o.known) side.append(setTex(h('p', 'known'), o.known));
+  if (o.sym) side.append(setTex(h('p', 'sym'), o.sym));
+  if (o.formula) side.append(setTex(h('div', 'formula'), o.formula));
+  if (o.tries) side.append(triesList(o.tries));
+  if (o.take) side.append(takeBox(widget, o.take, o.ai));
+}
+
+// ---------- SVG helpers ----------
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) { return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 }); }
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted, 'font-size': 14 }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label inside an SVG: a foreignObject holding a rendered formula. o: {w, ht, anchor, size, fill, bg, bold}.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc + (o.bold ? ';font-weight:600' : ''));
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 6px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// The same label with a halo in the page color, so it reads over a curve or bars.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  return fo;
+}
+function line(svg, x1, y1, x2, y2, o) { return svgNode('line', Object.assign({ x1, y1, x2, y2 }, o || {}), svg); }
+function dot(svg, x, y, r, fill, o) { return svgNode('circle', Object.assign({ cx: x, cy: y, r, fill }, o || {}), svg); }
+function rect(svg, x, y, w, ht, o) { return svgNode('rect', Object.assign({ x, y, width: Math.max(0, w), height: Math.max(0, ht) }, o || {}), svg); }
+// Amber marks what the newest proof line is about.
+function glowRect(svg, x, y, w, ht, pad) {
+  pad = pad == null ? 4 : pad;
+  return rect(svg, x - pad, y - pad, w + 2 * pad, ht + 2 * pad, { rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 });
+}
+// The top row of a proof picture: what the amber part is while a line is lit, else a plain hint.
+function picCaption(svg, W, litText, plainText) {
+  if (litText) return svgTex(svg, W / 2, 12, litText, { w: W - 4, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  if (plainText) return svgTex(svg, 4, 12, plainText, { w: W - 8, anchor: 'start', size: 15, fill: COL.muted });
+  return null;
+}
+// A plot that takes the height left in its parent. draw(svg, W, H) runs on every resize and redraw.
+function plotBox(draw, cls, weight) {
+  const wrap = h('div', 'fill' + (cls ? ' ' + cls : ''));
+  if (weight) wrap.style.flex = weight + ' 1 0';
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 40) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// Axes for a plot. o: {x0, x1, y0, y1, L, R, T, B}. y values outside the range are clamped.
+function plotFrame(svg, W, H, o) {
+  const L = o.L == null ? 46 : o.L, R = o.R == null ? 14 : o.R, T = o.T == null ? 12 : o.T, B = o.B == null ? 40 : o.B;
+  const pw = W - L - R, ph = H - T - B, base = T + ph;
+  const X = x => L + (x - o.x0) / (o.x1 - o.x0) * pw;
+  const Y = y => base - (Math.max(o.y0, Math.min(o.y1, y)) - o.y0) / (o.y1 - o.y0) * ph;
+  line(svg, L, base, W - R, base, { stroke: COL.grey });
+  line(svg, L, T, L, base, { stroke: COL.grey });
+  if (o.y0 < 0 && o.y1 > 0) line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey, 'stroke-dasharray': '2 3' });
+  return { X, Y, L, R, T, B, pw, ph, base, W, H };
+}
+function pathOf(P, pts) { return pts.map((p, i) => (i ? 'L' : 'M') + P.X(p[0]).toFixed(1) + ' ' + P.Y(p[1]).toFixed(1)).join(''); }
+function xTicks(svg, P, ticks, fmt) { for (const t of ticks) svgText(svg, P.X(t), P.base + 17, fmt ? fmt(t) : String(t), { 'text-anchor': 'middle' }); }
+function yTicks(svg, P, ticks, fmt) { for (const t of ticks) svgText(svg, P.L - 6, P.Y(t) + 5, fmt ? fmt(t) : String(t), { 'text-anchor': 'end' }); }
+// One row of stems for values at n = 0 .. len-1. o: {vals, lo, hi, color, id, label, labelFill, values,
+// fmtVal(v, n), hideZero, down (a row drawn downward: zero labels go below), rings (values drawn as rings),
+// noX (no step numbers), L, R, T, B}.
+function stemRow(svg, W, H, o) {
+  const len = o.vals.length, L = o.L == null ? 40 : o.L, R = o.R == null ? 10 : o.R, T = o.T == null ? 30 : o.T;
+  const B = o.B == null ? (o.noX ? 8 : 22) : o.B;
+  const cw = (W - L - R) / len;
+  const X = n => L + (n + 0.5) * cw;
+  const Y = v => T + (o.hi - Math.max(o.lo, Math.min(o.hi, v))) / (o.hi - o.lo) * (H - T - B);
+  line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey });
+  if (!o.noX) for (let n = 0; n < len; n++) svgText(svg, X(n), H - 5, String(n), { 'text-anchor': 'middle' });
+  o.vals.forEach((v, n) => {
+    line(svg, X(n), Y(0), X(n), Y(v), { stroke: o.color, 'stroke-width': 3 });
+    dot(svg, X(n), Y(v), 5, o.color, { stroke: o.color, 'stroke-width': 1, 'data-item': 'mark', 'data-id': (o.id || 'stem') + '-' + n });
+    const up = o.down ? v > 0 : v >= 0, off = o.rings ? 19 : 14;
+    if (o.values && !(o.hideZero && Math.abs(v) < 1e-12)) haloTex(svg, X(n), Y(v) + (up ? -off : off), o.fmtVal ? o.fmtVal(v, n) : sn(v, 2), { w: cw + 14, size: 14, fill: o.valueFill || COL.ink });
+  });
+  if (o.rings) o.rings.forEach((v, n) => dot(svg, X(n), Y(v), 9, 'none', { stroke: COL.ink, 'stroke-width': 1.6, 'data-item': 'mark', 'data-id': 'ring-' + n }));
+  if (o.label) svgTex(svg, L - 4, 11, o.label, { w: W - L, anchor: 'start', size: 15, fill: o.labelFill || COL.text2 });
+  return { X, Y, cw, L, T };
+}
+
+// ---------- complex numbers, FFT, seeded noise ----------
+const PI = Math.PI, TAU = 2 * PI;
+const cplx = (re, im) => ({ re, im: im || 0 });
+const cxMul = (a, b) => ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re });
+const cxDiv = (a, b) => { const d = b.re * b.re + b.im * b.im; return { re: (a.re * b.re + a.im * b.im) / d, im: (a.im * b.re - a.re * b.im) / d }; };
+const cxAbs = a => Math.hypot(a.re, a.im);
+// In-place radix-2 FFT of (re, im), length a power of 2; inv = true gives the inverse (divided by n).
+function fft(re, im, inv) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const half = len >> 1, ang = (inv ? 1 : -1) * TAU / len;
+    for (let k = 0; k < half; k++) {
+      const wr = Math.cos(ang * k), wi = Math.sin(ang * k);
+      for (let i = 0; i < n; i += len) {
+        const a = i + k, b = a + half;
+        const br = re[b] * wr - im[b] * wi, bi = re[b] * wi + im[b] * wr;
+        re[b] = re[a] - br; im[b] = im[a] - bi; re[a] += br; im[a] += bi;
+      }
+    }
+  }
+  if (inv) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function gauss(rnd) { const u = 1 - rnd(), v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(TAU * v); }
+
+// ---------- proof slides ----------
+// Left column of a proof slide: controls, the picture, the test, the mental model.
+function proofLeft(widget, o) {
+  if (o.controls && o.controls.length) widget.append(hh('div', 'sliders', ...o.controls));
+  const p = plotBox(o.draw, 'proofpic');
+  widget.append(p.wrap);
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList(o.tests));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+  widget.append(test, model);
+  return { redraw: p.redraw, test };
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is done,
+// the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight, o) {
+  o = o || {};
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = (key, k) => onLight(key, k);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = 'Look back: under the picture.';
+  if (o.endNote) el.endNote = o.endNote;
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+
+// ===== l17-echo-steps: A ratio and its echo =====
+const NEXT = 'Next: the physicist’s counts.';
+
+// ---------- 1. Feedback packs an endless echo into two numbers ----------
+// The smoother y_n = beta y_{n-1} + (1-beta) u_n echoes a tap as (1-beta) beta^k; H = (1-beta)/(1-beta z^-1).
+// A plain filter that keeps the first K echo values has H_K = H (1 - (beta z^-1)^K), so |H - H_K| = beta^K |H|,
+// largest at f = 0, where it is beta^K. checks.py: K = 7, 44, 459 for beta = 0.5, 0.9, 0.99; beta = 0.9, K = 10: 0.3487.
+function ratioResponse(beta, K, NF) {
+  const bK = Math.pow(beta, K), H = [], HK = [];
+  let gap = -1, fAt = 0;
+  for (let i = 0; i <= NF; i++) {
+    const f = 0.5 * i / NF, w = TAU * f;
+    const Hc = cxDiv(cplx(1 - beta), cplx(1 - beta * Math.cos(w), beta * Math.sin(w)));
+    const HKc = cxMul(Hc, cplx(1 - bK * Math.cos(w * K), bK * Math.sin(w * K)));
+    const g = Math.hypot(Hc.re - HKc.re, Hc.im - HKc.im);
+    if (g > gap + 1e-15) { gap = g; fAt = f; }
+    H.push([f, cxAbs(Hc)]); HK.push([f, cxAbs(HKc)]);
+  }
+  return { H, HK, gap, fAt };
+}
+function slideRatioEcho(widget, side) {
+  let beta = 0.9, K = 10;
+  const KMAX = 500, KS = 5000, LK = Math.log(KMAX);
+  const kToS = k => Math.round(KS * Math.log(k) / LK);
+  const sToK = s => Math.max(1, Math.round(Math.exp(s / KS * LK)));
+  const need = b => Math.ceil(Math.log(0.01) / Math.log(b) - 1e-9);
+  const sB = ctl('$\\beta$', { id: 'beta', min: 0.5, max: 0.99, step: 0.01, value: beta, fmt: v => fx(v, 2),
+    onInput: v => { beta = Math.round(v * 100) / 100; update(); } });
+  const sK = ctl('$K$', { id: 'K', min: 0, max: KS, step: 1, value: kToS(K), fmt: s => String(sToK(s)),
+    onInput: s => { K = sToK(s); update(); } });
+  const rGap = readout('gap', 'largest gap $|H-H_K|$');
+  const rNeed = readout('weights-1pct', 'weights a plain copy needs for a 1% gap');
+  const NE = 120;
+  const echoP = plotBox((svg, W, H) => {
+    const L = 50, R = 12, T = 44, B = 26;
+    const P = plotFrame(svg, W, H, { x0: -1.5, x1: NE + 1.5, y0: 0, y1: (1 - beta) * 1.1, L, R, T, B });
+    const sw = Math.max(1.2, Math.min(3, P.pw / (NE + 3) * 0.55));
+    for (let k = 0; k <= NE; k++) {
+      const v = (1 - beta) * Math.pow(beta, k);
+      line(svg, P.X(k), P.Y(0), P.X(k), P.Y(v), { stroke: k < K ? COL.accent : COL.grey, 'stroke-width': sw, 'data-item': 'mark', 'data-id': 'echo-' + k });
+    }
+    xTicks(svg, P, [0, 20, 40, 60, 80, 100, 120]);
+    svgText(svg, L - 6, P.Y(0) + 5, '0', { 'text-anchor': 'end' });
+    svgTex(svg, L - 3, P.Y(1 - beta), '$1-\\beta$', { w: 50, anchor: 'end', size: 13, fill: COL.text2 });
+    svgTex(svg, L - 4, 11, 'the echo of one tap: $(1-\\beta)\\beta^k$, $k$ steps after it', { w: W - L, anchor: 'start', size: 15, fill: COL.text2 });
+    svgTex(svg, P.X(0) - 4, 31, K > NE ? 'kept: all shown (the copy keeps $K=' + K + '$)' : 'blue, kept: the first $K=' + K + '$',
+      { w: 300, anchor: 'start', size: 14, fill: COL.accentDeep, bold: true });
+    if (K <= NE) svgTex(svg, Math.max(P.X(K) + 8, P.X(0) + 190), 31, 'grey, dropped: the rest', { w: 200, anchor: 'start', size: 14, fill: COL.muted });
+  }, null, 1);
+  const respP = plotBox((svg, W, H) => {
+    const L = 50, R = 14, T = 28, B = 26;
+    const P = plotFrame(svg, W, H, { x0: 0, x1: 0.5, y0: 0, y1: 1.12, L, R, T, B });
+    const rr = ratioResponse(beta, K, 300);
+    svgNode('path', { d: pathOf(P, rr.H) + pathOf(P, rr.HK.slice().reverse()).replace(/^M/, 'L') + 'Z', fill: rgbaOf(COL.accent, 0.22), stroke: 'none' }, svg);
+    svgNode('path', { d: pathOf(P, rr.HK), fill: 'none', stroke: COL.grey, 'stroke-width': 2.4, 'data-item': 'mark', 'data-id': 'H-K' }, svg);
+    svgNode('path', { d: pathOf(P, rr.H), fill: 'none', stroke: COL.accent, 'stroke-width': 2.6, 'data-item': 'mark', 'data-id': 'H' }, svg);
+    xTicks(svg, P, [0, 0.1, 0.2, 0.3, 0.4, 0.5]);
+    yTicks(svg, P, [0, 0.5, 1]);
+    svgTex(svg, L - 4, 11, 'how much of each wave comes through', { w: W * 0.6, anchor: 'start', size: 15, fill: COL.text2 });
+    svgTex(svg, W - R, 11, '$f$: cycles per sample', { w: 200, anchor: 'end', size: 15, fill: COL.text2 });
+    const bK = Math.pow(beta, K), xb = P.X(0) + 7;
+    line(svg, xb, P.Y(1), xb, P.Y(1 - bK), { stroke: COL.ink, 'stroke-width': 2 });
+    line(svg, xb - 4, P.Y(1), xb + 4, P.Y(1), { stroke: COL.ink, 'stroke-width': 2 });
+    line(svg, xb - 4, P.Y(1 - bK), xb + 4, P.Y(1 - bK), { stroke: COL.ink, 'stroke-width': 2 });
+    haloTex(svg, xb + 10, P.Y(1 - bK / 2) + (bK < 0.12 ? 16 : 0), 'gap at $f=0$: $\\beta^K=' + sig2(bK) + '$', { w: 220, anchor: 'start', size: 14, fill: COL.ink });
+  }, null, 1.25);
+  function update() {
+    const rr = ratioResponse(beta, K, 300);
+    rGap.set('$' + sig2(rr.gap) + '$ at $f=' + sn(rr.fAt, 3) + '$' + (rr.gap < 0.01 ? ', under 1%' : ''));
+    rNeed.set('$K\\ge' + need(beta) + '$; the loop uses $2$ numbers');
+    echoP.redraw(); respP.redraw();
+  }
+  widget.append(hh('div', 'sliders', sB.el, sK.el), echoP.wrap, respP.wrap,
+    legend([{ kind: 'line', color: 'var(--pal-accent)', text: 'blue: $|H|$, the loop' },
+      { kind: 'line', color: 'var(--pal-grey)', text: 'grey: $|H_K|$, the plain copy' },
+      { kind: 'chip', color: 'color-mix(in srgb, var(--pal-accent) 22%, transparent)', text: 'shaded: the gap' }]),
+    hh('div', 'readouts', rGap.el, rNeed.el));
+  sideStd(widget, side, {
+    case: 'A clap in a hall echoes on, each bounce quieter, with no last bounce (Primer · Signals: filters, step 5).',
+    // pointer: p-feedback-3 step 2 'response' (Feedback: filters)
+    known: String.raw`Known: the smoother $y_n=\beta\,y_{n-1}+(1-\beta)\,u_n$ echoes one tap as $(1-\beta)\beta^k$ and never stops; its response $H$ is a ratio (Primer · Feedback: filters, step 2).`,
+    sym: String.raw`$K$: how many echo values a plain copy (no feedback) keeps as weights. $H_K$: its response.`,
+    formula: String.raw`$$\max|H-H_K|=\beta^K,\ \text{so 1\%}\ \text{needs}\ K\ge\tfrac{\ln 0.01}{\ln\beta}$$`,
+    tries: [
+      String.raw`At $\beta=0.9$, $K=10$ the gap is $0.35$, largest at $f=0$: the copy misses slow waves most.`,
+      String.raw`Raise $K$ to $44$: the gap falls under 1%.`,
+      String.raw`Set $\beta=0.99$: now $459$ weights for the same 1%. The loop still uses two numbers.`],
+    take: String.raw`The loop’s echo never ends: an “infinite impulse response” (09:25). A plain copy needs $\ln0.01/\ln\beta$ weights, which explodes as $\beta$ nears $1$.` });
+  update();
+}
+
+// ---------- 2. The bottom of the ratio has no one-integral recipe ----------
+// y_n = c u_n + d y_{n-1}, H = c/(1 - d z^-1); target 0.2/(1 - 0.8 z^-1). By Parseval the mean of |H-T|^2 over
+// all f is sum_k (c d^k - 0.2*0.8^k)^2 = c^2/(1-d^2) - 0.4c/(1-0.8d) + 0.04/0.36. checks.py: d=0.7 0.00772,
+// d=0.9 0.03592, d=0.99 1.73655; c=0.1 or 0.3 0.02778.
+const errCD = (c, d) => Math.max(0, c * c / (1 - d * d) - 0.4 * c / (1 - 0.8 * d) + 0.04 / 0.36);
+function fmtErr(e) { return e < 5e-6 ? '0' : e < 0.01 ? e.toFixed(4) : e < 1 ? e.toFixed(3) : e.toFixed(2); }
+function slideNoRecipe(widget, side) {
+  let mode = 'c', c = 0.2, d = 0.8;
+  const BEST = { c: 0.2, d: 0.8 };
+  const sC = ctl('top weight $c$', { id: 'c', min: 0, max: 0.4, step: 0.01, value: c, fmt: v => fx(v, 2),
+    onInput: v => { c = Math.round(v * 100) / 100; update(); } });
+  const sD = ctl('bottom weight $d$', { id: 'd', min: 0, max: 0.99, step: 0.01, value: d, fmt: v => fx(v, 2),
+    onInput: v => { d = Math.round(v * 100) / 100; update(); } });
+  const pick = choiceRow('', [['move-c', 'move the top weight $c$'], ['move-d', 'move the bottom weight $d$']], () => 'move-' + mode,
+    id => { mode = id.slice(5); c = BEST.c; d = BEST.d; sC.set(c); sD.set(d); update(); });
+  const rE = readout('error', 'the error at this weight');
+  const rO = readout('other-side', 'the same step past the best');
+  const respP = plotBox((svg, W, H) => {
+    const L = 46, R = 14, T = 28, B = 26, YM = 2.2;
+    const P = plotFrame(svg, W, H, { x0: 0, x1: 0.5, y0: 0, y1: YM, L, R, T, B });
+    const pT = [], pH = [];
+    for (let i = 0; i <= 300; i++) {
+      const f = 0.5 * i / 300, w = TAU * f;
+      pT.push([f, 0.2 / Math.hypot(1 - 0.8 * Math.cos(w), 0.8 * Math.sin(w))]);
+      pH.push([f, c / Math.hypot(1 - d * Math.cos(w), d * Math.sin(w))]);
+    }
+    svgNode('path', { d: pathOf(P, pT), fill: 'none', stroke: COL.grey, 'stroke-width': 2.4, 'stroke-dasharray': '7 5', 'data-item': 'mark', 'data-id': 'target' }, svg);
+    svgNode('path', { d: pathOf(P, pH), fill: 'none', stroke: COL.accent, 'stroke-width': 2.6, 'data-item': 'mark', 'data-id': 'H' }, svg);
+    xTicks(svg, P, [0, 0.1, 0.2, 0.3, 0.4, 0.5]);
+    yTicks(svg, P, [0, 1, 2]);
+    svgTex(svg, L - 4, 11, 'how much of each wave comes through', { w: W * 0.6, anchor: 'start', size: 15, fill: COL.text2 });
+    svgTex(svg, W - R, 11, '$f$: cycles per sample', { w: 200, anchor: 'end', size: 15, fill: COL.text2 });
+    const h0 = c / (1 - d);
+    if (h0 > YM) haloTex(svg, P.X(0.03), P.T + 10, 'off the top: $|H(0)|=' + sn(h0, 1) + '$', { w: 240, anchor: 'start', size: 14, fill: COL.accentDeep });
+  }, null, 1);
+  const errP = plotBox((svg, W, H) => {
+    const L = 54, R = 16, T = 28, B = 26, YM = 0.2, x1 = mode === 'c' ? 0.4 : 1;
+    const P = plotFrame(svg, W, H, { x0: 0, x1, y0: 0, y1: YM, L, R, T, B });
+    const pts = [];
+    const hi = mode === 'c' ? 0.4 : 0.995;
+    for (let i = 0; i <= 2000; i++) {
+      const x = hi * i / 2000, e = mode === 'c' ? errCD(x, 0.8) : errCD(0.2, x);
+      if (e > YM) { const xp = pts[pts.length - 1][0], ep = pts[pts.length - 1][1]; pts.push([xp + (x - xp) * (YM - ep) / (e - ep), YM]); break; }
+      pts.push([x, e]);
+    }
+    const bx = P.X(BEST[mode]);
+    line(svg, bx, P.T, bx, P.base, { stroke: COL.grey, 'stroke-dasharray': '2 4' });
+    svgText(svg, bx + 5, P.base - 8, 'best', { fill: COL.muted });
+    if (mode === 'd') {
+      const wx = P.X(1);
+      line(svg, wx, P.T, wx, P.base, { stroke: COL.ink, 'stroke-width': 1.5, 'stroke-dasharray': '5 4' });
+    }
+    svgNode('path', { d: pathOf(P, pts), fill: 'none', stroke: COL.accent, 'stroke-width': 2.6, 'data-item': 'mark', 'data-id': 'error-curve' }, svg);
+    const w = mode === 'c' ? c : d, e = mode === 'c' ? errCD(c, 0.8) : errCD(0.2, d);
+    const px = P.X(w), py = P.Y(e);
+    dot(svg, px, py, 7, COL.accent, { stroke: COL.panel, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'error-dot' });
+    const right = w < (mode === 'c' ? 0.28 : 0.7);
+    haloTex(svg, px + (right ? 12 : -12), Math.max(P.T + 12, py - 14), 'error $' + fmtErr(e) + '$' + (e > YM ? ' (off the scale)' : ''),
+      { w: 220, anchor: right ? 'start' : 'end', size: 14, fill: COL.ink });
+    xTicks(svg, P, mode === 'c' ? [0, 0.1, 0.2, 0.3, 0.4] : [0, 0.2, 0.4, 0.6, 0.8, 1]);
+    yTicks(svg, P, [0, 0.1, 0.2]);
+    svgTex(svg, L - 4, 11, 'the error: average of $|H-\\text{target}|^2$ over $f$', { w: W * 0.6, anchor: 'start', size: 15, fill: COL.text2 });
+    svgTex(svg, W - R, 11, mode === 'c' ? '$c$' : '$d$; dashed: wall', { w: 160, anchor: 'end', size: 15, fill: COL.text2 });
+  }, null, 1);
+  function update() {
+    sC.el.hidden = mode !== 'c'; sD.el.hidden = mode !== 'd';
+    const w = mode === 'c' ? c : d, best = BEST[mode], e = mode === 'c' ? errCD(c, 0.8) : errCD(0.2, d);
+    rE.set('$' + fmtErr(e) + '$');
+    const o = 2 * best - w;
+    if (Math.abs(w - best) < 1e-9) rO.set('you are at the best value');
+    else if (mode === 'd' && o >= 1) rO.set('$d=' + fx(o, 2) + '$ is past the wall');
+    else {
+      const eo = mode === 'c' ? errCD(o, 0.8) : errCD(0.2, o);
+      rO.set('error $' + fmtErr(eo) + '$ at $' + mode + '=' + fx(o, 2) + '$' + (Math.abs(eo - e) < 5e-6 ? ': the same' : ''));
+    }
+    pick.paint(); respP.redraw(); errP.redraw();
+  }
+  widget.append(pick.el, hh('div', 'sliders', sC.el, sD.el), respP.wrap,
+    legend([{ kind: 'line', color: 'var(--pal-accent)', text: 'blue: $|H|$, the filter you tune' },
+      { kind: 'dash', color: 'var(--pal-grey)', text: 'grey dashed: the target, $c=0.2$, $d=0.8$' }]),
+    errP.wrap, hh('div', 'readouts', rE.el, rO.el));
+  sideStd(widget, side, {
+    case: 'Two amplifier knobs: volume only scales the sound, so one reading sets it; tone changes its shape, so you hunt.',
+    known: 'Known: a plain filter’s $H$ is its weights times fixed waves, so each best weight is one integral: Kaiser’s recipe (Primer · Fourier series, step 6).',
+    sym: String.raw`$c$: the top (input) weight; $d$: the bottom (feedback) weight. The loop $y_n=c\,u_n+d\,y_{n-1}$ has $H=\frac{c}{1-d\,z^{-1}}$.`,
+    formula: String.raw`$$\text{error}=\frac{c^2}{1-d^2}-\frac{0.4\,c}{1-0.8\,d}+\frac{0.04}{0.36}$$`,
+    tries: [
+      String.raw`Move $c$: it sits on top, so the error is a parabola, the same on both sides of $0.2$; slope zero finds its bottom.`,
+      String.raw`Press “move $d$”: $d$ sits in the bottoms, so it is lopsided: $0.0077$ at $d=0.7$, $0.036$ at $0.9$, a wall at $d=1$.`,
+      String.raw`Top plot: $c$ only scales the curve; $d$ changes its shape.`],
+    take: 'No Fourier recipe designs the bottom of a ratio (08:15), so designers use ready-made families: Butterworth, Chebyshev, elliptic (08:50).' });
+  update();
+}
+
+// ---------- 3. One filter, two ways to run it ----------
+// The loop y_n = lam y_{n-1} + u_n against the echo lam^k convolved with the input through the FFT.
+// Input: 300 normal samples from mulberry32(17). checks.py: steps to 1% 44, 459, 4603 for |lam| = 0.9, 0.99, 0.999;
+// period 2 pi/0.1 = 62.8; loop against FFT 2e-14 (1000 steps). This view shows about 1e-14 at 300 steps.
+const NS = 300, NFFT = 1024;
+const U_RAND = (() => { const r = mulberry32(17); return Array.from({ length: NS }, () => gauss(r)); })();
+function loopAndEcho(lr, li) {
+  const er = new Float64Array(NFFT), ei = new Float64Array(NFFT);
+  let pr = 1, pi = 0;
+  for (let k = 0; k < NS; k++) { er[k] = pr; ei[k] = pi; const t = pr * lr - pi * li; pi = pr * li + pi * lr; pr = t; }
+  const echoRe = Array.from(er.slice(0, NS));
+  const loop = []; let yr = 0, yi = 0;
+  for (let n = 0; n < NS; n++) { const t = lr * yr - li * yi + U_RAND[n]; yi = lr * yi + li * yr; yr = t; loop.push([yr, yi]); }
+  const ur = new Float64Array(NFFT), ui = new Float64Array(NFFT);
+  for (let n = 0; n < NS; n++) ur[n] = U_RAND[n];
+  fft(ur, ui, false); fft(er, ei, false);
+  for (let k = 0; k < NFFT; k++) { const a = ur[k] * er[k] - ui[k] * ei[k]; ui[k] = ur[k] * ei[k] + ui[k] * er[k]; ur[k] = a; }
+  fft(ur, ui, true);
+  let diff = 0, big = 0;
+  for (let n = 0; n < NS; n++) {
+    diff = Math.max(diff, Math.hypot(loop[n][0] - ur[n], loop[n][1] - ui[n]));
+    big = Math.max(big, Math.hypot(loop[n][0], loop[n][1]));
+  }
+  return { echoRe, loopRe: loop.map(p => p[0]), convRe: Array.from(ur.slice(0, NS)), diff, big };
+}
+// A tick label: plain numbers, rounded when large, as 2e6 when huge.
+function tickNum(v) {
+  const a = Math.abs(v), sg = v < 0 ? '−' : '';
+  if (a < 1e-9) return '0';
+  if (a >= 1000) return sg + a.toExponential(0).replace('+', '');
+  return sg + sn(a, a >= 10 ? 0 : 2);
+}
+function slideLoopOrEcho(widget, side) {
+  let r = 0.99, th = 0.1, res = null, geo = null, dragging = false;
+  const RMAX = 1.05;
+  const lam = () => ({ re: r * Math.cos(th), im: r * Math.sin(th) });
+  const compute = () => { const l = lam(); res = loopAndEcho(l.re, l.im); };
+  const presets = choiceRow('', [['lam-099', 'try 1: $\\lambda=0.99\\,e^{0.1i}$'], ['lam-102', 'outside: $\\lambda=1.02\\,e^{0.1i}$']],
+    () => (Math.abs(th - 0.1) < 1e-9 ? (Math.abs(r - 0.99) < 1e-9 ? 'lam-099' : Math.abs(r - 1.02) < 1e-9 ? 'lam-102' : '') : ''),
+    id => { r = id === 'lam-099' ? 0.99 : 1.02; th = 0.1; update(); }, 'preset');
+  const rLam = readout('lambda', '$\\lambda$');
+  const rFade = readout('fade', 'under 1% after');
+  const rTurn = readout('turn', 'one turn');
+  const rDiff = readout('difference', 'loop − echo');
+  const diskP = plotBox((svg, W, H) => {
+    const S = Math.min(W, H - 24), cx = W / 2, cy = 24 + (H - 24) / 2, R = (S / 2 - 6) / 1.12;
+    geo = { cx, cy, R };
+    svgTex(svg, W / 2, 11, 'drag $\\lambda$', { w: W, size: 15, fill: COL.text2 });
+    dot(svg, cx, cy, R, COL.accentSoft, { stroke: COL.grey, 'stroke-width': 1.6, 'data-item': 'mark', 'data-id': 'unit-circle' });
+    line(svg, cx - 1.1 * R, cy, cx + 1.1 * R, cy, { stroke: COL.soft2 });
+    line(svg, cx, cy - 1.1 * R, cx, cy + 1.1 * R, { stroke: COL.soft2 });
+    svgText(svg, cx + R + 3, cy + 15, '1', { fill: COL.muted });
+    haloTex(svg, cx, cy + R * 0.5, 'inside: the echo fades', { w: R * 1.8, size: 14, fill: COL.text2 });
+    haloTex(svg, cx, Math.max(36, cy - R - 12), 'the unit circle, $|\\lambda|=1$', { w: W, size: 14, fill: COL.muted });
+    const l = lam();
+    let pr = 1, pi = 0, d = 'M' + (cx + R).toFixed(1) + ' ' + cy.toFixed(1);
+    for (let k = 1; k <= NS; k++) {
+      const t = pr * l.re - pi * l.im; pi = pr * l.im + pi * l.re; pr = t;
+      if (Math.hypot(pr, pi) > 1.12) break;
+      d += 'L' + (cx + pr * R).toFixed(1) + ' ' + (cy - pi * R).toFixed(1);
+    }
+    svgNode('path', { d, fill: 'none', stroke: COL.accent, 'stroke-width': 1.3, opacity: 0.75, 'data-item': 'mark', 'data-id': 'powers' }, svg);
+    const lx = cx + l.re * R, ly = cy - l.im * R;
+    line(svg, cx, cy, lx, ly, { stroke: COL.ink, 'stroke-width': 1.6, 'stroke-dasharray': '4 3' });
+    const ar = R * 0.24, a1 = th;
+    if (Math.abs(a1) > 0.005) svgNode('path', { d: 'M' + (cx + ar) + ' ' + cy + ' A ' + ar + ' ' + ar + ' 0 0 ' + (a1 > 0 ? 0 : 1) + ' ' + (cx + ar * Math.cos(a1)) + ' ' + (cy - ar * Math.sin(a1)), fill: 'none', stroke: COL.ink, 'stroke-width': 1.4 }, svg);
+    const am = a1 / 2 + (Math.abs(a1) < 0.6 ? Math.sign(a1 || 1) * 0.25 : 0);
+    haloTex(svg, cx + R * 0.36 * Math.cos(am), cy - R * 0.36 * Math.sin(am), '$\\theta$', { w: 26, size: 15, fill: COL.ink });
+    const nx = -(ly - cy), ny = lx - cx, nl = Math.hypot(nx, ny) || 1;
+    haloTex(svg, (cx + lx) / 2 + nx / nl * 14, (cy + ly) / 2 + ny / nl * 14, '$|\\lambda|$', { w: 36, size: 15, fill: COL.ink });
+    dot(svg, lx, ly, 8, COL.accent, { stroke: COL.panel, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'lambda' });
+    const lright = lx + 30 < W;
+    haloTex(svg, lright ? lx + 12 : lx - 12, ly - 14, '$\\lambda$', { w: 26, anchor: lright ? 'start' : 'end', size: 16, fill: COL.accentDeep, bold: true });
+  }, 'disk');
+  const echoP = plotBox((svg, W, H) => {
+    const L = 46, R = 16, T = 26, B = 22;
+    const env = k => Math.pow(r, k);
+    const top = r <= 1 ? 1.08 : env(NS - 1) * 1.08;
+    const P = plotFrame(svg, W, H, { x0: 0, x1: NS - 1, y0: -top, y1: top, L, R, T, B });
+    const up = [], dn = [];
+    for (let k = 0; k < NS; k += 2) { up.push([k, env(k)]); dn.push([k, -env(k)]); }
+    svgNode('path', { d: pathOf(P, up), fill: 'none', stroke: COL.grey, 'stroke-width': 1.4, 'stroke-dasharray': '5 4' }, svg);
+    svgNode('path', { d: pathOf(P, dn), fill: 'none', stroke: COL.grey, 'stroke-width': 1.4, 'stroke-dasharray': '5 4' }, svg);
+    svgNode('path', { d: pathOf(P, res.echoRe.map((v, k) => [k, v])), fill: 'none', stroke: COL.accent, 'stroke-width': 1.8, 'data-item': 'mark', 'data-id': 'echo' }, svg);
+    xTicks(svg, P, [0, 100, 200, 299], t => String(t === 299 ? 300 : t));
+    yTicks(svg, P, [top / 1.08, 0, -top / 1.08], tickNum);
+    svgTex(svg, L - 4, 11, 'blue: the echo $\\mathrm{Re}\\,\\lambda^k$; dashed: $\\pm|\\lambda|^k$', { w: W - L, anchor: 'start', size: 14, fill: COL.text2 });
+  }, null, 1);
+  const outP = plotBox((svg, W, H) => {
+    const L = 46, R = 16, T = 26, B = 22;
+    let top = 0;
+    for (let n = 0; n < NS; n++) top = Math.max(top, Math.abs(res.loopRe[n]), Math.abs(U_RAND[n]));
+    top *= 1.08;
+    const P = plotFrame(svg, W, H, { x0: 0, x1: NS - 1, y0: -top, y1: top, L, R, T, B });
+    svgNode('path', { d: pathOf(P, U_RAND.map((v, n) => [n, v])), fill: 'none', stroke: COL.grey, 'stroke-width': 1, opacity: 0.8 }, svg);
+    svgNode('path', { d: pathOf(P, res.convRe.map((v, n) => [n, v])), fill: 'none', stroke: COL.ink, 'stroke-width': 1.3, 'data-item': 'mark', 'data-id': 'by-echo' }, svg);
+    const g = svgNode('g', { 'data-item': 'mark', 'data-id': 'by-loop' }, svg);
+    for (let n = 0; n < NS; n += 2) dot(g, P.X(n), P.Y(res.loopRe[n]), 2.2, COL.accent);
+    xTicks(svg, P, [0, 100, 200, 299], t => String(t === 299 ? 300 : t));
+    const yt = top / 1.08;
+    yTicks(svg, P, [yt, 0, -yt], tickNum);
+    svgTex(svg, L - 4, 11, 'output $\\mathrm{Re}\\,y_n$; grey: random input $u_n$', { w: W - L, anchor: 'start', size: 14, fill: COL.text2 });
+  }, null, 1);
+  function setFromPointer(ev) {
+    if (!geo) return;
+    const b = diskP.wrap.getBoundingClientRect();
+    const x = (ev.clientX - b.left - geo.cx) / geo.R, y = -(ev.clientY - b.top - geo.cy) / geo.R;
+    r = Math.min(RMAX, Math.round(Math.hypot(x, y) * 100) / 100);
+    th = Math.round(Math.atan2(y, x) * 100) / 100;
+    update();
+  }
+  diskP.wrap.addEventListener('pointerdown', ev => { dragging = true; diskP.wrap.setPointerCapture(ev.pointerId); setFromPointer(ev); });
+  diskP.wrap.addEventListener('pointermove', ev => { if (dragging) setFromPointer(ev); });
+  diskP.wrap.addEventListener('pointerup', () => { dragging = false; });
+  diskP.wrap.addEventListener('pointercancel', () => { dragging = false; });
+  function update() {
+    compute();
+    rLam.set('$' + fx(r, 2) + '\\,e^{' + fx(th, 2) + 'i}$');
+    if (r < 1e-9) rFade.set('$1$ step');
+    else if (r < 1 - 1e-9) rFade.set('$' + Math.ceil(Math.log(0.01) / Math.log(r) - 1e-9) + '$ steps');
+    else rFade.set(r > 1 + 1e-9 ? 'never: it grows' : 'never', true);
+    rTurn.set(Math.abs(th) < 1e-9 ? 'none: $\\theta=0$' : '$' + sn(TAU / Math.abs(th), 1) + '$ steps');
+    rDiff.set('$' + expTex(res.diff) + '$' + (res.big > 1e3 ? ' of $' + expTex(res.big) + '$' : ''));
+    presets.paint(); diskP.redraw(); echoP.redraw(); outP.redraw();
+  }
+  compute();
+  widget.append(presets.el, hh('div', 'duo', hh('div', 'lcol', diskP.wrap, hh('div', 'readouts inline', rLam.el, rFade.el, rTurn.el, rDiff.el)),
+    hh('div', 'col', echoP.wrap, outP.wrap,
+      legend([{ kind: 'pt', color: 'var(--pal-accent)', text: 'blue dots: the loop, step by step' },
+        { kind: 'line', color: 'var(--pal-ink)', text: 'line: the echo convolved with the whole input (FFT)' }]))));
+  sideStd(widget, side, {
+    // pointer: p-feedback-2 step 5 'swing' (Feedback: roots)
+    case: String.raw`State-space layers (S4, LRU) run $y_n=\lambda\,y_{n-1}+u_n$ in each channel. Its echo never ends (step 1); a complex $\lambda$ makes it turn and shrink (Primer · Feedback: roots, step 5).`,
+    sym: String.raw`$|\lambda|$: how slowly the echo fades. $\theta$: how fast it turns.`,
+    formula: String.raw`$$y_n=\underbrace{\lambda\,y_{n-1}+u_n}_{\text{the loop}}=\underbrace{\textstyle\sum_{k\ge0}\lambda^k\,u_{n-k}}_{\text{the echo}}$$`,
+    // pointer: p-feedback-3 step 4 'unit-circle' (Feedback: filters)
+    tries: [
+      String.raw`At $|\lambda|=0.99$, $\theta=0.1$ the echo is under 1% after $459$ steps and turns every $63$. Dots sit on the line.`,
+      String.raw`Drag $\lambda$ outside the circle: the output explodes (Primer · Feedback: filters, step 4).`,
+      String.raw`The loop: one multiply-add per step, in order. The echo: one convolution, all at once by the FFT.`],
+    take: 'On a recording, a feedback filter can run as its echo, all at once; on a stream, only as a loop, step by step.',
+    ai: { text: String.raw`S4 trains by convolving each layer’s echo with the whole sequence and generates with the loop, 60 times faster than a Transformer. Mamba lets $\lambda$ change with the input: no single echo, only the loop.`,
+      src: 'arXiv 2111.00396, 2312.00752' } });
+  update();
+}
+
+// ---------- 4. Decision: must a feedback filter's echo go on forever? ----------
+const D_TRIES = ['Read the problem.', 'Pick what you would do before he says it.', 'When he says it, read every verdict.'];
+const DECISIONS = {
+  'pick-finite-echo': {
+    problem: String.raw`A tap goes round the loop and fades like a geometric progression, never quite to $0$ (09:25). So recursive filters are called “infinite impulse response” (IIR). Students learn the name and repeat it.`,
+    sketch: true,
+    formula: String.raw`The claim: every filter $$y_n=\textstyle\sum_{k=0}^{K}c_k\,u_{n-k}+\sum_{k=1}^{K}d_k\,y_{n-k}$$ with feedback (some $d_k\ne0$) echoes one tap forever.`,
+    symbols: String.raw`$c_k$, $d_k$: the top and bottom weights of step 2, one per step back.`,
+    chooser: 2, who: 'Hamming',
+    options: [
+      { text: 'Accept it: every textbook and every expert says so.',
+        assumes: 'a claim repeated by experts has been checked.',
+        verdict: 'It has not been checked, and it is false (C). You never find out.' },
+      { text: 'Prove it for every recursive filter before relying on it.',
+        assumes: 'the claim is true and only needs a proof.',
+        verdict: 'The proof cannot succeed, because the claim is false. You learn that only after it keeps failing.' },
+      { text: 'Try to build a counterexample: a feedback filter whose echo stops.',
+        assumes: 'one example breaks a claim about every filter, and small cases are quick to try.',
+        verdict: 'One exists (next step): the running sum, computed with feedback, echoes five ones, then exact zeros.' }],
+    reveal: [
+      { k: "Hamming's move", v: '“Is it true that every filter of that type must have something that goes on forever? So I set out to find one that doesn’t.”', t: '09:55 to 10:25' },
+      { k: 'What it bought', v: 'A tap that “disappears completely after a finite number of steps”. Experts had repeated what they were told in class without examining it, so “the general name is not so good”.', t: '10:25 to 11:28' },
+      { k: 'What it cost', v: '“It’s not necessarily the filter you want to design” (step 6 shows one reason). He does not say which filter he found; step 5 is the simplest we know.', t: '10:25' }],
+    takeaway: 'Test a claim about every case by trying to break it with one small case.' }
+};
+const DSTATE = {};
+Object.keys(DECISIONS).forEach(id => { DSTATE[id] = { pick: null, open: false }; });
+// Reveal a decision once; later calls change nothing. by: 'user' (a pick or the button) or 'cue'.
+function revealDecision(id, by) {
+  const st = DSTATE[id];
+  if (!st || st.open) return false;
+  st.open = true;
+  emit('view.action', { action: 'reveal', step: id, by: by });
+  return true;
+}
+// The problem's sketch: a tap's echo 1, b, b^2, ... that never reaches 0.
+function drawFadeSketch(svg, W, H) {
+  const vals = Array.from({ length: 14 }, (_, k) => Math.pow(0.75, k));
+  const L = 8, R = 6, T = 26, B = 8, cw = (W - L - R) / vals.length;
+  const Y = v => T + (1 - v) * (H - T - B);
+  line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grey });
+  vals.forEach((v, k) => {
+    const x = L + (k + 0.5) * cw;
+    line(svg, x, Y(0), x, Y(v), { stroke: COL.accent, 'stroke-width': 2.5 });
+    dot(svg, x, Y(v), 3.5, COL.accent);
+  });
+  svgTex(svg, 4, 11, 'a tap’s echo: $1,\\beta,\\beta^2,\\dots$ never $0$', { w: W - 6, anchor: 'start', size: 14, fill: COL.text2 });
+}
+function mountDecision(s, widget, side) {
+  const D = DECISIONS[s.id], st = DSTATE[s.id], open = st.open;
+  const redraw = () => goTo(cur);
+  const prob = mark(h('div', 'prob'), 'problem', s.id);
+  prob.append(hh('p', '', h('span', 'lead', 'The problem.'), document.createTextNode(' '), setTex(h('span'), D.problem)));
+  if (D.sketch) prob.append(plotBox(drawFadeSketch).wrap);
+  const opts = h('div', 'opts');
+  D.options.forEach((o, k) => {
+    const L = 'ABC'[k];
+    const card = mark(h('div', 'opt'), 'card', L, o.text.replace(/\$/g, ''));
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-disabled', open ? 'true' : 'false');
+    card.tabIndex = open ? -1 : 0;
+    card.classList.toggle('on', st.pick === L);
+    card.classList.toggle('chooser', open && k === D.chooser);
+    const who = [];
+    if (st.pick === L) who.push('Your pick');
+    if (open && k === D.chooser) who.push(D.who);
+    const top = hh('div', 'top', h('span', 'letter', L), h('span', 'who', who.join(', ')));
+    const asm = setTex(h('p', 'asm'), 'Assumes: ' + o.assumes);
+    const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'Verdict after your pick.');
+    card.append(hh('div', 'lhs', top, setTex(h('div', 'body'), o.text)), hh('div', 'rhs', asm, verdict));
+    card.addEventListener('click', () => {
+      if (DSTATE[s.id].open) return;
+      st.pick = L;
+      emit('view.action', { action: 'pick', step: s.id, option: L, correct: k === D.chooser });
+      revealDecision(s.id, 'user');
+      redraw();
+    });
+    opts.append(card);
+  });
+  const rev = mark(h('div', 'reveal'), 'reveal', s.id);
+  if (!open) {
+    rev.classList.add('idle');
+    for (const r of D.reveal) rev.append(hh('p', 'rv hold', h('span', 'k', r.k + '. '), h('span', '', 'Shown after your pick.')));
+    const btn = mark(h('button', 'btn primary', 'Show the choice'), 'control', 'show-answer');
+    btn.addEventListener('click', () => { if (revealDecision(s.id, 'user')) redraw(); });
+    rev.append(hh('div', 'actions', btn));
+  } else {
+    for (const r of D.reveal) {
+      const p = hh('p', 'rv', h('span', 'k', r.k + '. '));
+      p.append(setTex(h('span'), r.v), h('span', 't', ' (' + r.t + ')'));
+      rev.append(p);
+    }
+  }
+  widget.append(prob, opts, rev);
+  side.append(setTex(h('p', 'fx'), D.formula));
+  if (D.symbols) side.append(setTex(h('p', 'sym'), D.symbols));
+  side.append(hh('div', 'blk', h('div', 'kicker', 'Try it'), hh('ol', 'tries', ...D_TRIES.map(t => h('li', '', t)))));
+  side.append(open ? setTex(h('p', 'takeaway'), D.takeaway) : h('p', 'hold', 'Takeaway: shown after your pick.'));
+}
+
+// ---------- 5. A feedback filter whose echo stops ----------
+// y_n = y_{n-1} + u_n - u_{n-5}, at rest before step 0. checks.py: tap -> 1,1,1,1,1,0,...;
+// readings (7,0,1,2,1,7,7,5,0,0,2,3) -> 7,7,8,10,11,11,18,22,20,19,14,10, equal to the direct 5-sum.
+const READ12 = [7, 0, 1, 2, 1, 7, 7, 5, 0, 0, 2, 3];
+function runSum(u, errAt) {
+  const y = []; let last = 0;
+  for (let n = 0; n < u.length; n++) { last = last + u[n] - (n >= 5 ? u[n - 5] : 0) + (n === errAt ? 0.001 : 0); y.push(last); }
+  return y;
+}
+function sum5(u) { return u.map((_, n) => { let s = 0; for (let k = Math.max(0, n - 4); k <= n; k++) s += u[k]; return s; }); }
+function slideRunningSum(widget, side) {
+  let inp = 'tap', err = false;
+  const input = () => (inp === 'tap' ? READ12.map((_, n) => +(n === 0)) : READ12.slice());
+  const pickU = choiceRow('input:', [['in-tap', 'a tap at step $0$'], ['in-read', 'readings']], () => 'in-' + inp, id => { inp = id.slice(3); update(); });
+  const errBtn = button('error', 'a rounding error of $0.001$ at step $3$', () => { err = !err; update(); });
+  const rLast = readout('step-11', 'step $11$: the loop, and the direct sum');
+  const rDiff = readout('loop-minus-direct', 'the loop minus the direct sum');
+  const num = v => sn(v, 3).replace('-', '−');
+  const rows = [
+    plotBox((svg, W, H) => {
+      const u = input(), mx = Math.max(...u);
+      stemRow(svg, W, H, { vals: u, lo: -0.12 * mx, hi: 1.3 * mx, color: COL.grey, id: 'u', values: true, fmtVal: num, noX: true, hideZero: true,
+        label: 'grey: the readings $u_n$', labelFill: COL.text2 });
+    }, null, 1),
+    plotBox((svg, W, H) => {
+      const u = input(), mx = Math.max(...u);
+      stemRow(svg, W, H, { vals: u, lo: -0.12 * mx, hi: 1.3 * mx, color: COL.accent, id: 'added', values: true, fmtVal: v => '+' + num(v), noX: true, hideZero: true,
+        label: 'blue, added at step $n$: the new reading $u_n$', labelFill: COL.accentDeep });
+    }, null, 1),
+    plotBox((svg, W, H) => {
+      const u = input(), mx = Math.max(...u);
+      const v = u.map((_, n) => (n >= 5 ? -u[n - 5] : 0));
+      stemRow(svg, W, H, { vals: v, lo: -1.3 * mx, hi: 0.12 * mx, color: COL.greyBlue, id: 'taken', values: true, fmtVal: num, noX: true, hideZero: true, down: true,
+        label: 'grey-blue, taken away at step $n$: $u_{n-5}$, the reading from five steps before', labelFill: COL.text2 });
+    }, null, 1),
+    plotBox((svg, W, H) => {
+      const u = input(), y = runSum(u, err ? 3 : -1), d5 = sum5(u), mx = Math.max(...y, ...d5, 0.001);
+      stemRow(svg, W, H, { vals: y, lo: -0.12 * mx, hi: 1.25 * mx, color: COL.accent, id: 'y', values: true, fmtVal: num, rings: d5, T: 40,
+        label: 'blue, the output $y_n$; rings: the direct sum of the last five readings', labelFill: COL.accentDeep });
+    }, null, 1.25)];
+  function update() {
+    const u = input(), y = runSum(u, err ? 3 : -1), d5 = sum5(u);
+    errBtn.classList.toggle('on', err);
+    rLast.set('$' + num(y[11]) + '$ and $' + u.slice(7, 12).map(v => sn(v, 0)).join('+') + '=' + sn(d5[11], 0) + '$', Math.abs(y[11] - d5[11]) > 1e-9);
+    const first = y.findIndex((v, n) => Math.abs(v - d5[n]) > 1e-9);
+    rDiff.set(first < 0 ? '$0$ at every step' : '$0.001$ from step $' + first + '$ on: it never leaves', first >= 0);
+    pickU.paint(); rows.forEach(p => p.redraw());
+  }
+  widget.append(hh('div', 'sliders', pickU.el, errBtn), ...rows.map(p => p.wrap), hh('div', 'readouts', rLast.el, rDiff.el));
+  sideStd(widget, side, {
+    case: 'A cashier’s running total of the last five sales: add each new sale, take away the sale from five customers ago.',
+    // pointer: p-feedback-1 step 4 'fates' (Feedback: loops)
+    known: 'Known: a loop with weight $1$ on its last output adds up and never forgets (Primer · Feedback: loops, step 4).',
+    sym: 'Before step $0$ all values are $0$.',
+    formula: String.raw`$$y_n=y_{n-1}+u_n-u_{n-5}$$`,
+    tries: [
+      String.raw`With the tap: $1,1,1,1,1$, then exact zeros. The echo ends.`,
+      String.raw`Press readings: rings sit on the stems, so $y_n$ is the sum of the last five readings, for one add and one subtract per step, at any window length.`,
+      String.raw`Turn on the error: it stays in every later output. The loop never forgets a mistake.`],
+    take: 'Feedback can have a finite echo when the input side takes away what the loop keeps; but weight $1$ keeps every rounding error too.',
+    ai: { text: 'The integral image (Viola and Jones) is this filter in two dimensions: running sums give the sum of any rectangle of pixels in four look-ups, whatever its size.',
+      src: 'CVPR 2001' } });
+  update();
+}
+
+// ---------- 6. Why it's true: the loop's echo is cancelled ----------
+// The rows y_m - y_{m-1} = u_m - u_{m-5} for m = 0..7, added: the y's cancel in pairs, the u's cancel against the
+// copies five rows down, and u_3..u_7 are left. Readings 7,0,1,2,1,7,7,5: y_7 = 2+1+7+7+5 = 22.
+const READ8 = [7, 0, 1, 2, 1, 7, 7, 5], TAP8 = [0, 0, 1, 0, 0, 0, 0, 0];
+const LIT_ORDER = ['rows', 'cancel-y', 'shift', 'cancel-u'];
+function drawLadder(svg, W, H, inp, lit, checked) {
+  const u = inp === 'tap' ? TAP8 : READ8, y = runSum(u, -1);
+  const lv = LIT_ORDER.indexOf(lit);
+  const CAP = {
+    rows: String.raw`amber: the rule written once for each step, $m=0$ to $7$`,
+    'cancel-y': String.raw`amber: each $y_m$ meets $-y_m$ one row down; $y_7$ and $-y_{-1}=0$ are left`,
+    shift: String.raw`amber: $-u_{m-5}$ is $-u_j$ with $j=m-5$; for $m<5$, $j<0$, so it is $0$`,
+    'cancel-u': String.raw`amber: $u_0,u_1,u_2$ meet $-u_0,-u_1,-u_2$; $u_3$ to $u_7$ are left` }[lit];
+  picCaption(svg, W, CAP, String.raw`The rule for $m=0$ to $7$, one row each. Add all the rows.`);
+  const top = 30, nr = 12.9;
+  const rh = Math.min(34, (H - top - 2) / nr);
+  const cx = [0.07, 0.22, 0.40, 0.53, 0.66, 0.85].map(f => f * W);
+  const cwid = W * 0.15;
+  const rowY = m => top + rh * (m + 1.5);
+  const fs = Math.max(13, Math.min(17, rh * 0.55));
+  // header
+  const hdr = ['row $m$', '$y_m$', '$-y_{m-1}$', '', '$u_m$', '$-u_{m-5}$'];
+  hdr.forEach((t, i) => { if (t) svgTex(svg, cx[i], top + rh * 0.5, t, { w: cwid, size: 14, fill: COL.muted }); });
+  // lights under the cells
+  if (lit === 'rows') for (let m = 0; m < 8; m++) glowRect(svg, cx[1] - cwid * 0.45, rowY(m) - rh * 0.4, cx[5] - cx[1] + cwid * 0.9, rh * 0.8, 1);
+  const link = (x1, y1, x2, y2, amber) => line(svg, x1, y1, x2, y2, { stroke: amber ? COL.amber : COL.grey, 'stroke-width': amber ? 3 : 1.5, 'stroke-linecap': 'round', opacity: amber ? 1 : 0.8 });
+  if (lv >= 1) for (let m = 0; m < 7; m++) link(cx[1] + 14, rowY(m) + 4, cx[2] - 14, rowY(m + 1) - 4, lv === 1);
+  if (lv >= 1 && lv === 1) { glowRect(svg, cx[1] - 22, rowY(7) - rh * 0.38, 44, rh * 0.76, 1); glowRect(svg, cx[2] - 40, rowY(0) - rh * 0.38, 80, rh * 0.76, 1); }
+  if (lv === 2) for (let m = 0; m < 8; m++) glowRect(svg, cx[5] - 34, rowY(m) - rh * 0.38, 68, rh * 0.76, 1);
+  if (lv >= 3) for (let m = 0; m < 3; m++) link(cx[4] + 14, rowY(m) + 4, cx[5] - 16, rowY(m + 5) - 4, lv === 3);
+  if (lv === 3) for (let m = 3; m < 8; m++) glowRect(svg, cx[4] - 20, rowY(m) - rh * 0.38, 40, rh * 0.76, 1);
+  const strike = (x, yy, w) => line(svg, x - w / 2, yy, x + w / 2, yy, { stroke: COL.ink, 'stroke-width': 1.4 });
+  for (let m = 0; m < 8; m++) {
+    const yy = rowY(m);
+    svgText(svg, cx[0], yy + 5, String(m), { 'text-anchor': 'middle', fill: COL.muted, 'font-size': 14 });
+    svgTex(svg, cx[1], yy, '$y_{' + m + '}$', { w: cwid, size: fs, fill: COL.ink });
+    svgTex(svg, cx[2], yy, '$-y_{' + (m - 1) + '}$' + (m === 0 && lv >= 1 ? '$\\,=0$' : ''), { w: cwid, size: fs, fill: COL.ink });
+    svgText(svg, cx[3], yy + 6, '=', { 'text-anchor': 'middle', fill: COL.ink, 'font-size': 18 });
+    svgTex(svg, cx[4], yy, '$u_{' + m + '}$', { w: cwid, size: fs, fill: COL.ink });
+    const j = m - 5;
+    svgTex(svg, cx[5], yy, j < 0 ? (lv >= 2 ? '$0$' : '$-u_{' + j + '}$') : '$-u_{' + j + '}$', { w: cwid * 1.2, size: fs, fill: j < 0 ? COL.muted : COL.ink });
+    if (lv >= 1) { if (m < 7) strike(cx[1], yy, 26); if (m > 0) strike(cx[2], yy, 40); }
+    if (lv >= 3) { if (m < 3) strike(cx[4], yy, 26); if (m >= 5) strike(cx[5], yy, 36); }
+  }
+  // the numbers: readings and the loop's outputs
+  const sTop = rowY(7) + rh * 1.15, cw = (W - 120) / 8;
+  const sx = n => 112 + (n + 0.5) * cw;
+  const rowsS = [['input $u$', u.map(v => String(v))], ['the loop $y$', y.map((v, n) => (n === 7 && !checked ? '?' : String(v)))]];
+  rowsS.forEach(([lab, vals], r) => {
+    const yy = sTop + rh * (r + 0.5);
+    svgTex(svg, 4, yy, lab, { w: 108, anchor: 'start', size: 14, fill: COL.text2 });
+    vals.forEach((t, n) => {
+      const hot = lv === 3 && ((r === 0 && n >= 3) || (r === 1 && n === 7));
+      rect(svg, sx(n) - cw / 2 + 2, yy - rh * 0.42, cw - 4, rh * 0.84, { rx: 4, fill: hot ? COL.amberBg : (r === 1 ? COL.accentSoft : COL.soft), stroke: hot ? COL.amber : COL.line, 'data-item': 'mark', 'data-id': (r ? 'y-' : 'u-') + n });
+      svgText(svg, sx(n), yy + 5, t, { 'text-anchor': 'middle', fill: COL.ink, 'font-size': 15 });
+      if (r === 0) svgText(svg, sx(n), sTop - 3, String(n), { 'text-anchor': 'middle', fill: COL.muted, 'font-size': 12 });
+    });
+  });
+  const res = sTop + rh * 2.55;
+  const s5 = u.slice(3, 8);
+  svgTex(svg, W / 2, res, checked ? '$y_7=' + y[7] + '$, and $u_3+u_4+u_5+u_6+u_7=' + s5.join('+') + '=' + s5.reduce((a, b) => a + b, 0) + '$'
+    : 'Guess $y_7$, then press Check.', { w: W - 8, size: 15, fill: checked ? COL.ink : COL.muted });
+}
+function slideWhyFiniteEcho(widget, side) {
+  let inp = 'read', lit = '', checked = false;
+  const pick = choiceRow('', [['in-read', 'readings'], ['in-tap', 'a tap at step $2$']], () => 'in-' + inp, id => { inp = id.slice(3); checked = false; plot.redraw(); });
+  const chk = button('check-y7', 'Check $y_7$', () => { checked = true; plot.redraw(); });
+  const plot = proofLeft(widget, {
+    controls: [pick.el, chk],
+    draw: (svg, W, H) => drawLadder(svg, W, H, inp, lit, checked),
+    tests: [
+      String.raw`Readings: guess $y_7$ from the claim, then press Check. Do the loop and the last five readings agree?`,
+      String.raw`A tap at step $2$: the loop gives $1$ at steps $2$ to $6$ only. Cases are evidence, not proof.`],
+    model: 'Each reading enters the total once and leaves it once, five steps later.' });
+  proofRight(side, {
+    id: 'finite-echo',
+    goal: { tex: String.raw`y_n=u_{n-4}+u_{n-3}+u_{n-2}+u_{n-1}+u_n`, words: 'started at rest, the loop gives exactly the sum of the last five readings.' },
+    facts: [
+      { tex: String.raw`y_n=y_{n-1}+u_n-u_{n-5}`, words: 'the rule', ref: 'step 5' },
+      { words: String.raw`at rest: every $y$ and $u$ before step $0$ is $0$` }],
+    lines: [
+      { tex: String.raw`y_m-y_{m-1}=u_m-u_{m-5}\quad(m=0,\dots,n)`, move: 'Rearrange',
+        why: String.raw`move $y_{m-1}$ to the left of the rule: one row for each step`, choices: ['Name a piece', 'Take a limit'], highlight: 'rows' },
+      { tex: String.raw`y_n=\sum_{m=0}^{n}u_m-\sum_{m=0}^{n}u_{m-5}`, move: 'Telescope',
+        why: String.raw`add the rows: each $y_m$ meets $-y_m$ one row down, and $y_{-1}=0$`, choices: ['Induction', 'Compute it two ways'], highlight: 'cancel-y' },
+      { tex: String.raw`\sum_{m=0}^{n}u_{m-5}=\sum_{j=0}^{n-5}u_j`, move: 'Change variables',
+        why: String.raw`put $j=m-5$; the five terms with $j<0$ are $0$ at rest`, choices: ['Use symmetry', 'Compare or bound'], highlight: 'shift' },
+      { tex: String.raw`y_n=\sum_{m=0}^{n}u_m-\sum_{j=0}^{n-5}u_j=u_{n-4}+\dots+u_n`, move: 'Rearrange',
+        why: String.raw`both sums hold $u_0$ to $u_{n-5}$; they cancel, and five terms are left`, choices: ['Induction', 'Use symmetry'], highlight: 'cancel-u' }],
+    lookBack: [
+      { q: 'The same in ratio form?',
+        a: String.raw`$H=\frac{1-z^{-5}}{1-z^{-1}}=1+z^{-1}+z^{-2}+z^{-3}+z^{-4}$: the geometric sum of Primer · Series, step 3, read backwards. The bottom divides the top, so the ratio is a polynomial and the echo is finite.` },
+      // pointer: p-feedback-3 step 4 'unit-circle' (Feedback: filters)
+      { q: 'Why does one error stay forever?',
+        a: String.raw`The loop alone, $y_n=y_{n-1}$, has its root at $1$, on the unit circle: it neither grows nor fades (Primer · Feedback: filters, step 4). In float32, after a million readings the loop is off by about $10^{-4}$; the direct 5-sum stays under $6\times10^{-7}$. That is one reason it is “not necessarily the filter you want to design” (10:25).` },
+      { q: 'Is this Hamming’s counterexample?',
+        a: 'He does not say which filter he found. This is the simplest one we know.' }] },
+    plot, key => { lit = key || ''; plot.redraw(); }, { endNote: NEXT });
+}
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'ratio-echo', tag: 'Lecture 07:02 to 08:15 · the name at 09:25', title: 'Feedback packs an endless echo into two numbers',
+    question: 'How many plain weights does it take to copy one feedback loop?', mount: slideRatioEcho },
+  { id: 'no-recipe', tag: 'Lecture 08:15 to 09:25', title: 'The bottom of the ratio has no one-integral recipe',
+    question: 'Why can Kaiser’s recipe find a plain filter’s weights, but not a feedback filter’s?', mount: slideNoRecipe },
+  { id: 'loop-or-echo', cls: 'wide-side', tag: 'Lecture 09:25 to 09:55', title: 'One filter, two ways to run it',
+    question: 'When do you run a feedback filter as a loop, and when as its echo?', mount: slideLoopOrEcho },
+  { id: 'pick-finite-echo', kind: 'decision', tag: 'Lecture 09:55, answer 10:25', title: 'Must a feedback filter’s echo go on forever?',
+    question: 'Everyone calls recursive filters “infinite impulse response”. What do you do with that claim?' },
+  { id: 'running-sum', tag: 'Lecture 10:57 to 11:28', title: 'A feedback filter whose echo stops',
+    question: 'Can feedback give an echo that ends after five steps?', mount: slideRunningSum },
+  { id: 'why-finite-echo', kind: 'proof', tag: 'Lecture 11:28 to 12:00', title: 'Why it’s true: the loop’s echo is cancelled',
+    question: String.raw`Why does $y_n=y_{n-1}+u_n-u_{n-5}$ give exactly the sum of the last five readings?`, mount: slideWhyFiniteEcho },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side', h('div', 'tag', s.tag), setTex(h('h2'), s.title),
+    setTex(h('p', s.kind === 'decision' ? 'q' : 'question'), s.question));
+  const cls = 'slide' + (s.kind === 'proof' ? ' proof-slide' : s.kind === 'decision' ? ' decision' : '') + (s.cls ? ' ' + s.cls : '');
+  const sec = mark(h('section', cls), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  if (s.kind === 'decision') mountDecision(s, widget, side);
+  else s.mount(widget, side);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state. {step} goes to the step and does nothing if it is shown. {step, reveal: true} also
+// reveals that decision, once; a revealed decision stays revealed.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i < 0) return;
+  const changed = msg.reveal === true && SLIDES[i].kind === 'decision' && revealDecision(SLIDES[i].id, 'cue');
+  if (i !== cur || changed) goTo(i);
+}
+function startDeck() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],input[type=number],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt') && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); e.target.click(); return;
+    }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+}
+startDeck();
+</script>
+</body>
+</html>

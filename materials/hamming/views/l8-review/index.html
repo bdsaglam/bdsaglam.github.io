@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Lecture 8 review: Can machines think?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: grey for exact values and inputs, blue for outputs and the reader's choice,
+   amber for what the newest proof line is about, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft); --red:var(--pal-red);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Content slide: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(5px,0.9vh,9px);overflow:hidden}
+.widget>*{max-width:100%;min-width:0}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(17px,1.5vw,22px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.where{margin:0;font-size:16px}
+.where b{color:var(--accent)}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;transition:opacity .2s}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 22px;flex-wrap:wrap;width:100%;align-items:center}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(110px,10vw,160px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:50px;white-space:nowrap}
+.btn{font:inherit;padding:5px 11px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px;line-height:1.3}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{color:var(--muted);cursor:default;opacity:.6}
+.btnrow{display:flex;gap:6px 8px;align-items:center;flex-wrap:wrap}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 120px;min-width:0;padding:3px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.legend{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.note{min-height:34px;display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;font-size:16px;padding:2px 10px;border-radius:8px;background:var(--pal-soft);border:1px solid var(--pal-grid)}
+.note.ask{background:var(--pal-amber-row);border-color:var(--pal-amber-bg)}
+.note .good{color:var(--accent);font-weight:600}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(18px,2.2vw,34px)}
+.slide.proof-slide h2{font-size:clamp(20px,1.75vw,26px)}
+.slide.proof-slide .side{gap:clamp(4px,0.8vh,9px)}
+.slide.proof-slide .side{justify-content:flex-start}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,8vw,130px)}
+.slide.proof-slide .slide-ctl .val{min-width:40px}
+.slide.proof-slide .sliders{gap:6px 14px}
+.slide.proof-slide .fill{min-height:180px}
+.readouts.inline .readout{display:flex;gap:4px 8px;align-items:baseline;flex-wrap:wrap}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px;font-size:16px}
+.test .tries{gap:3px}
+.model{margin:0;padding:7px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+
+/* Decision slides: the problem, three cards and the reveal on the left; question, try-steps,
+   AI echo and takeaway on the right. */
+.slide.decision{grid-template-columns:minmax(0,2.05fr) minmax(0,1fr);gap:clamp(20px,2.6vw,40px)}
+.decision .widget{gap:6px}
+.decision .side{justify-content:space-evenly;gap:clamp(8px,1.8vh,18px)}
+.decision h2{font-size:clamp(23px,2.3vw,32px)}
+.decision .q{margin:0;font-size:clamp(17px,1.55vw,21px);font-weight:600;line-height:1.35}
+.decision .fx{margin:0;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--pal-soft);font-size:clamp(17px,1.6vw,22px);line-height:1.4}
+.decision .kicker{font-size:14px;color:var(--muted);margin:0 0 3px}
+.decision .blk{display:flex;flex-direction:column;gap:3px}
+.decision .ai{margin:0;font-size:16px;line-height:1.4}
+.decision .ai .src{color:var(--muted);font-size:14px}
+.decision .takeaway{padding:11px 14px;line-height:1.4}
+.decision .tries{gap:6px;font-size:clamp(16px,1.35vw,18px);line-height:1.4}
+.decision .hold{color:var(--muted);font-style:italic;background:var(--pal-soft);border:1px dashed var(--line);border-radius:6px;padding:9px 12px;margin:0;font-size:16px;line-height:1.4}
+.prob{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:6px 14px;background:var(--pal-soft);font-size:16px;line-height:1.4}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob p{margin:0}
+.opts{flex:0 0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.5vw,8px)}
+.opt{display:grid;grid-template-columns:minmax(0,0.78fr) minmax(0,1.22fr);gap:0 14px;padding:clamp(6px,0.7vw,10px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;gap:3px;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:16px}
+.opt .letter{font-weight:700;color:var(--accent)}
+.opt .who{font-size:14px;color:var(--muted);text-align:right}
+.opt .body{font-size:clamp(16px,1.4vw,19px);line-height:1.3}
+.opt .asm{margin:0;font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--muted)}
+.opt .verdict{font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.chooser{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.chooser .who{color:var(--pal-accent-deep);font-weight:600}
+.reveal{flex:1 1 auto;min-height:0;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:clamp(16px,1.25vw,18px);display:flex;flex-direction:column;justify-content:center;gap:6px}
+.reveal.idle{background:var(--pal-soft);color:var(--muted)}
+.rv{margin:0;line-height:1.38}
+.rv .k{font-weight:650;color:var(--accent)}
+.rv .t{color:var(--muted);font-size:14px;white-space:nowrap}
+.rv.hold{color:var(--muted)}
+.decision .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.decision .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent);padding:6px 16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:4px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.where,.tries,.test,.model{line-height:1.22}
+  .readout{padding:2px 8px}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:18px}
+  h2{font-size:20px}
+  .fill{min-height:100px}
+  .note{min-height:30px;padding:1px 8px}
+  .model{padding:5px 10px}
+  .btn{padding:3px 9px}
+  .slide-ctl input{width:100px}
+  .slide.proof-slide .slide-ctl input{width:64px}
+  .slide.proof-slide .slide-ctl .val{min-width:30px}
+  .slide.proof-slide .sliders{gap:4px 10px}
+  .slide.proof-slide .fill{min-height:165px}
+  .decision h2{font-size:23px}
+  .decision .side{gap:7px}
+  .decision .tries{gap:2px;line-height:1.3}
+  .decision .takeaway{padding:7px 12px}
+  .reveal{gap:3px;padding:5px 12px}
+  .rv{line-height:1.28}
+  .opts{gap:3px}
+  .opt{padding:4px 12px}
+  .opt .body,.opt .asm,.opt .verdict{line-height:1.25}
+  .prob{padding:4px 12px;line-height:1.3}
+}
+</style>
+</head>
+<body>
+<header id="head">Lecture 8 · Review: Can machines think?</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  return e;
+}
+// Session events. With no bridge, nothing is sent and the view still works.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* no bridge */ }
+}
+
+// ---------- argument slides: a claim from the book list, three stances, then the reveal ----------
+const D_TRIES = ['Read the point.', 'Pick agree, disagree, or depends before you read on.', 'Read the counter, then say what would change your pick.'];
+const DECISIONS = {
+  'wishful': {
+    problem: 'Point 2 from the book list: “Just because you want to believe that machines can think does not mean they can; it may only be wishful thinking!”',
+    chooser: -1,
+    options: [
+      { stance: 'Agree', text: 'A wish proves nothing either way. Judge the machine by what it does.',
+        assumes: 'what a machine does is enough evidence.', verdict: 'Then you must say which results would count.' },
+      { stance: 'Disagree', text: 'A strong belief with a good reason is a fair guide. Wanting is not the same as believing.',
+        assumes: 'a reason can be separated from a wish.', verdict: 'Then the reason must be something a skeptic can check.' },
+      { stance: 'Depends', text: 'Depends on the belief. A belief about a test can be checked. A belief about feeling may not be.',
+        assumes: 'some beliefs can be tested and others cannot.', verdict: 'Then name one belief of each kind.' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: 'The people are generally sure they are more than a machine, but usually can give no real argument as to why there is a difference.', t: 'book, ch. 8' },
+      { k: 'Strongest counter', v: 'Someone says: “What machines cannot do is feel.” Then: can a chess program be glad that it won?', t: '24:46' },
+      { k: 'Test it', v: 'Is “machines cannot feel” a reason or a wish? Say what you would observe to check it.', t: '' }],
+    takeaway: 'A belief is a fair guide only when you can say how it could be wrong.' },
+  'samuel-learned': {
+    problem: 'Point 3 from the book list: “Art Samuel’s checker program ‘learned’ from experience so machines can apparently learn from experience.”',
+    chooser: -1,
+    options: [
+      { stance: 'Agree', text: 'The checker program learned. So machines can learn from experience.',
+        assumes: 'a better score later means learning.', verdict: 'Then say what learning is, in a test that fits people too.' },
+      { stance: 'Disagree', text: 'The program only did what its writer planned. The learning belongs to the writer.',
+        assumes: 'a change that was planned is not learning.', verdict: 'Then say why a student who improves is learning, but the program is not.' },
+      { stance: 'Depends', text: 'Depends on whether the writer could foresee every case the program meets.',
+        assumes: 'learning means meeting cases nobody planned.', verdict: 'Then ask: did the program ever surprise its own writer?' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: 'The book gives no argument for point 3. It only lists it. Samuel’s program is the background of Lecture 7.', t: 'book, ch. 8; Lecture 7' },
+      { k: 'Strongest counter', v: 'Someone says: “I think the programmer could come up with every single … situation and come up with a move.”', t: '01:41' },
+      { k: 'Test it', v: 'Could a program that picks good moves in new positions still be only a copy of its writer? Name what you would check.', t: '' }],
+    takeaway: 'A rising score and a learned idea may not be the same thing.' },
+  'how-not-what': {
+    problem: 'Point 9 from the book list: “Consider thinking may be the way something is done rather than what is done which determines whether it occurs or not.”',
+    chooser: -1,
+    options: [
+      { stance: 'Agree', text: 'Two systems can give the same answer and still differ in how they think.',
+        assumes: 'the way can be seen from outside.', verdict: 'Then name one difference you could observe between two ways that give the same answer.' },
+      { stance: 'Disagree', text: 'Only the answer counts. If two systems answer alike, they think alike.',
+        assumes: 'what a system does is all there is to judge.', verdict: 'Then say what you would conclude about a person who guesses right.' },
+      { stance: 'Depends', text: 'Depends on whether you can look inside. A trained network is hard to read like a program.',
+        assumes: 'the way is visible in some cases only.', verdict: 'Then say what you would look at inside a system to judge its way.' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: 'AI has traditionally stuck to the “what is done” and seldom considered the “how it is done”.', t: 'book, ch. 8' },
+      { k: 'Strongest counter', v: 'Someone says: “a computer doesn’t really think it executes … the instructions that are written.”', t: '03:53' },
+      { k: 'Test it', v: 'If the how is still only running instructions, does it change the verdict? Give one case where it would.', t: '' }],
+    takeaway: 'Ask how a system reaches its answer, not only whether the answer is right.' },
+  'degree': {
+    problem: 'Point 8 from the book list: “Thinking may be a matter of degree and not a yes/no thing.”',
+    chooser: -1,
+    options: [
+      { stance: 'Agree', text: 'Thinking comes in amounts. A missile guidance system senses and reacts, so it thinks a little.',
+        assumes: 'the amount can be ranked on one scale.', verdict: 'Then say what the scale measures.' },
+      { stance: 'Disagree', text: 'It is yes or no. A system either has a concept or it only follows rules.',
+        assumes: 'a concept is a kind of thing, not an amount.', verdict: 'Then say what makes the step from rules to concepts happen.' },
+      { stance: 'Depends', text: 'Depends on the ability. Sensing and reacting may come in degrees. Understanding may not.',
+        assumes: 'the abilities can be split apart.', verdict: 'Then name one ability for each side of the split.' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: 'The book states point 8 and gives no argument for it. You have to build one.', t: 'book, ch. 8' },
+      { k: 'Strongest counter', v: 'Someone says a dog has the general idea, while a computer “knows the rules”. The two differ in kind.', t: '21:37' },
+      { k: 'Test it', v: 'Name one test that would show a change of kind, not of amount. What would the test look like?', t: '' }],
+    takeaway: 'A degree needs a scale. Ask what the scale measures before you accept it.' },
+  'evidence': {
+    problem: 'Point 7 from the book list: “Whatever your opinion is, what evidence would you accept you are wrong?”',
+    chooser: -1,
+    options: [
+      { stance: 'Agree', text: 'Write the test first. I accept that a machine thinks only if it passes a test I set now.',
+        assumes: 'the test can be agreed before anyone sees the result.', verdict: 'Then write the test now, before you look at any machine.' },
+      { stance: 'Disagree', text: 'No test is needed. A machine that acts as if it thinks is thinking.',
+        assumes: 'acting like thinking is the same as thinking.', verdict: 'Then say how you would tell an acting machine from a thinking one.' },
+      { stance: 'Depends', text: 'Depends on the claim. A test can check what a machine does, not what it feels.',
+        assumes: 'feelings cannot be seen from outside.', verdict: 'Then name the part of your claim that has no test.' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: 'Take your own opinions, “try first to express them clearly, and then examine them with counter arguments, back and forth”.', t: 'book, ch. 8' },
+      { k: 'Strongest counter', v: 'Someone says: “I can prove that I’m daydreaming based on the emotions that I’m feeling from it why should I believe you”.', t: '17:56' },
+      { k: 'Test it', v: 'If only you can see your inner state, what outside result would still count as evidence?', t: '' }],
+    takeaway: 'Some evidence is only yours. Test the claim on what others can check.' },
+  'parts': {
+    problem: 'Point 5 from the book list: “Try to imagine the shortest, or close to the shortest, program you believe could think. No subpiece could think by definition.”',
+    chooser: -1,
+    options: [
+      { stance: 'Agree', text: 'A part of a thinking program cannot think alone. So thinking lives in the whole.',
+        assumes: 'the whole is more than its parts.', verdict: 'Then say what the extra piece is.' },
+      { stance: 'Disagree', text: 'Thinking can come from parts working together, as your body is parts working together.',
+        assumes: 'a whole can think when no part does.', verdict: 'Then name one part of you that thinks by itself.' },
+      { stance: 'Depends', text: 'Depends on how the parts are wired. A rule can be a part. A web of parts may think.',
+        assumes: 'structure matters more than the parts.', verdict: 'Then say what structure you would need to see.' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: 'The book gives this point with no argument. The definition does all the work.', t: 'book, ch. 8' },
+      { k: 'Strongest counter', v: 'Someone says: “you’ve got DNA that executes its code … somewhere above all that I think is where thought comes from.”', t: '34:18' },
+      { k: 'Test it', v: 'Cut your shortest program in two. Does either half think, by your own test?', t: '' }],
+    takeaway: 'Your rule for the smallest thinker decides whether thought can live in parts.' },
+  'programmer': {
+    problem: 'Point 1 from the book list: “Just because computers have not yet been programmed to think does not mean they cannot think; it may mean programmers are stupid!”',
+    chooser: -1,
+    options: [
+      { stance: 'Agree', text: 'If no program thinks yet, the programmers have not found the right one.',
+        assumes: 'a right program exists to be found.', verdict: 'Then describe the program you would write.' },
+      { stance: 'Disagree', text: 'A program can only do what its author sees. The thinking stays with the author.',
+        assumes: 'a program cannot go past its author’s view.', verdict: 'Then say what a program could find that its author did not foresee.' },
+      { stance: 'Depends', text: 'Depends on “programmed”. A rule written down differs from a rule a system learns.',
+        assumes: 'a learned rule is not written by a person.', verdict: 'Then say who wrote the rule that makes learning possible.' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: '“how sure are you for any clearly prespecified thing machines (programs) apparently cannot now do and in time still could not do it better than humans can?”', t: 'book, ch. 8' },
+      { k: 'Strongest counter', v: 'Someone says: “it wouldn’t be the computer discussing it it would be the programmer.”', t: '41:51' },
+      { k: 'Test it', v: 'Name one task you can write down that you think no program will ever do. Say what result would prove you wrong.', t: '' }],
+    takeaway: 'Before you say never, name the task you mean.' },
+  'apply-llm': {
+    problem: 'A large language model (LLM) is a program trained on very large amounts of text. Hamming did not see one. His points still apply. Pick the point you would use first.',
+    chooser: 1, who: 'Hamming',
+    options: [
+      { stance: 'Point 2', text: 'Set aside what you want from it. Judge only what it does.',
+        assumes: 'your wish is the main risk to your judgment.', verdict: 'Then the test must be fixed before you see the answer.' },
+      { stance: 'Point 9', text: 'Ask how it got the proof, not only whether the proof is right.',
+        assumes: 'the way can be checked from outside.', verdict: 'Then say what you would inspect, and what would count as the way.' },
+      { stance: 'Point 7', text: 'Write down the result that would show it does not reason, before you test it.',
+        assumes: 'a clear negative result can be stated in advance.', verdict: 'Then write that result down before you run the model.' }],
+    reveal: [
+      { k: "Hamming's reasoning", v: 'AI has traditionally stuck to the “what is done” and seldom considered the “how it is done”.', t: 'book, ch. 8' },
+      { k: 'Strongest counter', v: 'Someone says a computer “executes the instructions that are written”, so the how is still only execution.', t: '03:53' },
+      { k: 'Test it', v: 'Get two answers that both look right. What would you look at to tell their ways apart?', t: '' }],
+    takeaway: 'Hamming’s points do not answer the question. They tell you which evidence to ask for.' }
+};
+const DSTATE = {};
+Object.keys(DECISIONS).forEach(id => { DSTATE[id] = { pick: null, open: false }; });
+// Reveal a decision once; later calls change nothing. by: 'user' (a pick or the button) or 'cue'.
+function revealDecision(id, by) {
+  const st = DSTATE[id];
+  if (!st || st.open) return false;
+  st.open = true;
+  emit('view.action', { action: 'reveal', step: id, by: by });
+  return true;
+}
+function mountDecision(s, widget, side) {
+  const D = DECISIONS[s.id], st = DSTATE[s.id], open = st.open;
+  const redraw = () => goTo(cur, true);
+  const prob = mark(h('div', 'prob'), 'problem', s.id);
+  prob.append(setTex(h('p'), D.problem));
+  const opts = h('div', 'opts');
+  D.options.forEach((o, k) => {
+    const L = 'ABC'[k];
+    const card = mark(h('div', 'opt'), 'card', L);
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-disabled', open ? 'true' : 'false');
+    card.tabIndex = open ? -1 : 0;
+    card.classList.toggle('on', st.pick === L);
+    card.classList.toggle('chooser', open && k === D.chooser);
+    const who = [];
+    if (st.pick === L) who.push('Your pick');
+    if (open && k === D.chooser) who.push(D.who);
+    const top = hh('div', 'top', h('span', 'letter', L + '. ' + o.stance), h('span', 'who', who.join(', ')));
+    const asm = setTex(h('p', 'asm'), 'Assumes: ' + o.assumes);
+    const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'What it must still show: shown after your pick.');
+    card.append(hh('div', 'lhs', top, setTex(h('div', 'body'), o.text)), hh('div', 'rhs', asm, verdict));
+    card.addEventListener('click', () => {
+      if (DSTATE[s.id].open) return;
+      st.pick = L;
+      emit('view.action', { action: 'pick', step: s.id, option: L });
+      revealDecision(s.id, 'user');
+      redraw();
+    });
+    opts.append(card);
+  });
+  const rev = mark(h('div', 'reveal'), 'reveal', s.id);
+  if (!open) {
+    rev.classList.add('idle');
+    for (const r of D.reveal) rev.append(hh('p', 'rv hold', h('span', 'k', r.k + '. '), h('span', '', 'Shown after your pick.')));
+    const btn = mark(h('button', 'btn primary', 'Show answer'), 'control', 'show-answer');
+    btn.addEventListener('click', () => { if (revealDecision(s.id, 'user')) redraw(); });
+    rev.append(hh('div', 'actions', btn));
+  } else {
+    for (const r of D.reveal) {
+      const p = hh('p', 'rv', h('span', 'k', r.k + '. '));
+      p.append(setTex(h('span'), r.v));
+      if (r.t) p.append(h('span', 't', ' (' + r.t + ')'));
+      rev.append(p);
+    }
+  }
+  widget.append(prob, opts, rev);
+  side.append(hh('div', 'blk', h('div', 'kicker', 'Try it'), hh('ol', 'tries', ...D_TRIES.map(t => h('li', '', t)))));
+  side.append(open ? takeLine(D.takeaway) : h('p', 'hold', 'Takeaway: shown after your pick.'));
+}
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'wishful', tag: 'Lecture 00:07 · counter 24:46', title: 'Wanting machines to think does not make them think',
+    question: 'Can a wish about a machine be a reason to believe it, or to doubt it?' },
+  { id: 'samuel-learned', tag: 'Lecture 01:41 · counter 01:41', title: 'Did Samuel’s checker program really learn?',
+    question: 'If a program improves with practice, has it learned? What would you need to see?' },
+  { id: 'how-not-what', tag: 'Lecture 03:53 · counter 03:53', title: 'Does the way a machine works matter?',
+    question: 'Two machines give the same answers. Does it matter how each one gets there?' },
+  { id: 'degree', tag: 'Lecture 12:09 · counter 21:37', title: 'Is thinking a matter of degree?',
+    question: 'Is the difference between a system and a thinker a difference in amount, or in kind?' },
+  { id: 'evidence', tag: 'Lecture 17:56', title: 'What evidence would change your mind?',
+    question: 'If you are wrong about machines, what would show it? Name it before you pick.' },
+  { id: 'parts', tag: 'Lecture 34:18', title: 'Can thinking live in the parts of a program?',
+    question: 'Take the smallest program you think could think. Can any part of it think alone?' },
+  { id: 'programmer', tag: 'Lecture 41:20 · counter 41:51', title: 'Is the programmer doing the thinking?',
+    question: 'If a machine does something its programmer did not foresee, who is thinking?' },
+  { id: 'apply-llm', tag: 'Lecture 43:58 · closing', title: 'Apply the points to a large language model',
+    question: 'A large language model writes a correct proof and says it reasoned its way there. Which point do you check first?' }
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i, same) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  const widget = h('div', 'widget');
+  const side = h('div', 'side');
+  side.append(h('div', 'tag', s.tag), setTex(h('h2'), s.title));
+  side.append(setTex(h('p', 'q'), s.question));
+  const sec = mark(h('section', 'slide decision'), 'step', s.id);
+  sec.dataset.title = s.title;
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  mountDecision(s, widget, side);
+  tex(sec);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state. {step} goes to the step and does nothing if it is shown. {step, reveal: true}
+// also reveals that step, once; a revealed step stays revealed.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i < 0) return;
+  const changed = msg.reveal === true && revealDecision(SLIDES[i].id, 'cue');
+  if (i !== cur || changed) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title;
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt') && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); e.target.click(); return;
+    }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

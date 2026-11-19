@@ -1,0 +1,1372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Primer · Series: geometric and Taylor</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors come from the theme palette (../../components/theme.js): one accent (blue), red only for a failing check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.case{margin:0;font-size:16px;color:var(--fg)}
+.formula{font-size:clamp(18px,1.8vw,26px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.closing{margin:0;font-size:17px;font-weight:600}
+.next{margin:0;font-size:16px;color:var(--muted)}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(120px,11vw,170px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:52px}
+.btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:160px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* Name lines: what a term's name means */
+.name i{font-style:italic}
+
+/* Definitions table: each series, its term t_k, and the recipe */
+.defs{width:100%;border-collapse:collapse;font-size:clamp(16px,1.35vw,18px)}
+.defs th{font-weight:600;font-size:15px;color:var(--muted);text-align:left;padding:0 8px 2px 0}
+.defs td{padding:3px 8px 3px 0;vertical-align:middle;border-top:1px solid var(--pal-soft-3)}
+.defs .ref{font-size:15px;color:var(--muted)}
+.defs .expand{display:block;font-size:18px}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side{justify-content:flex-start}
+.slide.proof-slide .fill{min-height:180px}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,8vw,130px)}
+.slide.proof-slide .slide-ctl .val{min-width:30px}
+.slide.proof-slide .sliders{gap:6px 18px;align-items:center}
+.slide.proof-slide .legend{gap:4px 12px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px}
+.test .tries{gap:3px}
+.model{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:2px 24px}
+  footer{padding:3px 24px}
+  .widget{gap:5px}
+  .side{gap:4px}
+  .tries{gap:3px}
+  .sym,.tries{line-height:1.2}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:20px}
+  .fill{min-height:130px}
+  .readout{padding:3px 8px}
+  h2{font-size:20px}
+  .defs td{padding:1px 8px 1px 0}
+  .model{padding:5px 10px}
+  .test .tries{gap:1px}
+  .slide.proof-slide .fill{min-height:140px}
+  .slide.proof-slide .side{gap:2px}
+  .slide.proof-slide .tag{font-size:13px;line-height:1.2}
+  .slide.proof-slide h2{line-height:1.12}
+}
+</style>
+</head>
+<body>
+<header>Primer · Series: geometric and Taylor</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// ---------- palette and redraw ----------
+// COL holds the palette colors for the SVG being drawn. fillPlot reads it at every paint, so a draw always
+// uses the current theme. Light values are the old literals, so the light theme is unchanged.
+let COL = {};
+const PAL_NAMES = ['ink', 'text-2', 'muted', 'grey', 'grey-blue', 'slate-2', 'accent', 'accent-2', 'accent-deep',
+  'blue-deep', 'blue-pale', 'guide', 'line', 'soft', 'soft-2', 'grid', 'soft-3', 'panel', 'on-accent', 'bg',
+  'amber', 'amber-bg', 'amber-ink', 'red'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];   // the plots on the current slide; a theme switch redraws them, and keeps every control's state
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 5px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// A slider with a KaTeX label and a value readout.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmt = o.fmt || String;
+  const api = {
+    el: wrap,
+    input: inp,
+    show() { val.textContent = fmt(+inp.value); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { v.textContent = text; box.classList.toggle('bad', !!bad); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) sw.style.background = it.color;
+    else sw.style.borderTop = '2px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize.
+function fillPlot(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// Axes, grid and tick labels. Returns the maps from data to pixels.
+// o: {x0, x1, y0, y1, xt: [ticks], yt: [ticks], xlab, ylab, fmt}
+function axes(svg, W, H, o) {
+  const L = 58, R = 22, T = 34, B = 50;
+  const X = x => L + (x - o.x0) / (o.x1 - o.x0) * (W - L - R);
+  const Y = y => H - B - (y - o.y0) / (o.y1 - o.y0) * (H - B - T);
+  const fmt = o.fmt || (v => String(+v.toFixed(3)));
+  for (const y of o.yt) {
+    svgNode('line', { x1: L, x2: W - R, y1: Y(y), y2: Y(y), stroke: COL.soft3 }, svg);
+    svgText(svg, L - 8, Y(y) + 5, fmt(y), { 'text-anchor': 'end' });
+  }
+  for (const x of o.xt) {
+    svgNode('line', { x1: X(x), x2: X(x), y1: T, y2: H - B, stroke: COL.soft }, svg);
+    svgText(svg, X(x), H - B + 18, fmt(x), { 'text-anchor': 'middle' });
+  }
+  svgNode('line', { x1: L, x2: L, y1: T, y2: H - B, stroke: COL.grey }, svg);
+  svgNode('line', { x1: L, x2: W - R, y1: H - B, y2: H - B, stroke: COL.grey }, svg);
+  if (o.xlab) svgTex(svg, (L + W - R) / 2, H - 12, o.xlab, { w: W - L - R, size: 16 });
+  if (o.ylab) svgTex(svg, 4, 12, o.ylab, { anchor: 'start', w: 260, size: 16 });
+  return { X, Y, L, R, T, B, W, H };
+}
+// A polyline through [x, y] data points, mapped by X and Y. Points with NaN are skipped.
+function line(svg, pts, X, Y, attrs) {
+  const d = pts.filter(p => isFinite(p[1])).map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ');
+  return svgNode('path', Object.assign({ d: d, fill: 'none' }, attrs), svg);
+}
+function dot(svg, x, y, r, color) {
+  return svgNode('circle', { cx: x, cy: y, r: r, fill: color, stroke: COL.panel, 'stroke-width': 1.5 }, svg);
+}
+// Session events. Optional: with no bridge, nothing is sent.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* the view works without the bridge */ }
+}
+// Shared piece of every slide's right column.
+function sideCommon(side, parts) {
+  for (const p of parts) if (p) side.append(p);
+}
+function tries(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function takeaway(text) { return setTex(h('p', 'takeaway'), text); }
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function caseLine(text) { return setTex(h('p', 'case'), text); }
+function formula(text) { return setTex(h('div', 'formula'), text); }
+// A name line: what the term's name means and how it points at the idea (HTML with $math$).
+function nameLine(html) { const p = h('p', 'sym name'); p.innerHTML = html; return tex(p); }
+
+// ---------- slide 1: an endless sum has a value when the partial sums settle ----------
+function slideSeries(widget, side) {
+  let N = 4, mode = 'halves';
+  const bHalf = mark(h('button', 'btn on'), 'preset', 'halves');
+  setTex(bHalf, String.raw`Halves: $1+\frac12+\frac14+\cdots$`);
+  const bOnes = mark(h('button', 'btn'), 'preset', 'ones');
+  setTex(bOnes, String.raw`Ones: $1+1+1+\cdots$`);
+  const sl = slider(String.raw`$N$, terms added`, { id: 'N', name: 'terms', min: 1, max: 20, step: 1, value: N,
+    onInput: v => { N = v; update(); } });
+  const rS = readout('sum', String.raw`partial sum $S_N$`);
+  const rT = readout('term', String.raw`last term $a_{N-1}$`);
+  const rG = readout('gap', String.raw`distance to $2$`);
+  widget.append(hh('div', 'btnrow', bHalf, bOnes), hh('div', 'sliders', sl.el), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue dots: $S_N$, the sum of the first $N$ terms` },
+    { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: $2$, the limit of the halves (none for ones)` }]));
+  const plot = fillPlot(widget, drawSeries);
+  widget.append(hh('div', 'readouts', rS.el, rT.el, rG.el));
+  function setMode(m) {
+    mode = m;
+    bHalf.classList.toggle('on', m === 'halves');
+    bOnes.classList.toggle('on', m === 'ones');
+    update();
+  }
+  bHalf.addEventListener('click', () => setMode('halves'));
+  bOnes.addEventListener('click', () => setMode('ones'));
+  function partial(n) {
+    let s = 0;
+    for (let k = 0; k < n; k++) s += mode === 'halves' ? Math.pow(0.5, k) : 1;
+    return s;
+  }
+  function update() {
+    const s = partial(N);
+    rS.set(s.toFixed(4));
+    if (mode === 'halves') {
+      rT.set(Math.pow(0.5, N - 1).toPrecision(3));
+      rG.set(Math.pow(2, 1 - N).toPrecision(3));
+    } else {
+      rT.set('1');
+      rG.set('no limit: grows', true);
+    }
+    plot.redraw();
+  }
+  function drawSeries(svg, W, H) {
+    const ymax = mode === 'halves' ? 2.5 : 20;
+    const A = axes(svg, W, H, { x0: 0, x1: 20, y0: 0, y1: ymax, xt: [0, 5, 10, 15, 20],
+      yt: mode === 'halves' ? [0, 0.5, 1, 1.5, 2, 2.5] : [0, 5, 10, 15, 20],
+      xlab: String.raw`$N$, number of terms`, ylab: String.raw`$S_N$, partial sum` });
+    if (mode === 'halves') {
+      svgNode('line', { x1: A.L, x2: W - A.R, y1: A.Y(2), y2: A.Y(2), stroke: COL.ink, 'stroke-dasharray': '6 5' }, svg);
+      svgTex(svg, W - A.R - 90, A.Y(2) - 16, '$2$, the limit', { w: 170, anchor: 'end', size: 15, fill: COL.ink });
+    }
+    const pts = [];
+    for (let n = 1; n <= N; n++) pts.push([n, partial(n)]);
+    line(svg, pts, A.X, A.Y, { stroke: COL.accent, 'stroke-width': 2 });
+    for (const [n, s] of pts) dot(svg, A.X(n), A.Y(s), 4, COL.accent);
+  }
+  update();
+  side.append(
+    tag('Used in L13 29:44 · L15 17:02'),
+    setTex(h('h2'), 'An endless sum can have a value'),
+    setTex(h('p', 'question'), 'When does an endless sum have a finite value?'),
+    caseLine(String.raw`Two cakes on the table. Eat one, then half of what is left, then half again, forever. How much do you eat in all?`),
+    formula(String.raw`$$S_N=\sum_{k=0}^{N-1}a_k,\qquad a_k=\left(\tfrac12\right)^{k}$$`),
+    sym(String.raw`$a_k$: term $k$, the bite after $k$ bites; $S_N$: the first $N$ terms added; the endless sum is the limit of $S_N$. Why the halves reach 2: step 2.`),
+    nameLine(String.raw`<i>series</i>: Latin <i>seriēs</i>, a row, from <i>serere</i>, to join: terms joined one after another into one sum.`),
+    tries([
+      String.raw`Set $N = 10$. The dots reach $1.998$. What is the distance to $2$?`,
+      String.raw`Choose ones and drag $N$ to 20. Does $S_N$ settle to one number?`,
+      String.raw`Which terms get smaller, and which do not?`]),
+    takeaway(String.raw`An endless sum has a value when its partial sums settle to one number.`));
+  function tag(s) { return h('div', 'tag', s); }
+}
+
+// ---------- slide 2: the geometric sum in one line ----------
+function slideGeometric(widget, side) {
+  let r = 0.5, N = 10;
+  const sr = slider(String.raw`$r$, ratio`, { id: 'r', name: 'ratio', min: 0.1, max: 1.2, step: 0.05, value: r,
+    fmt: v => v.toFixed(2), onInput: v => { r = v; update(); } });
+  const sN = slider(String.raw`$N$, terms`, { id: 'N', name: 'terms', min: 1, max: 12, step: 1, value: N,
+    onInput: v => { N = v; update(); } });
+  const rAdd = readout('add', String.raw`add one by one: $S_N$`);
+  const rF = readout('formula', String.raw`$\frac{1-r^{N}}{1-r}$`);
+  const rD = readout('diff', String.raw`difference`);
+  const rL = readout('limit', String.raw`limit $\frac{1}{1-r}$`);
+  widget.append(hh('div', 'sliders', sr.el, sN.el), legend([
+    { color: 'var(--pal-grey)', chip: true, text: String.raw`grey bars: terms $r^{k}$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue dots: running sum $S_k$` },
+    { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: limit $\frac{1}{1-r}$, only when $r<1$` }]));
+  const plot = fillPlot(widget, drawGeo);
+  widget.append(hh('div', 'readouts', rAdd.el, rF.el, rD.el, rL.el));
+  function sums() {
+    const out = []; let s = 0;
+    for (let k = 0; k < N; k++) { s += Math.pow(r, k); out.push([k, Math.pow(r, k), s]); }
+    return out;
+  }
+  function update() {
+    const rows = sums(), last = rows[rows.length - 1][2];
+    const closed = (1 - Math.pow(r, N)) / (1 - r);
+    rAdd.set(last.toFixed(6));
+    rF.set(closed.toFixed(6));
+    rD.set(Math.abs(last - closed).toExponential(1));
+    if (r < 1) rL.set((1 / (1 - r)).toFixed(4));
+    else rL.set('none: terms do not shrink', true);
+    plot.redraw();
+  }
+  function drawGeo(svg, W, H) {
+    const rows = sums();
+    const lim = r < 1 ? 1 / (1 - r) : 0;
+    const ymax = Math.max(1.1 * Math.max(lim, rows[rows.length - 1][2], 1), 1.5);
+    const A = axes(svg, W, H, { x0: -0.5, x1: 11.5, y0: 0, y1: ymax, xt: [0, 2, 4, 6, 8, 10],
+      yt: niceTicks(ymax), xlab: String.raw`$k$, index of the term` });
+    const bw = (A.X(0.6) - A.X(-0.4));
+    for (const [k, t] of rows.map(x => [x[0], x[1]])) {
+      svgNode('rect', { x: A.X(k) - bw / 2, y: A.Y(t), width: bw, height: A.Y(0) - A.Y(t), fill: COL.grey, opacity: 0.8 }, svg);
+    }
+    if (r < 1) {
+      svgNode('line', { x1: A.L, x2: W - A.R, y1: A.Y(lim), y2: A.Y(lim), stroke: COL.ink, 'stroke-dasharray': '6 5' }, svg);
+      svgTex(svg, W - A.R - 110, A.Y(lim) - 16, String.raw`$\frac{1}{1-r}$`, { w: 150, anchor: 'end', size: 15, fill: COL.ink });
+    }
+    line(svg, rows.map(x => [x[0], x[2]]), A.X, A.Y, { stroke: COL.accent, 'stroke-width': 2 });
+    for (const x of rows) dot(svg, A.X(x[0]), A.Y(x[2]), 4, COL.accent);
+  }
+  update();
+  side.append(
+    h('div', 'tag', 'Used in L13 29:44'),
+    setTex(h('h2'), 'The geometric sum in one line'),
+    setTex(h('p', 'question'), String.raw`How do you add $1+r+\cdots+r^{N-1}$ without adding each term?`),
+    formula(String.raw`$$1+r+\cdots+r^{N-1}=\frac{1-r^{N}}{1-r}$$`),
+    sym(String.raw`$r$: ratio of each term to the last, $r\ne1$; $N$: number of terms. For $|r|<1$ the endless sum is $\frac{1}{1-r}$. Why: step 4.`),
+    tries([
+      String.raw`Set $r=0.5$, $N=10$. The dots match the formula.`,
+      String.raw`Set $r=1.1$. The formula still holds, but there is no limit.`]),
+    takeaway(String.raw`A geometric sum takes one subtraction, not a long addition.`));
+}
+// Tick values for the y axis, about five, in steps of 0.5, 1, 2, 5 or 10.
+function niceTicks(ymax) {
+  const raw = ymax / 4, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 5, 10].map(m => m * p).find(s => s >= raw) || 10 * p;
+  const out = [];
+  for (let v = 0; v <= ymax + 1e-9; v += step) out.push(+v.toFixed(6));
+  return out;
+}
+
+// ---------- slide 3: a polynomial copies e^x near 0 ----------
+function slideTaylor(widget, side) {
+  let n = 1;
+  const sl = slider(String.raw`$n$, highest power`, { id: 'n', name: 'degree', min: 0, max: 8, step: 1, value: n,
+    onInput: v => { n = v; update(); } });
+  const rT = readout('poly', String.raw`$T_n(1)$, the polynomial at $x=1$`);
+  const rE = readout('exact', String.raw`$e^{1}$, the function at $x=1$`);
+  const rErr = readout('err', String.raw`error $e^{1}-T_n(1)$`);
+  widget.append(hh('div', 'sliders', sl.el), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue: $e^{x}$, the function` },
+    { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: $T_n(x)=\sum_{k=0}^{n}\frac{x^{k}}{k!}$, the polynomial` },
+    { color: 'var(--pal-ink)', chip: true, text: String.raw`dot: $x=0$, where they agree` }]));
+  const plot = fillPlot(widget, drawTaylor);
+  widget.append(hh('div', 'readouts', rT.el, rE.el, rErr.el));
+  function T(x, deg) {
+    let s = 0, f = 1;
+    for (let k = 0; k <= deg; k++) { if (k > 0) f *= k; s += Math.pow(x, k) / f; }
+    return s;
+  }
+  function update() {
+    const p = T(1, n);
+    rT.set(p.toFixed(4));
+    rE.set(Math.E.toFixed(4));
+    rErr.set((Math.E - p).toFixed(4));
+    plot.redraw();
+  }
+  function drawTaylor(svg, W, H) {
+    const A = axes(svg, W, H, { x0: -2, x1: 2, y0: -1, y1: 8, xt: [-2, -1, 0, 1, 2], yt: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
+      xlab: String.raw`$x$`, ylab: String.raw`$y$` });
+    const xs = [];
+    for (let x = -2; x <= 2.0001; x += 0.02) xs.push(x);
+    line(svg, xs.map(x => [x, Math.exp(x)]), A.X, A.Y, { stroke: COL.accent, 'stroke-width': 2.5 });
+    line(svg, xs.map(x => [x, T(x, n)]), A.X, A.Y, { stroke: COL.ink, 'stroke-width': 2, 'stroke-dasharray': '7 5' });
+    dot(svg, A.X(0), A.Y(1), 6, COL.ink);
+    svgTex(svg, A.X(0) + 46, A.Y(1) - 2, String.raw`$(0,\,1)$`, { w: 120, anchor: 'start', size: 15, fill: COL.ink });
+  }
+  update();
+  side.append(
+    h('div', 'tag', 'Used in L3 13:08 · L7 12:28'),
+    setTex(h('h2'), 'A polynomial that copies a function'),
+    setTex(h('p', 'question'), String.raw`How can a polynomial copy $e^{x}$ near $x=0$?`),
+    caseLine('Hamming let a machine differentiate a function nineteen times to get the first twenty terms of its power series (L7 12:28).'),
+    formula(String.raw`$$T_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(0)}{k!}\,x^{k}$$`),
+    sym(String.raw`$f^{(k)}(0)$: the $k$-th slope of $f$ at 0 (slope of the slope, and so on). The copy $T_n$ has $f$'s value and first $n$ slopes at 0. For $e^{x}$ each is 1, so $T_n(x)=\sum_{k=0}^{n}\frac{x^{k}}{k!}$. Why: step 6.`),
+    nameLine(String.raw`<i>polynomial</i>: Greek <i>poly-</i>, many, and <i>nomós</i>, part: a sum of many parts, the terms $c_kx^{k}$.`),
+    tries([
+      String.raw`Set $n=1$. The line touches $e^{x}$ at $0$ with the same slope: the tangent line of Primer · Derivatives, step 11.`,
+      String.raw`Set $n=4$. The error at $x=1$ falls below $0.01$.`]),
+    takeaway('A polynomial copies a function near a point by matching its value, slope and bend there.'));
+}
+
+// ---------- slide 4: where the ln(1+x) series can be trusted ----------
+function slideTrust(widget, side) {
+  let n = 3, x = 0.5;
+  const sn = slider(String.raw`$n$, terms`, { id: 'n', name: 'terms', min: 1, max: 30, step: 1, value: n,
+    onInput: v => { n = v; update(); } });
+  const sx = slider(String.raw`$x$, point`, { id: 'x', name: 'point', min: -0.9, max: 2, step: 0.1, value: x,
+    fmt: v => v.toFixed(1), onInput: v => { x = v; update(); } });
+  const rP = readout('partial', String.raw`$P_n(x)$, the first $n$ terms`);
+  const rTrue = readout('true', String.raw`$\ln(1+x)$, the true value`);
+  const rErr = readout('err', String.raw`error`);
+  const rNext = readout('next', String.raw`next term $\frac{|x|^{n+1}}{n+1}$`);
+  widget.append(hh('div', 'sliders', sn.el, sx.el), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue: $\ln(1+x)$, the true curve` },
+    { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: $P_n(x)$, the partial sum` },
+    { color: 'var(--pal-ink)', chip: true, text: String.raw`dot: the point $x$ you chose` }]));
+  const plot = fillPlot(widget, drawTrust);
+  widget.append(hh('div', 'readouts', rP.el, rTrue.el, rErr.el, rNext.el));
+  // P_n(x) = sum_{k=1}^{n} (-1)^{k+1} x^k / k
+  function P(xv, deg) {
+    let s = 0;
+    for (let k = 1; k <= deg; k++) s += Math.pow(-1, k + 1) * Math.pow(xv, k) / k;
+    return s;
+  }
+  function update() {
+    const p = P(x, n), t = Math.log(1 + x);
+    rP.set(Math.abs(p) > 1e4 ? p.toExponential(2) : p.toFixed(4), Math.abs(p - t) > 0.1);
+    rTrue.set(t.toFixed(4));
+    rErr.set(Math.abs(t - p) > 1e4 ? Math.abs(t - p).toExponential(2) : Math.abs(t - p).toPrecision(3), Math.abs(t - p) > 0.1);
+    rNext.set((Math.pow(Math.abs(x), n + 1) / (n + 1)).toPrecision(3));
+    plot.redraw();
+  }
+  function drawTrust(svg, W, H) {
+    const A = axes(svg, W, H, { x0: -1.5, x1: 2.5, y0: -3, y1: 2.5, xt: [-1, 0, 1, 2], yt: [-3, -2, -1, 0, 1, 2],
+      xlab: String.raw`$x$`, ylab: String.raw`$y$` });
+    const clip = svgNode('clipPath', { id: 'clipPlot' }, svg);
+    svgNode('rect', { x: A.L, y: A.T, width: W - A.L - A.R, height: H - A.B - A.T }, clip);
+    const g = svgNode('g', { 'clip-path': 'url(#clipPlot)' }, svg);
+    const xs = [];
+    for (let v = -0.99; v <= 2.5001; v += 0.02) xs.push(v);
+    line(g, xs.map(v => [v, Math.log(1 + v)]), A.X, A.Y, { stroke: COL.accent, 'stroke-width': 2.5 });
+    const ps = [];
+    for (let v = -1.5; v <= 2.5001; v += 0.02) ps.push(v);
+    line(g, ps.map(v => [v, P(v, n)]), A.X, A.Y, { stroke: COL.ink, 'stroke-width': 2, 'stroke-dasharray': '7 5' });
+    if (Math.abs(P(x, n)) < 3.5) dot(svg, A.X(x), A.Y(P(x, n)), 6, COL.ink);
+    dot(svg, A.X(x), A.Y(Math.log(1 + x)), 6, COL.accent);
+  }
+  update();
+  side.append(
+    h('div', 'tag', 'Used in L18 22:08'),
+    setTex(h('h2'), 'How far from the point can you trust it?'),
+    setTex(h('p', 'question'), String.raw`For which $x$ does the series of $\ln(1+x)$ give the right answer?`),
+    formula(String.raw`$$\ln(1+x)=x-\frac{x^{2}}{2}+\frac{x^{3}}{3}-\cdots$$`),
+    sym(String.raw`$P_n(x)$: the first $n$ terms. The series is right for $-1<x\le1$, and nowhere else. Why: step 8.`),
+    nameLine(String.raw`<i>converge</i>: Latin <i>con-</i>, together, and <i>vergere</i>, to bend: the partial sums bend in toward one value. Here they converge for $-1&lt;x\le1$.`),
+    tries([
+      String.raw`Set $x=0.5$ and $n=20$. The dashed curve runs through the dot, where $\ln 1.5 = 0.4055$.`,
+      String.raw`Set $x=1$. The error shrinks, but slowly.`,
+      String.raw`Set $x=2$ and raise $n$. The sum blows up. Compare the next term.`]),
+    takeaway(String.raw`The series works for $-1<x\le1$, and the next term tells you how far to trust a short sum.`));
+}
+
+// ---------- slide 5: each term from the one before ----------
+function slideTerms(widget, side) {
+  let mode = 'bessel', x = 1, n = 8;
+  const bB = mark(h('button', 'btn on'), 'preset', 'bessel');
+  setTex(bB, String.raw`$I_0(x)$`);
+  const bE = mark(h('button', 'btn'), 'preset', 'exp');
+  setTex(bE, String.raw`$e^{x}$`);
+  const sx = slider(String.raw`$x$`, { id: 'x', name: 'point', min: 0.5, max: 6, step: 0.5, value: x,
+    fmt: v => v.toFixed(1), onInput: v => { x = v; update(); } });
+  const sn = slider(String.raw`$n$, last term`, { id: 'n', name: 'last term', min: 1, max: 15, step: 1, value: n,
+    onInput: v => { n = v; update(); } });
+  const rT = readout('term', String.raw`last term $t_n$`);
+  const rM = readout('mult', String.raw`multiplier $t_n/t_{n-1}$`);
+  const rS = readout('sum', String.raw`running sum $S_n$`);
+  const rD = readout('gap', String.raw`distance to the limit`);
+  widget.append(hh('div', 'btnrow', bB, bE), hh('div', 'sliders', sx.el, sn.el), legend([
+    { color: 'var(--pal-grey)', chip: true, text: String.raw`grey bars: term $t_k$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue dots: running sum $S_k$` },
+    { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: the value the sum settles to (80 terms)` }]));
+  const plot = fillPlot(widget, drawTerms);
+  widget.append(hh('div', 'readouts', rT.el, rM.el, rS.el, rD.el));
+  // Bessel: t_k = t_{k-1} (x/2)^2 / k^2. Exponential: t_k = t_{k-1} x / k.
+  function factor(k) {
+    return mode === 'bessel' ? Math.pow(x / 2, 2) / (k * k) : x / k;
+  }
+  function terms(count) {
+    const t = [1];
+    for (let k = 1; k <= count; k++) t.push(t[k - 1] * factor(k));
+    return t;
+  }
+  function limit() {
+    return terms(80).reduce((a, b) => a + b, 0);
+  }
+  function update() {
+    const t = terms(n), s = t.reduce((a, b) => a + b, 0);
+    rT.set(t[n].toPrecision(3));
+    rM.set(factor(n).toFixed(4));
+    rS.set(s.toFixed(4));
+    const gap = Math.abs(limit() - s);
+    rD.set(gap < 1e-12 ? '0' : gap.toExponential(1));
+    plot.redraw();
+  }
+  function setMode(m) {
+    mode = m;
+    bB.classList.toggle('on', m === 'bessel');
+    bE.classList.toggle('on', m === 'exp');
+    update();
+  }
+  bB.addEventListener('click', () => setMode('bessel'));
+  bE.addEventListener('click', () => setMode('exp'));
+  function drawTerms(svg, W, H) {
+    const t = terms(n), lim = limit();
+    const ymax = Math.max(...t, lim) * 1.12;
+    const A = axes(svg, W, H, { x0: -0.6, x1: 15.6, y0: 0, y1: ymax, xt: [0, 3, 6, 9, 12, 15], yt: niceTicks(ymax),
+      xlab: String.raw`$k$, index of the term` });
+    const bw = A.X(0.6) - A.X(-0.4);
+    t.forEach((v, k) => {
+      svgNode('rect', { x: A.X(k) - bw / 2, y: A.Y(v), width: bw, height: Math.max(0, A.Y(0) - A.Y(v)), fill: COL.grey, opacity: 0.85 }, svg);
+      if (v >= 0.05 * ymax) svgText(svg, A.X(k), A.Y(v) - 6, v >= 100 ? v.toFixed(0) : v.toPrecision(3), { 'text-anchor': 'middle', fill: COL.text2, 'font-size': 12 });
+    });
+    const sums = []; let acc = 0;
+    t.forEach((v, k) => { acc += v; sums.push([k, acc]); });
+    line(svg, sums, A.X, A.Y, { stroke: COL.accent, 'stroke-width': 2 });
+    for (const [k, v] of sums) dot(svg, A.X(k), A.Y(v), 4, COL.accent);
+    svgNode('line', { x1: A.L, x2: W - A.R, y1: A.Y(lim), y2: A.Y(lim), stroke: COL.ink, 'stroke-dasharray': '6 5' }, svg);
+    svgTex(svg, W - A.R - 8, A.Y(lim) - 16, String.raw`limit $\approx ${lim.toFixed(3)}$`, { w: 220, anchor: 'end', size: 15, fill: COL.ink });
+  }
+  update();
+  // The two series side by side: definition (t_k is the term under the sum) and the recipe.
+  const defs = h('table', 'defs');
+  defs.innerHTML = '<tr><td></td><td></td></tr><tr><td></td><td></td></tr>';
+  const cells = defs.querySelectorAll('td');
+  cells[0].append(tex(h('span', '', String.raw`$e^{x}=\sum_{k\ge0}\dfrac{x^{k}}{k!}$`)), h('span', 'ref', ' (step 5)'));
+  setTex(cells[1], String.raw`$t_k=t_{k-1}\cdot\dfrac{x}{k}$`);
+  cells[2].append(tex(h('span', '', String.raw`$I_0(x)=\sum_{k\ge0}\dfrac{(x/2)^{2k}}{(k!)^{2}}$`)),
+    tex(h('span', 'expand', String.raw`$=1+\tfrac{x^{2}}{4}+\tfrac{x^{4}}{64}+\cdots$`)));
+  setTex(cells[3], String.raw`$t_k=t_{k-1}\cdot\dfrac{(x/2)^{2}}{k^{2}}$`);
+  side.append(
+    h('div', 'tag', 'Used in L16 03:42 to 04:13'),
+    setTex(h('h2'), 'Each term from the one before'),
+    setTex(h('p', 'question'), 'How do you add a series quickly, without a new power for each term?'),
+    defs,
+    sym(String.raw`$t_k$: the term under the $\sum$; $t_0=1$ in both. Why each recipe holds: step 10.`),
+    caseLine(String.raw`$I_0$ is Bessel's function. Kaiser's filter window (L16 03:42) takes its weights from it; Hamming gives only this series. Each term is a term of $e^{x/2}$, squared.`),
+    tries([
+      String.raw`Pick $I_0$, $x=1$: $t_1=0.25$ and $t_2=0.015625$ are $x^2/4$ and $x^4/64$ at $x=1$.`,
+      String.raw`Set $x=6$: the terms rise to $t_2 = t_3 = 20.25$, then fall. Raise $n$ until the sum stops changing.`,
+      String.raw`Switch to $e^{x}$. Only the multiplier changes.`]),
+    takeaway('Each term costs one multiply and one divide, so a series is cheap to add term by term.'));
+}
+
+// ---------- step 6: why each term comes from the one before (proof) ----------
+// Amber marks what the newest proof line is about, in the picture and in the proof.
+// Left column of a proof slide: controls, the picture, legend, readouts, the test, the mental model.
+function proofLeft(widget, o) {
+  if (o.controls && o.controls.length) widget.append(hh('div', 'sliders', ...o.controls));
+  const plot = fillPlot(widget, o.draw);
+  widget.append(legend(o.legend));
+  if (o.readouts && o.readouts.length) widget.append(hh('div', 'readouts', ...o.readouts.map(r => r.el)));
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), tries(o.tests));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+  widget.append(test, model);
+  plot.test = test;
+  return plot;
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is
+// done, the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight, hint) {
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = hint || 'Look back: under the picture.';
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+// ---------- marks shared by the proof pictures ----------
+function glowBox(svg, x, y, w, ht, pad) {
+  pad = pad == null ? 5 : pad;
+  return svgNode('rect', { x: (x - pad).toFixed(1), y: (y - pad).toFixed(1), width: Math.max(0, w + 2 * pad).toFixed(1),
+    height: Math.max(0, ht + 2 * pad).toFixed(1), rx: 7, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 }, svg);
+}
+function glowPath(svg, d, wdt) {
+  return svgNode('path', { d: d, fill: 'none', stroke: COL.amberBg, 'stroke-width': wdt || 12, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+}
+function glowDot(svg, x, y, r) { return svgNode('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: r || 12, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 }, svg); }
+function pathD(pts) { return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' '); }
+// The line over a proof picture: amber when a proof line lights part of the picture, grey otherwise.
+function capLine(svg, W, cap, idle) {
+  if (cap) svgTex(svg, W / 2, 13, cap, { w: W - 8, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  else if (idle) svgTex(svg, 4, 13, idle, { w: W - 10, anchor: 'start', size: 15, fill: COL.muted });
+}
+// A label rendered by katex.render, for TeX that holds \colorbox{..}{$..$} (auto-render would split it).
+function svgKatex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 28;
+  const fo = svgNode('foreignObject', { x: o.anchor === 'start' ? x : x - w / 2, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' + (o.size || 15) +
+    'px;color:' + COL.text2 + ';justify-content:' + (o.anchor === 'start' ? 'flex-start' : 'center'));
+  const span = document.createElementNS(NHT, 'span');
+  if (window.katex) window.katex.render(s, span, { throwOnError: false });
+  else span.textContent = s;
+  d.appendChild(span);
+  fo.appendChild(d);
+  return fo;
+}
+function fmtNum(v) { return Math.abs(v) >= 100 ? v.toFixed(1) : String(+v.toPrecision(4)); }
+
+// ---------- step 2: why the halves add up to 2 (proof) ----------
+const HALF_TEX = ['1', String.raw`\tfrac12`, String.raw`\tfrac14`, String.raw`\tfrac18`, String.raw`\tfrac1{16}`];
+function drawHalves(svg, W, H, N, lit) {
+  const L = 18, R = 18, X = v => L + v / 2 * (W - L - R);
+  const S = n => (n <= 0 ? 0 : 2 - Math.pow(0.5, n - 1));
+  const g = Math.pow(0.5, N - 1);
+  capLine(svg, W, {
+    gap: String.raw`amber: $g_{${N}}=2-S_{${N}}$, the part not yet eaten`,
+    bite: String.raw`amber: the next bite, $a_{${N}}=(\tfrac12)^{${N}}$, is half of what is left`,
+    halves: String.raw`amber: what is left halves at each bite, from $g_1=1$`,
+    limit: String.raw`amber: what is left shrinks toward 0, so $S_N$ closes in on $2$` }[lit],
+    String.raw`two cakes, $2$ in all: $N$ bites in blue, what is left in the empty box`);
+  const bh = Math.max(22, Math.min(42, H * 0.13)), yb = 60, ye = yb + bh;
+  const xs = X(S(N)), xe = X(2);
+  // what is left: a bracket and its name above the bar
+  svgNode('path', { d: 'M' + xs.toFixed(1) + ' ' + (yb - 2) + ' L' + xs.toFixed(1) + ' ' + (yb - 9) + ' L' + xe.toFixed(1) + ' ' + (yb - 9) + ' L' + xe.toFixed(1) + ' ' + (yb - 2),
+    fill: 'none', stroke: COL.muted, 'stroke-width': 1.5 }, svg);
+  svgTex(svg, xe, yb - 23, String.raw`left: $g_{${N}}=2-S_{${N}}=${+g.toPrecision(3)}$`, { w: 300, anchor: 'end', size: 15, fill: lit === 'gap' ? COL.amberInk : COL.ink, bg: lit === 'gap' ? COL.amberBg : null });
+  if (lit === 'gap') glowBox(svg, xs, yb, xe - xs, bh, 5);
+  if (lit === 'bite') glowBox(svg, xs, yb, (xe - xs) / 2, bh, 3);
+  if (lit === 'limit') glowPath(svg, 'M' + xe.toFixed(1) + ' ' + (yb - 6) + ' L' + xe.toFixed(1) + ' ' + (ye + 6), 12);
+  for (let k = 0; k < N; k++) {
+    const x0 = X(S(k)), x1 = X(S(k + 1));
+    svgNode('rect', { x: x0.toFixed(1), y: yb, width: Math.max(0.5, x1 - x0).toFixed(1), height: bh.toFixed(1), fill: k % 2 ? COL.blueDeep : COL.accent,
+      stroke: COL.panel, 'stroke-width': 1, 'data-item': 'mark', 'data-id': 'bite-' + k }, svg);
+    if (k < HALF_TEX.length && x1 - x0 > 26) svgTex(svg, (x0 + x1) / 2, yb + bh / 2, '$' + HALF_TEX[k] + '$', { w: Math.max(30, x1 - x0), size: 15, fill: COL.onAccent });
+  }
+  svgNode('rect', { x: xs.toFixed(1), y: yb, width: Math.max(0.5, xe - xs).toFixed(1), height: bh.toFixed(1), fill: 'none', stroke: COL.muted,
+    'stroke-dasharray': '4 3', 'data-item': 'mark', 'data-id': 'left' }, svg);
+  if (lit === 'bite' && xe - xs > 6) svgNode('line', { x1: ((xs + xe) / 2).toFixed(1), x2: ((xs + xe) / 2).toFixed(1), y1: yb, y2: ye, stroke: COL.amber, 'stroke-width': 2 }, svg);
+  for (const v of [0, 0.5, 1, 1.5, 2]) {
+    svgNode('line', { x1: X(v).toFixed(1), x2: X(v).toFixed(1), y1: ye, y2: ye + 5, stroke: COL.grey }, svg);
+    svgText(svg, X(v), ye + 19, String(v), { 'text-anchor': v === 0 ? 'start' : v === 2 ? 'end' : 'middle', 'font-size': 13 });
+  }
+  // what is left after bite 1, 2, 3, ...: each row half the one above, right-aligned at 2
+  const yl0 = ye + 28, avail = H - 6 - yl0;
+  const rows = Math.max(2, Math.min(5, Math.floor(avail / 19))), rh = Math.min(32, avail / rows);
+  const bar = Math.min(16, rh * 0.62);
+  for (let j = 1; j <= rows; j++) {   // rows after bites not yet taken are dashed
+    const yc = yl0 + (j - 0.5) * rh, x0 = X(S(j)), done = j <= N;
+    if (lit === 'halves' && done) glowBox(svg, x0, yc - bar / 2, xe - x0, bar, 3);
+    svgNode('rect', { x: x0.toFixed(1), y: (yc - bar / 2).toFixed(1), width: Math.max(0.5, xe - x0).toFixed(1), height: bar.toFixed(1),
+      fill: !done ? 'none' : j === N ? COL.guide : COL.soft2, stroke: COL.grey, 'stroke-dasharray': done ? '' : '3 3', 'data-item': 'mark', 'data-id': 'left-after-' + j }, svg);
+    svgTex(svg, L, yc, '$g_{' + j + '}=' + HALF_TEX[j - 1] + '$', { w: 110, anchor: 'start', size: 14, fill: done ? COL.text2 : COL.muted });
+    if (j > 1 && x0 - 60 > L + 110) svgTex(svg, x0 - 8, yc, String.raw`$\tfrac12$ of the row above`, { w: 170, anchor: 'end', size: 13, fill: COL.muted });
+  }
+}
+function slideWhyHalves(widget, side) {
+  let N = 3, lit = '';
+  const sN = slider(String.raw`$N$, bites`, { id: 'N', name: 'bites', min: 1, max: 12, step: 1, value: N, onInput: v => { N = v; update(); } });
+  const rS = readout('eaten', String.raw`eaten: $S_N$`);
+  const rG = readout('left', String.raw`left: $2-S_N$`);
+  const rT = readout('last', String.raw`last bite: $a_{N-1}$`);
+  const plot = proofLeft(widget, {
+    controls: [sN.el],
+    draw: (svg, W, Hh) => drawHalves(svg, W, Hh, N, lit),
+    legend: [
+      { color: 'var(--pal-accent)', chip: true, text: String.raw`blue: the bites $1,\tfrac12,\tfrac14,\dots$` },
+      { color: 'var(--pal-muted)', dash: true, text: String.raw`empty box: what is left, $g_N$` },
+      { color: 'var(--pal-soft-2)', chip: true, text: 'filled rows: what is left after bite 1, 2, 3, ... (dashed: bites to come)' }],
+    readouts: [rS, rG, rT],
+    tests: [
+      String.raw`Set $N=10$: what is left, $2-S_{10}=0.00195$, equals the last bite, $(\tfrac12)^9$. Guess a rule for what is left after $N$ bites.`,
+      String.raw`Test your rule at $N=3$ and $N=6$. Cases are evidence, not proof.`],
+    model: String.raw`Each bite takes half of what is left, so what is left halves with every bite. Halving forever goes below any size.` });
+  side.append(
+    h('div', 'tag', 'Used in L13 29:44 · L15 17:02'),
+    setTex(h('h2'), String.raw`Why it's true: $1+\tfrac12+\tfrac14+\cdots=2$`),
+    setTex(h('p', 'question'), 'Why does eating half of what is left, forever, add up to exactly the two cakes?'));
+  proofRight(side, {
+    id: 'halves',
+    goal: { tex: String.raw`S_N=1+\tfrac12+\cdots+(\tfrac12)^{N-1}\to2`, words: String.raw`as $N$ grows: what is left, $2-S_N$, goes to 0.` },
+    facts: [
+      { words: String.raw`an endless sum is the limit of its partial sums $S_N$`, ref: 'step 1' },
+      { tex: String.raw`S_{N+1}=S_N+a_N`, words: String.raw`with $a_N=(\tfrac12)^N$, the next bite` }],
+    lines: [
+      { tex: String.raw`g_N=2-S_N`, move: 'Name a piece',
+        why: String.raw`what is left of the two cakes after $N$ bites`, choices: ['Unfold the definition', 'Change variables'], highlight: 'gap' },
+      { tex: String.raw`g_{N+1}=2-S_N-a_N=g_N-(\tfrac12)^N`, move: 'Rearrange',
+        why: String.raw`the next bite comes off what is left`, choices: ['Compute it two ways', 'Use symmetry'], highlight: 'bite' },
+      { tex: String.raw`g_N=(\tfrac12)^{N-1}\ \text{ for every } N`, move: 'Induction',
+        why: String.raw`true at $N=1$: $g_1=2-1=1$. If true at $N$, line 2 gives $(\tfrac12)^{N-1}-(\tfrac12)^N=(\tfrac12)^N$: true at $N+1$`,
+        choices: ['Take a limit', 'Compare or bound'], highlight: 'halves' },
+      { tex: String.raw`S_N=2-(\tfrac12)^{N-1}\to2`, move: 'Take a limit',
+        why: String.raw`every 10 bites cut what is left by $2^{10}>1000$ (Primer · Exponentials, step 1), so it goes below any size`,
+        choices: ['Use symmetry', 'Contradiction'], highlight: 'limit' }],
+    lookBack: [
+      { q: 'Why can the ones never settle?',
+        a: String.raw`If $S_N$ settled at $S$, each term $a_N=S_{N+1}-S_N$ would go to $S-S=0$. The ones stay 1. A sum that settles needs terms that go to 0.` },
+      { q: 'Are terms that go to 0 enough?',
+        a: String.raw`No. In $1+\tfrac12+\tfrac13+\cdots$ the terms go to 0, but $\tfrac13+\tfrac14>\tfrac12$, $\tfrac15+\cdots+\tfrac18>\tfrac12$, and so on without end: the sum passes every number.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const g = Math.pow(0.5, N - 1);
+    rS.set((2 - g).toFixed(6));
+    rG.set(String(+g.toPrecision(3)));
+    rT.set(String(+g.toPrecision(3)));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 4: why the geometric sum is (1 - r^N)/(1 - r) (proof) ----------
+function drawShift(svg, W, H, r, N, lit) {
+  const L = 46, R = 10, SLOTS = 13;
+  const X = k => L + (k + 0.5) / SLOTS * (W - L - R);
+  const bw = Math.min(30, (W - L - R) / SLOTS * 0.62);
+  const one = Math.abs(r - 1) < 1e-9, rN = Math.pow(r, N);
+  const sum = one ? N : (1 - rN) / (1 - r);
+  capLine(svg, W, {
+    S: String.raw`amber: $S$, one bar for each term $r^k$`,
+    rS: String.raw`amber: times $r$, each bar becomes the next one: $rS$ is $S$ moved one slot right`,
+    cancel: String.raw`amber: the shared bars cancel; left are $S$'s first bar, $1$, and $rS$'s last, $r^{${N}}$`,
+    formula: one ? String.raw`amber: at $r=1$ line 4 would divide by 0; here $S=N=${N}$` : String.raw`amber: $S=\frac{1-r^{N}}{1-r}=${fmtNum(sum)}$`,
+    limit: r < 1 ? String.raw`amber: for $|r|<1$ the last bar $r^N$ shrinks to 0, so $S\to\frac{1}{1-r}=${fmtNum(1 / (1 - r))}$`
+      : String.raw`amber: here $r\ge1$: the last bar $r^N$ does not shrink, so there is no limit` }[lit],
+    String.raw`top row: $S$; bottom row: $rS$, the same bars times $r$`);
+  const top = 30, axisB = 22, gap = 12, rowH = (H - top - axisB - gap) / 2;
+  const yA = top + rowH, yB = top + 2 * rowH + gap;
+  const sc = (rowH - 24) / Math.max(1, rN, r);
+  const fade = lit === 'cancel' || lit === 'formula';
+  if (lit === 'S') glowBox(svg, X(0) - bw / 2, yA - rowH + 22, X(N - 1) - X(0) + bw, rowH - 22, 4);
+  if (lit === 'rS') glowBox(svg, X(1) - bw / 2, yB - rowH + 22, X(N) - X(1) + bw, rowH - 22, 4);
+  if (fade) glowBox(svg, X(0) - bw / 2, yA - sc, bw, sc, 4);
+  if (fade || lit === 'limit') glowBox(svg, X(N) - bw / 2, yB - rN * sc, bw, rN * sc, 4);
+  for (const [y0, name] of [[yA, '$S$'], [yB, '$rS$']]) {
+    svgNode('line', { x1: L, x2: W - R, y1: y0, y2: y0, stroke: COL.grey }, svg);
+    svgTex(svg, 4, y0 - rowH / 2 + 8, name, { w: 40, anchor: 'start', size: 17, fill: COL.ink });
+  }
+  for (let k = 0; k <= N; k++) {
+    const v = Math.pow(r, k), hv = Math.max(0.5, v * sc);
+    if (k < N) svgNode('rect', { x: (X(k) - bw / 2).toFixed(1), y: (yA - hv).toFixed(1), width: bw.toFixed(1), height: hv.toFixed(1), fill: COL.grey,
+      opacity: fade && k > 0 ? 0.22 : 0.9, 'data-item': 'mark', 'data-id': 'S-' + k }, svg);
+    if (k > 0) svgNode('rect', { x: (X(k) - bw / 2).toFixed(1), y: (yB - hv).toFixed(1), width: bw.toFixed(1), height: hv.toFixed(1), fill: COL.accent,
+      opacity: fade && k < N ? 0.22 : 0.9, 'data-item': 'mark', 'data-id': 'rS-' + k }, svg);
+  }
+  if (lit === 'rS') for (let k = 0; k < N; k++)
+    svgNode('line', { x1: X(k).toFixed(1), y1: yA + 3, x2: X(k + 1).toFixed(1), y2: (yB - Math.pow(r, k + 1) * sc - 3).toFixed(1), stroke: COL.amber, 'stroke-width': 1.5 }, svg);
+  svgTex(svg, X(0), yA - sc - 11, '$1$', { w: 40, size: 15, fill: COL.ink });
+  const right = X(N) + 110 < W;
+  const rl = svgTex(svg, right ? X(N) - bw / 2 : X(N) + bw / 2, yB - Math.max(rN * sc, 0.5) - 11, String.raw`$r^{${N}}=${fmtNum(rN)}$`, { w: 140, anchor: right ? 'start' : 'end', size: 15, fill: COL.blueDeep });
+  rl.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  for (let k = 0; k < SLOTS; k++) svgText(svg, X(k), yB + 16, String(k), { 'text-anchor': 'middle', 'font-size': 13 });
+  svgTex(svg, 4, yB + 12, String.raw`slot $k$`, { w: 60, anchor: 'start', size: 14 });
+}
+function slideWhyGeometric(widget, side) {
+  let r = 0.5, N = 4, lit = '';
+  const sr = slider(String.raw`$r$`, { id: 'r', name: 'ratio', min: 0.1, max: 1.2, step: 0.05, value: r, fmt: v => v.toFixed(2), onInput: v => { r = v; update(); } });
+  const sN = slider(String.raw`$N$`, { id: 'N', name: 'terms', min: 1, max: 12, step: 1, value: N, onInput: v => { N = v; update(); } });
+  const rS = readout('S', String.raw`$S$ and $rS$, bar by bar`);
+  const rD = readout('diff', String.raw`$S-rS$`);
+  const rF = readout('ends', String.raw`$1-r^{N}$`);
+  const plot = proofLeft(widget, {
+    controls: [sr.el, sN.el],
+    draw: (svg, W, Hh) => drawShift(svg, W, Hh, r, N, lit),
+    legend: [
+      { color: 'var(--pal-grey)', chip: true, text: String.raw`grey: $S$'s terms $1,\dots,r^{N-1}$` },
+      { color: 'var(--pal-accent)', chip: true, text: String.raw`blue: $rS$'s terms $r,\dots,r^{N}$` }],
+    readouts: [rS, rD, rF],
+    tests: [
+      String.raw`Set $r=0.5$, $N=4$: $S=1.875$ and $rS=0.9375$. Which bars do the two rows share?`,
+      String.raw`Guess $S-rS$ for any $r$ and $N$. Test it at $r=0.9$, $N=10$. Cases are evidence, not proof.`],
+    model: String.raw`Times $r$, each bar becomes the next one, so $rS$ is the row $S$ moved one slot right. The two rows share every bar but two.` });
+  side.append(
+    h('div', 'tag', 'Used in L13 29:44'),
+    setTex(h('h2'), String.raw`Why it's true: $1+r+\cdots+r^{N-1}=\tfrac{1-r^N}{1-r}$`),
+    setTex(h('p', 'question'), 'Why does one subtraction add up a whole geometric sum?'));
+  proofRight(side, {
+    id: 'geometric-sum',
+    goal: { tex: String.raw`1+r+\cdots+r^{N-1}=\frac{1-r^N}{1-r}`, words: String.raw`for every $r\ne1$; for $|r|<1$ the endless sum is $\frac{1}{1-r}$.` },
+    facts: [{ words: String.raw`$|r|^N\to0$ when $|r|<1$: decay by a fixed fraction each step`, ref: 'Primer · Exponentials, step 7' }],
+    lines: [
+      { tex: String.raw`S=1+r+r^2+\cdots+r^{N-1}`, move: 'Name a piece',
+        why: 'the sum gets a letter; one bar per term', choices: ['Unfold the definition', 'Change variables'], highlight: 'S' },
+      { tex: String.raw`rS=r+r^2+\cdots+r^{N-1}+r^N`, move: 'Rearrange',
+        why: String.raw`multiply each term by $r$: each bar becomes the next one`, choices: ['Add zero or multiply by one', 'Use symmetry'], highlight: 'rS' },
+      { tex: String.raw`(1-r)\,S=S-rS=1-r^N`, move: 'Compute it two ways',
+        why: String.raw`take out $S$; or subtract bar by bar: the shared bars cancel and leave $S$'s first and $rS$'s last`,
+        choices: ['Induction', 'Use symmetry'], highlight: 'cancel' },
+      { tex: String.raw`S=\frac{1-r^N}{1-r}`, move: 'Rearrange',
+        why: String.raw`divide by $1-r$, which is not 0 since $r\ne1$`, choices: ['Undo with the inverse', 'Take a limit'], highlight: 'formula' },
+      { tex: String.raw`|r|<1:\ \ r^N\to0,\ \ S\to\frac{1}{1-r}`, move: 'Take a limit',
+        why: 'the last bar shrinks away (Primer · Exponentials, step 7)', choices: ['Induction', 'Contradiction'], highlight: 'limit' }],
+    lookBack: [
+      { q: 'Where does it break?',
+        a: String.raw`At $r=1$ line 4 divides by 0; the sum is just $N$. For $r>1$ the formula holds, but $r^N$ grows (Primer · Exponentials, step 3): no limit.` },
+      { q: 'What else does the same proof prove?',
+        a: String.raw`Any first term $a$: multiply both sides by $a$. Step 2's halves are $r=\tfrac12$: $S_N=2(1-2^{-N})$. Negative $r$ works too; step 8 uses $r=-t$.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    let s = 0;
+    for (let k = 0; k < N; k++) s += Math.pow(r, k);
+    let rs = 0;
+    for (let k = 1; k <= N; k++) rs += Math.pow(r, k);
+    rS.set(s.toFixed(4) + ' and ' + rs.toFixed(4));
+    rD.set((s - rs).toFixed(4));
+    rF.set((1 - Math.pow(r, N)).toFixed(4));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 6: why c_k = f^(k)(0)/k! (proof) ----------
+function factorial(n) { let f = 1; for (let i = 2; i <= n; i++) f *= i; return f; }
+function expPoly(x, m) { let s = 0, t = 1; for (let j = 0; j <= m; j++) { if (j > 0) t *= x / j; s += t; } return s; }
+// The copy T_n after k slopes, term by term, as TeX for katex.render. lit colors the terms a proof line is about.
+function termRowTex(n, k, lit) {
+  const box = t => '\\colorbox{' + COL.amberBg + '}{\\textcolor{' + COL.amberInk + '}{$' + t + '$}}';
+  const head = k === 0 ? 'T_{' + n + '}(x)=' : 'T_{' + n + '}^{(' + k + ')}(x)=';
+  if (k > n) return head + (lit === 'kth' || lit === 'zero' ? box('0') : '0') + String.raw`\quad\text{every term is gone}`;
+  const parts = [];
+  for (let j = 0; j <= n; j++) {
+    if (j < k) { parts.push('\\textcolor{' + COL.grey + '}{0}'); continue; }
+    const p = j - k, xs = p === 0 ? '' : p === 1 ? 'x' : 'x^{' + p + '}';
+    const c = factorial(j) / factorial(j - k);
+    const t = (j === k ? (k >= 2 ? k + String.raw`!\,` : '') : c === 1 ? '' : String(c)) + 'c_{' + j + '}' + xs;
+    if ((lit === 'kth' && j === k) || (lit === 'zero' && j > k)) parts.push(box(t));
+    else parts.push(j === k ? '\\textcolor{' + COL.accentDeep + '}{' + t + '}' : t);
+  }
+  return head + parts.join('+');
+}
+function drawCopy(svg, W, H, n, k, lit) {
+  const L = 40, R = 14, T = 72, B = 28, x0 = -2, x1 = 2, y0 = -1, y1 = 7.5;
+  const X = x => L + (x - x0) / (x1 - x0) * (W - L - R);
+  const Y = y => H - B - (y - y0) / (y1 - y0) * (H - B - T);
+  const m = n - k, copy = x => (m < 0 ? 0 : expPoly(x, m));
+  capLine(svg, W, {
+    poly: String.raw`amber: the copy $T_n$, with an unknown number $c_j$ for each power`,
+    match: String.raw`amber: at $x=0$ the copy must match $e^x$: value, slope, bend, up to slope $n$`,
+    kth: k > n ? String.raw`amber: past slope $n$ every term is gone: the copy cannot match slope $k$`
+      : String.raw`amber: after $k$ slopes, $c_kx^k$ is the number $k!\,c_k$; the lower terms are 0`,
+    zero: String.raw`amber: at $x=0$ the terms with an $x$ vanish, so $T_n^{(k)}(0)=k!\,c_k$`,
+    exp: String.raw`amber: for $e^x$ every slope at 0 is 1, so $c_k=\frac{1}{k!}$` }[lit],
+    String.raw`the row: the copy after $k$ slopes; the plot: that slope curve near 0`);
+  if (lit === 'poly') glowBox(svg, L - 4, 33, W - L - 8, 26, 2);
+  svgKatex(svg, L, 46, termRowTex(n, k, lit), { anchor: 'start', w: W - L - 4, size: 16 });
+  for (const v of [0, 2, 4, 6]) {
+    svgNode('line', { x1: L, x2: W - R, y1: Y(v).toFixed(1), y2: Y(v).toFixed(1), stroke: COL.soft3 }, svg);
+    svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 13 });
+  }
+  for (const v of [-2, -1, 0, 1, 2]) svgText(svg, X(v), H - B + 17, String(v), { 'text-anchor': 'middle', 'font-size': 13 });
+  svgNode('line', { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: COL.grey }, svg);
+  svgNode('line', { x1: X(0), x2: X(0), y1: T, y2: H - B, stroke: COL.grey }, svg);
+  svgTex(svg, W - R, Y(0) - 12, '$x$', { w: 30, anchor: 'end', size: 15 });
+  const clip = svgNode('clipPath', { id: 'clipCopy' }, svg);
+  svgNode('rect', { x: L, y: T, width: W - L - R, height: H - B - T }, clip);
+  const g = svgNode('g', { 'clip-path': 'url(#clipCopy)' }, svg);
+  const xs = [];
+  for (let x = x0; x <= x1 + 1e-9; x += 0.02) xs.push(x);
+  if (lit === 'match') { glowDot(svg, X(0), Y(1), 13); glowPath(g, pathD(xs.filter(x => Math.abs(x) <= 0.6).map(x => [X(x), Y(Math.exp(x))])), 10); }
+  if (lit === 'exp') glowPath(g, pathD(xs.map(x => [X(x), Y(copy(x))])), 10);
+  if (lit === 'zero') glowDot(svg, X(0), Y(copy(0)), 12);
+  svgNode('path', { d: pathD(xs.map(x => [X(x), Y(Math.exp(x))])), fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'exp' }, g);
+  svgNode('path', { d: pathD(xs.map(x => [X(x), Y(copy(x))])), fill: 'none', stroke: COL.ink, 'stroke-width': 2, 'stroke-dasharray': '7 5', 'data-item': 'mark', 'data-id': 'copy' }, g);
+  dot(svg, X(0), Y(1), 5, COL.ink);
+  const lab = svgTex(svg, X(0) - 10, Y(1) - 14, String.raw`$f^{(${k})}(0)=1$`, { w: 140, anchor: 'end', size: 15, fill: COL.ink });
+  lab.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg;
+  if (m < 0) {
+    dot(svg, X(0), Y(0), 5, COL.red);
+    svgTex(svg, X(0) + 8, Y(0) + 13, String.raw`$0\ne1$`, { w: 60, anchor: 'start', size: 15, fill: COL.red });
+  }
+}
+function slideWhyTaylor(widget, side) {
+  let n = 4, k = 0, lit = '';
+  const sn = slider(String.raw`$n$, degree`, { id: 'n', name: 'degree', min: 0, max: 6, step: 1, value: n, onInput: v => { n = v; update(); } });
+  const sk = slider(String.raw`$k$, slopes taken`, { id: 'k', name: 'slopes taken', min: 0, max: 7, step: 1, value: k, onInput: v => { k = v; update(); } });
+  const rA = readout('copy-slope', String.raw`copy: $T_n^{(k)}(0)$`);
+  const rB = readout('exp-slope', String.raw`$e^{x}$: $f^{(k)}(0)$`);
+  const rC = readout('coef', String.raw`$c_k$ in the copy`);
+  const plot = proofLeft(widget, {
+    controls: [sn.el, sk.el],
+    draw: (svg, W, Hh) => drawCopy(svg, W, Hh, n, k, lit),
+    legend: [
+      { color: 'var(--pal-accent)', text: String.raw`blue: $e^{x}$, also each of its slopes` },
+      { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: $T_n^{(k)}$, the copy after $k$ slopes` },
+      { color: 'var(--pal-ink)', chip: true, text: String.raw`dot: $(0,1)$` }],
+    readouts: [rA, rB, rC],
+    tests: [
+      String.raw`Set $n=4$ and raise $k$ from 0: the copy's $k$-th slope (dashed) passes through the dot up to $k=4$. What happens at $k=5$?`,
+      String.raw`At $k=3$ the row says the copy's third slope at 0 is $3!\,c_3$. Which $c_3$ makes it 1? Cases are evidence, not proof.`],
+    model: String.raw`Each slope at 0 sees one coefficient: $k$ slopes turn $c_kx^k$ into $k!\,c_k$, wipe out the lower terms, and leave an $x$ in the higher ones.` });
+  side.append(
+    h('div', 'tag', 'Used in L3 13:08 · L7 12:28'),
+    setTex(h('h2'), String.raw`Why it's true: $c_k=f^{(k)}(0)/k!$`),
+    setTex(h('p', 'question'), String.raw`Why does copying the slopes at 0 put a $k!$ under each coefficient?`));
+  proofRight(side, {
+    id: 'taylor-coefficients',
+    goal: { tex: String.raw`c_k=\tfrac{f^{(k)}(0)}{k!}`, words: String.raw`if $T_n$ has $f$'s value and first $n$ slopes at 0.` },
+    facts: [{ tex: String.raw`\tfrac{d}{dx}x^m=m\,x^{m-1},\ \ \tfrac{d}{dx}e^x=e^x`, ref: 'Primer · Derivatives, steps 4, 5' }],
+    lines: [
+      { tex: String.raw`T_n(x)=c_0+c_1x+\cdots+c_nx^n`, move: 'Name a piece',
+        why: String.raw`a polynomial with unknown numbers $c_k$`, choices: ['Change variables', 'Use symmetry'], highlight: 'poly' },
+      { tex: String.raw`T_n^{(k)}(0)=f^{(k)}(0),\ \ k=0,\dots,n`, move: 'Unfold the definition',
+        why: String.raw`copying $f$ at 0 means the same value, slope, bend, and so on there`, choices: ['Compute it two ways', 'Induction'], highlight: 'match' },
+      { tex: String.raw`T_n^{(k)}(x)=k!\,c_k+(\text{terms with }x)`, move: 'Use an earlier result',
+        why: String.raw`take $k$ slopes (power rule): $x^k$ becomes $k(k-1)\cdots1=k!$, lower powers 0, higher ones keep an $x$`,
+        choices: ['Rearrange', 'Telescope'], highlight: 'kth' },
+      { tex: String.raw`k!\,c_k=f^{(k)}(0)\ \Rightarrow\ c_k=\tfrac{f^{(k)}(0)}{k!}`, move: 'Rearrange',
+        why: String.raw`at $x=0$ the terms with $x$ vanish; line 2; divide by $k!$`, choices: ['Take a limit', 'Add zero or multiply by one'], highlight: 'zero' },
+      { tex: String.raw`f=e^x:\ f^{(k)}(0)=1,\ \ T_n(x)=\textstyle\sum_{k=0}^{n}\frac{x^k}{k!}`, move: 'Use an earlier result',
+        why: String.raw`the slope of $e^x$ is $e^x$, so each slope at 0 is $e^0=1$`, choices: ['Unfold the definition', 'Compare or bound'], highlight: 'exp' }],
+    lookBack: [
+      { q: 'What did the proof not show?',
+        a: String.raw`That $T_n$ stays close to $f$ away from 0. Step 8 proves how far the copy of $\ln(1+x)$ can be trusted.` },
+      { q: 'What else does the recipe give?',
+        a: String.raw`$n=1$ is the tangent line (Primer · Derivatives, step 11). For $\ln(1+x)$, $f^{(k)}(0)=(-1)^{k+1}(k-1)!$, so $c_k=\frac{(-1)^{k+1}}{k}$: step 7's series.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    rA.set(k <= n ? '1' : '0', k > n);
+    rB.set('1');
+    rC.set(k <= n ? '1/' + factorial(k) + ' = ' + String(+(1 / factorial(k)).toPrecision(4)) : 'no term: degree ' + n);
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 8: why the error of the ln(1+x) series is under the next term (proof) ----------
+function lnSeries(x, n) { let s = 0; for (let k = 1; k <= n; k++) s += (k % 2 ? 1 : -1) * Math.pow(x, k) / k; return s; }
+function drawLeftover(svg, W, H, n, x, lit) {
+  const L = 40, R = 12, top = 30, B = 24, gap = 12, ph = (H - top - B - gap) / 2;
+  const X = t => L + t / 2 * (W - L - R);
+  const aT = top, aB = top + ph, bT = aB + gap, bB = bT + ph;
+  const Ya = y => aB - (y + 0.15) / 1.45 * ph;        // top panel: y from -0.15 to 1.3
+  const Yb = y => bB - y / 1.1 * ph;                  // bottom panel: y from 0 to 1.1
+  const f = t => 1 / (1 + t);
+  const copy = t => { let s = 0; for (let k = 0; k < n; k++) s += Math.pow(-t, k); return s; };
+  const left = t => Math.pow(t, n) / (1 + t), cap = t => Math.pow(t, n);
+  capLine(svg, W, {
+    copy: String.raw`amber: step 4's sum with $r=-t$ copies $\frac{1}{1+t}$; below, the leftover it misses`,
+    areas: String.raw`amber: areas from 0 to $x$: $\ln(1+x)$ on top, the error $|R_n|$ below`,
+    bound: String.raw`amber: the leftover lies under $t^n$, whose area is $\frac{x^{n+1}}{n+1}$`,
+    limit: x <= 1 ? String.raw`amber: on $0\le t\le1$, $t^n$ sinks toward 0 as $n$ grows: so does the bound`
+      : String.raw`amber: here $x>1$: past $t=1$, $t^n$ grows with $n$, and so does the bound` }[lit],
+    String.raw`top: $\frac{1}{1+t}$ and its copy; bottom: what the copy misses`);
+  const ts = [];
+  for (let t = 0; t <= 2 + 1e-9; t += 0.01) ts.push(t);
+  const tx = ts.filter(t => t <= x + 1e-9);
+  const clipA = svgNode('clipPath', { id: 'clipTop' }, svg);
+  svgNode('rect', { x: L, y: aT, width: W - L - R, height: ph }, clipA);
+  const clipB = svgNode('clipPath', { id: 'clipBot' }, svg);
+  svgNode('rect', { x: L, y: bT, width: W - L - R, height: ph }, clipB);
+  const gA = svgNode('g', { 'clip-path': 'url(#clipTop)' }, svg), gB = svgNode('g', { 'clip-path': 'url(#clipBot)' }, svg);
+  // top panel: the area under 1/(1+t) from 0 to x is ln(1+x)
+  for (const v of [0, 1]) {
+    svgNode('line', { x1: L, x2: W - R, y1: Ya(v).toFixed(1), y2: Ya(v).toFixed(1), stroke: v ? COL.soft3 : COL.grey }, svg);
+    svgText(svg, L - 8, Ya(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 13 });
+  }
+  const areaA = pathD([[X(0), Ya(0)]].concat(tx.map(t => [X(t), Ya(f(t))]), [[X(x), Ya(0)]])) + ' Z';
+  svgNode('path', { d: areaA, fill: COL.bluePale, stroke: lit === 'areas' ? COL.amberBg : 'none', 'stroke-width': 5, 'data-item': 'mark', 'data-id': 'area-ln' }, gA);
+  if (lit === 'copy') glowPath(gA, pathD(ts.map(t => [X(t), Ya(copy(t))])), 10);
+  svgNode('path', { d: pathD(ts.map(t => [X(t), Ya(f(t))])), fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'curve' }, gA);
+  svgNode('path', { d: pathD(ts.map(t => [X(t), Ya(copy(t))])), fill: 'none', stroke: COL.ink, 'stroke-width': 2, 'stroke-dasharray': '7 5', 'data-item': 'mark', 'data-id': 'copy' }, gA);
+  if (X(x) - X(0) > 70) {
+    const fo = svgTex(svg, X(x / 2), Ya(0.28), String.raw`$\ln(1+x)$`, { w: 90, size: 14, fill: COL.blueDeep });
+    fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  }
+  svgTex(svg, X(1.78), Ya(f(1.78)) - 15, String.raw`$\frac{1}{1+t}$`, { w: 60, size: 15, fill: COL.accent });
+  // bottom panel: the leftover t^n/(1+t) under t^n
+  for (const v of [0, 1]) {
+    svgNode('line', { x1: L, x2: W - R, y1: Yb(v).toFixed(1), y2: Yb(v).toFixed(1), stroke: v ? COL.soft3 : COL.grey }, svg);
+    svgText(svg, L - 8, Yb(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 13 });
+  }
+  const area = fn => pathD([[X(0), Yb(0)]].concat(tx.map(t => [X(t), Yb(fn(t))]), [[X(x), Yb(0)]])) + ' Z';
+  svgNode('path', { d: area(cap), fill: lit === 'bound' ? COL.amberBg : COL.grid, 'data-item': 'mark', 'data-id': 'area-bound' }, gB);
+  svgNode('path', { d: area(left), fill: COL.greyBlue, 'fill-opacity': 0.7, stroke: lit === 'areas' ? COL.amberBg : 'none', 'stroke-width': 5, 'data-item': 'mark', 'data-id': 'area-error' }, gB);
+  if (lit === 'copy') glowPath(gB, pathD(ts.map(t => [X(t), Yb(left(t))])), 10);
+  if (lit === 'limit') glowPath(gB, pathD(ts.filter(t => t <= Math.max(1, x)).map(t => [X(t), Yb(cap(t))])), 10);
+  svgNode('path', { d: pathD(ts.map(t => [X(t), Yb(cap(t))])), fill: 'none', stroke: COL.ink, 'stroke-width': 2, 'stroke-dasharray': '7 5', 'data-item': 'mark', 'data-id': 't-n' }, gB);
+  svgNode('path', { d: pathD(ts.map(t => [X(t), Yb(left(t))])), fill: 'none', stroke: COL.slate2, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'leftover' }, gB);
+  const halo = fo => { fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg; return fo; };
+  halo(svgTex(svg, X(1) - 8, Yb(1) - 2, String.raw`$t^{${n}}$`, { w: 50, anchor: 'end', size: 15, fill: COL.ink }));
+  halo(svgTex(svg, X(1) + 10, Yb(0.5) + 12, String.raw`$\tfrac{t^{${n}}}{1+t}$`, { w: 60, anchor: 'start', size: 15, fill: COL.slate2 }));
+  halo(svgTex(svg, W - R - 4, bT + 10, String.raw`the leftover, under $t^n$`, { w: 240, anchor: 'end', size: 14, fill: COL.muted }));
+  // t = x across both panels, and the t axis
+  svgNode('line', { x1: X(x).toFixed(1), x2: X(x).toFixed(1), y1: aT, y2: bB, stroke: COL.ink, 'stroke-dasharray': '2 3', 'data-item': 'mark', 'data-id': 'x' }, svg);
+  svgTex(svg, X(x), H - 9, String.raw`$x=${x.toFixed(1)}$`, { w: 70, size: 14, fill: COL.ink });
+  for (const v of [0, 1, 2]) if (Math.abs(X(v) - X(x)) > 40) svgText(svg, X(v), H - 4, String(v), { 'text-anchor': v === 2 ? 'end' : 'middle', 'font-size': 13 });
+}
+function slideWhyTrust(widget, side) {
+  let n = 3, x = 0.5, lit = '';
+  const sn = slider(String.raw`$n$, terms`, { id: 'n', name: 'terms', min: 1, max: 12, step: 1, value: n, onInput: v => { n = v; update(); } });
+  const sx = slider(String.raw`$x$`, { id: 'x', name: 'point', min: 0.1, max: 2, step: 0.1, value: x, fmt: v => v.toFixed(1), onInput: v => { x = v; update(); } });
+  const rP = readout('partial', String.raw`$P_n(x)$; true $\ln(1+x)$`);
+  const rE = readout('err', String.raw`error $|R_n|$`);
+  const rN = readout('next', String.raw`next term $\tfrac{x^{n+1}}{n+1}$`);
+  const plot = proofLeft(widget, {
+    controls: [sn.el, sx.el],
+    draw: (svg, W, Hh) => drawLeftover(svg, W, Hh, n, x, lit),
+    legend: [
+      { color: 'var(--pal-accent)', text: String.raw`blue: $\tfrac{1}{1+t}$` },
+      { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: its copy (top), $t^n$ (bottom)` },
+      { color: 'var(--pal-grey-blue)', chip: true, text: 'grey: the error, an area' }],
+    readouts: [rP, rE, rN],
+    tests: [
+      String.raw`Set $x=0.5$, $n=3$: the error $0.0112$ is under the next term, $0.0156$. Raise $n$: does it stay under?`,
+      String.raw`Set $x=1.5$ and raise $n$: past $t=1$ the copy swings away, and the error grows. Cases are evidence, not proof.`],
+    model: String.raw`$\ln(1+x)$ is the area under $\tfrac{1}{1+t}$, the series the area under its copy. The copy misses by a leftover under $t^n$: tiny for $t<1$, huge past 1.` });
+  side.append(
+    h('div', 'tag', 'Used in L18 22:08'),
+    setTex(h('h2'), "Why it's true: the error is under the next term"),
+    setTex(h('p', 'question'), String.raw`How far can you trust the series of $\ln(1+x)$?`));
+  proofRight(side, {
+    id: 'ln-error',
+    goal: { tex: String.raw`\big|\ln(1+x)-P_n(x)\big|\le\tfrac{x^{n+1}}{n+1}`, words: String.raw`for $0\le x\le1$: under the next term.` },
+    facts: [
+      { tex: String.raw`1+r+\cdots+r^{n-1}=\tfrac{1-r^n}{1-r}`, ref: 'step 4' },
+      { tex: String.raw`\textstyle\int_0^x\frac{dt}{1+t}=\ln(1+x),\ \int_0^x t^k\,dt=\frac{x^{k+1}}{k+1}`, ref: 'Primer · Integrals: area, steps 5, 9' }],
+    lines: [
+      { tex: String.raw`\tfrac{1}{1+t}=1-t+\cdots+(-t)^{n-1}+\tfrac{(-t)^n}{1+t}`, move: 'Use an earlier result',
+        why: String.raw`step 4's sum with $r=-t$ is $\frac{1-(-t)^n}{1+t}$; split the fraction`, choices: ['Name a piece', 'Induction'], highlight: 'copy' },
+      { tex: String.raw`\ln(1+x)=P_n(x)+R_n,\ \ R_n=(-1)^n\textstyle\int_0^x\frac{t^n}{1+t}\,dt`, move: 'Use an earlier result',
+        why: String.raw`the area from 0 to $x$ of each side; each $(-t)^k$ gives a term of $P_n$`, choices: ['Use symmetry', 'Telescope'], highlight: 'areas' },
+      { tex: String.raw`|R_n|\le\textstyle\int_0^x t^n\,dt=\frac{x^{n+1}}{n+1}`, move: 'Compare or bound',
+        why: String.raw`$1+t\ge1$: the leftover lies under $t^n$, so its area does too`, choices: ['Rearrange', 'Change variables'], highlight: 'bound' },
+      { tex: String.raw`0\le x\le1:\ \tfrac{x^{n+1}}{n+1}\le\tfrac{1}{n+1}\to0`, move: 'Take a limit',
+        why: String.raw`so $P_n(x)\to\ln(1+x)$; at $x=1$ slowly: 40 terms leave up to $0.024$`, choices: ['Induction', 'Contradiction'], highlight: 'limit' }],
+    lookBack: [
+      { q: String.raw`Why does it fail for $x>1$?`,
+        a: String.raw`Its terms $\frac{x^k}{k}$ grow without end ($x^k$ beats the line $k$, Primer · Exponentials, step 8); terms that do not go to 0 cannot settle (step 2, look back).` },
+      { q: String.raw`And for $-1<x<0$?`,
+        a: String.raw`There $1+t\ge1-|x|$, so the error is under the next term divided by $1-|x|$. At $x=-1$ the area has no end: $\ln 0$ does not exist.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const p = lnSeries(x, n), t = Math.log(1 + x), e = Math.abs(t - p);
+    const big = v => (Math.abs(v) >= 1e4 ? v.toExponential(2) : String(+v.toPrecision(4)));
+    rP.set(big(p) + '; ' + t.toFixed(4));
+    rE.set(big(+e.toPrecision(3)), e > 0.1);
+    rN.set(big(+(Math.pow(x, n + 1) / (n + 1)).toPrecision(3)));
+    plot.redraw();
+  }
+  update();
+}
+
+const RECIPE_K = 10;   // bars t_0 .. t_10
+// A term as TeX: 64.8, 0.0156, or 5.4\times10^{-9} for tiny ones.
+function fmtTerm(v) {
+  if (v >= 100) return v.toFixed(0);
+  if (v >= 0.01) return String(+v.toPrecision(4));
+  const [m, e] = v.toExponential(1).split('e');
+  return m + '\\times10^{' + (+e) + '}';
+}
+function fmtMult(v) { return v >= 10 ? String(+v.toFixed(1)) : String(+v.toPrecision(2)); }
+// Bars of the terms, and between each pair of neighbours the multiplier that takes one to the next.
+// mode 'exp' or 'bessel'; k picks the pair (t_{k-1}, t_k); lit is the newest proof line's key.
+function recipeMult(mode, x, j) { return mode === 'exp' ? x / j : (x / 2) * (x / 2) / (j * j); }
+function recipeTerms(mode, x) {
+  const t = [1];
+  for (let j = 1; j <= RECIPE_K; j++) t.push(t[j - 1] * recipeMult(mode, x, j));
+  return t;
+}
+function drawRecipe(svg, W, H, mode, x, k, lit) {
+  const K = RECIPE_K, isE = mode === 'exp';
+  const mult = j => recipeMult(mode, x, j);
+  const t = recipeTerms(mode, x);
+  const parts = new Set(lit ? lit.split(' ').slice(1) : []);
+  const litHere = !!lit && (lit.startsWith('exp') === isE);
+  const has = p => litHere && parts.has(p);
+  const CAP = !litHere ? null : has('all')
+    ? (isE ? String.raw`amber: every multiplier is $\frac{x}{k}$; here $x=${x}$`
+      : String.raw`amber: every multiplier is $\frac{(x/2)^2}{k^2}$; here $(x/2)^2=${+((x / 2) * (x / 2)).toFixed(4)}$`)
+    : has('pair') && has('ratio') ? String.raw`amber: $t_{${k - 1}}$, $t_{${k}}$ and the multiplier between them`
+    : has('pair') ? String.raw`amber: the two terms the line writes, $t_{${k - 1}}$ and $t_{${k}}$`
+    : String.raw`amber: the multiplier $t_{${k}}/t_{${k - 1}}$ that takes one to the other`;
+  const L = 46, R = 12, T = 92, B = 40;
+  const ymax = Math.max(...t) * 1.3;
+  const X = j => L + (j + 0.6) / (K + 1.2) * (W - L - R);
+  const Y = v => H - B - v / ymax * (H - B - T);
+  if (CAP) svgTex(svg, W / 2, 13, CAP, { w: W - 8, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  else svgTex(svg, 4, 13, String.raw`top rows: the multiplier from each term to the next one`, { w: W - 10, anchor: 'start', size: 15, fill: COL.muted });
+  // y grid and ticks
+  for (const v of niceTicks(ymax)) {
+    svgNode('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: COL.soft3 }, svg);
+    svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end' });
+  }
+  svgNode('line', { x1: L, x2: L, y1: T, y2: H - B, stroke: COL.grey }, svg);
+  svgNode('line', { x1: L, x2: W - R, y1: H - B, y2: H - B, stroke: COL.grey }, svg);
+  for (let j = 0; j <= K; j++) svgText(svg, X(j), H - B + 18, String(j), { 'text-anchor': 'middle' });
+  svgTex(svg, (L + W - R) / 2, H - 9, String.raw`$k$, index of the term`, { w: 260, size: 15 });
+  const bw = Math.min(40, (X(1) - X(0)) * 0.56);
+  // the pair the line writes, lit
+  if (has('pair')) for (const j of [k - 1, k])
+    svgNode('rect', { x: X(j) - bw / 2 - 5, y: Y(t[j]) - 22, width: bw + 10, height: Math.max(0, H - B - Y(t[j])) + 26, rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 }, svg);
+  t.forEach((v, j) => {
+    const sel = j === k || j === k - 1;
+    svgNode('rect', { x: X(j) - bw / 2, y: Y(v), width: bw, height: Math.max(0.5, H - B - Y(v)), fill: sel ? COL.accent : COL.grey, opacity: sel ? 0.9 : 0.8,
+      'data-item': 'mark', 'data-id': 'term-' + j }, svg);
+    if (sel) {   // t_{k-1} to the left, t_k to the right, lifted above the neighbour bar the label crosses
+      const right = j === k && X(j) - bw / 2 + 130 < W;   // no room on the right: t_k goes above t_{k-1}, on the left
+      const nb = j === k ? Math.min(K, j + 1) : Math.max(0, j - 1);
+      let y = Math.min(Y(v), Y(t[nb])) - 12;
+      if (j === k && !right) y = Math.min(Y(v), Y(t[j - 1]), Y(t[Math.max(0, j - 2)])) - 34;
+      const fo = svgTex(svg, right ? X(j) - bw / 2 : X(j === k ? j - 1 : j) + bw / 2, y, '$t_{' + j + '}=' + fmtTerm(v) + '$',
+        { w: 150, anchor: right ? 'start' : 'end', size: 14, fill: COL.blueDeep });
+      fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+    }
+  });
+  // multipliers in two staggered rows above the bars; a thin line drops from each label to its gap
+  const rowY = [T - 48, T - 24];
+  for (let j = 1; j <= K; j++) {
+    const xm = (X(j - 1) + X(j)) / 2, y = rowY[(j - 1) % 2], sel = j === k;
+    const xl = Math.max(L + 30, Math.min(W - 36, xm));   // the label stays inside the picture
+    const top = Math.min(Y(t[j - 1]), Y(t[j])) - (sel ? 26 : 4);
+    if (top > y + 12) svgNode('line', { x1: xm, x2: xm, y1: y + 12, y2: top, stroke: sel ? COL.accent : COL.line, 'stroke-width': sel ? 1.5 : 1, 'stroke-dasharray': sel ? '' : '2 3' }, svg);
+    const glow = has('all') || (has('ratio') && sel);
+    if (glow) svgNode('rect', { x: xl - 34, y: y - 12, width: 68, height: 24, rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.2 }, svg);
+    const s = has('all')
+      ? (isE ? String.raw`$\times\frac{${x}}{${j}}$` : String.raw`$\times\frac{${+((x / 2) * (x / 2)).toFixed(4)}}{${j * j}}$`)
+      : String.raw`$\times${fmtMult(mult(j))}$`;
+    svgTex(svg, xl, y, s, { w: 72, size: sel ? 15 : 13, fill: glow ? COL.amberInk : sel ? COL.accentDeep : COL.text2 });
+  }
+}
+function slideWhyTerms(widget, side) {
+  let mode = 'exp', x = 6, k = 3, lit = '';
+  const bE = mark(h('button', 'btn on'), 'preset', 'exp');
+  setTex(bE, String.raw`$e^{x}$`);
+  const bB = mark(h('button', 'btn'), 'preset', 'bessel');
+  setTex(bB, String.raw`$I_0(x)$`);
+  const sx = slider('$x$', { id: 'x', name: 'point', min: 0.5, max: 6, step: 0.5, value: x,
+    fmt: v => v.toFixed(1), onInput: v => { x = v; update(); } });
+  const sk = slider('$k$', { id: 'k', name: 'pair', min: 1, max: RECIPE_K, step: 1, value: k,
+    onInput: v => { k = v; update(); } });
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'btnrow', bE, bB), sx.el, sk.el],
+    draw: (svg, W, Hh) => drawRecipe(svg, W, Hh, mode, x, k, lit),
+    legend: [
+      { color: 'var(--pal-grey)', chip: true, text: String.raw`grey: terms $t_k$` },
+      { color: 'var(--pal-accent)', chip: true, text: String.raw`blue: your pair` },
+      { color: 'var(--pal-line)', dash: true, text: String.raw`$\times$: multiplier $t_k/t_{k-1}$` }],
+    tests: [
+      String.raw`Pick $e^{x}$, $x=6$: the multipliers are $6, 3, 2, 1.5, \dots$ Guess the rule in $x$ and $k$; test it at $x=2$.`,
+      String.raw`Pick $I_0$. Its terms are those of $e^{x/2}$, squared. Guess its multiplier; test it at $x=6$: $9, 2.25, 1, \dots$ Cases are evidence, not proof.`],
+    model: String.raw`Each term is the last one times a small fresh factor: no big power or factorial. The bars rise while it is above 1, then fall.` });
+  function setMode(m) {
+    mode = m;
+    bE.classList.toggle('on', m === 'exp');
+    bB.classList.toggle('on', m === 'bessel');
+    update();
+  }
+  bE.addEventListener('click', () => setMode('exp'));
+  bB.addEventListener('click', () => setMode('bessel'));
+  side.append(
+    h('div', 'tag', 'Used in L16 03:42 to 04:13'),
+    setTex(h('h2'), "Why it's true: each term from the one before"),
+    setTex(h('p', 'question'), String.raw`What do you multiply $t_{k-1}$ by to get $t_k$, and why that?`));
+  proofRight(side, {
+    id: 'term-recipe',
+    goal: { words: String.raw`for every $k\ge1$, $\frac{t_k}{t_{k-1}}=\frac{x}{k}$ for $e^x$ and $\frac{(x/2)^2}{k^2}$ for $I_0$` },
+    facts: [
+      { tex: String.raw`t_k=\frac{x^k}{k!}`, words: String.raw`for $e^x$, $t_k=\frac{(x/2)^{2k}}{(k!)^2}$ for $I_0$`, ref: 'steps 5, 9' }],
+    lines: [
+      { tex: String.raw`t_k=\frac{x^k}{k!},\qquad t_{k-1}=\frac{x^{k-1}}{(k-1)!}`, move: 'Unfold the definition',
+        why: String.raw`$e^x$'s terms at $k$ and $k-1$`, choices: ['Name a piece', 'Induction'], highlight: 'exp pair' },
+      { tex: String.raw`\frac{t_k}{t_{k-1}}=\frac{x^k}{x^{k-1}}\cdot\frac{(k-1)!}{k!}`, move: 'Rearrange',
+        why: 'divide; dividing by a fraction multiplies by it flipped', choices: ['Compute it two ways', 'Telescope'], highlight: 'exp ratio' },
+      { tex: String.raw`\frac{t_k}{t_{k-1}}=\frac{x\cdot x^{k-1}}{x^{k-1}}\cdot\frac{(k-1)!}{k\cdot(k-1)!}=\frac{x}{k}`, move: 'Rearrange',
+        why: String.raw`$k!=1\cdot2\cdots k$: peel the last factor off each product and cancel`,
+        choices: ['Add zero or multiply by one', 'Take a limit'], highlight: 'exp all' },
+      { tex: String.raw`\frac{t_k}{t_{k-1}}=\frac{(x/2)^{2k}}{(x/2)^{2k-2}}\cdot\frac{((k-1)!)^2}{(k!)^2}`, move: 'Unfold the definition',
+        why: String.raw`now $I_0$: its terms at $k$ and $k-1$, divided as in line 2`, choices: ['Change variables', 'Use symmetry'], highlight: 'bes pair ratio' },
+      { tex: String.raw`\frac{t_k}{t_{k-1}}=\frac{(x/2)^2}{k^2}`, move: 'Use an earlier result',
+        why: String.raw`$(k!)^2=k^2\big((k-1)!\big)^2$ is line 3 squared; the power loses two factors $\frac{x}{2}$`,
+        choices: ['Compare or bound', 'Name a piece'], highlight: 'bes all' }],
+    lookBack: [
+      { q: 'Why does a computer use the recipe?',
+        a: String.raw`The definition's term 30 of $e^{20}$ needs $20^{30}=1.1\times10^{39}$, past the largest single-precision number ($3.4\times10^{38}$). The recipe gets $t_{30}=4.0\times10^{6}$ from 30 factors $\frac{20}{k}$ and never holds more than the answer.` },
+      { q: 'Why does the sum always settle?',
+        a: String.raw`The multiplier goes to 0, so from some term on it is below $\tfrac12$ (for $e^x$, once $k>2x$). Then the tail is under $t_n(\tfrac12+\tfrac14+\cdots)=t_n$, the last term added: Compare or bound with step 3's sum. At $x=6$: $t_{12}=4.54$, tail $3.56$.` },
+      { q: 'What else does the same move give?',
+        a: String.raw`$\cos x=1-\frac{x^2}{2!}+\frac{x^4}{4!}-\cdots$ (step 5: its derivatives at 0 cycle $1,0,-1,0$). Two factors peel off $(2k)!$, so the multiplier is $-\frac{x^2}{(2k)(2k-1)}$.` }] },
+    plot, key => {
+      lit = key || '';
+      if (lit.startsWith('exp') && mode !== 'exp') setMode('exp');
+      else if (lit.startsWith('bes') && mode !== 'bessel') setMode('bessel');
+      else plot.redraw();
+    }, CLOSING);
+  side.querySelector('fl-proof-steps').primerMoves = PRIMER_MOVES;
+  side.querySelector('fl-proof-steps').endNote = NEXT;
+  function update() { plot.redraw(); }
+  update();
+}
+// The view's close. The primer's last proof lists every move the primer's proofs used, in order of first
+// use, once it is proved, so the list never gives a pick away; the last step names what comes next.
+const CLOSING = 'Look back: under the picture.';
+const PRIMER_MOVES = ['Name a piece', 'Rearrange', 'Induction', 'Take a limit', 'Compute it two ways', 'Unfold the definition', 'Use an earlier result', 'Compare or bound'];
+const NEXT = 'Next: Primer · Sampling.';
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'series-what', title: 'An endless sum can have a value', tag: 'Used in L13 29:44 · L15 17:02', mount: slideSeries },
+  { id: 'why-halves', proof: true, title: String.raw`Why it's true: $1+\tfrac12+\tfrac14+\cdots=2$`, tag: 'Used in L13 29:44 · L15 17:02', mount: slideWhyHalves },
+  { id: 'geometric-sum', title: 'The geometric sum in one line', tag: 'Used in L13 29:44', mount: slideGeometric },
+  { id: 'why-geometric-sum', proof: true, title: String.raw`Why it's true: $1+r+\cdots+r^{N-1}=\tfrac{1-r^N}{1-r}$`, tag: 'Used in L13 29:44', mount: slideWhyGeometric },
+  { id: 'taylor-copy', title: 'A polynomial that copies a function', tag: 'Used in L3 13:08 · L7 12:28', mount: slideTaylor },
+  { id: 'why-taylor-coefficients', proof: true, title: String.raw`Why it's true: $c_k=f^{(k)}(0)/k!$`, tag: 'Used in L3 13:08 · L7 12:28', mount: slideWhyTaylor },
+  { id: 'taylor-trust', title: 'How far from the point can you trust it?', tag: 'Used in L18 22:08', mount: slideTrust },
+  { id: 'why-taylor-trust', proof: true, title: "Why it's true: the error is under the next term", tag: 'Used in L18 22:08', mount: slideWhyTrust },
+  { id: 'term-by-term', title: 'Each term from the one before', tag: 'Used in L16 03:42 to 04:13', mount: slideTerms },
+  { id: 'why-term-recipe', proof: true, title: "Why it's true: each term from the one before", tag: 'Used in L16 03:42 to 04:13', mount: slideWhyTerms },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side');
+  const sec = mark(h('section', 'slide' + (s.proof ? ' proof-slide' : '')), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  s.mount(widget, side);
+  if (cur === SLIDES.length - 1) {
+    if (!endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

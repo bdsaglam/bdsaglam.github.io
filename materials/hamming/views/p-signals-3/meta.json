@@ -1,0 +1,7 @@
+{
+  "title": "Primer · Signals: convolution, filters in a row, short records",
+  "group": "p-signals",
+  "about": "Primer 0.12 (3 of 4): the output as a sum of echoes, two filters in a row as one filter (convolution), the product table, gains that multiply, and how a short record smears a tone; von Hann's window.",
+  "w": 1280,
+  "h": 720
+}

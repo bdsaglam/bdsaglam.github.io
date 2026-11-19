@@ -1,0 +1,7 @@
+{
+  "title": "Primer · Signals: what a filter does",
+  "group": "p-signals",
+  "about": "Primer 0.12 (1 of 4): a filter as sliding weights, the same filter as a matrix, the shift test, the echo of one tap, and why the shift test forces one row of weights.",
+  "w": 1280,
+  "h": 720
+}

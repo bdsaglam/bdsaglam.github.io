@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Is surprise information? Test Hamming's claim</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: white page, one accent (blue), red only for a failing check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft); --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);             /* body text: 16px+ at 1280 wide */
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-panel);display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 28px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(8px,1.2vh,16px) 28px;overflow-x:hidden;overflow-y:auto}
+footer{display:flex;align-items:center;gap:10px;padding:10px 28px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (60%), text on the right (40%). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(20px,2.6vw,44px);align-items:center}
+.widget{min-width:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,16px)}
+.side{min-width:0;display:flex;flex-direction:column;gap:clamp(10px,1.8vh,18px)}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(24px,2.4vw,34px);line-height:1.2;margin:0;font-weight:650}
+.formula{font-size:clamp(20px,1.9vw,27px)}
+.line-txt{margin:0}
+
+/* Controls and readouts */
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{font:inherit;padding:7px 16px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent)}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{opacity:.4;cursor:default}
+.readout{padding:10px 14px;border-radius:10px;background:var(--pal-soft);width:100%;min-height:44px;overflow-wrap:anywhere}
+.note{color:var(--muted);margin:0}
+.opts{display:flex;gap:10px 22px;flex-wrap:wrap}
+.opts label{display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.opts input{accent-color:var(--accent);width:18px;height:18px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:5px 14px;border:1px solid var(--line);border-radius:999px;font:inherit;font-size:15px;background:var(--pal-panel);cursor:pointer;text-align:left}
+.chip.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.sentence{width:100%;font:17px/1.45 ui-monospace,Menlo,monospace;padding:10px 12px;border:1px solid var(--line);border-radius:10px;resize:none;color:var(--fg)}
+
+/* Bar chart: HTML and CSS, so the labels can be KaTeX. */
+.ylab{font-size:15px;color:var(--muted)}
+.chart{position:relative;height:clamp(250px,40vh,310px);width:100%}
+.yaxis{position:absolute;left:0;top:0;bottom:40px;width:40px}
+.tick{position:absolute;right:8px;transform:translateY(50%);font-size:14px;color:var(--muted);line-height:1}
+.plot{position:absolute;left:44px;right:0;top:0;bottom:40px;border-left:1px solid var(--line);border-bottom:1px solid var(--line)}
+.guide{position:absolute;left:0;right:0;border-top:2px dashed var(--fg);pointer-events:none}
+.guide-label{position:absolute;left:8px;bottom:4px;font-size:15px;white-space:nowrap}
+.cols{position:absolute;inset:0;display:flex}
+.group{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:3px;padding:0 4px;min-width:0}
+.bar{width:clamp(10px,1.1vw,14px);border-radius:2px 2px 0 0}
+.glabs{position:absolute;left:44px;right:0;bottom:0;height:40px;display:flex}
+.glab{flex:1;text-align:center;font-size:15px;padding-top:8px;color:var(--muted);min-width:0}
+.glab.on{color:var(--fg);font-weight:700}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:15px}
+.legend>span{display:inline-flex;align-items:center}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px}
+
+/* Table (numbers step) */
+.tbl{border-collapse:collapse;width:100%;font-size:18px;table-layout:fixed}
+.tbl th,.tbl td{padding:7px 8px;border-bottom:1px solid var(--pal-soft-2);text-align:right;overflow-wrap:anywhere}
+.tbl th:first-child,.tbl td:first-child{text-align:left;width:26%}
+.tbl tr.hi td{background:var(--chip)}
+
+/* Text heatmap: one span per character, shaded by its bits. */
+.heat{white-space:pre-wrap;overflow-wrap:anywhere;font:17px/2 ui-monospace,Menlo,monospace;width:100%;padding:10px 14px;border:1px solid var(--pal-soft-2);border-radius:10px;margin:0}
+.ch{border-radius:3px}
+</style>
+</head>
+<body>
+<header>Is surprise information? Test Hamming's claim</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev" disabled>Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next" disabled>Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+const $ = (s, root = document) => root.querySelector(s);
+const h = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+};
+const f3 = (x) => x.toFixed(3);
+
+// KaTeX via auto-render. If the CDN did not load, the text stays as typed.
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+
+// Events to the session log. The bridge is optional: without fluid.emit this is a no-op.
+const emit = (kind, data) => {
+  try {
+    const p = window.fluid && typeof fluid.emit === 'function' ? fluid.emit(kind, data) : null;
+    if (p && p.catch) p.catch(() => {});
+  } catch (_) { /* the view works without the bridge */ }
+};
+let flushPending = null; // set by the sentence slide while a score is waiting on its debounce
+
+// ---- data and models ----------------------------------------------------
+
+const ALPH = 'abcdefghijklmnopqrstuvwxyz ';
+const LOG27 = Math.log2(27);
+const YMAX = 5.2;
+const CHAPTER = 'data/alice.txt';
+const ORDERS = [0, 1, 2, 3, 4];
+const SRC = [
+  { id: 'real', name: 'Real text' },
+  { id: 'shuffled-words', name: 'Shuffled words' },
+  { id: 'shuffled-chars', name: 'Shuffled characters' },
+  { id: 'prng', name: 'Random letters (PRNG)' },
+];
+// Bar and legend colors: palette vars, so the inline styles follow the theme without a redraw.
+const BAR_COLORS = ['var(--pal-blue-pale)', 'var(--pal-blue-light)', 'var(--pal-accent-2)', 'var(--pal-accent)', 'var(--pal-blue-deep)', 'var(--pal-orange-bar)'];
+const CHIPS = [
+  'the entropy is a lower bound on the average code length',
+  'qzx vlo pkkw ufy',
+  'a few words and a tremendous amount of information comes into their heads',
+];
+let D = null; // filled by compute()
+
+function clean(s) {
+  return s.toLowerCase().replace(/[^a-z]+/g, ' ').trim();
+}
+
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffled(arr, seed) {
+  const r = mulberry32(seed);
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function prngText(n, seed) {
+  const r = mulberry32(seed);
+  let s = '';
+  for (let i = 0; i < n; i++) s += ALPH[Math.floor(r() * 27)];
+  return s;
+}
+
+// Bits per character for each position. The model predicts (count + 0.5) / (total + 0.5 * 27)
+// from the last k characters. With learn = true it updates after each character (online);
+// with learn = false it uses the table as given (frozen).
+function bitsPerChar(text, k, table, learn) {
+  const tab = table || new Map();
+  const out = new Float64Array(text.length);
+  for (let i = 0; i < text.length; i++) {
+    const ctx = text.slice(Math.max(0, i - k), i);
+    const c = text[i];
+    let e = tab.get(ctx);
+    const t = e ? e.t : 0;
+    const n = e ? (e.c[c] || 0) : 0;
+    out[i] = -Math.log2((n + 0.5) / (t + 0.5 * 27));
+    if (learn) {
+      if (!e) { e = { t: 0, c: {} }; tab.set(ctx, e); }
+      e.t++;
+      e.c[c] = (e.c[c] || 0) + 1;
+    }
+  }
+  return out;
+}
+
+function sumArr(a) {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += a[i];
+  return s;
+}
+
+async function deflateBpc(text) {
+  if (typeof CompressionStream === 'undefined') return null;
+  const bytes = new TextEncoder().encode(text);
+  const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  const out = await new Response(stream).arrayBuffer();
+  return (out.byteLength * 8) / text.length;
+}
+
+async function compute() {
+  const raw = await fluid.readFile(CHAPTER);
+  const real = clean(raw);
+  if (real.length < 1000) throw new Error('sample text is too short after cleaning');
+  const texts = {
+    real,
+    'shuffled-words': shuffled(real.split(' '), 7).join(' '),
+    'shuffled-chars': shuffled(real.split(''), 7).join(''),
+    prng: prngText(real.length, 42),
+  };
+  const res = {};
+  for (const s of SRC) {
+    const t = texts[s.id];
+    const perChar = ORDERS.map((k) => bitsPerChar(t, k, null, true));
+    res[s.id] = {
+      n: t.length,
+      perChar,
+      bpc: perChar.map((a) => sumArr(a) / t.length),
+      deflate: await deflateBpc(t),
+    };
+  }
+  // Order-2 model trained on the sample, then frozen, for the sentence step.
+  const trained = new Map();
+  bitsPerChar(real, 2, trained, true);
+  return { real, res, trained };
+}
+
+// ---- shared pieces ------------------------------------------------------
+
+// Orange shade from bits: 0 bits is nearly white, the uniform ceiling log2(27) is strong.
+function heat(b) {
+  const t = Math.min(1, b / LOG27);
+  return `color-mix(in srgb, var(--pal-heat) ${((0.06 + 0.7 * t) * 100).toFixed(1)}%, transparent)`;
+}
+
+// Spans for a text, shaded by per-character bits. Hover reads the bits.
+function shadedSpans(text, bits) {
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < text.length; i++) {
+    const s = h('span', 'ch', text[i]);
+    s.dataset.item = 'char';
+    s.dataset.index = String(i);
+    s.dataset.bits = bits[i].toFixed(3);
+    s.style.background = heat(bits[i]);
+    frag.appendChild(s);
+  }
+  return frag;
+}
+
+// Pick and reveal live here, so they survive a move between the predict and numbers steps.
+let pick = null;
+let revealed = false;
+
+// ---- step 1: who has the most information? ----------------------------
+
+function slidePredict(w) {
+  const R = D.res;
+
+  const opts = h('div', 'opts');
+  for (const s of SRC) {
+    const lab = h('label');
+    const r = document.createElement('input');
+    r.type = 'radio';
+    r.name = 'l13-pick';
+    r.value = s.id;
+    r.dataset.item = 'choice';
+    r.dataset.id = s.id;
+    r.checked = pick === s.id;
+    r.addEventListener('change', () => {
+      pick = s.id;
+      reveal.disabled = revealed;
+      emit('view.action', { action: 'predict', choice: s.id });
+      render();
+    });
+    lab.append(r, document.createTextNode(' ' + s.name));
+    opts.append(lab);
+  }
+  const reveal = h('button', 'btn primary', 'Reveal');
+  reveal.disabled = !pick || revealed;
+  reveal.dataset.item = 'control';
+  reveal.dataset.id = 'reveal';
+  reveal.addEventListener('click', () => {
+    if (!pick || revealed) return;
+    revealed = true;
+    reveal.disabled = true;
+    emit('view.action', { action: 'reveal' });
+    render();
+  });
+  const actions = h('div', 'actions');
+  actions.append(reveal);
+  w.append(h('p', 'note', 'Pick one source, then reveal the bars.'), opts, actions);
+
+  const out = h('div', 'widget');
+  w.append(out);
+
+  function legend() {
+    const lg = h('div', 'legend');
+    ['k=0', 'k=1', 'k=2', 'k=3', 'k=4', 'deflate'].forEach((name, i) => {
+      const s = h('span');
+      const sw = h('span', 'sw');
+      sw.style.background = BAR_COLORS[i];
+      s.append(sw, h('span', '', i < 5 ? '$' + name + '$' : name));
+      lg.append(s);
+    });
+    return lg;
+  }
+
+  // Grouped bars: one group per source, one bar per model. Heights are shares of YMAX.
+  function chart() {
+    const wrap = h('div', 'widget');
+    wrap.style.gap = '4px';
+    wrap.append(setTex(h('div', 'ylab'), '$\\text{bits/char}$'));
+
+    const chartEl = h('div', 'chart');
+    chartEl.setAttribute('role', 'img');
+    chartEl.setAttribute('aria-label', 'Bits per character by source and model');
+
+    const yaxis = h('div', 'yaxis');
+    for (let v = 0; v <= 5; v++) {
+      const t = h('span', 'tick', String(v));
+      t.style.bottom = (v / YMAX * 100) + '%';
+      yaxis.append(t);
+    }
+    chartEl.append(yaxis);
+
+    const plot = h('div', 'plot');
+    const guide = h('div', 'guide');
+    guide.style.bottom = (LOG27 / YMAX * 100) + '%';
+    guide.append(setTex(h('span', 'guide-label'), '$\\log_2 27 = ' + LOG27.toFixed(3) + '$'));
+    plot.append(guide);
+
+    const cols = h('div', 'cols');
+    const labs = h('div', 'glabs');
+    for (const s of SRC) {
+      const g = h('div', 'group');
+      const vals = [...R[s.id].bpc, R[s.id].deflate];
+      vals.forEach((v, bi) => {
+        if (v == null) return;
+        const b = h('div', 'bar');
+        b.style.height = (v / YMAX * 100) + '%';
+        b.style.background = BAR_COLORS[bi];
+        b.title = `${s.name}, ${bi < 5 ? 'order ' + bi : 'deflate'}: ${f3(v)} bits/char`;
+        g.append(b);
+      });
+      cols.append(g);
+      labs.append(h('div', 'glab' + (s.id === pick ? ' on' : ''), s.name));
+    }
+    plot.append(cols);
+    chartEl.append(plot, labs);
+    wrap.append(chartEl);
+    return wrap;
+  }
+
+  function render() {
+    out.innerHTML = '';
+    if (!revealed) { tex(w); return; }
+    out.append(legend(), chart());
+    const take = h('div', 'readout', 'Random letters cost the most in every column, and they carry no meaning. Whoever holds the seed pays $0$ bits.');
+    take.dataset.item = 'readout';
+    take.dataset.id = 'takeaway';
+    const seed = h('div', 'readout', 'Random letters, if you know the seed: $0$ bits/char.');
+    seed.dataset.item = 'readout';
+    seed.dataset.id = 'prng-seed';
+    out.append(take, seed);
+    tex(out);
+  }
+
+  render();
+}
+
+// ---- step 2: the numbers behind the bars ------------------------------
+
+function slideNumbers(w) {
+  if (!revealed) {
+    w.append(h('p', 'note', 'Reveal the bars on the previous step first.'));
+    return;
+  }
+  const R = D.res;
+  const tbl = h('table', 'tbl');
+  const thead = h('tr');
+  thead.append(h('th', '', 'Source'));
+  for (const k of ORDERS) {
+    const th = h('th');
+    setTex(th, '$k=' + k + '$');
+    thead.append(th);
+  }
+  thead.append(h('th', '', 'deflate'));
+  const head = h('thead');
+  head.append(thead);
+  tbl.append(head);
+  const body = h('tbody');
+  for (const s of SRC) {
+    const tr = h('tr');
+    tr.dataset.item = 'row';
+    tr.dataset.id = s.id;
+    tr.dataset.title = s.name;
+    if (s.id === pick) tr.className = 'hi';
+    tr.append(h('td', '', s.name));
+    for (const v of R[s.id].bpc) tr.append(h('td', '', f3(v)));
+    tr.append(h('td', '', R[s.id].deflate == null ? 'n/a' : f3(R[s.id].deflate)));
+    body.append(tr);
+  }
+  tbl.append(body);
+  w.append(tbl);
+
+  const r = R.real.bpc;
+  const order = setTex(h('div', 'readout'),
+    `Real text: order $2$ costs $${f3(r[2])}$ bits/char, and order $4$ costs $${f3(r[4])}$ bits/char.`);
+  order.dataset.item = 'readout';
+  order.dataset.id = 'order-check';
+  w.append(order);
+  tex(w);
+}
+
+// ---- step 3: where the surprise sits ----------------------------------
+
+function slideHeat(w) {
+  let order = 2;
+  const N = 400;
+  const text = D.real.slice(0, N);
+
+  const seg = h('div', 'actions');
+  const btns = [];
+  for (const k of ORDERS) {
+    const b = h('button', 'btn');
+    setTex(b, '$k=' + k + '$');
+    b.dataset.item = 'control';
+    b.dataset.id = 'order-' + k;
+    b.addEventListener('click', () => {
+      const changed = k !== order;
+      order = k;
+      paint();
+      if (changed) emit('view.action', { action: 'order', k });
+    });
+    btns.push(b);
+    seg.append(b);
+  }
+
+  const heat1 = h('div', 'heat');
+  const hover = h('div', 'readout', 'Hover a character to see its bits.');
+  hover.dataset.item = 'readout';
+  hover.dataset.id = 'hover';
+  const total = h('div', 'readout');
+  total.dataset.item = 'readout';
+  total.dataset.id = 'total';
+  w.append(seg, heat1, hover, total);
+
+  heat1.addEventListener('mouseover', (e) => {
+    const s = e.target.closest && e.target.closest('span.ch');
+    if (!s) return;
+    const shown = s.textContent === ' ' ? '\\text{space}' : '\\texttt{' + s.textContent + '}';
+    setTex(hover, `$${shown}$ costs $${s.dataset.bits}$ bits under $k=${order}$.`);
+  });
+
+  function paint() {
+    btns.forEach((b, i) => b.classList.toggle('on', ORDERS[i] === order));
+    heat1.innerHTML = '';
+    const bits = D.res.real.perChar[order];
+    heat1.append(shadedSpans(text, bits));
+    let tot = 0;
+    for (let i = 0; i < text.length; i++) tot += bits[i];
+    setTex(total, `Total $${tot.toFixed(1)}$ bits, which is $${(tot / 8).toFixed(1)}$ bytes, against $${text.length}$ raw bytes at $k=${order}$.`);
+  }
+  paint();
+}
+
+// ---- step 4: your sentence --------------------------------------------
+
+function slideSentence(w) {
+  const ta = document.createElement('textarea');
+  ta.className = 'sentence';
+  ta.rows = 3;
+  ta.placeholder = 'Type a sentence';
+  ta.value = CHIPS[0];
+  ta.dataset.item = 'control';
+  ta.dataset.id = 'sentence';
+  w.append(ta);
+
+  // One score event per settled sentence: a chip click at once, typing after a 1.5 s pause.
+  let scoreTimer = null;
+  function scoreNow() {
+    clearTimeout(scoreTimer);
+    scoreTimer = null;
+    const t = clean(ta.value);
+    if (!t) return;
+    const bits = bitsPerChar(t, 2, D.trained, false);
+    emit('view.action', { action: 'score', bits_per_char: Number((sumArr(bits) / t.length).toFixed(3)) });
+  }
+  flushPending = () => { if (scoreTimer != null) scoreNow(); };
+
+  const chips = h('div', 'chips');
+  const chipBtns = [];
+  CHIPS.forEach((t, i) => {
+    const b = h('button', 'chip', t);
+    b.dataset.item = 'chip';
+    b.dataset.id = 'chip-' + (i + 1);
+    b.addEventListener('click', () => { ta.value = t; update(); scoreNow(); });
+    chipBtns.push([b, t]);
+    chips.append(b);
+  });
+  w.append(chips);
+
+  const bpcRead = h('div', 'readout');
+  bpcRead.dataset.item = 'readout';
+  bpcRead.dataset.id = 'bpc';
+  const shaded = h('div', 'heat');
+  w.append(bpcRead, shaded);
+
+  function update() {
+    chipBtns.forEach(([b, t]) => b.classList.toggle('on', t === ta.value));
+    const t = clean(ta.value);
+    shaded.innerHTML = '';
+    if (!t) {
+      bpcRead.textContent = 'Type a sentence to see its cost.';
+      return;
+    }
+    const bits = bitsPerChar(t, 2, D.trained, false);
+    shaded.append(shadedSpans(t, bits));
+    setTex(bpcRead, `$${f3(sumArr(bits) / t.length)}$ bits per character over $${t.length}$ characters.`);
+  }
+  ta.addEventListener('input', () => {
+    update();
+    clearTimeout(scoreTimer);
+    scoreTimer = setTimeout(scoreNow, 1500);
+  });
+  update();
+}
+
+// ---- frame ---------------------------------------------------------------
+
+const SLIDES = [
+  { id: 'predict', title: 'Who has the most information?', tag: 'Lecture 38:03', mount: slidePredict,
+    formula: String.raw`$$\text{bits/char} = \frac{1}{n}\sum_{i=1}^{n} -\log_2 \hat{p}_i$$`,
+    lines: [
+      'Each bar is one model’s cost on an excerpt from Alice’s Adventures in Wonderland.',
+      'The dashed line is $\\log_2 27$: the cost of guessing among 27 symbols.',
+    ] },
+  { id: 'numbers', title: 'Bigger is not always cheaper', tag: 'Lecture 38:03', mount: slideNumbers,
+    formula: String.raw`$$27^4 = 531{,}441\ \text{possible contexts}$$`,
+    lines: [
+      'Order $k$ reads the last $k$ characters.',
+      'A higher order has more contexts to learn. Compare the measured costs for orders $2$ and $4$.',
+    ] },
+  { id: 'heatmap', title: 'Where the surprise sits', tag: 'Lecture 43:55', mount: slideHeat,
+    formula: String.raw`$$\text{cost}_i = -\log_2 \hat{p}_i$$`,
+    lines: [
+      'Each character is shaded by its cost in bits.',
+      'Word starts are expensive. Word ends are nearly free.',
+    ] },
+  { id: 'your-sentence', title: 'Your sentence', tag: 'Lecture 39:07', mount: slideSentence,
+    formula: String.raw`$$\text{bits per char} = \frac{\text{total bits}}{\text{characters}}$$`,
+    lines: [
+      'Predict first: does an insightful sentence cost more bits per character?',
+      'The model is order $2$, trained on the Alice sample, then frozen.',
+      'The model keeps letters and spaces.',
+    ] },
+];
+
+let cur = 0;
+let ready = false;  // data computed; slides can mount
+let waiting = null; // index of a cue that arrived before ready
+
+// Mount slide i. Emits nothing: the callers decide what is a change.
+function showSlide(i) {
+  if (flushPending) { flushPending(); flushPending = null; }
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  const widget = h('div', 'widget');
+  const side = h('div', 'side');
+  side.append(h('div', 'tag', s.tag), h('h2', '', s.title));
+  if (s.formula) side.append(h('div', 'formula', s.formula));
+  for (const t of s.lines) side.append(h('p', 'line-txt', t));
+  const sec = h('section', 'slide');
+  sec.dataset.item = 'step';
+  sec.dataset.id = s.id;
+  sec.dataset.title = s.title;
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  s.mount(widget);
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+
+// The user moves (dots, Prev, Next, arrow keys): log view.step when the slide changes.
+function goTo(i) {
+  const before = cur;
+  showSlide(i);
+  if (cur !== before) emit('view.step', { step: SLIDES[cur].id });
+}
+
+// A cue names the state to show. Repeating the current step changes nothing, so a resent
+// cue after a reload or Follow does not reset the user's work on the slide.
+function onCue(msg) {
+  const i = msg && typeof msg.step === 'string' ? SLIDES.findIndex((s) => s.id === msg.step) : -1;
+  if (i < 0) return;
+  if (!ready) { waiting = i; return; }
+  if (i === cur) return;
+  showSlide(i);
+  emit('view.step', { step: SLIDES[cur].id });
+}
+if (window.fluid && typeof fluid.onCue === 'function') fluid.onCue(onCue);
+
+(async function init() {
+  $('#stage').innerHTML = '';
+  $('#stage').append(h('p', 'note', 'Reading the text sample and running the models…'));
+  try {
+    D = await compute();
+  } catch (err) {
+    $('#stage').innerHTML = '';
+    const e = h('div', 'readout', 'Could not load the text sample: ' + err.message);
+    e.style.color = 'var(--red)';
+    e.style.background = 'var(--redbg)';
+    $('#stage').append(e);
+    return;
+  }
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1) + ': ' + s.title);
+    b.title = s.title;
+    b.addEventListener('click', () => goTo(i));
+    dots.append(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', (e) => {
+    if (e.target && e.target.matches && e.target.matches('input[type=text],input[type=range],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  ready = true;
+  const start = waiting ?? 0;
+  showSlide(start);
+  if (start !== 0) emit('view.step', { step: SLIDES[start].id });
+})();
+</script>
+</body>
+</html>

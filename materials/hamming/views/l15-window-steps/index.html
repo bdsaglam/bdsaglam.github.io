@@ -1,0 +1,1414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Windows: multiplying is convolving</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: grey for input or exact values, blue for output and the reader's choice, amber for the
+   proof line's highlight, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  /* View colors with no palette name. Light keeps the old look; dark takes palette values. */
+  --v-faint:#f9fafb; --v-tint:#e0ecff; --v-hover:#bfdbfe; --v-lblue:#93c5fd; --v-box:#c7cbd1;
+  --v-gridfaint:#f1f2f4; --v-band:#eceef1; --v-lbl-amber:#92400e; --v-mute-line:#6b7280; --v-lbl-blue:var(--pal-accent-deep);
+  --u:clamp(16px,1.35vw,20px);
+}
+:root[data-fluid-theme="dark"]{
+  --v-faint:var(--pal-panel); --v-tint:var(--pal-accent-soft); --v-hover:#34508a; --v-lblue:var(--pal-accent-2);
+  --v-box:var(--pal-grey); --v-gridfaint:var(--pal-grid); --v-band:var(--pal-soft-2); --v-lbl-amber:var(--pal-amber-ink);
+  --v-mute-line:var(--pal-muted); --v-lbl-blue:var(--pal-accent-2);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(5px,0.9vh,10px);overflow:hidden}
+.widget>*{max-width:100%;min-width:0}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(17px,1.5vw,22px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.sym.name i{color:var(--fg)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--pal-accent-deep);font-weight:600}
+.takeaway{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;transition:opacity .2s}
+/* Dark only: at .3 the dimmed takeaway text is 2.4:1 on the dark panel; .6 keeps it dimmer than full while passing 4.5:1. */
+.echo{margin:0;font-size:16px;line-height:1.35}
+.echo .kick{display:block;font-size:14px;color:var(--muted)}
+.echo .src{font-size:14px;color:var(--muted)}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:6px 22px;flex-wrap:wrap;width:100%;align-items:center}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(110px,10vw,160px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:58px;white-space:nowrap}
+.btn{font:inherit;padding:5px 11px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{color:var(--muted);cursor:default}
+.btnrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.grp{display:inline-flex;gap:0}
+.grp .btn{border-radius:0;margin-left:-1px}
+.grp .btn:first-child{border-radius:8px 0 0 8px;margin-left:0}
+.grp .btn:last-child{border-radius:0 8px 8px 0}
+.grp .btn.on{position:relative;z-index:1}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:3px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.legend{display:flex;gap:4px 16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:100px;position:relative;width:100%}
+.fill.f2{flex-grow:2.3}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side{justify-content:flex-start;gap:6px}
+.slide.proof-slide .legend{gap:2px 12px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px;font-size:16px}
+.test .tries{gap:3px}
+.model{margin:0;padding:6px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;line-height:1.35}
+
+/* Decision slides: problem, three cards and the reveal on the left; question, try-steps, AI echo, takeaway on the right */
+.slide.decision{grid-template-columns:minmax(0,1.75fr) minmax(0,1fr)}
+.decision .widget{gap:6px}
+.decision .side{justify-content:space-evenly;gap:8px}
+.decision h2{font-size:clamp(22px,2.3vw,32px)}
+.decision .question{font-size:clamp(16px,1.5vw,20px);line-height:1.35}
+.decision .fx{margin:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--v-faint);font-size:clamp(17px,1.5vw,20px);line-height:1.4}
+.decision .kicker{font-size:14px;color:var(--muted);margin:0 0 3px}
+.decision .blk{display:flex;flex-direction:column;gap:3px}
+.decision .tries{font-size:clamp(16px,1.4vw,18px)}
+.hold{color:var(--muted);font-style:italic;background:var(--v-faint);border:1px dashed var(--line);border-radius:6px;padding:8px 12px;margin:0;font-size:16px;line-height:1.4}
+.prob{flex:1 0 auto;display:flex;gap:12px;align-items:stretch;border:1px solid var(--line);border-radius:10px;padding:6px 10px 6px 14px;background:var(--v-faint);font-size:16px;line-height:1.4}
+.prob .txt{flex:1 1 0;min-width:0;margin:0;align-self:center}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob .sketch{flex:0 0 46%;display:flex;flex-direction:column;min-height:104px}
+.prob .sketch .fill{min-height:104px}
+.opts{flex:0 0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.5vw,7px)}
+.opt{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:0 14px;padding:clamp(5px,0.6vw,9px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;justify-content:center;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;align-items:baseline;gap:8px;font-size:16px;line-height:1.3}
+.opt .letter{font-weight:700;color:var(--pal-accent-deep)}
+.opt .who{font-size:14px;line-height:1.2;color:var(--muted)}
+.opt .body{font-size:16px;line-height:1.3}
+.opt .asm{margin:0;font-size:16px;line-height:1.3;color:var(--muted)}
+.opt .verdict{font-size:16px;line-height:1.3;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.chosen{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.chosen .who{color:var(--pal-accent-deep);font-weight:600}
+.reveal{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:6px 14px;font-size:16px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.reveal.idle{background:var(--v-faint);color:var(--muted)}
+.rv{margin:0;line-height:1.35}
+.rv .k{font-weight:650;color:var(--pal-accent-deep)}
+.rv .t{color:var(--muted);font-size:14px;white-space:nowrap}
+.reveal .actions{display:flex;align-items:center;gap:10px;margin-top:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent)}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:4px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.tries,.echo,.model{line-height:1.22}
+  .readout{padding:2px 8px}
+  .takeaway{padding:5px 10px}
+  .formula{font-size:18px}
+  h2{font-size:20px}
+  .decision h2{font-size:22px}
+  .slide-ctl input{width:104px}
+  .btn{padding:3px 9px}
+  .opt{padding:3px 10px}
+  .opts{gap:4px}
+  .decision .widget{gap:4px}
+  .opt .body,.opt .asm,.opt .verdict,.rv,.opt .top{line-height:1.2}
+  .reveal{padding:3px 12px;gap:1px}
+  .prob{padding:3px 10px 3px 12px;line-height:1.25}
+  .decision .side{gap:6px}
+  .decision h2{font-size:22px}
+  .decision .question{font-size:17px}
+  .decision .tries{font-size:16px}
+}
+</style>
+</head>
+<body>
+<header id="head">Windows: multiplying is convolving · Lecture 15</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// ---------- palette ----------
+// COL holds the colors for the SVG being drawn. fillPlot sets it at paint time, so a theme switch
+// redraws with the new values. SVG attributes take COL; HTML inline styles take var(--pal-*).
+let COL = {};
+let PLOTS = [];                       // the current slide's plots, redrawn on a theme switch
+function readPalette() {
+  const c = FluidTheme.color, cs = getComputedStyle(document.documentElement);
+  const v = n => cs.getPropertyValue(n).trim();   // the view's own tokens (:root in the style block)
+  return {
+    ink: c('ink'), text2: c('text-2'), muted: c('muted'), grey: c('grey'), accent: c('accent'),
+    panel: c('panel'), line: c('line'), grid: c('grid'), soft2: c('soft-2'), amber: c('amber'),
+    amberBg: c('amber-bg'), amberInk: c('amber-ink'), amberRow: c('amber-row'),
+    muteLine: v('--v-mute-line'), lblBlue: v('--v-lbl-blue'), lblue: v('--v-lblue'), box: v('--v-box'), gridFaint: v('--v-gridfaint'),
+    band: v('--v-band'), lblAmber: v('--v-lbl-amber'), tint: v('--v-tint'), hover: v('--v-hover'),
+  };
+}
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+// Primer pointers, by the number each primer's footer shows (checked 2026-10-22 against each view's
+// SLIDES array; p-complex/meta.json still lists an older 7-step order):
+//   Complex numbers, step 3 = p-complex 'multiply'       step 7  = p-complex 'why-shadow'
+//   Fourier series, step 8  = p-fourier 'smoothness'      step 10 = p-fourier 'discrete'
+//   Signals: convolution, step 5 = p-signals-3 'why-convolve'   Signals: convolution, step 7 = p-signals-3 'record-length'
+// ---------- math (checked with node: workspace/l15-materials-2026-10-22/l15-window-steps/check.js) ----------
+// MATH-START
+const PI = Math.PI;
+function sinc(x) { if (Math.abs(x) < 1e-12) return 1; const p = PI * x; return Math.sin(p) / p; }
+const SI_PI = 1.8519370519824662;   // Si(pi) = int_0^pi sin(s)/s ds
+// 10-point Gauss-Legendre rule on [-1, 1]
+const GLX = [0.1488743389816312, 0.4333953941292472, 0.6794095682990244, 0.8650633666889845, 0.9739065285171717];
+const GLW = [0.2955242247147529, 0.2692667193099963, 0.2190863625159820, 0.1494513491505806, 0.0666713443086881];
+function gauss(g, a, b, pieces) {
+  let s = 0;
+  const w = (b - a) / pieces;
+  for (let p = 0; p < pieces; p++) {
+    const c = a + (p + 0.5) * w, r = w / 2;
+    for (let i = 0; i < 5; i++) s += GLW[i] * (g(c - r * GLX[i]) + g(c + r * GLX[i])) * r;
+  }
+  return s;
+}
+const sOverS = s => (Math.abs(s) < 1e-12 ? 1 : Math.sin(s) / s);
+// Continuous windows on t in [-1/2, 1/2]; transforms in bins nu, normalized so W(0) = 1.
+const WIN = {
+  box: nu => sinc(nu),
+  // sinc(2t): Lanczos' sigma factors as a window. W = [Si(pi(1+nu)) + Si(pi(1-nu))] / (2 pi), over Si(pi)/pi.
+  sigma: nu => gauss(sOverS, PI * (nu - 1), PI * (nu + 1), 4) / (2 * PI) / (SI_PI / PI),
+  hann: nu => sinc(nu) + 0.5 * (sinc(nu - 1) + sinc(nu + 1)),
+};
+// Raised cosine on a platform, w = a + (1 - a) cos(2 pi t): three sincs, normalized to W(0) = 1.
+function platformW(a, nu) { return (a * sinc(nu) + (1 - a) / 2 * (sinc(nu - 1) + sinc(nu + 1))) / a; }
+const db = x => 20 * Math.log10(Math.max(Math.abs(x), 1e-15));
+// Largest |fn| on [c, c + 1]: the lobe "near c bins".
+function bandMax(fn, c) {
+  let m = 0;
+  for (let i = 0; i <= 500; i++) m = Math.max(m, Math.abs(fn(c + i / 500)));
+  return m;
+}
+// The first sign change of fn on [lo, hi], refined by bisection.
+function firstZero(fn, lo, hi, step) {
+  let x0 = lo, v0 = fn(lo);
+  for (let x = lo + step; x <= hi + 1e-12; x += step) {
+    const v = fn(x);
+    if (v === 0) return x;
+    if (v0 * v < 0) {
+      let a = x0, b = x;
+      for (let k = 0; k < 50; k++) { const m = (a + b) / 2; if (fn(a) * fn(m) <= 0) b = m; else a = m; }
+      return (a + b) / 2;
+    }
+    x0 = x; v0 = v;
+  }
+  return null;
+}
+// Largest |fn| beyond z up to hi: a scan, then a golden-section refine around the best point.
+function largestLobe(fn, z, hi, step) {
+  let best = 0, at = z;
+  for (let x = z + step; x <= hi; x += step) { const v = Math.abs(fn(x)); if (v > best) { best = v; at = x; } }
+  let a = at - step, b = at + step;
+  const g = 0.6180339887;
+  for (let k = 0; k < 40; k++) {
+    const c = b - g * (b - a), d = a + g * (b - a);
+    if (Math.abs(fn(c)) > Math.abs(fn(d))) b = d; else a = c;
+  }
+  const x = (a + b) / 2;
+  return { v: Math.abs(fn(x)), at: x };
+}
+function platformLobe(a, hi) {
+  const fn = nu => platformW(a, nu);
+  // W_a is 0 at nu = 2 for every a; near a = 4/7 that zero is double and the scan sees no sign change
+  const z0 = firstZero(fn, 1, 2.05, 0.005), z = z0 == null ? 2 : Math.min(z0, 2);
+  return Object.assign(largestLobe(fn, z, hi, 0.01), { zero: z });
+}
+// Share of energy beyond c bins (both sides), by Parseval: total = (a^2 + (1-a)^2/2) / a^2.
+function platformEnergyBeyond(a, c) {
+  const L = 400, n = Math.round((L - c) / 0.01), w = (L - c) / n;
+  const g = nu => { const v = platformW(a, nu); return v * v; };
+  let s = g(c) + g(L);
+  for (let i = 1; i < n; i++) s += g(c + i * w) * (i % 2 ? 4 : 2);
+  s *= w / 3;
+  const k = (2 * a - 1) / a;            // far lobes go like k sin(pi nu) / (pi nu)
+  s += k * k / (2 * PI * PI * L);       // the tail beyond L, averaged
+  return 2 * s / ((a * a + (1 - a) * (1 - a) / 2) / (a * a));
+}
+// A record of N samples, n = -(N-1)/2 .. (N-1)/2. D is the sum of e^{-i 2 pi nu n / N}.
+function dirichlet(nu, N) { const s = Math.sin(PI * nu / N); return Math.abs(s) < 1e-12 ? N : Math.sin(PI * nu) / s; }
+function lineKernel(nu, N, win) {
+  if (win === 'box') return dirichlet(nu, N) / N;
+  // von Hann w = 1/2 + 1/2 cos(2 pi n / N): three shifted kernels; the weights add to N/2
+  return (0.5 * dirichlet(nu, N) + 0.25 * (dirichlet(nu - 1, N) + dirichlet(nu + 1, N))) / (N / 2);
+}
+// Two equal lines d bins apart, added as powers (independent lines, like two stars).
+function twoLines(nu, d, N, win) { const p = lineKernel(nu, N, win), q = lineKernel(nu - d, N, win); return p * p + q * q; }
+// Dip at the midpoint as a share of the peak; 0 when the midpoint is the top (one peak).
+function dipOf(d, N, win) {
+  const mid = twoLines(d / 2, d, N, win);
+  let pk = 0;
+  const a = -0.5, b = d / 2;
+  for (let i = 0; i <= 3000; i++) pk = Math.max(pk, twoLines(a + (b - a) * i / 3000, d, N, win));
+  return pk <= mid * (1 + 1e-9) ? 0 : 1 - mid / pk;
+}
+// Fourier coefficients a_k, b_m for k, m = -3..3 (index k + 3); c_n for n = -6..6 (index n + 6).
+function convolve(a, b) {
+  const c = new Array(a.length + b.length - 1).fill(0);
+  a.forEach((x, i) => b.forEach((y, j) => { c[i + j] += x * y; }));
+  return c;
+}
+// Real part of sum_k coef_k e^{i k x}, k = index - off.
+function seriesRe(coef, off, x) { let s = 0; coef.forEach((v, i) => { s += v * Math.cos((i - off) * x); }); return s; }
+function seriesIm(coef, off, x) { let s = 0; coef.forEach((v, i) => { s += v * Math.sin((i - off) * x); }); return s; }
+// One tone at 5.5 bins through a box of N = 32 samples (time centered): X_k = (1/N) sum x_n e^{-i 2 pi k n / N}.
+const NEG = (() => {
+  const N = 32, m = 5.5, re = [];
+  for (let k = 0; k < 12; k++) {
+    let s = 0;
+    for (let i = 0; i < N; i++) { const n = i - (N - 1) / 2; s += Math.cos(2 * PI * m * n / N) * Math.cos(2 * PI * k * n / N); }
+    re.push(s / N);
+  }
+  const sm = [];
+  for (let k = 1; k <= 10; k++) sm.push(0.25 * re[k - 1] + 0.5 * re[k] + 0.25 * re[k + 1]);
+  return { re, sm };   // sm[k - 1] is the smoothed value at bin k
+})();
+// MATH-END
+
+// The largest side lobe of the platform window against a, and the a that makes it smallest.
+const LOBE_CURVE = [];
+for (let i = 0; i <= 200; i++) { const a = 0.5 + i * 0.0005; LOBE_CURVE.push([a, db(platformLobe(a, 12).v)]); }
+const A_MIN = (() => {
+  let lo = 0.53, hi = 0.546;
+  const g = 0.6180339887, f = a => platformLobe(a, 12).v;
+  for (let k = 0; k < 40; k++) { const c = hi - g * (hi - lo), d = lo + g * (hi - lo); if (f(c) < f(d)) hi = d; else lo = c; }
+  return (lo + hi) / 2;
+})();
+const LOBE_MIN = db(platformLobe(A_MIN, 12).v);
+
+// ---------- DOM and drawing helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted, 'font-size': 14 }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || 'var(--pal-text-2)') + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  const st = [];
+  if (o.bg) st.push('background:' + o.bg + ';border-radius:5px;padding:1px 5px');
+  if (o.halo) st.push('text-shadow:0 0 3px var(--pal-bg),0 0 3px var(--pal-bg),0 0 2px var(--pal-bg)');
+  if (st.length) span.setAttribute('style', st.join(';'));
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+function path(svg, pts, attrs, close) {
+  const good = pts.filter(p => isFinite(p[0]) && isFinite(p[1]));
+  const d = 'M' + good.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + (close ? 'Z' : '');
+  return svgNode('path', Object.assign({ d: d, fill: 'none' }, attrs), svg);
+}
+function dot(svg, x, y, color, r) {
+  return svgNode('circle', { cx: x, cy: y, r: r || 5, fill: color, stroke: COL.panel, 'stroke-width': 1.5 }, svg);
+}
+function glowPath(svg, pts, wdt) {
+  return path(svg, pts, { stroke: COL.amberBg, 'stroke-width': wdt || 11, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+}
+// While a proof line is lit, a caption in the top row says what the amber part is.
+function litCaption(svg, W, text) { svgTex(svg, W / 2, 12, text, { w: W - 8, size: 15, fill: COL.amberInk, bg: COL.amberBg }); }
+function plainCaption(svg, W, text) { svgTex(svg, W / 2, 12, text, { w: W - 8, size: 14, fill: COL.muted }); }
+// Linear scales from data ranges to the box, with margins m.
+function frame(W, H, o, m) {
+  const M = Object.assign({ l: 54, r: 16, t: 12, b: 40 }, m || {});
+  const X = v => M.l + (v - o.x0) * (W - M.l - M.r) / (o.x1 - o.x0);
+  const Y = v => H - M.b - (v - o.y0) * (H - M.t - M.b) / (o.y1 - o.y0);
+  return { X, Y, M, W, H, o, left: M.l, right: W - M.r, top: M.t, base: H - M.b };
+}
+// Axes with tick pairs [value, label] (LaTeX if the label has $) and LaTeX axis names.
+function axes(svg, f, o) {
+  path(svg, [[f.left, f.top], [f.left, f.base], [f.right, f.base]], { stroke: COL.grey, 'stroke-width': 1 });
+  for (const [v, s] of o.xt || []) {
+    const x = o.xmap ? o.xmap(v) : f.X(v);
+    svgNode('line', { x1: x, x2: x, y1: f.base, y2: f.base + 4, stroke: COL.grey }, svg);
+    if (s.indexOf('$') >= 0) svgTex(svg, x, f.base + 16, s, { w: 70, size: 14 });
+    else svgText(svg, x, f.base + 20, s, { 'text-anchor': 'middle' });
+  }
+  for (const [v, s] of o.yt || []) {
+    svgNode('line', { x1: f.left - 4, x2: f.left, y1: f.Y(v), y2: f.Y(v), stroke: COL.grey }, svg);
+    if (s.indexOf('$') >= 0) svgTex(svg, f.left - 7, f.Y(v), s, { w: 70, size: 14, anchor: 'end' });
+    else svgText(svg, f.left - 7, f.Y(v) + 5, s, { 'text-anchor': 'end' });
+  }
+  if (o.xlabel) svgTex(svg, o.xlabelAt || (f.left + f.right) / 2, f.base + 33, o.xlabel, { w: 420, size: 15 });
+  if (o.ylabel) svgTex(svg, f.left + 6, f.top + 9, o.ylabel, { w: 300, size: 15, anchor: 'start', halo: true });
+}
+const minus = v => (v < 0 ? '−' : '') + Math.abs(v);
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize and may
+// return a geometry object (wrap._geo) that pointer handlers use to map pixels to data.
+function fillPlot(box, draw, cls) {
+  const wrap = h('div', 'fill' + (cls ? ' ' + cls : ''));
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+    wrap._geo = draw(svg, w, ht) || null;
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// A labelled range input. label and fmt(value) are LaTeX-ready text.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmtv = o.fmt || String;
+  const api = {
+    el: wrap, input: inp,
+    show() { setTex(val, fmtv(+inp.value)); },
+    set(v) { inp.value = v; api.show(); },
+  };
+  inp.addEventListener('input', () => { if (o.onInput) o.onInput(+inp.value); api.show(); });
+  api.show();
+  return api;
+}
+// A row of buttons where one is on. items: [id, LaTeX label]. kind: 'control' or 'preset'.
+function choice(items, get, set, kind) {
+  const row = h('div', 'grp');
+  const btns = items.map(([id, label]) => {
+    const b = mark(h('button', 'btn'), kind || 'control', id);
+    setTex(b, label);
+    b.addEventListener('click', () => { set(id); paint(); });
+    row.append(b);
+    return [id, b];
+  });
+  function paint() { btns.forEach(([id, b]) => b.classList.toggle('on', get() === id)); }
+  paint();
+  return { el: row, paint };
+}
+function presetBtn(id, label, onClick) {
+  const b = mark(h('button', 'btn'), 'preset', id);
+  setTex(b, label);
+  b.addEventListener('click', onClick);
+  return b;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text) { setTex(v, text); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) { sw.style.background = it.color; if (it.border) sw.style.border = '1px solid ' + it.border; }
+    else sw.style.borderTop = (it.width || 2) + 'px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+// A name line: trusted static HTML with <i> for the words.
+function nameLine(html) { const p = h('p', 'sym name'); p.innerHTML = html; return tex(p); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+function formula(text) { return setTex(h('div', 'formula'), text); }
+function echo(text, src) {
+  const p = h('p', 'echo');
+  p.append(h('span', 'kick', 'Same idea in AI'), setTex(h('span'), text), document.createTextNode(' '), setTex(h('span', 'src'), src));
+  return p;
+}
+// Session events. With no bridge, nothing is sent and the view still works.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* no bridge */ }
+}
+const fx = (v, d) => (Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v).toFixed(d);
+const sg = (v, d) => (v >= 0 ? '+' : '') + fx(v, d);
+function sci(v) {
+  const e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e);
+  return '{' + m.toFixed(1) + '\\times10^{' + e + '}}';
+}
+
+// ---------- proof slides: shared parts ----------
+const PM = 30;   // proof pictures leave a row on top for the caption
+// Left column: controls, the picture, legend, readouts, the test, the mental model.
+function proofLeft(widget, o) {
+  if (o.controls && o.controls.length) widget.append(hh('div', 'sliders', ...o.controls));
+  const plot = fillPlot(widget, o.draw);
+  if (o.legend) widget.append(legend(o.legend));
+  if (o.readouts && o.readouts.length) widget.append(hh('div', 'readouts', ...o.readouts.map(r => r.el)));
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList(o.tests));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+  widget.append(test, model);
+  return { redraw: plot.redraw, wrap: plot.wrap, test };
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is
+// done, the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight) {
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = 'Look back: under the picture.';
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+
+// ---------- step 1: multiply-convolve (proof), Lecture 25:27 to 27:00 ----------
+// Coefficients for k, m = -2..2 (index k + 2); c_n for n = -4..4 (index n + 4).
+const MC_A = [0, 1, 1, 1, 0];          // 1 + 2cos x: Hamming's running sum of 3
+const MC_B = [0, 0.5, 1, 0.5, 0];      // 1 + cos x
+const MC_SHIFT = [0, 0, 0, 0, 1];      // e^{i2x}: b_2 = 1 only
+const numText = v => minus(+v.toFixed(3));
+const texNum = v => String(+v.toFixed(3));
+function drawConv(svg, W, H, st) {
+  const c = convolve(st.a, st.b);
+  const sym5 = arr => arr.every((v, i) => Math.abs(v - arr[4 - i]) < 1e-9);
+  const real = sym5(st.a) && sym5(st.b);
+  const litN = st.hover != null ? st.hover : 1;
+  const CAP = {
+    grid: String.raw`amber: every product $a_kb_m$, one per cell`,
+    labels: String.raw`amber: each cell is a wave $e^{i(k+m)x}$; the number is $k+m$`,
+    diagonals: String.raw`amber: cells with the same $n=k+m$ lie on one slant`,
+    'one-diagonal': String.raw`amber: the slant $n=${litN}$ adds up to $c_{${litN}}=${texNum(c[litN + 4])}$` }[st.lit];
+  if (CAP) litCaption(svg, W, CAP);
+  else plainCaption(svg, W, String.raw`cell: $a_k\,b_m$ · tint: slant $k+m=n$ · drag the bars`);
+  const u = H < 300 ? 10 : 13;                      // bar unit: 1 in a or b
+  const cH = 40, top = 26;
+  const valW = 30;
+  const avW = W * 0.5 - (valW + 3 * u + 6) - 20;
+  const avH = H - top - (14 + 3 * u + 6) - 30 - cH;
+  const s = Math.max(18, Math.min(52, Math.floor(Math.min(avW, avH) / 5)));
+  const gx0 = valW + 3 * u + 6, gy0 = top + 14 + 3 * u + 6;
+  const gx1 = gx0 + 5 * s, gy1 = gy0 + 5 * s;
+  const cTop = Math.min(H - cH, gy1 + 30);
+  const fs = s < 26 ? 12 : s < 36 ? 13 : 15;
+  const tint = n => (((n % 2) + 2) % 2 === 0 ? COL.tint : COL.grid);
+  for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) {
+    const n = i + j - 4, x = gx0 + j * s, y = gy0 + i * s, p = st.a[i] * st.b[j];
+    const lit = (st.lit === 'grid' || st.lit === 'labels') && p !== 0 || st.lit === 'one-diagonal' && n === litN && p !== 0;
+    const hov = st.hover === n;
+    svgNode('rect', { x: x + 0.5, y: y + 0.5, width: s - 1, height: s - 1, rx: 3,
+      fill: lit ? COL.amberBg : hov ? COL.hover : tint(n), stroke: lit ? COL.amber : hov ? COL.accent : COL.panel, 'stroke-width': lit || hov ? 1.5 : 1,
+      'data-item': 'mark', 'data-id': 'cell-' + (i - 2) + '-' + (j - 2) }, svg);
+  }
+  if (st.lit === 'diagonals') {
+    for (let n = -4; n <= 4; n++) {
+      const pts = [];
+      for (let i = 0; i < 5; i++) { const j = n + 4 - i; if (j < 0 || j > 4) continue; if (st.a[i] * st.b[j] !== 0) pts.push([gx0 + (j + 0.5) * s, gy0 + (i + 0.5) * s]); }
+      if (pts.length) glowPath(svg, pts.length > 1 ? pts : [pts[0], [pts[0][0] + 0.1, pts[0][1]]], s * 0.45);
+    }
+  }
+  for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) {
+    const p = st.a[i] * st.b[j];
+    if (Math.abs(p) < 1e-12) continue;
+    const label = st.lit === 'labels' ? String(minus(i + j - 4)) : numText(p);
+    svgText(svg, gx0 + (j + 0.5) * s, gy0 + (i + 0.5) * s + fs * 0.36, label,
+      { 'text-anchor': 'middle', 'font-size': fs, fill: st.lit === 'labels' ? COL.lblAmber : COL.ink });
+  }
+  // a_k bars on the left (positive to the left), b_m bars on top (positive up)
+  const xa = gx0 - 6 - u, yb = gy0 - 6 - u;
+  path(svg, [[xa, gy0], [xa, gy1]], { stroke: COL.grey });
+  path(svg, [[gx0, yb], [gx1, yb]], { stroke: COL.grey });
+  for (let i = 0; i < 5; i++) {
+    const v = st.a[i], y = gy0 + i * s + s * 0.25;
+    svgNode('rect', { x: v >= 0 ? xa - v * u : xa, y: y, width: Math.max(1.5, Math.abs(v) * u), height: s * 0.5,
+      fill: COL.grey, 'data-item': 'mark', 'data-id': 'a-' + (i - 2) }, svg);
+    if (v !== 0) svgText(svg, valW - 4, gy0 + (i + 0.5) * s + 4.5, numText(v), { 'text-anchor': 'end', 'font-size': 13, fill: COL.text2 });
+    svgText(svg, gx1 + 6, gy0 + (i + 0.5) * s + 4.5, String(minus(i - 2)), { 'font-size': 13 });
+  }
+  for (let j = 0; j < 5; j++) {
+    const v = st.b[j], x = gx0 + j * s + s * 0.25;
+    svgNode('rect', { x: x, y: v >= 0 ? yb - v * u : yb, width: s * 0.5, height: Math.max(1.5, Math.abs(v) * u),
+      fill: COL.grey, 'data-item': 'mark', 'data-id': 'b-' + (j - 2) }, svg);
+    if (v !== 0) svgText(svg, gx0 + (j + 0.5) * s, top + 10, numText(v), { 'text-anchor': 'middle', 'font-size': 13, fill: COL.text2 });
+    svgText(svg, gx0 + (j + 0.5) * s, gy1 + 15, String(minus(j - 2)), { 'text-anchor': 'middle', 'font-size': 13 });
+  }
+  svgTex(svg, valW - 2, yb - u, '$a_k$', { w: 40, size: 15, anchor: 'end' });
+  svgTex(svg, gx1 + 4, top + 8, '$b_m$', { w: 40, size: 15, anchor: 'start' });
+  svgTex(svg, gx0 - 8, gy1 + 14, '$m$', { w: 30, size: 14, anchor: 'end' });
+  svgTex(svg, gx1 + 4, gy0 - 11, '$k$', { w: 30, size: 14, anchor: 'start' });
+  // the c_n strip
+  const sumW = 74, cx0 = 40, bw = Math.min(54, (W - cx0 - sumW - 6) / 9);
+  svgTex(svg, cx0 - 6, cTop + 27, '$c_n$', { w: 40, size: 15, anchor: 'end' });
+  svgTex(svg, cx0 - 6, cTop + 6, '$n$', { w: 40, size: 14, anchor: 'end' });
+  for (let n = -4; n <= 4; n++) {
+    const x = cx0 + (n + 4) * bw, v = c[n + 4];
+    const lit = st.lit === 'one-diagonal' && n === litN, hov = st.hover === n;
+    svgNode('rect', { x: x + 1, y: cTop + 14, width: bw - 2, height: 26, rx: 4, fill: lit ? COL.amberBg : hov ? COL.hover : tint(n),
+      stroke: lit ? COL.amber : hov ? COL.accent : COL.line, 'data-item': 'mark', 'data-id': 'c-' + n }, svg);
+    svgText(svg, x + bw / 2, cTop + 8, String(minus(n)), { 'text-anchor': 'middle', 'font-size': 13 });
+    if (Math.abs(v) > 1e-12) svgText(svg, x + bw / 2, cTop + 32, numText(v), { 'text-anchor': 'middle', 'font-size': 14, fill: COL.ink });
+  }
+  const tot = c.reduce((p, v) => p + v, 0);
+  svgTex(svg, cx0 + 9 * bw + 8, cTop + 27, String.raw`sum $${texNum(tot)}$`, { w: sumW, size: 15, anchor: 'start' });
+  // g h and the series of c on [-pi, pi]
+  const px0 = gx1 + 58, px1 = W - 20;
+  if (px1 - px0 > 110) {
+    const xs = [], gh = [], cs = [];
+    for (let i = 0; i <= 160; i++) {
+      const x = -PI + 2 * PI * i / 160;
+      const gr = seriesRe(st.a, 2, x), gi = seriesIm(st.a, 2, x), hr = seriesRe(st.b, 2, x), hi = seriesIm(st.b, 2, x);
+      xs.push(x); gh.push(gr * hr - gi * hi); cs.push(seriesRe(c, 4, x));
+    }
+    let lo = Math.min(0, ...gh), hiV = Math.max(...gh, 0.5);
+    const pad = 0.1 * (hiV - lo); lo -= pad; hiV += pad;
+    const f = frame(W, H, { x0: -PI, x1: PI, y0: lo, y1: hiV }, { l: px0, r: W - px1, t: top + 34, b: H - gy1 });
+    const step = (hiV - lo) > 12 ? 4 : (hiV - lo) > 5 ? 2 : (hiV - lo) > 2 ? 1 : 0.5;
+    const yt = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hiV; v += step) yt.push([v, String(minus(+v.toFixed(2)))]);
+    path(svg, [[f.left, f.Y(0)], [f.right, f.Y(0)]], { stroke: COL.soft2 });
+    axes(svg, f, { xt: [[-PI, '$-\\pi$'], [0, '$0$'], [PI, '$\\pi$']], yt: yt });
+    path(svg, xs.map((x, i) => [f.X(x), f.Y(gh[i])]), { stroke: COL.grey, 'stroke-width': 5, 'stroke-linejoin': 'round', 'data-item': 'mark', 'data-id': 'gh' });
+    path(svg, xs.map((x, i) => [f.X(x), f.Y(cs[i])]), { stroke: COL.accent, 'stroke-width': 2, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'series' });
+    const v0 = gh[80];
+    dot(svg, f.X(0), f.Y(v0), COL.ink, 4.5);
+    svgTex(svg, f.X(0) + 8, f.Y(v0) - 4, String.raw`$${texNum(v0)}$ at $x=0$`, { w: 110, size: 14, anchor: 'start', halo: true });
+    // a legend right at the curves
+    const ly = top + 6;
+    path(svg, [[px0 + 2, ly], [px0 + 22, ly]], { stroke: COL.grey, 'stroke-width': 5 });
+    svgTex(svg, px0 + 26, ly, real ? '$g(x)\\,h(x)$' : 'real part of $g(x)\\,h(x)$', { w: px1 - px0 - 26, size: 14, anchor: 'start' });
+    path(svg, [[px0 + 2, ly + 20], [px0 + 22, ly + 20]], { stroke: COL.accent, 'stroke-width': 2, 'stroke-dasharray': '6 4' });
+    svgTex(svg, px0 + 26, ly + 20, real ? '$\\sum_nc_ne^{inx}$' : 'real part of $\\sum_nc_ne^{inx}$', { w: px1 - px0 - 26, size: 14, anchor: 'start' });
+    svgTex(svg, W - 1, f.base - 3, '$x$', { w: 18, size: 14, anchor: 'end' });
+  }
+  return { gx0, gy0, s, u, xa, yb, cx0, bw, cTop, gx1, gy1 };
+}
+function slideMultiply(widget, side) {
+  const st = { a: MC_A.slice(), b: MC_B.slice(), hover: null, lit: '' };
+  const pBase = presetBtn('product', String.raw`$1+2\cos x$ times $1+\cos x$`, () => { st.a = MC_A.slice(); st.b = MC_B.slice(); plot.redraw(); });
+  const pShift = presetBtn('times-e2', String.raw`times $e^{i2x}$`, () => { st.b = MC_SHIFT.slice(); plot.redraw(); });
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'btnrow', pBase, pShift)],
+    draw: (svg, W, H) => drawConv(svg, W, H, st),
+    tests: [
+      String.raw`$g=1+2\cos x$ is Hamming's running sum of 3. Guess $c_0$, then point at it: $1\cdot1+1\cdot\tfrac12+1\cdot\tfrac12=2$. At $x=0$, $gh=3\cdot2=6$, the sum of the row.`,
+      String.raw`Press times $e^{i2x}$: the $c$ row is the $a$ row moved 2 places. Cases are evidence, not proof.`],
+    model: String.raw`Every term meets every term. Cells whose frequencies add to $n$ lie on one slant, which adds up to $c_n$: the table of Primer · Signals: convolution, step 5, with waves for powers of $z$.` });
+  // Pointer: drag a bar, or point at a cell or a c_n box to light its slant.
+  let drag = null;
+  const at = e => { const r = plot.wrap.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  const snap = v => Math.max(-1, Math.min(2, Math.round(v * 2) / 2));
+  function hit(p) {
+    const g = plot.wrap._geo; if (!g) return null;
+    const row = Math.floor((p.y - g.gy0) / g.s), col = Math.floor((p.x - g.gx0) / g.s);
+    if (row >= 0 && row < 5 && p.x >= g.xa - 2 * g.u - 6 && p.x < g.gx0) return { kind: 'a', i: row };
+    if (col >= 0 && col < 5 && p.y >= g.yb - 2 * g.u - 6 && p.y < g.gy0) return { kind: 'b', j: col };
+    if (row >= 0 && row < 5 && col >= 0 && col < 5) return { kind: 'n', n: row + col - 4 };
+    const k = Math.floor((p.x - g.cx0) / g.bw);
+    if (p.y >= g.cTop + 10 && p.y <= g.cTop + 42 && k >= 0 && k < 9) return { kind: 'n', n: k - 4 };
+    return null;
+  }
+  function apply(p) {
+    const g = plot.wrap._geo;
+    if (drag.kind === 'a') st.a[drag.i] = snap((g.xa - p.x) / g.u);
+    else st.b[drag.j] = snap((g.yb - p.y) / g.u);
+    plot.redraw();
+  }
+  plot.wrap.addEventListener('pointerdown', e => {
+    const t = hit(at(e));
+    if (!t || t.kind === 'n') return;
+    drag = t; plot.wrap.setPointerCapture(e.pointerId); e.preventDefault(); apply(at(e));
+  });
+  plot.wrap.addEventListener('pointermove', e => {
+    if (drag) { apply(at(e)); return; }
+    const t = hit(at(e)), n = t && t.kind === 'n' ? t.n : null;
+    plot.wrap.style.cursor = t && t.kind === 'a' ? 'ew-resize' : t && t.kind === 'b' ? 'ns-resize' : 'default';
+    if (n !== st.hover) { st.hover = n; plot.redraw(); }
+  });
+  const end = () => { drag = null; };
+  plot.wrap.addEventListener('pointerup', end);
+  plot.wrap.addEventListener('pointercancel', end);
+  plot.wrap.addEventListener('pointerleave', () => { if (!drag && st.hover !== null) { st.hover = null; plot.redraw(); } });
+  side.append(nameLine(String.raw`<i>convolution</i>: Latin <i>convolvere</i>, to roll together; German <i>Faltung</i>, folding: one row folded back and slid along the other.`));
+  proofRight(side, {
+    id: 'multiply-convolve',
+    goal: { tex: String.raw`\textstyle g(x)\,h(x)=\sum_nc_ne^{inx},\quad c_n=\sum_ka_kb_{n-k}`,
+      words: String.raw`for $g=\sum_ka_ke^{ikx}$ and $h=\sum_mb_me^{imx}$, $k,m$ from $-2$ to $2$.` },
+    facts: [{ tex: String.raw`e^{ikx}e^{imx}=e^{i(k+m)x}`, words: 'angles add', ref: 'Primer · Complex numbers, step 3' }],
+    lines: [
+      { tex: String.raw`\textstyle gh=\sum_k\sum_ma_kb_m\,e^{ikx}e^{imx}`, move: 'Rearrange', choices: ['Name a piece', 'Unfold the definition'],
+        why: 'multiply every term by every term', highlight: 'grid' },
+      { tex: String.raw`\textstyle \phantom{gh}=\sum_k\sum_ma_kb_m\,e^{i(k+m)x}`, move: 'Use an earlier result', choices: ['Change variables', 'Telescope'],
+        why: 'angles add', highlight: 'labels' },
+      { tex: String.raw`\text{let } n=k+m,\ \text{ so } m=n-k`, move: 'Name a piece', choices: ['Use symmetry', 'Take a limit'],
+        why: 'group the cells by the frequency they land on', highlight: 'diagonals' },
+      { tex: String.raw`\textstyle \phantom{gh}=\sum_n\big(\sum_ka_kb_{n-k}\big)e^{inx}`, move: 'Rearrange', choices: ['Compute it two ways', 'Compare or bound'],
+        why: 'collect each slant', highlight: 'one-diagonal' }],
+    lookBack: [
+      { q: 'Where is the digital filter?',
+        a: String.raw`Read $a$ as weights and $b$ as data: $c_n=\sum_ka_kb_{n-k}$ slides the weights along the data (Lecture 14's filter, weights reversed). At 26:30: "exactly my original definition of a digital filter".` },
+      { q: 'Which side is time?',
+        a: String.raw`The algebra never asked. Samples and coefficients are each sums of the other's waves (Primer · Fourier series, step 10), so the same lines prove the swap: a window on the data convolves the spectra. That is the telescope, next step.` }] },
+    plot, key => { st.lit = key || ''; plot.redraw(); });
+}
+
+// ---------- step 2: resolution, Lecture 27:00 to 30:09 ----------
+const fmtMs = n => (+(n / 16).toFixed(1)) + ' ms';
+function slideResolution(widget, side) {
+  let N = 64, DF = 0.0125, win = 'box', scale = 'lin';
+  const posOf = n => Math.round(500 * Math.log(n / 16) / Math.log(32));
+  const nOf = p => Math.round(16 * Math.pow(32, p / 500));
+  const sN = slider('$N$', { id: 'N', name: 'N, samples in the record', min: 0, max: 500, step: 1, value: posOf(N),
+    fmt: () => N + ' · ' + fmtMs(N), onInput: p => { N = nOf(p); update(); } });
+  const sD = slider(String.raw`$\Delta f$`, { id: 'df', name: 'delta f, gap between the lines', min: 0.001, max: 0.03, step: 0.00025, value: DF,
+    fmt: v => String(+v.toFixed(5)) + ' · ' + Math.round(v * 16000) + ' Hz', onInput: v => { DF = v; update(); } });
+  const cWin = choice([['box', 'box'], ['hann', 'von Hann']], () => win, v => { win = v; update(); });
+  const cSc = choice([['lin', 'linear'], ['db', 'dB']], () => scale, v => { scale = v; update(); });
+  const setND = (n, d) => { N = n; DF = d; sN.input.value = posOf(n); sN.show(); sD.set(d); update(); };
+  const p25 = presetBtn('frame-25ms', 'speech, 25 ms frame', () => setND(400, 0.00625));
+  const p10 = presetBtn('frame-10ms', '10 ms frame', () => setND(160, 0.00625));
+  const rD = readout('n-df', String.raw`$N\Delta f$, the gap in bins`);
+  const rDip = readout('dip', 'dip between the peaks');
+  const rK = readout('khz', 'frame and gap at 16 kHz');
+  widget.append(hh('div', 'sliders', sN.el, sD.el), hh('div', 'btnrow', cWin.el, cSc.el, p25, p10), legend([
+    { color: 'var(--pal-grey)', text: String.raw`thin grey: each line alone` },
+    { color: 'var(--pal-accent)', width: 3, text: String.raw`blue: the two together, the power you measure` }]));
+  const plot = fillPlot(widget, draw);
+  widget.append(hh('div', 'readouts', rD.el, rDip.el, rK.el));
+  function draw(svg, W, H) {
+    const d = N * DF, x1 = Math.max(5, d + 3);
+    const pts = [];
+    let mx = 0;
+    for (let i = 0; i <= 700; i++) {
+      const nu = -3 + (x1 + 3) * i / 700;
+      const p = lineKernel(nu, N, win) ** 2, q = lineKernel(nu - d, N, win) ** 2;
+      pts.push([nu, p, q, p + q]); mx = Math.max(mx, p + q);
+    }
+    const dB = scale === 'db';
+    const T = v => (dB ? 10 * Math.log10(Math.max(v, 1e-9)) : v);
+    const o = dB ? { x0: -3, x1, y0: -50, y1: 5 } : { x0: -3, x1, y0: 0, y1: Math.max(1.1, mx * 1.08) };
+    const f = frame(W, H, o, { t: 14, b: 44 });
+    const xt = [];
+    const st = x1 > 12 ? 4 : x1 > 7 ? 2 : 1;
+    for (let v = -2; v <= x1; v += st) if (v >= -3) xt.push([v, String(minus(v))]);
+    const yt = dB ? [[-40, '−40'], [-20, '−20'], [0, '0']] : [[0, '0'], [0.5, '0.5'], [1, '1'], ...(o.y1 > 1.6 ? [[1.5, '1.5'], [2, '2']] : [])].filter(t => t[0] <= o.y1);
+    axes(svg, f, { xt, yt, xlabel: String.raw`$(f-f_1)\,N$: bins, units of $\tfrac1N$`,
+      ylabel: dB ? 'power, dB' : 'power' });
+    const Yc = v => f.Y(Math.max(o.y0, T(v)));
+    path(svg, pts.map(p => [f.X(p[0]), Yc(p[1])]), { stroke: COL.grey, 'stroke-width': 1.4, 'data-item': 'mark', 'data-id': 'line-1' });
+    path(svg, pts.map(p => [f.X(p[0]), Yc(p[2])]), { stroke: COL.grey, 'stroke-width': 1.4, 'data-item': 'mark', 'data-id': 'line-2' });
+    path(svg, pts.map(p => [f.X(p[0]), Yc(p[3])]), { stroke: COL.accent, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'sum' });
+    // the two lines' places
+    for (const [x, lab] of [[0, '$f_1$'], [d, '$f_2$']]) {
+      path(svg, [[f.X(x), f.base], [f.X(x), f.base - 10]], { stroke: COL.ink, 'stroke-width': 2 });
+      svgTex(svg, f.X(x) + (lab === '$f_1$' && d < 0.6 ? -10 : lab === '$f_2$' && d < 0.6 ? 10 : 0), f.base - 20, lab, { w: 40, size: 15, fill: COL.ink, halo: true });
+    }
+    const dip = dipOf(d, N, win), mid = twoLines(d / 2, d, N, win);
+    if (dip > 0) {
+      let pk = 0;
+      for (let i = 0; i <= 600; i++) pk = Math.max(pk, twoLines(-0.5 + (d / 2 + 0.5) * i / 600, d, N, win));
+      const xm = f.X(d / 2);
+      path(svg, [[xm, Yc(mid)], [xm, Yc(pk)]], { stroke: COL.ink, 'stroke-width': 1.2, 'stroke-dasharray': '3 3' });
+      path(svg, [[xm - 8, Yc(pk)], [xm + 8, Yc(pk)]], { stroke: COL.ink, 'stroke-width': 1.2 });
+      svgTex(svg, xm + 10, (Yc(mid) + Yc(pk)) / 2, 'dip ' + (100 * dip).toFixed(1) + '%', { w: 120, size: 15, anchor: 'start', fill: COL.ink, halo: true });
+    } else {
+      svgTex(svg, f.X(d / 2), Yc(mid) - 16, 'one peak', { w: 120, size: 15, fill: COL.ink, halo: true });
+    }
+    return null;
+  }
+  function update() {
+    const d = N * DF, dip = dipOf(d, N, win);
+    rD.set('$' + d.toFixed(2) + '$');
+    rDip.set(dip > 0 ? (100 * dip).toFixed(1) + '%' : 'one peak');
+    rK.set(fmtMs(N) + ', lines ' + Math.round(DF * 16000) + ' Hz apart');
+    cWin.paint(); cSc.paint();
+    plot.redraw();
+  }
+  side.append(
+    sym(String.raw`$N$: samples in the record, the telescope's on-off window (25:58). Lines at $f_1$ and $f_2=f_1+\Delta f$. Through the box one line spreads over $\pm\tfrac1N$ (Primer · Signals: convolution, step 7).`),
+    formula(String.raw`$N\,\Delta f\gtrsim1$ box, $\ \ N\,\Delta f\gtrsim2$ von Hann`),
+    triesList([
+      String.raw`At $N\Delta f=0.8$ you see one blob. Raise $N$: a dip appears near $0.83$ and is $19\%$ at $1$.`,
+      String.raw`Switch to von Hann at $N\Delta f=1$: one blob again. Von Hann needs about $2$ (dip $50\%$).`,
+      String.raw`With von Hann, press 10 ms frame: two voice harmonics merge. Press 25 ms: they split.`]),
+    takeLine(String.raw`To split lines $\Delta f$ apart, record about $1/\Delta f$ samples, twice that with von Hann: low leakage costs resolution.`),
+    echo(String.raw`Whisper cuts audio into 25 ms frames (400 samples at 16 kHz), each through a von Hann window. A voice at 100 Hz has harmonics 100 Hz apart: $N\Delta f=2.5$, enough to split them.`,
+      String.raw`openai/whisper, audio.py`));
+  update();
+}
+
+// ---------- step 3: corner-decay, Lecture 31:45 to 35:02 ----------
+const WIN_INFO = {
+  box: { label: 'box', ends: 'jump', shape: t => 1 },
+  sigma: { label: 'sigma factors (Lanczos)', ends: 'corner', shape: t => sinc(2 * t) },
+  hann: { label: 'von Hann', ends: 'smooth', shape: t => 0.5 + 0.5 * Math.cos(2 * PI * t) },
+};
+const LOBES = {};
+for (const k of Object.keys(WIN)) LOBES[k] = { 10: bandMax(WIN[k], 10), 40: bandMax(WIN[k], 40), 80: bandMax(WIN[k], 80) };
+const SLOPE_POW = { box: 1, sigma: 2, hann: 3 };
+// The top of each lobe from 1 to 100 bins: the largest |W| in each bin [j, j + 1].
+const ENV = {};
+for (const k of Object.keys(WIN)) {
+  ENV[k] = [];
+  for (let j = k === 'box' ? 1 : 2; j < 100; j++) { let m = 0; for (let i = 0; i <= 40; i++) m = Math.max(m, Math.abs(WIN[k](j + i / 40))); ENV[k].push([j + 0.5, m]); }
+}
+function slideCorner(widget, side) {
+  let win = 'box';
+  const cWin = choice(Object.keys(WIN_INFO).map(k => [k, WIN_INFO[k].label]), () => win, v => { win = v; update(); });
+  const r10 = readout('lobe-10', 'lobe near 10 bins');
+  const r80 = readout('lobe-80', 'lobe near 80 bins');
+  const rS = readout('per-doubling', 'change per doubling');
+  widget.append(hh('div', 'btnrow', cWin.el));
+  const top = fillPlot(widget, drawWindow);
+  widget.append(legend([
+    { color: 'var(--pal-accent)', width: 3, text: String.raw`blue: the window $w$, and the top of each lobe of $|W|$` },
+    { color: 'var(--v-lblue)', width: 2, text: String.raw`lighter blue: $|W|$ itself` },
+    { color: 'var(--v-box)', width: 3, text: 'grey: the box' },
+    { color: 'var(--v-mute-line)', dash: true, text: String.raw`dashed: $1/k$, $1/k^2$, $1/k^3$` }]));
+  const bot = fillPlot(widget, drawDecay, 'f2');
+  widget.append(hh('div', 'readouts', r10.el, r80.el, rS.el));
+  function drawWindow(svg, W, H) {
+    const f = frame(W, H, { x0: -0.85, x1: 0.85, y0: -0.05, y1: 1.1 }, { l: 54, t: 8, b: 24 });
+    path(svg, [[f.left, f.base], [f.right, f.base]], { stroke: COL.grey });
+    for (const [v, s] of [[-0.5, '$-\\tfrac12$'], [0, '$0$'], [0.5, '$\\tfrac12$']]) svgTex(svg, f.X(v), f.base + 12, s, { w: 50, size: 14 });
+    svgTex(svg, f.right, f.base + 12, '$t$', { w: 30, size: 14, anchor: 'end' });
+    svgText(svg, f.left - 7, f.Y(1) + 5, '1', { 'text-anchor': 'end' });
+    svgText(svg, f.left - 7, f.Y(0) + 5, '0', { 'text-anchor': 'end' });
+    const sh = WIN_INFO[win].shape, pts = [[f.X(-0.85), f.Y(0)], [f.X(-0.5), f.Y(0)]];
+    for (let i = 0; i <= 200; i++) { const t = -0.5 + i / 200; pts.push([f.X(t), f.Y(sh(t))]); }
+    pts.push([f.X(0.5), f.Y(0)], [f.X(0.85), f.Y(0)]);
+    path(svg, pts, { stroke: COL.accent, 'stroke-width': 3, 'stroke-linejoin': 'round', 'data-item': 'mark', 'data-id': 'window' });
+    // the ends: the jump is the whole step, the corner and the smooth join sit at the bottom
+    const jump = win === 'box';
+    const ry = jump ? (f.Y(0) - f.Y(1)) / 2 + 6 : Math.min(16, (f.base - f.top) * 0.22), rx = 16;
+    const cy = jump ? f.Y(0.5) : f.Y(0);
+    for (const t of [-0.5, 0.5]) svgNode('ellipse', { cx: f.X(t), cy: cy, rx: rx, ry: ry, fill: 'none', stroke: COL.ink, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'end' + (t < 0 ? '-left' : '-right') }, svg);
+    const ly = jump ? f.Y(0.5) + 5 : f.Y(0) - ry - 6;
+    svgText(svg, f.X(0.5) + rx + 6, ly, WIN_INFO[win].ends, { 'font-size': 15, fill: COL.ink });
+    svgText(svg, f.X(-0.5) - rx - 6, ly, WIN_INFO[win].ends, { 'font-size': 15, fill: COL.ink, 'text-anchor': 'end' });
+    svgTex(svg, f.X(0), f.Y(0.25), String.raw`window $w(t)$: ${WIN_INFO[win].label}`, { w: 300, size: 14, fill: COL.muted, halo: true });
+    return null;
+  }
+  function drawDecay(svg, W, H) {
+    const lx = v => Math.log10(v);
+    const f = frame(W, H, { x0: 0, x1: 2, y0: -140, y1: 0 }, { l: 54, t: 12, b: 42 });
+    const X = v => f.X(lx(v));
+    for (const v of [-20, -40, -60, -80, -100, -120]) path(svg, [[f.left, f.Y(v)], [f.right, f.Y(v)]], { stroke: COL.gridFaint });
+    axes(svg, f, { xt: [[1, '1'], [2, '2'], [5, '5'], [10, '10'], [20, '20'], [50, '50'], [100, '100']], xmap: X,
+      yt: [[0, '0'], [-40, '−40'], [-80, '−80'], [-120, '−120']],
+      xlabel: String.raw`$k$: bins from the line (log scale)`, ylabel: String.raw`$|W|$ in dB` });
+    // the raw curve, light, and the top of each lobe (one per bin), bold
+    const raw = fn => { const pts = []; for (let i = 0; i <= 2200; i++) { const v = Math.pow(10, 2 * i / 2200); pts.push([X(v), f.Y(Math.max(-140, db(fn(v))))]); } return pts; };
+    const env = k => ENV[k].map(([v, m]) => [X(v), f.Y(Math.max(-140, db(m)))]);
+    path(svg, raw(WIN[win]), { stroke: COL.lblue, 'stroke-width': 1, 'data-item': 'mark', 'data-id': 'W-raw' });
+    if (win !== 'box') path(svg, env('box'), { stroke: COL.box, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'box-ref' });
+    path(svg, env(win), { stroke: COL.accent, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'W-lobes' });
+    // guides through each window's lobe near 10 bins: -20, -40, -60 dB per decade
+    for (const k of ['box', 'sigma', 'hann']) {
+      const p = SLOPE_POW[k], L10 = db(LOBES[k][10]);
+      const G = v => L10 - 20 * p * lx(v / 10.5);
+      const on = k === win, col = on ? COL.ink : COL.muteLine;
+      path(svg, [[X(2), f.Y(G(2))], [X(100), f.Y(Math.max(-140, G(100)))]], { stroke: col, 'stroke-width': on ? 1.6 : 1.1, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'guide-' + k });
+      const at = { box: 4, sigma: 25, hann: 50 }[k];
+      svgTex(svg, X(at), f.Y(G(at)) - 14, ['', '$1/k$', '$1/k^2$', '$1/k^3$'][p], { w: 60, size: 15, fill: col, halo: true });
+    }
+    for (const c of [10, 80]) {
+      const v = db(LOBES[win][c]);
+      dot(svg, X(c + 0.5), f.Y(v), COL.ink, 4.5);
+      svgTex(svg, X(c + 0.5) + (c === 80 ? -9 : 9), f.Y(v) + (c === 80 ? 0 : -13), String.raw`$${v.toFixed(1)}$`, { w: 70, size: 14, anchor: c === 80 ? 'end' : 'start', fill: COL.ink, halo: true });
+    }
+    return null;
+  }
+  function update() {
+    const L = LOBES[win];
+    r10.set('$' + db(L[10]).toFixed(1) + '$ dB');
+    r80.set('$' + db(L[80]).toFixed(1) + '$ dB');
+    rS.set('$' + (db(L[80]) - db(L[40])).toFixed(1) + '$ dB');
+    cWin.paint();
+    top.redraw(); bot.redraw();
+  }
+  side.append(
+    sym(String.raw`$w$: the window, $1$ inside the record and $0$ outside; its transform $W$ smears each line (step 1). $k$: distance from a line, in bins. Primer · Fourier series, step 8: a jump gives $1/k$, a corner $1/k^2$, a smooth join $1/k^3$. Here the joins are the window's ends.`),
+    formula(String.raw`$|W|\propto\frac1k,\ \frac1{k^2},\ \frac1{k^3}$: $\ -6,\ -12,\ -18$ dB per doubling`),
+    triesList([
+      String.raw`Box: its ends jump. Its lobes fall 6 dB per doubling, along the $1/k$ line.`,
+      String.raw`Sigma factors: they reach $0$ with a corner (32:46, "a corner here"). 12 dB per doubling.`,
+      String.raw`Von Hann meets $0$ flat: 18 dB per doubling. At 80 bins, $-124$ dB against the box's $-48$ dB.`]),
+    takeLine(String.raw`You cannot choose your signal's smoothness, but you can choose your window's: smooth ends make leakage die fast away from a line.`));
+  update();
+}
+
+// ---------- steps 4 and 6: decisions ----------
+const DEC_TRIES = ['Read the problem.', 'Pick what you would do before he says it.', 'When he says it, read every verdict.'];
+const DEC = {
+  'negative-power': {
+    chooser: 'Hamming', at: 2,
+    fx: String.raw`$P(f)=|U(f)|^2\ge0$: true power is never negative.`,
+    problem: String.raw`Hamming computes a power spectrum of noisy radar data for Tukey. Some values come out negative: "that radar dish is not pulling energy out of the atmosphere" (35:38).`,
+    options: [
+      { text: 'Set the negative values to zero.', assumes: 'only the negative values are wrong.',
+        verdict: 'Hides the symptom: the same wiggle adds false power where the values are positive.' },
+      { text: 'Collect more data.', assumes: 'the negative values are noise.',
+        verdict: String.raw`Less noise, but the wiggle comes from cutting the record (step 2). A longer record narrows it and keeps its sign changes.` },
+      { text: String.raw`Average each value with its neighbors, weights $\tfrac14,\tfrac12,\tfrac14$.`, assumes: 'the error flips sign from one frequency to the next, so neighbors cancel it.',
+        verdict: String.raw`In the sketch the worst negative value shrinks 20 times. In his data every value came out positive.` }],
+    reveal: [
+      { k: 'move', v: String.raw`Smooth the spectrum "one-two-one": each value becomes $\tfrac14$ left $+\tfrac12$ itself $+\tfrac14$ right.`, t: '36:05' },
+      { k: 'bought', v: String.raw`Tukey, beaten to it, works out the theory of windows in five minutes. The smoothing is von Hann's window (step 5).`, t: '37:12' },
+      { k: 'cost', v: String.raw`The main lobe doubles, so two lines must be twice as far apart to be seen.`, t: 'step 2' }],
+    takeaway: 'An impossible result is a clue: find the pattern of the error and cancel it.',
+    ai: null,
+    sketch: drawNegSketch },
+  'minimax-lobe': {
+    chooser: 'Tukey and Hamming', at: 0,
+    fx: String.raw`How high a strong line shows elsewhere: line (dB) $+$ side lobe (dB).`,
+    problem: String.raw`Through a window's side lobes, other frequencies "leak in" (37:44). In Hamming's data one line was far stronger than the rest; through a side lobe it swamped the weak part.`,
+    options: [
+      { text: String.raw`Make the largest side lobe as small as possible (minimax), among raised cosines on a platform.`,
+        assumes: 'one strong line is the danger, so only the worst lobe matters.',
+        verdict: String.raw`At $a=0.54$ the largest lobe is $-42.7$ dB, not $-31.5$: a 60 dB line shows 17 dB above a unit line, not 29.` },
+      { text: 'Keep von Hann.', assumes: 'leakage from far away matters most.',
+        verdict: String.raw`Its lobes fall fastest, 18 dB per doubling, but the first sits at $-31.5$ dB, where a strong line can hide.` },
+      { text: 'Record longer.', assumes: 'leakage shrinks with length.',
+        verdict: String.raw`The lobes narrow but keep their height: $-13.3$ dB for the box, $-31.5$ dB for von Hann, at any $N$.` }],
+    reveal: [
+      { k: 'move', v: String.raw`Tukey asks which window has the smallest largest lobe, "a Chebyshev job": weights $0.23, 0.54, 0.23$, a raised cosine on a platform.`, t: '38:14' },
+      { k: 'bought', v: String.raw`The largest lobe sits 11 dB below von Hann's (step 7).`, t: '38:46' },
+      { k: 'cost', v: String.raw`A step at the ends: far lobes fall only 6 dB per doubling. "Most of the time the von Hann window is preferable."`, t: 'book' }],
+    takeaway: 'Match the error measure to the danger: against one strong line, make the worst lobe small.',
+    ai: [String.raw`Group DRO trains on the loss of the worst group of examples instead of the average. With strong regularization, worst-group accuracy rose 10 to 40 points while average accuracy stayed high: control the worst case, give up the best average.`,
+      'Sagawa et al., 2020, arXiv 1911.08731'],
+    sketch: drawLobeSketch },
+};
+const decState = {};
+for (const id of Object.keys(DEC)) decState[id] = { pick: null, shown: false };
+const isOpen = id => decState[id].pick !== null || decState[id].shown;
+
+function drawNegSketch(svg, W, H, open) {
+  const f = frame(W, H, { x0: -0.7, x1: 11.7, y0: -0.126, y1: 0.36 }, { l: 34, r: 6, t: 22, b: 22 });
+  path(svg, [[f.left, f.Y(0)], [f.right, f.Y(0)]], { stroke: COL.muteLine });
+  for (const [v, s] of [[0.3, '0.3'], [0, '0']]) svgText(svg, f.left - 5, f.Y(v) + 4, s, { 'text-anchor': 'end', 'font-size': 12 });
+  const bw = (f.X(1) - f.X(0)) * (open ? 0.38 : 0.6);
+  NEG.re.forEach((v, k) => {
+    const x = open ? f.X(k) - bw : f.X(k) - bw / 2;
+    svgNode('rect', { x: x, y: v >= 0 ? f.Y(v) : f.Y(0), width: bw, height: Math.abs(f.Y(v) - f.Y(0)), fill: COL.grey, 'data-item': 'mark', 'data-id': 'raw-' + k }, svg);
+  });
+  if (open) NEG.sm.forEach((v, i) => {
+    const k = i + 1;
+    svgNode('rect', { x: f.X(k), y: v >= 0 ? f.Y(v) : f.Y(0), width: bw, height: Math.max(1, Math.abs(f.Y(v) - f.Y(0))), fill: COL.accent, 'data-item': 'mark', 'data-id': 'smooth-' + k }, svg);
+  });
+  svgText(svg, f.X(0), f.base + 14, '0', { 'text-anchor': 'middle', 'font-size': 12 });
+  svgText(svg, f.X(10), f.base + 14, '10', { 'text-anchor': 'middle', 'font-size': 12 });
+  svgTex(svg, f.X(4.6), f.base + 11, String.raw`$-0.126$: negative power?`, { w: 200, size: 13, fill: COL.ink });
+  svgTex(svg, f.left + 4, 10, open ? String.raw`grey: computed; blue: after $\tfrac14,\tfrac12,\tfrac14$` : String.raw`grey: the computed spectrum at bins $k$`, { w: W - f.left - 8, size: 13, anchor: 'start', fill: COL.text2 });
+  svgTex(svg, f.X(6.5), f.Y(0.3), 'the strong line', { w: 120, size: 13, anchor: 'start', fill: COL.text2, halo: true });
+  return null;
+}
+function drawLobeSketch(svg, W, H, open) {
+  const f = frame(W, H, { x0: -2, x1: 11, y0: 0, y1: 66 }, { l: 44, r: 6, t: 22, b: 20 });
+  svgNode('rect', { x: f.X(3), y: f.top, width: f.X(9) - f.X(3), height: f.base - f.top, fill: COL.band, 'data-item': 'mark', 'data-id': 'weak-part' }, svg);
+  svgTex(svg, f.X(6), f.Y(60), 'weak part you study', { w: 150, size: 13, fill: COL.text2 });
+  path(svg, [[f.left, f.base], [f.right, f.base]], { stroke: COL.muteLine });
+  for (const [v, s] of [[60, '60 dB'], [30, '30'], [0, '0']]) svgText(svg, f.left - 4, f.Y(v) + 4, s, { 'text-anchor': 'end', 'font-size': 12 });
+  const curve = fn => { const pts = []; for (let i = 0; i <= 500; i++) { const nu = -2 + 13 * i / 500; pts.push([f.X(nu), f.Y(Math.max(0, 60 + db(fn(nu))))]); } return pts; };
+  path(svg, curve(WIN.hann), { stroke: COL.grey, 'stroke-width': 1.8, 'data-item': 'mark', 'data-id': 'hann' });
+  svgTex(svg, f.X(2.7), f.Y(41), 'von Hann: 29 dB', { w: 130, size: 13, anchor: 'start', fill: COL.text2, halo: true });
+  if (open) {
+    path(svg, curve(nu => platformW(0.54, nu)), { stroke: COL.accent, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'hamming' });
+    svgTex(svg, f.X(8.3), f.Y(25), 'Hamming: 17 dB', { w: 120, size: 13, fill: COL.lblBlue, halo: true });
+  }
+  svgTex(svg, f.left + 2, 10, '60 dB line at bin 0; dB above a unit line', { w: W - f.left, size: 13, anchor: 'start', fill: COL.text2 });
+  svgText(svg, f.X(0), f.base + 14, '0', { 'text-anchor': 'middle', 'font-size': 12 });
+  svgText(svg, f.X(5), f.base + 14, '5', { 'text-anchor': 'middle', 'font-size': 12 });
+  svgTex(svg, f.X(10.9), f.base + 11, 'bins', { w: 50, size: 13, anchor: 'end' });
+  return null;
+}
+function slideDecision(id) {
+  return (widget, side) => {
+    const s = DEC[id], st = decState[id], open = isOpen(id);
+    // The problem: text and a sketch
+    const prob = mark(h('div', 'prob'), 'problem', id);
+    const txt = h('p', 'txt');
+    txt.append(h('span', 'lead', 'The problem. '), setTex(h('span'), s.problem));
+    const sk = h('div', 'sketch');
+    prob.append(txt, sk);
+    widget.append(prob);
+    fillPlot(sk, (svg, W, H) => s.sketch(svg, W, H, open));
+    // Three cards
+    const opts = h('div', 'opts');
+    s.options.forEach((o, k) => {
+      const L = 'ABC'[k];
+      const card = mark(h('div', 'opt'), 'card', L, o.text.replace(/\$/g, ''));
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-disabled', open ? 'true' : 'false');
+      card.tabIndex = open ? -1 : 0;
+      card.classList.toggle('on', st.pick === L);
+      card.classList.toggle('chosen', open && k === s.at);
+      const who = [];
+      if (st.pick === L) who.push('Your pick');
+      if (open && k === s.at) who.push(s.chooser);
+      const top = hh('div', 'top', h('span', 'letter', L), setTex(h('span', 'body'), o.text));
+      const asm = setTex(h('p', 'asm'), 'Assumes: ' + o.assumes);
+      const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'Verdict after your pick.');
+      card.append(hh('div', 'lhs', top, asm), hh('div', 'rhs', who.length ? h('div', 'who', who.join(' · ')) : null, verdict));
+      card.addEventListener('click', () => pick(id, L));
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(id, L); } });
+      opts.append(card);
+    });
+    widget.append(opts);
+    // The reveal
+    const rev = mark(h('div', 'reveal'), 'reveal', id);
+    const names = { move: s.chooser + "'s move", bought: 'What it bought', cost: 'What it cost' };
+    if (!open) {
+      rev.classList.add('idle');
+      for (const r of s.reveal) rev.append(hh('p', 'rv', h('span', 'k', names[r.k] + '. '), h('span', '', 'Shown after your pick.')));
+      const btn = mark(h('button', 'btn primary', 'Show answer'), 'control', 'show-answer');
+      btn.addEventListener('click', () => showAnswer(id));
+      rev.append(hh('div', 'actions', btn));
+    } else {
+      for (const r of s.reveal) {
+        const p = hh('p', 'rv', h('span', 'k', names[r.k] + '. '));
+        p.append(setTex(h('span'), r.v), h('span', 't', ' (' + r.t + ')'));
+        rev.append(p);
+      }
+    }
+    widget.append(rev);
+    // Right column
+    side.append(setTex(h('p', 'fx'), s.fx), hh('div', 'blk', h('div', 'kicker', 'Try it'), hh('ol', 'tries', ...DEC_TRIES.map(t => h('li', '', t)))));
+    if (open) {
+      side.append(setTex(h('p', 'takeaway'), s.takeaway));
+      if (s.ai) side.append(echo(s.ai[0], s.ai[1]));
+    } else {
+      side.append(h('p', 'hold', 'Takeaway: shown after your pick.'));
+      if (s.ai) side.append(h('p', 'hold', 'Same idea in AI: shown after your pick.'));
+    }
+  };
+}
+function pick(id, L) {
+  if (isOpen(id)) return;
+  const s = DEC[id];
+  decState[id].pick = L;
+  emit('view.action', { action: 'pick', step: id, option: L, correct: 'ABC'.indexOf(L) === s.at });
+  render();
+}
+function showAnswer(id) {
+  if (isOpen(id)) return;
+  decState[id].shown = true;
+  emit('view.action', { action: 'reveal', step: id, by: 'user' });
+  render();
+}
+
+// ---------- step 5: hann-weights (proof), Lecture 36:40 to 37:44 ----------
+// A long record: the box seen in bins nu is sinc(nu). The middle copy is the box itself; the copies
+// one bin away are scaled by r = side weight / middle weight (1/2 for von Hann, 0.23/0.54 for Hamming).
+const HW = { hann: { mid: 0.5, side: 0.25, label: 'von Hann' }, hamming: { mid: 0.54, side: 0.23, label: 'Hamming' } };
+function hwSum(win, nu) { const r = HW[win].side / HW[win].mid; return sinc(nu) + r * (sinc(nu - 1) + sinc(nu + 1)); }
+function hwLobe(win) {
+  const fn = nu => hwSum(win, nu), z = firstZero(fn, 1, 3, 0.005);
+  return Object.assign(largestLobe(fn, z, 30, 0.01), { zero: z, peak: fn(0) });
+}
+const BOX_LOBE = largestLobe(sinc, 1, 30, 0.01);
+function slideHann(widget, side) {
+  const st = { win: 'hann', scale: 'lin', nu: 3.5, lit: '' };
+  const cW = choice([['hann', HW.hann.label], ['hamming', HW.hamming.label]], () => st.win, v => { st.win = v; update(); });
+  const cS = choice([['lin', 'linear'], ['db', 'dB']], () => st.scale, v => { st.scale = v; update(); });
+  const sNu = slider(String.raw`$\nu$`, { id: 'nu', name: 'nu, bins from the line', min: 0, max: 8, step: 0.01, value: st.nu,
+    fmt: v => '$' + v.toFixed(2) + '$', onInput: v => { st.nu = v; update(); } });
+  const rAt = readout('at-nu', String.raw`at $\nu$: middle $+$ copies $=$ sum`);
+  rAt.el.style.flexGrow = '1.7';
+  const rL = readout('largest-lobe', 'largest lobe: box, sum');
+  const plot = proofLeft(widget, {
+    controls: [cW.el, cS.el, sNu.el],
+    draw: (svg, W, H) => drawHann(svg, W, H, st),
+    legend: [
+      { color: 'var(--pal-grey)', width: 3, text: String.raw`box $B$ = middle copy` },
+      { color: 'var(--v-mute-line)', dash: true, text: String.raw`copies at $\pm1$ bin` },
+      { color: 'var(--pal-accent)', width: 3, text: 'their sum' }],
+    readouts: [rAt, rL],
+    tests: [
+      String.raw`Guess: do the copies cancel the box's lobes? At $\nu=3.5$ the middle copy gives $-0.091$, the copies $+0.064$ and $+0.035$: the sum is $+0.008$.`,
+      String.raw`Switch to Hamming: the largest lobe falls from $-31.5$ dB to $-42.7$ dB. Cases are evidence, not proof.`],
+    model: String.raw`The box's lobes flip sign every bin, so a copy moved one bin lands on each lobe with the opposite sign and cancels it.` });
+  function update() {
+    const r = HW[st.win].side / HW[st.win].mid, v = st.nu;
+    const m = sinc(v), c1 = r * sinc(v - 1), c2 = r * sinc(v + 1);
+    rAt.set('$' + fx(m, 3) + sg(c1, 3) + sg(c2, 3) + '=' + sg(m + c1 + c2, 3) + '$');
+    const L = hwLobe(st.win);
+    rL.set('$' + db(BOX_LOBE.v).toFixed(1) + '$, $' + db(L.v / L.peak).toFixed(1) + '$ dB');
+    cW.paint(); cS.paint();
+    plot.redraw();
+  }
+  side.append(sym(String.raw`$u_n$: the record, $n$ from $-\tfrac N2$ to $\tfrac N2$. $w_n=\tfrac12+\tfrac12\cos\frac{2\pi n}N$: $1$ in the middle, $0$ at the ends. A neighbor is $f\pm\tfrac1N$, one bin away.`));
+  proofRight(side, {
+    id: 'hann-weights',
+    goal: { tex: String.raw`U_w(f)=\tfrac14U(f-\tfrac1N)+\tfrac12U(f)+\tfrac14U(f+\tfrac1N)`,
+      words: String.raw`where $U_w(f)=\sum_nw_nu_ne^{-i2\pi fn}$ is the spectrum through the window.` },
+    facts: [
+      { tex: String.raw`U(f)=\sum_nu_ne^{-i2\pi fn}`, words: 'the spectrum of the record' },
+      { tex: String.raw`\cos\theta=\tfrac12(e^{i\theta}+e^{-i\theta})`, ref: 'Primer · Complex numbers, step 7' }],
+    lines: [
+      { tex: String.raw`w_n=\tfrac14e^{-i2\pi n/N}+\tfrac12+\tfrac14e^{i2\pi n/N}`, move: 'Unfold the definition', choices: ['Rearrange', 'Name a piece'],
+        why: 'the cosine as two half arrows', highlight: 'inset' },
+      { tex: String.raw`\textstyle\sum_ne^{i2\pi n/N}u_ne^{-i2\pi fn}=U(f-\tfrac1N)`, move: 'Rearrange', choices: ['Use symmetry', 'Change variables'],
+        why: String.raw`merge the exponents into $e^{-i2\pi(f-1/N)n}$: a wave moves the spectrum one bin`, highlight: 'shift' },
+      { tex: String.raw`U_w(f)=\tfrac14U(f-\tfrac1N)+\tfrac12U(f)+\tfrac14U(f+\tfrac1N)`, move: 'Rearrange', choices: ['Compute it two ways', 'Telescope'],
+        why: String.raw`put line 1 into $U_w$; the spectrum of a sum is the sum of the spectra`, highlight: 'sum' }],
+    lookBack: [
+      { q: String.raw`Where do Hamming's $0.23, 0.54, 0.23$ come from?`,
+        a: String.raw`The same proof with $w_n=0.54+0.46\cos\frac{2\pi n}N$: half of $0.46$ goes to each neighbor (38:14).` },
+      { q: String.raw`Why do far lobes now fall like $1/k^3$?`,
+        a: String.raw`Far out the box's lobes go like $\pm1/k$; the three weighted copies form a second difference of $1/k$, about $1/k^3$: step 3's smooth-end rule from the other side.` }] },
+    plot, key => { st.lit = key || ''; plot.redraw(); });
+  update();
+}
+function drawHann(svg, W, H, st) {
+  const CAP = {
+    inset: String.raw`amber: $w_n$ is a constant plus a cosine: two half arrows`,
+    shift: String.raw`amber: the copies $\tfrac14U(f\mp\tfrac1N)$, moved one bin each way`,
+    sum: String.raw`amber: their sum, the spectrum through the window` }[st.lit];
+  if (CAP) litCaption(svg, W, CAP);
+  else plainCaption(svg, W, String.raw`one line at $\nu=0$, seen through a long record`);
+  const dB = st.scale === 'db', r = HW[st.win].side / HW[st.win].mid;
+  const o = dB ? { x0: -3, x1: 8, y0: -80, y1: 40 } : { x0: -3, x1: 8, y0: -0.3, y1: 1.08 };
+  const f = frame(W, H, o, { t: PM + 4, b: 46, l: 50 });
+  const yt = dB ? [[0, '0'], [-20, '−20'], [-40, '−40'], [-60, '−60'], [-80, '−80']] : [[0, '0'], [0.5, '0.5'], [1, '1']];
+  path(svg, [[f.left, f.Y(0)], [f.right, f.Y(0)]], { stroke: COL.soft2 });
+  axes(svg, f, { xt: [[-2, '−2'], [0, '0'], [2, '2'], [4, '4'], [6, '6'], [8, '8']], yt,
+    xlabel: String.raw`$\nu$: bins from the line, units of $\tfrac1N$`, ylabel: dB ? 'dB below the peak' : '' });
+  const xs = []; for (let i = 0; i <= 880; i++) xs.push(-3 + 11 * i / 880);
+  const peak = hwSum(st.win, 0);
+  const T = v => (dB ? Math.max(-80, db(v)) : v);
+  const box = xs.map(x => [f.X(x), f.Y(T(sinc(x)))]);
+  const cR = xs.map(x => [f.X(x), f.Y(T(r * sinc(x - 1)))]), cL = xs.map(x => [f.X(x), f.Y(T(r * sinc(x + 1)))]);
+  const sum = xs.map(x => [f.X(x), f.Y(T(dB ? hwSum(st.win, x) / peak : hwSum(st.win, x)))]);
+  if (st.lit === 'sum') glowPath(svg, sum, 10);
+  if (st.lit === 'shift') { glowPath(svg, cR, 8); glowPath(svg, cL, 8); }
+  path(svg, box, { stroke: COL.grey, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'box' });
+  if (!dB || st.lit === 'shift') {   // in dB the copies only show while their proof line is lit
+    path(svg, cR, { stroke: COL.muteLine, 'stroke-width': 1.5, 'stroke-dasharray': '5 4', 'data-item': 'mark', 'data-id': 'copy-right' });
+    path(svg, cL, { stroke: COL.muteLine, 'stroke-width': 1.5, 'stroke-dasharray': '5 4', 'data-item': 'mark', 'data-id': 'copy-left' });
+  }
+  path(svg, sum, { stroke: COL.accent, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'sum' });
+  // signs of the box's side lobes
+  if (!dB) for (const [x, s] of [[1.43, '−'], [2.46, '+'], [3.47, '−'], [4.48, '+'], [5.48, '−'], [6.49, '+'], [7.49, '−']]) {
+    const v = sinc(x);
+    svgText(svg, f.X(x), f.Y(v) + (v < 0 ? 17 : -7), s, { 'text-anchor': 'middle', 'font-size': 15, fill: COL.text2, 'font-weight': 700 });
+  }
+  if (dB) {
+    const L = hwLobe(st.win);
+    dot(svg, f.X(L.at), f.Y(db(L.v / peak)), COL.accent, 4.5);
+    svgTex(svg, f.X(L.at) + 8, f.Y(db(L.v / peak)) + 14, String.raw`sum: $${db(L.v / peak).toFixed(1)}$ dB`, { w: 130, size: 14, anchor: 'start', fill: COL.lblBlue, halo: true });
+    dot(svg, f.X(BOX_LOBE.at), f.Y(db(BOX_LOBE.v)), COL.muteLine, 4.5);
+    svgTex(svg, f.X(BOX_LOBE.at) + 8, f.Y(db(BOX_LOBE.v)) - 12, String.raw`box: $${db(BOX_LOBE.v).toFixed(1)}$ dB`, { w: 130, size: 14, anchor: 'start', fill: COL.text2, halo: true });
+  } else {
+    svgTex(svg, f.X(-0.15), f.Y(1.0), '$B$', { w: 30, size: 15, anchor: 'end', fill: COL.text2, halo: true });
+    svgTex(svg, f.X(-1.55), f.Y(r * 0.86), 'copy at $-1$', { w: 110, size: 14, anchor: 'end', fill: COL.text2, halo: true });
+    svgTex(svg, f.X(1.6), f.Y(r * 0.9), 'copy at $+1$', { w: 110, size: 14, anchor: 'start', fill: COL.text2, halo: true });
+    svgTex(svg, f.X(0.55), f.Y(0.3), 'sum', { w: 50, size: 15, anchor: 'start', fill: COL.lblBlue, halo: true });
+  }
+  // cursor at nu
+  const v = st.nu;
+  path(svg, [[f.X(v), f.top], [f.X(v), f.base]], { stroke: COL.ink, 'stroke-dasharray': '3 3', 'stroke-width': 1 });
+  if (!dB) {
+    dot(svg, f.X(v), f.Y(sinc(v)), COL.muteLine, 4);
+    dot(svg, f.X(v), f.Y(r * sinc(v - 1)), COL.muteLine, 3.5);
+    dot(svg, f.X(v), f.Y(r * sinc(v + 1)), COL.muteLine, 3.5);
+    dot(svg, f.X(v), f.Y(hwSum(st.win, v)), COL.accent, 4.5);
+  }
+  // inset: w_n as a constant plus a cosine
+  const iw = Math.min(250, (f.right - f.left) * 0.44);
+  const ih = dB ? Math.min(120, f.Y(0) - f.top - 6) : Math.min(120, (f.base - f.top) * 0.42);
+  const ix = f.right - iw - 2, iy = f.top + 2;
+  svgNode('rect', { x: ix, y: iy, width: iw, height: ih, rx: 8, fill: st.lit === 'inset' ? COL.amberRow : COL.panel,
+    stroke: st.lit === 'inset' ? COL.amber : COL.line, 'stroke-width': st.lit === 'inset' ? 2 : 1, 'data-item': 'mark', 'data-id': 'inset' }, svg);
+  const mid = HW[st.win].mid, amp = 2 * HW[st.win].side;
+  const IX = n => ix + 14 + (n + 16) / 32 * (iw - 28), IY = y => iy + ih - 12 - y * (ih - 40);
+  path(svg, [[IX(-16), IY(0)], [IX(16), IY(0)]], { stroke: COL.line });
+  path(svg, [[IX(-16), IY(mid)], [IX(16), IY(mid)]], { stroke: COL.muteLine, 'stroke-dasharray': '4 3' });
+  for (let n = -16; n <= 16; n++) {
+    const w = mid + amp * Math.cos(2 * PI * n / 32);
+    path(svg, [[IX(n), IY(0)], [IX(n), IY(w)]], { stroke: COL.accent, 'stroke-width': 1.6 });
+  }
+  svgTex(svg, ix + iw / 2, iy + 13, st.win === 'hann' ? String.raw`$w_n=\tfrac12+\tfrac12\cos\frac{2\pi n}{N}$` : String.raw`$w_n=0.54+0.46\cos\frac{2\pi n}{N}$`, { w: iw - 8, size: 13, fill: COL.ink });
+  svgTex(svg, IX(16) - 2, IY(mid) - 9, 'constant', { w: 80, size: 12, anchor: 'end', fill: COL.muted, halo: true });
+  return null;
+}
+
+// ---------- step 7: platform, Lecture 38:46 to 39:52 ----------
+const HANN_30 = db(bandMax(nu => platformW(0.5, nu), 30));
+const HANN_E3 = platformEnergyBeyond(0.5, 3);
+function slidePlatform(widget, side) {
+  let A = 0.5;
+  const sA = slider('$a$', { id: 'a', name: 'a, platform height', min: 0.5, max: 0.6, step: 0.0001, value: A,
+    fmt: v => '$' + v.toFixed(4) + '$', onInput: v => { A = v; update(); } });
+  const setA = v => { A = v; sA.set(v); update(); };
+  const amin = +A_MIN.toFixed(4);
+  const pH = presetBtn('a-0.5', String.raw`von Hann $0.5$`, () => setA(0.5));
+  const pM = presetBtn('a-minimax', String.raw`minimax $${A_MIN.toFixed(3)}$`, () => setA(amin));
+  const p54 = presetBtn('a-0.54', String.raw`Hamming $0.54$`, () => setA(0.54));
+  const rL = readout('largest-lobe', 'largest side lobe');
+  const r30 = readout('lobe-30', 'near 30 bins: yours vs von Hann');
+  const rE = readout('energy-3', 'energy beyond 3 bins: yours vs von Hann');
+  rE.el.style.flexGrow = '1.3';
+  widget.append(hh('div', 'sliders', sA.el, hh('div', 'btnrow', pH, pM, p54)));
+  const top = fillPlot(widget, drawW, 'f2');
+  widget.append(legend([
+    { color: 'var(--pal-accent)', width: 3, text: String.raw`blue: $|W_a|$ at your $a$` },
+    { color: 'var(--pal-grey)', width: 2, text: 'grey: von Hann' },
+    { chip: true, color: 'var(--pal-ink)', text: 'dot: the largest side lobe' }]));
+  const bot = fillPlot(widget, drawCurve);
+  widget.append(hh('div', 'readouts', rL.el, r30.el, rE.el));
+  function drawW(svg, W, H) {
+    const f = frame(W, H, { x0: 0, x1: 40, y0: -110, y1: 0 }, { t: 10, b: 40 });
+    for (const v of [-20, -40, -60, -80, -100]) path(svg, [[f.left, f.Y(v)], [f.right, f.Y(v)]], { stroke: COL.gridFaint });
+    axes(svg, f, { xt: [[0, '0'], [10, '10'], [20, '20'], [30, '30'], [40, '40']],
+      yt: [[0, '0'], [-20, '−20'], [-40, '−40'], [-60, '−60'], [-80, '−80'], [-100, '−100']],
+      xlabel: String.raw`$\nu$: bins from the line`, ylabel: String.raw`$|W|$ in dB` });
+    const curve = a => { const pts = []; for (let i = 0; i <= 2000; i++) { const nu = 40 * i / 2000; pts.push([f.X(nu), f.Y(Math.max(-110, db(platformW(a, nu))))]); } return pts; };
+    path(svg, curve(0.5), { stroke: COL.grey, 'stroke-width': 1.3, 'data-item': 'mark', 'data-id': 'hann' });
+    path(svg, curve(A), { stroke: COL.accent, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'W-a' });
+    const L = platformLobe(A, 40);
+    dot(svg, f.X(L.at), f.Y(db(L.v)), COL.ink, 5);
+    svgTex(svg, f.X(L.at) + 9, f.Y(db(L.v)) - 12, String.raw`$${db(L.v).toFixed(1)}$ dB at $${L.at.toFixed(2)}$`, { w: 170, size: 14, anchor: 'start', fill: COL.ink, halo: true });
+    // inset: the window and the step at its ends
+    const iw = Math.min(240, Math.max(190, (f.right - f.left) * 0.38)), ih = Math.min(96, (f.base - f.top) * 0.42);
+    const ix = f.right - iw - 4, iy = f.top + 2;
+    svgNode('rect', { x: ix, y: iy, width: iw, height: ih, rx: 8, fill: COL.panel, stroke: COL.line, 'data-item': 'mark', 'data-id': 'inset' }, svg);
+    const IX = t => ix + 16 + (t + 0.75) / 1.5 * (iw - 32), IY = y => iy + ih - 12 - y * (ih - 30);
+    const pts = [[IX(-0.75), IY(0)], [IX(-0.5), IY(0)]];
+    for (let i = 0; i <= 80; i++) { const t = -0.5 + i / 80; pts.push([IX(t), IY(A + (1 - A) * Math.cos(2 * PI * t))]); }
+    pts.push([IX(0.5), IY(0)], [IX(0.75), IY(0)]);
+    path(svg, pts, { stroke: COL.accent, 'stroke-width': 2 });
+    svgTex(svg, ix + iw / 2, iy + 11, String.raw`$w(t)$: ends at $2a-1=${(2 * A - 1).toFixed(2)}$`, { w: iw - 4, size: 13, fill: COL.text2 });
+    for (const t of [-0.5, 0.5]) svgNode('circle', { cx: IX(t), cy: IY((2 * A - 1) / 2), r: 7, fill: 'none', stroke: COL.ink, 'stroke-width': 1.2 }, svg);
+    return null;
+  }
+  function drawCurve(svg, W, H) {
+    const f = frame(W, H, { x0: 0.5, x1: 0.6, y0: -48, y1: -30 }, { t: 8, b: 42 });
+    axes(svg, f, { xt: [[0.5, '0.50'], [0.52, '0.52'], [0.54, '0.54'], [0.56, '0.56'], [0.58, '0.58'], [0.6, '0.60']],
+      yt: [[-30, '−30'], [-35, '−35'], [-40, '−40'], [-45, '−45']],
+      xlabel: String.raw`$a$, platform height` });
+    svgTex(svg, f.X(0.555), f.top + 10, 'largest side lobe (dB) against $a$', { w: 300, size: 15 });
+    path(svg, LOBE_CURVE.map(([a, v]) => [f.X(a), f.Y(Math.max(-48, Math.min(-30, v)))]), { stroke: COL.ink, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'lobe-curve' });
+    svgNode('circle', { cx: f.X(A_MIN), cy: f.Y(LOBE_MIN), r: 4, fill: COL.panel, stroke: COL.ink, 'stroke-width': 1.5 }, svg);
+    svgTex(svg, f.X(A_MIN) + 16, f.Y(LOBE_MIN) + 13, String.raw`minimum: $a=${A_MIN.toFixed(3)}$, $${LOBE_MIN.toFixed(1)}$ dB`, { w: 260, size: 14, anchor: 'start', fill: COL.ink, halo: true });
+    const L = db(platformLobe(A, 40).v);
+    dot(svg, f.X(A), f.Y(Math.max(-48, Math.min(-30, L))), COL.accent, 6);
+    return null;
+  }
+  function update() {
+    const L = platformLobe(A, 40);
+    rL.set('$' + db(L.v).toFixed(1) + '$ dB at $' + L.at.toFixed(2) + '$ bins');
+    r30.set('$' + db(bandMax(nu => platformW(A, nu), 30)).toFixed(1) + '$ vs $' + HANN_30.toFixed(1) + '$ dB');
+    rE.set('$' + sci(platformEnergyBeyond(A, 3)) + '$ vs $' + sci(HANN_E3) + '$');
+    top.redraw(); bot.redraw();
+  }
+  side.append(
+    sym(String.raw`$w=a+(1-a)\cos\frac{2\pi n}N$: a raised cosine on a platform, ends at $2a-1$. $a=0.5$ is von Hann, $a=0.54$ Hamming. $W_a$: its transform, three sincs (step 5).`),
+    nameLine(String.raw`<i>minimax</i>: minimize the maximum.`),
+    formula(String.raw`$\min_a\ \max_{\text{side lobes}}|W_a(\nu)|$`),
+    triesList([
+      String.raw`At $a=0.5$ the largest lobe is the first, $-31.5$ dB at $2.4$ bins. Raise $a$: it sinks while the lobes near $4.5$ bins rise.`,
+      String.raw`They balance near $a=0.538$, at $-43.2$ dB. Hamming's rounded $0.54$ gives $-42.7$; past $0.55$ it gets worse again.`,
+      String.raw`Read 30 bins: von Hann $-99$ dB, Hamming $-56$ dB. Beyond 3 bins Hamming lets in 6 times more energy (step 3: its ends jump).`]),
+    takeLine(String.raw`Minimax puts the worst lobe as low as it goes and pays with leakage from far away. It suits one strong line, not every spectrum.`));
+  update();
+}
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'multiply-convolve', kind: 'proof', tag: 'Lecture 25:27 to 27:00',
+    title: "Why it's true: multiplying two series convolves their coefficients",
+    question: 'When you multiply two Fourier series, what happens to their coefficients?', mount: slideMultiply },
+  { id: 'resolution', kind: 'content', tag: 'Lecture 27:00 to 30:09',
+    title: 'How long must you watch to see two lines?',
+    question: 'A finite record smears every line. When can you still tell two close lines apart?', mount: slideResolution },
+  { id: 'corner-decay', kind: 'content', tag: 'Lecture 31:45 to 35:02',
+    title: "A window's ends decide how far it leaks",
+    question: 'Why does a window with corners let in power from far away?', mount: slideCorner },
+  { id: 'negative-power', kind: 'decision', tag: 'Lecture 35:02',
+    title: 'The spectrum says power is negative. What now?',
+    question: 'Your computed power spectrum has negative values. What do you do?', mount: slideDecision('negative-power') },
+  { id: 'hann-weights', kind: 'proof', tag: 'Lecture 36:40 to 37:44',
+    title: "Why it's true: one-two-one smoothing is a raised-cosine window",
+    question: String.raw`Why is averaging the spectrum $\tfrac14,\tfrac12,\tfrac14$ the same as multiplying the data by a raised cosine?`, mount: slideHann },
+  { id: 'minimax-lobe', kind: 'decision', tag: 'Lecture 37:44',
+    title: 'One strong line leaks into everything. Which window?',
+    question: 'A very strong line sits away from the weak part you study. How do you keep it out?', mount: slideDecision('minimax-lobe') },
+  { id: 'platform', kind: 'content', tag: 'Lecture 38:46 to 39:52',
+    title: 'How high should the platform be?',
+    question: 'Which platform height makes the largest side lobe smallest, and what does it cost?', mount: slidePlatform },
+];
+
+let cur = 0, shownId = null, endSent = false;
+// Build the current step. Decision steps rebuild from their state; others start fresh.
+function render() {
+  const s = SLIDES[cur];
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side', h('div', 'tag', s.tag), setTex(h('h2'), s.title), setTex(h('p', 'question'), s.question));
+  const cls = s.kind === 'proof' ? ' proof-slide' : s.kind === 'decision' ? ' decision' : '';
+  const sec = mark(h('section', 'slide' + cls), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  PLOTS = [];
+  s.mount(widget, side);
+  // The takeaway of a content step is dimmed until the reader has tried a control.
+  const tk = s.kind === 'content' ? side.querySelector('.takeaway') : null;
+  if (tk) {
+    tk.classList.add('dim');
+    const open = () => tk.classList.remove('dim');
+    sec.addEventListener('input', open);
+    sec.addEventListener('click', e => { if (e.target.closest('[data-item="control"],[data-item="preset"]')) open(); });
+  }
+  tex(sec);
+}
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  render();
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state. {step} goes to the step; {step, reveal: true} also reveals a decision.
+// A repeated cue changes nothing, and a reveal stays shown when a later {step} cue arrives.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i < 0) return;
+  let changed = false;
+  if (msg.reveal === true && DEC[msg.step] && !isOpen(msg.step)) {
+    decState[msg.step].shown = true;
+    emit('view.action', { action: 'reveal', step: msg.step, by: 'cue' });
+    changed = true;
+  }
+  if (i !== cur) goTo(i);
+  else if (changed) render();
+}
+(function init() {
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    $('#dots').append(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

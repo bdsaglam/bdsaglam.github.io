@@ -1,0 +1,16 @@
+{
+  "title": "Before Lecture 18: one step at a time",
+  "group": "l18",
+  "about": "A short primer on time stepping, Euler updates, and the difference between physical and numerical stability.",
+  "w": 1280,
+  "h": 720,
+  "cues": {
+    "step": [
+      "why",
+      "step",
+      "why-euler",
+      "stability",
+      "why-stable"
+    ]
+  }
+}

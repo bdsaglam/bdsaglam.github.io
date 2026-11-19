@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>M4 — The delta rule / DeltaNet – Barış Deniz Sağlam</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-df99d872f4c54f7aa56ff7441a5fca8a.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-b267bda9b88f84e4a2f3432abbfd1f06.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<!-- Opt-in analytics. Google Analytics loads only after the visitor accepts;
+     the choice lives in one cookie, and the footer's "cookie preferences"
+     link (any href ending in #cookie-preferences) reopens the banner. The Language of
+     Learning page carries a copy of this file; keep the two in step. -->
+<style>
+#consent{position:fixed;left:0;right:0;bottom:0;z-index:1000;display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;
+  align-items:center;justify-content:center;padding:.75rem 1rem;background:#fbf9f4;border-top:1px solid #e4dfd3;
+  font:.8rem/1.5 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;color:#1c1e21;}
+#consent[hidden]{display:none;}
+#consent a{color:#2346a0;}
+#consent button{font:inherit;padding:.22rem .8rem;border:1.5px solid #2346a0;border-radius:4px;background:none;color:#2346a0;cursor:pointer;}
+#consent button:hover{background:#2346a0;color:#fff;}
+</style>
+<script>
+(function () {
+  var ID = 'G-498T1C2SN2', NAME = 'analytics_consent', DAYS = 182;
+  function choice() { var m = document.cookie.match('(?:^|; )' + NAME + '=([^;]*)'); return m && m[1]; }
+  function remember(v) { document.cookie = NAME + '=' + v + '; max-age=' + DAYS * 86400 + '; path=/; SameSite=Lax'; }
+  function loadAnalytics() {
+    if (window.gtag) return;
+    var s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    gtag('js', new Date()); gtag('config', ID);
+  }
+  function dropAnalyticsCookies() {
+    document.cookie.split('; ').forEach(function (c) {
+      var n = c.split('=')[0];
+      if (/^_ga/.test(n)) ['', '; domain=' + location.hostname, '; domain=.' + location.hostname].forEach(function (d) {
+        document.cookie = n + '=; max-age=0; path=/' + d;
+      });
+    });
+  }
+  function showBanner() {
+    var b = document.getElementById('consent');
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'consent'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Cookie consent');
+      b.innerHTML = '<span>This site uses Google Analytics cookies to count visits, only if you accept. <a href="/privacy.html">privacy</a></span>'
+                  + '<span><button type="button" data-v="granted">accept</button> <button type="button" data-v="denied">decline</button></span>';
+      b.addEventListener('click', function (e) {
+        var v = e.target.getAttribute && e.target.getAttribute('data-v');
+        if (!v) return;
+        var was = choice();
+        remember(v); b.hidden = true;
+        if (v === 'granted') loadAnalytics();
+        else {
+          window['ga-disable-' + ID] = true;  // Google's opt-out flag: the running tag sends nothing more
+          dropAnalyticsCookies();
+          if (was === 'granted') location.reload();  // unload the tag itself
+        }
+      });
+      document.body.appendChild(b);
+    }
+    b.hidden = false;
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var c = choice();
+    if (c === 'granted') loadAnalytics(); else if (c !== 'denied') showBanner();
+  });
+  // Quarto rewrites footer hrefs to absolute URLs, so match the fragment, on click.
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a');
+    if (a && /#cookie-preferences$/.test(a.getAttribute('href') || '')) { e.preventDefault(); showBanner(); }
+  });
+})();
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand " data-bs-theme="dark" aria-label="Site">
+      <div class="navbar-container container-fluid">
+          <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../writing.html"> 
+<span class="menu-text">Writing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../cv.html"> 
+<span class="menu-text">CV</span></a>
+  </li>  
+</ul>
+          <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" aria-labelledby="toc-title" class="toc-active">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#objective" id="toc-objective" class="nav-link active" data-scroll-target="#objective">Objective</a></li>
+  <li><a href="#why-it-exists-the-limitation-it-fixes" id="toc-why-it-exists-the-limitation-it-fixes" class="nav-link" data-scroll-target="#why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</a></li>
+  <li><a href="#core-idea-read-before-you-write" id="toc-core-idea-read-before-you-write" class="nav-link" data-scroll-target="#core-idea-read-before-you-write">Core idea: read before you write</a>
+  <ul class="collapse">
+  <li><a href="#reading" id="toc-reading" class="nav-link" data-scroll-target="#reading">Reading</a></li>
+  </ul></li>
+  <li><a href="#the-failure-additive-memory-cant-update" id="toc-the-failure-additive-memory-cant-update" class="nav-link" data-scroll-target="#the-failure-additive-memory-cant-update">1. The failure: additive memory can’t update</a></li>
+  <li><a href="#the-delta-rule-read-barmathbfv-write-the-correction" id="toc-the-delta-rule-read-barmathbfv-write-the-correction" class="nav-link" data-scroll-target="#the-delta-rule-read-barmathbfv-write-the-correction">2. The delta rule: read <span class="math inline">\(\bar{\mathbf{v}}\)</span>, write the correction</a></li>
+  <li><a href="#the-delta-write-is-one-gradient-step" id="toc-the-delta-write-is-one-gradient-step" class="nav-link" data-scroll-target="#the-delta-write-is-one-gradient-step">3. The delta write <em>is</em> one gradient step</a></li>
+  <li><a href="#erase-then-write-a-targeted-edit-not-a-global-fade" id="toc-erase-then-write-a-targeted-edit-not-a-global-fade" class="nav-link" data-scroll-target="#erase-then-write-a-targeted-edit-not-a-global-fade">4. Erase-then-write: a <em>targeted</em> edit, not a global fade</a>
+  <ul class="collapse">
+  <li><a href="#the-gated-delta-rule-when-a-global-fade-is-what-you-want" id="toc-the-gated-delta-rule-when-a-global-fade-is-what-you-want" class="nav-link" data-scroll-target="#the-gated-delta-rule-when-a-global-fade-is-what-you-want">The gated delta rule: when a global fade is what you want</a></li>
+  </ul></li>
+  <li><a href="#where-it-pays-off-revisited-keys-overcapacity" id="toc-where-it-pays-off-revisited-keys-overcapacity" class="nav-link" data-scroll-target="#where-it-pays-off-revisited-keys-overcapacity">5. Where it pays off: revisited keys &amp; overcapacity</a></li>
+  <li><a href="#decoupling-erase-and-write-gated-deltanet-2" id="toc-decoupling-erase-and-write-gated-deltanet-2" class="nav-link" data-scroll-target="#decoupling-erase-and-write-gated-deltanet-2">6. Decoupling erase and write — Gated DeltaNet-2</a></li>
+  <li><a href="#code-walkthrough-the-delta-write-in-real-code" id="toc-code-walkthrough-the-delta-write-in-real-code" class="nav-link" data-scroll-target="#code-walkthrough-the-delta-write-in-real-code">Code walkthrough — the delta write in real code</a></li>
+  <li><a href="#exit-check" id="toc-exit-check" class="nav-link" data-scroll-target="#exit-check">Exit check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">M4 — The delta rule / DeltaNet</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="https://colab.research.google.com/github/bdsaglam/bdsaglam.github.io/blob/main/materials/continual-learning/foundations/m4-delta-rule.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" class="img-fluid figure-img"></a></p>
+<figcaption>Open In Colab</figcaption>
+</figure>
+</div>
+<p><strong>The question:</strong> how does a memory <em>edit</em> an association instead of piling onto it?</p>
+<p>Linear attention ended on a wall: its memory only ever <em>adds</em> (<span class="math inline">\(\mathbf{S}_t=\mathbf{S}_{t-1}+\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span>), so writing twice to the same key returns the <strong>sum</strong> of both values, and recall is lossy under load. The fix is to the <em>write rule</em>: before storing, <strong>read what’s already there for this key and write only the difference</strong>. That single change turns a pile-on memory into one that can <em>edit</em> associations.</p>
+<p>The fix is not new. It is the <strong>delta rule</strong>, which Bernard Widrow and Marcian Hoff published in <a href="https://isl.stanford.edu/~widrow/papers/c1960adaptiveswitching.pdf">1960</a> (<em>Adaptive Switching Circuits</em>, IRE WESCON Convention Record, pp.&nbsp;96–104) as the learning rule for Adaline — adjust the weights by the <em>error</em> between what you wanted and what you got. It predates backpropagation, deep learning, and Transformers by decades; the move here is to recognize that a sequence model’s memory has exactly the problem Widrow and Hoff’s adaptive circuit had, and reach for the same answer. A linear Transformer with this write is a <strong>DeltaNet</strong>.</p>
+<section id="objective" class="level2">
+<h2 data-anchor-id="objective">Objective</h2>
+<p>After this module you should be able to:</p>
+<ul>
+<li>Show concretely why the <strong>additive</strong> write cannot <em>update</em> an association: it accumulates, returning <span class="math inline">\(\mathbf{v}_1+\mathbf{v}_2\)</span> when you meant to overwrite <span class="math inline">\(\mathbf{v}_1\)</span> with <span class="math inline">\(\mathbf{v}_2\)</span>.</li>
+<li>Write the <strong>delta rule</strong>: read <span class="math inline">\(\bar{\mathbf{v}}=\mathcal{M}\phi(\mathbf{k})\)</span>, then write <span class="math inline">\(\beta(\mathbf{v}-\bar{\mathbf{v}})\phi(\mathbf{k})^\top\)</span> — <em>write the new, remove the old</em> (FWP Eqs. 20–24).</li>
+<li>Recognize the delta write as <strong>one step of gradient descent</strong> on the regression loss <span class="math inline">\(\tfrac12\lVert\mathcal{M}\phi(\mathbf{k})-\mathbf{v}\rVert^2\)</span> — the “objective dial” from M2: swap the dot-product objective (→ Hebbian) for an <span class="math inline">\(L_2\)</span> one (→ delta).</li>
+<li>Read the update in <strong>matrix form</strong> <span class="math inline">\(\mathcal{M}(I-\beta\mathbf{k}\mathbf{k}^\top)+\beta\mathbf{v}\mathbf{k}^\top\)</span> and see that <span class="math inline">\((I-\beta\mathbf{k}\mathbf{k}^\top)\)</span> <strong>erases only along <span class="math inline">\(\mathbf{k}\)</span></strong> — a <em>targeted</em> edit.</li>
+<li>Explain why the delta rule wins in the <strong>overcapacity / revisited-key regime</strong> (FWP’s setting-2 experiment), and where <span class="math inline">\(\beta\)</span> (a learned, dynamic write strength) comes from.</li>
+</ul>
+</section>
+<section id="why-it-exists-the-limitation-it-fixes" class="level2">
+<h2 data-anchor-id="why-it-exists-the-limitation-it-fixes">Why it exists (the limitation it fixes)</h2>
+<p>M3’s memory is purely additive. Two problems, one root:</p>
+<ol type="1">
+<li><strong>It can’t overwrite.</strong> Store <span class="math inline">\((\mathbf{k},\mathbf{v}_1)\)</span>, later store <span class="math inline">\((\mathbf{k},\mathbf{v}_2)\)</span>, the additive rule gives <span class="math inline">\(\mathcal{M}=\mathbf{v}_1\mathbf{k}^\top+\mathbf{v}_2\mathbf{k}^\top\)</span>, so a query returns <span class="math inline">\(\mathbf{v}_1+\mathbf{v}_2\)</span>. There is no way to <em>replace</em> a value; the memory only ever grows.</li>
+<li><strong>It saturates.</strong> A fixed <span class="math inline">\(d\times d\)</span> matrix holds about <span class="math inline">\(d\)</span> near-orthogonal associations (M2’s capacity law). Past that — the <strong>overcapacity regime</strong> — new writes interfere with old ones and recall degrades (M3 §6).</li>
+</ol>
+<p>The <a href="https://arxiv.org/abs/2102.11174">FWP paper</a> frames the fix precisely (§4.2): once in overcapacity, <em>“an ideal memory model should dynamically interact with the memory contents and selectively determine which associations to remember or to forget … the purely additive update rule may be sub-optimal.”</em> The answer is to make the write <strong>error-correcting</strong>: look at what the memory currently returns for this key, and only write the part it’s getting <em>wrong</em>. That is the delta rule, and it’s the first write rule in this course that can <em>edit</em> rather than only <em>append</em>: the real fix to the crosstalk wall we’ve now hit three times.</p>
+</section>
+<section id="core-idea-read-before-you-write" class="level2">
+<h2 data-anchor-id="core-idea-read-before-you-write">Core idea: read before you write</h2>
+<p>Linear attention writes blindly: <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}+\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span>. The delta rule inserts one step first: <strong>read the memory at this key</strong>, then write the <em>correction</em> (FWP Eqs. 20, 24; <span class="math inline">\(\bar{\mathbf{v}}\)</span> is what’s currently stored, <span class="math inline">\(\beta\)</span> a write strength):</p>
+<p><span class="math display">\[\bar{\mathbf{v}}_t=\mathcal{M}_{t-1}\,\phi(\mathbf{k}_t),\qquad \boxed{\;\mathcal{M}_t=\mathcal{M}_{t-1}+\beta_t\,(\mathbf{v}_t-\bar{\mathbf{v}}_t)\,\phi(\mathbf{k}_t)^\top\;}\]</span></p>
+<p>Carrying Widrow and Hoff’s 1960 rule into a fast-weight memory is <a href="https://arxiv.org/abs/2102.11174">FWP</a>’s move (Schlag, Irie &amp; Schmidhuber, 2021, §4.2), and the paper is explicit that it is borrowing: it introduces “an improved programming instruction akin to the famous error-correcting delta-rule,” citing Widrow &amp; Hoff for the rule itself. It derives it as <strong>write-the-new, remove-the-old</strong> (Eq. 23): <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}\underbrace{+\,\mathbf{v}^{\text{new}}_t\phi(\mathbf{k}_t)^\top}_{\text{write}}\underbrace{-\,\bar{\mathbf{v}}_t\phi(\mathbf{k}_t)^\top}_{\text{remove}}\)</span>, which collapses to the boxed form. Three ways to read it, all the same equation:</p>
+<ul>
+<li><strong>Error correction</strong> (Widrow–Hoff): write only the residual <span class="math inline">\(\mathbf{v}_t-\bar{\mathbf{v}}_t\)</span> between what you want and what’s stored. If the key is already correct, <span class="math inline">\(\bar{\mathbf{v}}_t=\mathbf{v}_t\)</span> and <em>nothing is written</em>.</li>
+<li><strong>Gradient step:</strong> the residual is the gradient of <span class="math inline">\(\tfrac12\lVert\mathcal{M}\phi(\mathbf{k})-\mathbf{v}\rVert^2\)</span>, so one delta write = one SGD step with learning rate <span class="math inline">\(\beta_t\)</span> (§3 below).</li>
+<li><strong>Erase-then-write:</strong> in matrix form <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}(I-\beta_t\phi(\mathbf{k}_t)\phi(\mathbf{k}_t)^\top)+\beta_t\mathbf{v}_t\phi(\mathbf{k}_t)^\top\)</span> — a <em>targeted</em> rank-1 erase along <span class="math inline">\(\mathbf{k}_t\)</span>, then a write (§4 below).</li>
+</ul>
+<p><span class="math inline">\(\beta_t=\sigma(W_\beta\mathbf{x}_t)\)</span> is a <strong>learned, per-token write strength</strong> (FWP Eq. 21), the learning rate of that SGD step. A linear Transformer with this write is what FWP names a <strong>Delta Network (DeltaNet)</strong>.</p>
+<section id="reading" class="level3">
+<h3 data-anchor-id="reading">Reading</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/2102.11174">FWP</a>: §4.2 (Eqs. 20–24, the delta instruction; Eq. 23, write-the-new/remove-the-old), §6.1.2 (the setting-2 revisited-key experiment), App. A.1 (the derivation). The grounding source.</li>
+<li>Modern parallel form: <a href="https://arxiv.org/abs/2406.06484">Parallelizing Linear Transformers with the Delta Rule over Sequence Length</a> (Yang, Wang, Zhang, Shen &amp; Kim, 2024), the chunked DeltaNet used to train at scale.</li>
+</ul>
+</section>
+</section>
+<section id="the-failure-additive-memory-cant-update" class="level2">
+<h2 data-anchor-id="the-failure-additive-memory-cant-update">1. The failure: additive memory can’t update</h2>
+<p>Store value <span class="math inline">\(\mathbf{v}_1\)</span> at key <span class="math inline">\(\mathbf{k}\)</span>, then later store <span class="math inline">\(\mathbf{v}_2\)</span> at the <strong>same</strong> key with the additive (M3) rule. With <span class="math inline">\(\mathbf{k}\)</span> unit-norm, a query returns <span class="math inline">\(\mathcal{M}\mathbf{k}=\mathbf{v}_1+\mathbf{v}_2\)</span> — the <em>sum</em> of everything ever written there, not the latest value.</p>
+<div id="3ca6d156" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T09:36:46.076210Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T09:36:46.076149Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T09:36:46.820321Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T09:36:46.819853Z&quot;}}" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>k  <span class="op">=</span> F.normalize(torch.randn(d), dim<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>v1, v2 <span class="op">=</span> torch.randn(d), torch.randn(d)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sum_write(M, k, v, beta<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">+</span> beta <span class="op">*</span> torch.outer(v, k)          <span class="co"># additive Hebbian write (M1 / M3)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> sum_write(M, k, v1)                           <span class="co"># store (k -&gt; v1)</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> sum_write(M, k, v2)                           <span class="co"># same key, new value v2</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>recall <span class="op">=</span> M <span class="op">@</span> k                                    <span class="co"># k is unit-norm -&gt; v1 + v2</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"want v2:  additive recall error vs v2       = </span><span class="sc">{</span>(recall <span class="op">-</span> v2)<span class="sc">.</span>norm()<span class="op">/</span>v2<span class="sc">.</span>norm()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"          additive recall error vs (v1+v2)  = </span><span class="sc">{</span>(recall <span class="op">-</span> (v1<span class="op">+</span>v2))<span class="sc">.</span>norm()<span class="op">/</span>(v1<span class="op">+</span>v2)<span class="sc">.</span>norm()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"additive memory cannot overwrite: it returns v1+v2, the SUM of all writes at k."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>want v2:  additive recall error vs v2       = 1.235
+          additive recall error vs (v1+v2)  = 0.000
+additive memory cannot overwrite: it returns v1+v2, the SUM of all writes at k.</code></pre>
+</div>
+</div>
+</section>
+<section id="the-delta-rule-read-barmathbfv-write-the-correction" class="level2">
+<h2 data-anchor-id="the-delta-rule-read-barmathbfv-write-the-correction">2. The delta rule: read <span class="math inline">\(\bar{\mathbf{v}}\)</span>, write the correction</h2>
+<p>Before writing, query the memory at <span class="math inline">\(\mathbf{k}\)</span> to get <span class="math inline">\(\bar{\mathbf{v}}=\mathcal{M}\mathbf{k}\)</span>, the <em>stale</em> value, and write only <span class="math inline">\(\mathbf{v}-\bar{\mathbf{v}}\)</span>. On the second write the memory already holds <span class="math inline">\(\mathbf{v}_1\)</span>, so <span class="math inline">\(\bar{\mathbf{v}}=\mathbf{v}_1\)</span> and we write <span class="math inline">\(\mathbf{v}_2-\mathbf{v}_1\)</span>: the key now stores exactly <span class="math inline">\(\mathbf{v}_2\)</span>. The same repeated-key test that broke the additive rule is now clean.</p>
+<div id="a8ac352d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T09:36:46.821549Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T09:36:46.821433Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T09:36:46.824122Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T09:36:46.823628Z&quot;}}" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> delta_write(M, k, v, beta<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    v_bar <span class="op">=</span> M <span class="op">@</span> k                                 <span class="co"># READ the current value at this key (FWP Eq. 20)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">+</span> beta <span class="op">*</span> torch.outer(v <span class="op">-</span> v_bar, k)   <span class="co"># write only the CORRECTION (FWP Eq. 24)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> torch.zeros(d, d)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> delta_write(M, k, v1)                          <span class="co"># v_bar = 0   -&gt; writes v1</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> delta_write(M, k, v2)                          <span class="co"># v_bar = v1  -&gt; writes (v2 - v1)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>recall <span class="op">=</span> M <span class="op">@</span> k</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"want v2:  delta recall error vs v2 = </span><span class="sc">{</span>(recall <span class="op">-</span> v2)<span class="sc">.</span>norm()<span class="op">/</span>v2<span class="sc">.</span>norm()<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"read-before-write: subtract the stale value, add the new one -&gt; the key is UPDATED, not piled onto."</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"if the key is already correct, v_bar == v and the write is zero -- nothing is disturbed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>want v2:  delta recall error vs v2 = 0.000
+read-before-write: subtract the stale value, add the new one -&gt; the key is UPDATED, not piled onto.
+if the key is already correct, v_bar == v and the write is zero -- nothing is disturbed.</code></pre>
+</div>
+</div>
+</section>
+<section id="the-delta-write-is-one-gradient-step" class="level2">
+<h2 data-anchor-id="the-delta-write-is-one-gradient-step">3. The delta write <em>is</em> one gradient step</h2>
+<p>Why does “write the residual” work? Because the residual <strong>is a gradient</strong>. Take the regression loss that asks the memory to map this key to this value,</p>
+<p><span class="math display">\[\mathcal{L}(\mathcal{M})=\tfrac12\big\lVert\mathcal{M}\mathbf{k}-\mathbf{v}\big\rVert^2,\qquad \nabla_{\mathcal{M}}\mathcal{L}=(\mathcal{M}\mathbf{k}-\mathbf{v})\,\mathbf{k}^\top=(\bar{\mathbf{v}}-\mathbf{v})\,\mathbf{k}^\top.\]</span></p>
+<p>One gradient-descent step <span class="math inline">\(\mathcal{M}-\beta\nabla_{\mathcal{M}}\mathcal{L}=\mathcal{M}+\beta(\mathbf{v}-\bar{\mathbf{v}})\mathbf{k}^\top\)</span> is <em>exactly</em> the delta write. So the memory is <strong>learning at test time</strong>: one SGD step per token, with <span class="math inline">\(\beta\)</span> the learning rate. This is the <strong>objective dial</strong> made concrete: the Hebbian write <em>ascends</em> the dot-product objective <span class="math inline">\(\langle\mathcal{M}\mathbf{k},\mathbf{v}\rangle\)</span>; the delta write <em>descends</em> the <span class="math inline">\(L_2\)</span> objective <span class="math inline">\(\tfrac12\lVert\mathcal{M}\mathbf{k}-\mathbf{v}\rVert^2\)</span>. (This thread — <em>the write as a gradient step</em> — is exactly what <a href="../../../materials/continual-learning/tracks/nested-learning/nl1-test-time-learning.html">Titans</a> generalize to many steps / a deeper inner objective, and what <a href="../../../materials/continual-learning/foundations/m6-optimizers-as-memory.html">M6</a> reads back onto the optimizer itself.)</p>
+<div id="9480a9d3" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T09:36:46.825248Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T09:36:46.825169Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T09:36:46.998127Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T09:36:46.997620Z&quot;}}" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">1</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>M0   <span class="op">=</span> torch.randn(d, d) <span class="op">*</span> <span class="fl">0.1</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>kk   <span class="op">=</span> F.normalize(torch.randn(d), dim<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>vv   <span class="op">=</span> torch.randn(d)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># (a) one delta write</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>v_bar   <span class="op">=</span> M0 <span class="op">@</span> kk</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>M_delta <span class="op">=</span> M0 <span class="op">+</span> beta <span class="op">*</span> torch.outer(vv <span class="op">-</span> v_bar, kk)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># (b) one SGD step on  L = 1/2 ||M k - v||^2   (autograd computes the gradient)</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>Mg <span class="op">=</span> M0.clone().requires_grad_(<span class="va">True</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>L  <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> ((Mg <span class="op">@</span> kk <span class="op">-</span> vv)<span class="op">**</span><span class="dv">2</span>).<span class="bu">sum</span>()</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>L.backward()</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>M_sgd <span class="op">=</span> M0 <span class="op">-</span> beta <span class="op">*</span> Mg.grad</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"delta write == one GD step on 1/2||Mk - v||^2 :"</span>, torch.allclose(M_delta, M_sgd, atol<span class="op">=</span><span class="fl">1e-6</span>))</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># repeated delta writes = repeated GD steps -&gt; the loss decays toward zero</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>losses, M <span class="op">=</span> [], M0.clone()</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">15</span>):</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    losses.append(<span class="fl">0.5</span> <span class="op">*</span> ((M <span class="op">@</span> kk <span class="op">-</span> vv)<span class="op">**</span><span class="dv">2</span>).<span class="bu">sum</span>().item())</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> delta_write(M, kk, vv, beta<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>plt.plot(losses, marker<span class="op">=</span><span class="st">'o'</span>)<span class="op">;</span> plt.yscale(<span class="st">'log'</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"delta write #"</span>)<span class="op">;</span> plt.ylabel(<span class="st">"1/2 ||M k - v||^2"</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"each delta write is a GD step: the per-key regression loss decays"</span>)<span class="op">;</span> plt.show()</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Hebbian ASCENDS &lt;Mk,v&gt; (dot-product objective); delta DESCENDS 1/2||Mk-v||^2 (L2 objective)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>delta write == one GD step on 1/2||Mk - v||^2 : True</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m4-delta-rule_files/figure-html/cell-4-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Hebbian ASCENDS &lt;Mk,v&gt; (dot-product objective); delta DESCENDS 1/2||Mk-v||^2 (L2 objective).</code></pre>
+</div>
+</div>
+</section>
+<section id="erase-then-write-a-targeted-edit-not-a-global-fade" class="level2">
+<h2 data-anchor-id="erase-then-write-a-targeted-edit-not-a-global-fade">4. Erase-then-write: a <em>targeted</em> edit, not a global fade</h2>
+<p>Expand the delta write:</p>
+<p><span class="math display">\[\mathcal{M}+\beta(\mathbf{v}-\mathcal{M}\mathbf{k})\mathbf{k}^\top=\mathcal{M}\big(I-\beta\,\mathbf{k}\mathbf{k}^\top\big)+\beta\,\mathbf{v}\mathbf{k}^\top.\]</span></p>
+<p>The factor <span class="math inline">\((I-\beta\mathbf{k}\mathbf{k}^\top)\)</span> is a rank-1 projector that <strong>subtracts only the component along <span class="math inline">\(\mathbf{k}\)</span></strong>: it erases the <em>old</em> association at this key and leaves every direction orthogonal to <span class="math inline">\(\mathbf{k}\)</span> untouched, then <span class="math inline">\(\beta\mathbf{v}\mathbf{k}^\top\)</span> writes the new one. Contrast the <strong>gated</strong> rule (FWP Eq. 52) <span class="math inline">\(\mathcal{M}_t=(1-\beta)\mathcal{M}_{t-1}+\beta\mathbf{v}_t\mathbf{k}_t^\top\)</span>, the global forget used by the gated linear-attention family: <a href="https://arxiv.org/abs/2307.08621">RetNet</a> (Sun et al., 2023) with a decay fixed per head, <a href="https://arxiv.org/abs/2405.21060">Mamba-2</a> (Dao &amp; Gu, 2024) with one the input chooses. It decays <em>all</em> of memory uniformly on every write. The demo stores several orthonormal keys, updates <strong>one</strong>, and checks an untouched key: the delta edit preserves it exactly; the global gate fades it.</p>
+<section id="the-gated-delta-rule-when-a-global-fade-is-what-you-want" class="level3">
+<h3 data-anchor-id="the-gated-delta-rule-when-a-global-fade-is-what-you-want">The gated delta rule: when a global fade is what you want</h3>
+<p>The demo makes the gate look strictly worse, and for <em>this</em> test it is. But a global fade is the only way to clear memory <strong>wholesale</strong>, which is what you want when the context genuinely turns over and everything stored is now stale — and that is exactly what a targeted edit cannot do, since it only ever touches one key at a time. The two rules fail in opposite directions.</p>
+<p><a href="https://arxiv.org/abs/2412.06464">Gated DeltaNet</a> (Yang, Kautz &amp; Hatamizadeh, 2024) is the paper that stopped choosing. Its observation is the one this section has been circling, <em>“gating enables rapid memory erasure while the delta rule facilitates targeted updates”</em>, and its move is to introduce the <strong>gated delta rule</strong> (Eq. 8), which slips a data-dependent scalar gate <span class="math inline">\(\alpha_t\in(0,1)\)</span> inside the delta write so one rule can both fade the whole memory and revise a single key:</p>
+<p><span class="math display">\[\mathcal{M}_t=\mathcal{M}_{t-1}\big(\alpha_t(I-\beta_t\,\mathbf{k}_t\mathbf{k}_t^\top)\big)+\beta_t\,\mathbf{v}_t\mathbf{k}_t^\top.\]</span></p>
+<p>Set <span class="math inline">\(\alpha_t=1\)</span> and you are back at the delta rule above; drop the <span class="math inline">\((I-\beta_t\mathbf{k}_t\mathbf{k}_t^\top)\)</span> factor and what remains is the gated Hebbian write, Mamba-2’s row up to the <span class="math inline">\(\beta_t\)</span> write strength. Neither ancestor was invented from nothing: the projector is Widrow and Hoff’s 1960 error correction routed through FWP, the gate is Mamba-2’s, and the paper’s own title, <em>Gated Delta Networks: Improving Mamba2 with Delta Rule</em>, names both parents. Two independent dials, which is exactly how <a href="../../../materials/continual-learning/foundations/m7-three-dials.html">M7</a> §5 sorts the family.</p>
+<div id="abe02e6e" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T09:36:46.999191Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T09:36:46.999117Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T09:36:47.007830Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T09:36:47.007454Z&quot;}}" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">2</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>Qm, _ <span class="op">=</span> torch.linalg.qr(torch.randn(d, d))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>keys  <span class="op">=</span> Qm[:, :<span class="dv">5</span>].t()                 <span class="co"># 5 orthonormal keys (rows)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>vals  <span class="op">=</span> torch.randn(<span class="dv">5</span>, d)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> torch.zeros(d, d)                  <span class="co"># store all 5 cleanly with delta</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k_, v_ <span class="kw">in</span> <span class="bu">zip</span>(keys, vals):</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    M <span class="op">=</span> delta_write(M, k_, v_, beta<span class="op">=</span><span class="fl">1.0</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># matrix form: M (I - beta k k^T) + beta v k^T</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> delta_write_matrix(M, k, v, beta<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    I <span class="op">=</span> torch.eye(M.shape[<span class="dv">1</span>])</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">@</span> (I <span class="op">-</span> beta <span class="op">*</span> torch.outer(k, k)) <span class="op">+</span> beta <span class="op">*</span> torch.outer(v, k)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gated_write(M, k, v, beta):                       <span class="co"># FWP Eq. 52: global decay of ALL memory</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (<span class="dv">1</span> <span class="op">-</span> beta) <span class="op">*</span> M <span class="op">+</span> beta <span class="op">*</span> torch.outer(v, k)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>new_v <span class="op">=</span> torch.randn(d)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"delta write == M(I - beta k k^T) + beta v k^T :"</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>      torch.allclose(delta_write(M.clone(), keys[<span class="dv">0</span>], new_v, <span class="fl">0.9</span>),</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                     delta_write_matrix(M.clone(), keys[<span class="dv">0</span>], new_v, <span class="fl">0.9</span>), atol<span class="op">=</span><span class="fl">1e-5</span>))</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.9</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>M_delta <span class="op">=</span> delta_write(M.clone(), keys[<span class="dv">0</span>], new_v, beta)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>M_gated <span class="op">=</span> gated_write(M.clone(), keys[<span class="dv">0</span>], new_v, beta)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">after updating key 0 (beta=</span><span class="sc">{</span>beta<span class="sc">}</span><span class="ss">):"</span>)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, Mx <span class="kw">in</span> [(<span class="st">"delta"</span>, M_delta), (<span class="st">"global-gate"</span>, M_gated)]:</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    upd  <span class="op">=</span> (Mx <span class="op">@</span> keys[<span class="dv">0</span>] <span class="op">-</span> new_v).norm()  <span class="op">/</span> new_v.norm()     <span class="co"># did key 0 update?</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> (Mx <span class="op">@</span> keys[<span class="dv">3</span>] <span class="op">-</span> vals[<span class="dv">3</span>]).norm() <span class="op">/</span> vals[<span class="dv">3</span>].norm()  <span class="co"># is untouched key 3 intact?</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:12s}</span><span class="ss">  key0 update err </span><span class="sc">{</span>upd<span class="sc">:.3f}</span><span class="ss">   key3 (untouched) recall err </span><span class="sc">{</span>keep<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"delta erases ONLY along k0 (I - k0 k0^T): key3 is untouched. The global gate fades EVERY key."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>delta write == M(I - beta k k^T) + beta v k^T : True
+
+after updating key 0 (beta=0.9):
+  delta         key0 update err 0.132   key3 (untouched) recall err 0.000
+  global-gate   key0 update err 0.132   key3 (untouched) recall err 0.900
+delta erases ONLY along k0 (I - k0 k0^T): key3 is untouched. The global gate fades EVERY key.</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="where-it-pays-off-revisited-keys-overcapacity" class="level2">
+<h2 data-anchor-id="where-it-pays-off-revisited-keys-overcapacity">5. Where it pays off: revisited keys &amp; overcapacity</h2>
+<p>The delta rule’s headline win is FWP’s <strong>setting 2</strong> (<a href="https://arxiv.org/abs/2102.11174">§6.1.2</a>): keys are sampled <em>with replacement</em>, so the same key is reassigned a new value several times across the stream, and the model must return the <strong>most recent</strong> one. This is precisely “update previously acquired knowledge in a finite memory”: what the additive rule can’t do.</p>
+<p>The demo runs a stream of <span class="math inline">\(2S\)</span> writes over <span class="math inline">\(S\)</span> distinct keys and, at the end, queries each key against its latest value. The additive rule returns the running sum of <em>all</em> values ever written to a key, so its error is high everywhere; the delta rule keeps only the most recent, holding low error until the number of distinct keys outgrows the matrix capacity (<span class="math inline">\(\sim d\)</span>).</p>
+<div id="170413f2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2026-06-25T09:36:47.008701Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-06-25T09:36:47.008646Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-06-25T09:36:47.060227Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-06-25T09:36:47.059861Z&quot;}}" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_stream(write_rule, S, d<span class="op">=</span><span class="dv">32</span>, seed<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    g <span class="op">=</span> torch.Generator().manual_seed(seed)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    keys <span class="op">=</span> F.normalize(torch.randn(S, d, generator<span class="op">=</span>g), dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    M, latest <span class="op">=</span> torch.zeros(d, d), {}</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span> <span class="op">*</span> S):                          <span class="co"># stream length 2S: keys get revisited</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        i <span class="op">=</span> torch.randint(S, (<span class="dv">1</span>,), generator<span class="op">=</span>g).item()</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        v <span class="op">=</span> torch.randn(d, generator<span class="op">=</span>g)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        latest[i] <span class="op">=</span> v                               <span class="co"># the value we must be able to recall</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        M <span class="op">=</span> write_rule(M, keys[i], v, <span class="fl">1.0</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    errs <span class="op">=</span> torch.stack([(M <span class="op">@</span> keys[i] <span class="op">-</span> latest[i]).norm() <span class="op">/</span> latest[i].norm() <span class="cf">for</span> i <span class="kw">in</span> latest])</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> errs.mean().item()</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>Ss <span class="op">=</span> [<span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">16</span>, <span class="dv">24</span>, <span class="dv">32</span>, <span class="dv">48</span>, <span class="dv">64</span>]</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> rule, name <span class="kw">in</span> [(sum_write, <span class="st">"sum (additive)"</span>), (delta_write, <span class="st">"delta"</span>)]:</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    plt.plot(Ss, [run_stream(rule, S) <span class="cf">for</span> S <span class="kw">in</span> Ss], marker<span class="op">=</span><span class="st">'o'</span>, label<span class="op">=</span>name)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>plt.axvline(<span class="dv">32</span>, ls<span class="op">=</span><span class="st">'--'</span>, c<span class="op">=</span><span class="st">'gray'</span>, lw<span class="op">=</span><span class="fl">0.7</span>, label<span class="op">=</span><span class="st">'d = 32 (capacity)'</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"# distinct keys S  (stream length 2S, keys reused)"</span>)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"mean recall error (most-recent value)"</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">"Revisited keys: delta tracks the latest value; additive piles up"</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>plt.legend()<span class="op">;</span> plt.show()</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"additive returns the SUM of all past values per key -&gt; high error always."</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"delta keeps only the most recent -&gt; low error until keys outnumber capacity (~d)."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="m4-delta-rule_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>additive returns the SUM of all past values per key -&gt; high error always.
+delta keeps only the most recent -&gt; low error until keys outnumber capacity (~d).</code></pre>
+</div>
+</div>
+</section>
+<section id="decoupling-erase-and-write-gated-deltanet-2" class="level2">
+<h2 data-anchor-id="decoupling-erase-and-write-gated-deltanet-2">6. Decoupling erase and write — Gated DeltaNet-2</h2>
+<p>§4’s matrix form hides a coupling:</p>
+<p><span class="math display">\[\mathcal{M}_t=\mathcal{M}_{t-1}\big(I-\beta_t\,\mathbf{k}_t\mathbf{k}_t^\top\big)+\beta_t\,\mathbf{v}_t\mathbf{k}_t^\top.\]</span></p>
+<p>One scalar <span class="math inline">\(\beta_t\)</span> does two jobs. In the left factor it sets how hard the <strong>old</strong> association at <span class="math inline">\(\mathbf{k}_t\)</span> is erased; in the right term it sets how strongly the <strong>new</strong> value is written. But erasing and writing act on different axes of the memory: erasing decides which coordinates of the <em>old read</em> to remove (the key side), writing decides which coordinates of the <em>incoming value</em> to commit (the value side). The coupling is incidental: a single scalar happens to gate both legs, but the delta structure doesn’t require it.</p>
+<p><a href="https://arxiv.org/abs/2605.22791">Gated DeltaNet-2</a> (Hatamizadeh, Choi &amp; Kautz, 2026) cuts the tie. It replaces the scalar with two independent <strong>channel-wise</strong> gates: an erase gate <span class="math inline">\(\mathbf{b}_t\in[0,1]^{d_k}\)</span> on the key axis and a write gate <span class="math inline">\(\mathbf{w}_t\in[0,1]^{d_v}\)</span> on the value axis (§3.1, Eqs. 8–10), forming an <em>erasing key</em> <span class="math inline">\(\mathbf{b}_t\odot\mathbf{k}_t\)</span> and a <em>writing value</em> <span class="math inline">\(\mathbf{w}_t\odot\mathbf{v}_t\)</span>. In M4’s memory orientation (the paper writes the state transposed, and carries a channel-wise decay <span class="math inline">\(\mathbf{D}_t\)</span> we hold at <span class="math inline">\(I\)</span> here to isolate the new idea), the <em>Gated Delta Rule-2</em> is</p>
+<p><span class="math display">\[\mathcal{M}_t=\mathcal{M}_{t-1}\big(I-(\mathbf{b}_t\odot\mathbf{k}_t)\,\mathbf{k}_t^\top\big)+(\mathbf{w}_t\odot\mathbf{v}_t)\,\mathbf{k}_t^\top.\]</span></p>
+<p>The write direction <span class="math inline">\(\mathbf{k}_t\)</span> is untouched, so the delta structure survives; what moved is that the <em>read</em> direction <span class="math inline">\(\mathbf{b}_t\odot\mathbf{k}_t\)</span> and the <em>committed</em> value <span class="math inline">\(\mathbf{w}_t\odot\mathbf{v}_t\)</span> are now selected coordinate by coordinate, and independently. Tie the two gates to one scalar, <span class="math inline">\(\mathbf{b}_t=\mathbf{w}_t=\beta_t\mathbf{1}\)</span>, and the legs collapse back to <span class="math inline">\(\beta_t\mathbf{k}_t\mathbf{k}_t^\top\)</span> and <span class="math inline">\(\beta_t\mathbf{v}_t\mathbf{k}_t^\top\)</span> — exactly §4’s line.</p>
+<p>That reduction is a lineage. Gated DeltaNet-2 recovers <strong>KDA</strong> (Kimi Delta Attention, from <a href="https://arxiv.org/abs/2510.26692">Kimi Linear</a>; Kimi Team, 2025) when the erase and write gates tie to the same scalar, and recovers <a href="https://arxiv.org/abs/2412.06464">Gated DeltaNet</a> (§4’s gated rule) when the channel-wise decay collapses to a scalar too. The other way down the chain: Gated DeltaNet = delta rule + scalar decay; KDA = + channel-wise decay; Gated DeltaNet-2 = + decoupled channel-wise erase and write. The demo below builds the smallest case where the tie bites.</p>
+<div id="e7f0a1c2" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Gated Delta Rule-2 (GDN2, Eq. 10) in M4's memory orientation, decay set to I:</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   M_t = M_{t-1}(I - (b*k) k^T) + (w*v) k^T</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#   erase gate b in [0,1]^{d_k} (key axis) ,  write gate w in [0,1]^{d_v} (value axis)</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Tie b = w = beta*1  and it is exactly section 4's coupled write.</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gdn2_write(M, k, v, b, w):</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    I <span class="op">=</span> torch.eye(k.shape[<span class="dv">0</span>])</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">@</span> (I <span class="op">-</span> torch.outer(b <span class="op">*</span> k, k)) <span class="op">+</span> torch.outer(w <span class="op">*</span> v, k)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> coupled_write(M, k, v, beta):                 <span class="co"># section 4's single-scalar delta</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    I <span class="op">=</span> torch.eye(k.shape[<span class="dv">0</span>])</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> M <span class="op">@</span> (I <span class="op">-</span> beta <span class="op">*</span> torch.outer(k, k)) <span class="op">+</span> beta <span class="op">*</span> torch.outer(v, k)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">0</span>)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>d <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>k     <span class="op">=</span> F.normalize(torch.randn(d), dim<span class="op">=</span><span class="dv">0</span>)         <span class="co"># one unit key / one memory slot</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>v_old <span class="op">=</span> torch.tensor([<span class="fl">1.0</span>, <span class="op">-</span><span class="fl">1.0</span>,  <span class="fl">1.2</span>, <span class="op">-</span><span class="fl">0.8</span>])      <span class="co"># stale content sitting in the slot</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>v_new <span class="op">=</span> torch.tensor([<span class="fl">2.0</span>, <span class="op">-</span><span class="fl">1.5</span>,  <span class="fl">3.0</span>, <span class="op">-</span><span class="fl">2.5</span>])      <span class="co"># incoming value...</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>trust <span class="op">=</span> torch.tensor([<span class="fl">1.0</span>,  <span class="fl">1.0</span>,  <span class="fl">0.0</span>,  <span class="fl">0.0</span>])      <span class="co"># ...but only channels 0,1 are real; 2,3 are noise</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> trust <span class="op">*</span> v_new                             <span class="co"># right answer: clear the stale slot, keep only trusted channels</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> coupled_write(torch.zeros(d, d), k, v_old, <span class="fl">1.0</span>)   <span class="co"># store the stale value</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="co"># decoupled: erase the whole stale read (b = 1), commit only the trusted channels (w = trust)</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>M_dec <span class="op">=</span> gdn2_write(M, k, v_new, b<span class="op">=</span>torch.ones(d), w<span class="op">=</span>trust)</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>show <span class="op">=</span> <span class="kw">lambda</span> t: <span class="st">"["</span> <span class="op">+</span> <span class="st">", "</span>.join(<span class="ss">f"</span><span class="sc">{</span>x<span class="sc">:+.2f}</span><span class="ss">"</span> <span class="cf">for</span> x <span class="kw">in</span> t.tolist()) <span class="op">+</span> <span class="st">"]"</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"slot before   :"</span>, show(M <span class="op">@</span> k))</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"target        :"</span>, show(target))</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"decoupled b,w :"</span>, show(M_dec <span class="op">@</span> k), <span class="st">" &lt;- clears stale, writes only trusted channels</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> beta <span class="kw">in</span> (<span class="fl">1.0</span>, <span class="fl">0.5</span>):</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    M_c <span class="op">=</span> coupled_write(M, k, v_new, beta)</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"coupled beta=</span><span class="sc">{</span>beta<span class="sc">}</span><span class="ss">:"</span>, show(M_c <span class="op">@</span> k),</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f" err=</span><span class="sc">{</span>(M_c<span class="op">@</span>k <span class="op">-</span> target)<span class="sc">.</span>norm()<span class="sc">:.3f}</span><span class="ss">"</span>,</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>          <span class="st">"(writes the noise)"</span> <span class="cf">if</span> beta <span class="op">==</span> <span class="fl">1.0</span> <span class="cf">else</span> <span class="st">"(leaves stale content behind)"</span>)</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="co"># --- two exact identities, the real tests ---</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. decoupled gates recover the intended state; a single scalar cannot.</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(M_dec <span class="op">@</span> k, target, atol<span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> (coupled_write(M, k, v_new, <span class="fl">1.0</span>) <span class="op">@</span> k <span class="op">-</span> target).norm() <span class="op">&gt;</span> <span class="fl">1.0</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. tie both gates to one scalar and GDN2 IS section 4's coupled write, to the bit.</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>beta <span class="op">=</span> <span class="fl">0.7</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> torch.allclose(gdn2_write(M, k, v_new, beta<span class="op">*</span>torch.ones(d), beta<span class="op">*</span>torch.ones(d)),</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>                      coupled_write(M, k, v_new, beta), atol<span class="op">=</span><span class="fl">1e-6</span>)</span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">asserts pass: decoupled hits the target, no single scalar does, and tying b=w=beta recovers section 4 exactly."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>slot before   : [+1.00, -1.00, +1.20, -0.80]
+target        : [+2.00, -1.50, +0.00, -0.00]
+decoupled b,w : [+2.00, -1.50, +0.00, +0.00]  &lt;- clears stale, writes only trusted channels
+
+coupled beta=1.0: [+2.00, -1.50, +3.00, -2.50]  err=3.905 (writes the noise)
+coupled beta=0.5: [+1.50, -1.25, +2.10, -1.65]  err=2.729 (leaves stale content behind)
+
+asserts pass: decoupled hits the target, no single scalar does, and tying b=w=beta recovers section 4 exactly.</code></pre>
+</div>
+</div>
+<p>The slot holds a stale value, and a new token arrives whose value is only half-trustworthy: channels 0–1 carry real content, channels 2–3 are noise that must not enter the shared state. The right update clears the slot and commits <em>only</em> the trusted channels. A single scalar cannot: at <span class="math inline">\(\beta=1\)</span> it clears the old but writes the noise; at <span class="math inline">\(\beta&lt;1\)</span> it suppresses the noise but leaves stale content behind — the tie forces one kind of interference or the other. Decoupled, <span class="math inline">\(\mathbf{b}=\mathbf{1}\)</span> erases the whole stale read while <span class="math inline">\(\mathbf{w}=[1,1,0,0]\)</span> commits only the trusted channels, hitting the target to numerical zero. Tie the gates to one scalar and the same code reproduces §4’s coupled write exactly — the reduction, run as a test.</p>
+<p><strong>Scope.</strong> This is a mechanism demo at toy scale: one key, decay held at <span class="math inline">\(I\)</span>, gates set by hand. It isolates the one idea, that erase strength and write pattern are independent, and shows the value-side write gate directly. It does <em>not</em> exercise the key-side erase gate’s channel selectivity, which on a single slot can only act as a scalar; that selectivity earns its keep when many associations are packed into one finite state and compete, which is the long-context multi-key retrieval regime (RULER) where the paper reports its gains — at 1.3B parameters trained on 100B tokens, with a gate ablation (Table 5) finding both gates matter, “<em>the erase gate accounting for most of the gain</em>”. Those are results to cite, not reproduce here.</p>
+</section>
+<section id="code-walkthrough-the-delta-write-in-real-code" class="level2">
+<h2 data-anchor-id="code-walkthrough-the-delta-write-in-real-code">Code walkthrough — the delta write in real code</h2>
+<p>Our <code>delta_write</code> is the whole mechanism; production code differs only in batching, <span class="math inline">\(\phi\)</span>, and a parallel schedule.</p>
+<ul>
+<li><strong>The FWP paper’s own repo</strong>, <a href="https://github.com/ischlag/fast-weight-transformers/tree/main/synthetic"><code>ischlag/fast-weight-transformers</code></a>: <a href="https://github.com/ischlag/fast-weight-transformers/blob/main/synthetic/linearAttention.py"><code>linearAttention.py</code></a> carries both the sum rule and the delta rule; <a href="https://github.com/ischlag/fast-weight-transformers/blob/main/synthetic/setting2_generate_figure.ipynb"><code>setting2_generate_figure.ipynb</code></a> is the exact revisited-key experiment we miniaturized in §5 (delta vs sum vs the Schlag-2021 variants).</li>
+<li><a href="https://github.com/kmccleary3301/nested_learning">kmccleary3301/nested_learning</a> keeps the delta rule as an isolated, testable unit: see <a href="https://github.com/kmccleary3301/nested_learning/blob/main/tests/test_cms_delta_rule.py"><code>tests/test_cms_delta_rule.py</code></a> and <a href="https://github.com/kmccleary3301/nested_learning/blob/main/tests/test_phase2_memorization_delta.py"><code>tests/test_phase2_memorization_delta.py</code></a>; the read-then-correct write lives in <a href="https://github.com/kmccleary3301/nested_learning/blob/main/src/nested_learning/fast_state.py"><code>fast_state.py</code></a>.</li>
+<li><strong>Parallel/chunked DeltaNet</strong> (<a href="https://arxiv.org/abs/2406.06484">Yang et al., 2024</a>) rewrites the sequential loop as a matmul over chunks so it trains at GPU speed — the same <span class="math inline">\(\mathcal{M}(I-\beta\mathbf{k}\mathbf{k}^\top)+\beta\mathbf{v}\mathbf{k}^\top\)</span> recurrence, scheduled like M3’s parallel form. This is what made DeltaNet trainable at scale: the delta rule sat unparallelized for three years after FWP because each write depends on a read of the state the previous write produced, and the paper’s fix is to represent a chunk’s worth of those updates as a product of Householder matrices. The <a href="https://github.com/fla-org/flash-linear-attention"><code>flash-linear-attention</code></a> library’s <code>delta_rule</code> is the reference implementation.</li>
+</ul>
+<p>The one new ingredient over M3’s <code>FWPLayer</code> is the <strong>read</strong> <span class="math inline">\(\bar{\mathbf{v}}=\mathcal{M}\phi(\mathbf{k})\)</span> before the write — one extra matrix-vector product per token.</p>
+</section>
+<section id="exit-check" class="level2">
+<h2 data-anchor-id="exit-check">Exit check</h2>
+<p>Ready for M5 when you can:</p>
+<ol type="1">
+<li>Show why additive memory returns <span class="math inline">\(\mathbf{v}_1+\mathbf{v}_2\)</span> for a twice-written key, and how the read <span class="math inline">\(\bar{\mathbf{v}}=\mathcal{M}\mathbf{k}\)</span> fixes it.</li>
+<li>Write the delta rule <span class="math inline">\(\mathcal{M}_t=\mathcal{M}_{t-1}+\beta_t(\mathbf{v}_t-\bar{\mathbf{v}}_t)\phi(\mathbf{k}_t)^\top\)</span> and say what <span class="math inline">\(\beta_t\)</span> is and where it comes from.</li>
+<li>Derive “delta write = one SGD step on <span class="math inline">\(\tfrac12\lVert\mathcal{M}\mathbf{k}-\mathbf{v}\rVert^2\)</span>,” and name the objective each of Hebbian / delta optimizes.</li>
+<li>Explain the erase-then-write matrix form and why it’s a <em>targeted</em> edit, unlike a global decay gate.</li>
+<li>Say why a single <span class="math inline">\(\beta_t\)</span> ties erase to write, and how Gated Delta Rule-2 (§6) splits it into a channel-wise erase gate <span class="math inline">\(\mathbf{b}_t\)</span> (key side) and write gate <span class="math inline">\(\mathbf{w}_t\)</span> (value side), and what tying <span class="math inline">\(\mathbf{b}_t=\mathbf{w}_t=\beta_t\mathbf{1}\)</span> recovers.</li>
+</ol>
+<p><strong>Next.</strong> The delta rule fixed the write inside the sequence memory. But there is a second additive write in every model you have ever trained — the optimizer, piling gradients onto a memory of the gradient stream. <a href="../../../materials/continual-learning/foundations/m6-optimizers-as-memory.html">M6 applies exactly this fix, one level up</a>. First, <a href="../../../materials/continual-learning/foundations/m5-meta-learning-self-reference.html">M5</a> gives the machinery of adaptation.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/barisdeniz\.is-a\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p><a href="../../../privacy.html">privacy</a> · <a href="#cookie-preferences">cookie preferences</a></p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

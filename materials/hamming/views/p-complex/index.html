@@ -1,0 +1,1718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Primer · Complex numbers</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors come from the theme palette (../../components/theme.js): one accent (blue), red only for a failing check or the cube limit. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(18px,1.8vw,26px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.where{margin:0;font-size:16px}
+.where b{color:var(--accent)}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.closing{margin:0;font-size:17px;font-weight:600}
+.next{margin:0;font-size:16px;color:var(--muted)}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%}
+.sliders.tight{gap:6px 16px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(120px,11vw,170px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:52px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.guess{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;width:100%}
+.guess .btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.guess .verdict{margin:0;font-size:16px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plot-static svg{display:block;width:100%;height:auto}
+.row{display:flex;gap:12px;align-items:stretch;width:100%;min-height:200px;flex:1 1 0}
+.diagram{flex:0 0 auto;display:flex;align-items:stretch}
+.diagram svg{display:block;height:100%;width:auto;aspect-ratio:250/252}
+.panel{display:flex;flex-direction:column;gap:0;padding:2px 0 2px 10px;border-left:3px solid var(--line)}
+.panel .pl{font-weight:650;color:var(--accent);font-size:16px}
+.panel p{margin:0;font-size:16px;line-height:1.2}
+.panel.seen{border-left:none;background:var(--chip);border-radius:8px;padding:8px 10px}
+.panel.seen .pl{color:var(--fg)}
+.strip-row{display:flex;align-items:center;gap:10px;width:100%}
+.strip-lab{flex:0 0 170px;font-size:15px;color:var(--muted)}
+.strip-row svg{flex:1 1 auto;width:100%;height:26px;display:block}
+.row-line{display:flex;align-items:center;gap:8px;width:100%}
+.row-line svg{flex:1 1 auto;width:100%;height:14px;display:block}
+.row-k{flex:0 0 60px;font-size:15px;color:var(--muted)}
+.why{margin:0;font-size:16px;line-height:1.3}
+.tbox{display:flex;flex-direction:column;gap:4px;width:100%}
+.triple{display:grid;grid-template-columns:max-content repeat(10,28px);gap:3px 4px;align-items:center}
+.triple .tn{font-size:13px;color:var(--muted);text-align:center}
+.triple .tl{font-size:15px;padding-right:8px;white-space:nowrap}
+.triple .tc{height:22px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--pal-soft-2);font:16px ui-monospace,Menlo,monospace}
+.triple .tc.flip{background:var(--red);color:var(--pal-on-accent);font-weight:700}
+.rows{display:flex;flex-direction:column;gap:3px;width:100%}
+.proof-line{display:grid;grid-template-columns:30px minmax(0,1fr);gap:0 8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--pal-soft-3)}
+.proof-num{font:15px ui-monospace,Menlo,monospace;color:var(--muted)}
+.proof-eq{font-size:17px;min-width:0}
+.proof-why{grid-column:2;margin:0;color:var(--muted);font-size:16px;line-height:1.2}
+.proof{display:flex;flex-direction:column;width:100%}
+.panel p.cite{font-size:14px;color:var(--muted);line-height:1.15}
+.pgrid{display:grid;grid-template-columns:max-content repeat(10,30px);gap:4px;align-items:center;justify-content:start}
+.pgrid .ax{font-size:13px;color:var(--muted);text-align:center}
+.pc{width:30px;height:30px;padding:0;border:0;border-radius:4px;background:var(--pal-blue-pale);cursor:pointer}
+.pc.on{background:var(--accent);box-shadow:0 0 0 2px var(--pal-ink)}
+.steps{position:absolute;inset:0;z-index:3;background:var(--pal-panel);display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.widget{position:relative}
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:6px}
+  .tries{gap:3px}
+  .sym,.where,.tries{line-height:1.2}
+  .panel p{line-height:1.15}
+  .side{gap:4px}
+  .proof-line{padding:1px 0}
+  .guess{gap:3px;padding:6px 8px}
+  .fill{min-height:110px}
+  .readout{padding:3px 8px}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:20px}
+  .pc{width:20px;height:20px}
+  .pgrid{grid-template-columns:max-content repeat(10,20px)}
+  h2{font-size:20px}
+}
+/* Primer additions: unit row, button rows, phasor rows, heat map, takeaway placeholder */
+.unitrow{display:flex;gap:8px 18px;flex-wrap:wrap;align-items:center;font-size:16px}
+.unitrow input{width:84px}
+.btnrow{display:flex;gap:6px 8px;flex-wrap:wrap;align-items:center}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.rowlab{margin:0;font-size:16px;color:var(--muted);line-height:1.2}
+.vec{margin:0;font-size:16px;width:100%;overflow:hidden}
+.heatrow{display:flex;gap:18px;align-items:flex-start;width:100%}
+.heatwrap{flex:0 0 auto;display:flex}
+.heat{display:grid;gap:2px;align-items:center;justify-items:center;font-size:14px;color:var(--muted)}
+.hc{width:20px;height:20px;border:1px solid var(--pal-soft-2);border-radius:3px;background:var(--pal-panel)}
+.hlab{font-size:14px;color:var(--muted);text-align:center}
+.badge{max-width:280px;padding:10px 12px;border:2px dashed var(--line);border-radius:10px;font-size:16px;line-height:1.3}
+.readcol{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:8px}
+.readcol .readout{flex:0 0 auto}
+.readout.wide{flex:2 1 0}
+.fill.small{min-height:90px}
+.takeholder{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.takeholder .takeaway{align-self:stretch}
+.fill.fixed78{flex:0 0 72px;height:72px;min-height:0}
+.row.plane{min-height:150px}
+.legend{margin-bottom:6px;font-size:16px}
+.ratios .readout{padding:2px 6px}
+.ratios .readout .k{font-size:13px}
+.ratios .readout .val{font-size:15px}
+.fill.stemrow{flex:0 0 112px;height:112px;min-height:0}
+.fill.lam{min-height:80px}
+@media (max-height: 680px){ .fill.fixed78{flex:0 0 62px;height:62px} }
+.ratios{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%}
+.ratios .readout{flex:none}
+.name i{font-style:italic}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side{justify-content:flex-start}
+.slide.proof-slide .fill{min-height:100px}
+.slide.proof-slide .slide-ctl input{width:clamp(80px,7vw,120px)}
+.slide.proof-slide .slide-ctl .val{min-width:44px}
+.slide.proof-slide .sliders{gap:4px 16px}
+.slide.proof-slide .legend{gap:2px 12px;margin-bottom:0;font-size:15px}
+.slide.proof-slide .readout{flex-basis:120px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px}
+.test .tries{gap:3px}
+.model{margin:0;padding:6px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;line-height:1.3}
+@media (max-height: 680px){
+  .slide.proof-slide .slide-ctl{gap:6px}
+  .slide.proof-slide .slide-ctl input{width:64px}
+  .slide.proof-slide .slide-ctl .val{min-width:30px}
+  .slide.proof-slide .sliders{gap:2px 12px}
+  .model{padding:4px 10px;line-height:1.25}
+  .test .tries{gap:1px}
+  .slide.proof-slide .readout{padding:2px 8px}
+}
+</style>
+</head>
+<body>
+<header>Primer · Complex numbers</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// ---------- DOM and drawing helpers ----------
+let epoch = 0;
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 5px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// Same label with a white halo, so it reads over a curve or bars.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  return fo;
+}
+// A small number for a readout: plain decimals, or a LaTeX power of ten for tiny values.
+function sci(x) {
+  if (x === 0) return '0';
+  if (Math.abs(x) >= 0.01) return x.toFixed(4);
+  const parts = x.toExponential(2).split('e');
+  return '$' + parts[0] + '\\times 10^{' + parseInt(parts[1], 10) + '}$';
+}
+// A labelled range input. label is LaTeX-ready text; fmt gives the value text.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmt = o.fmt || String;
+  const api = {
+    el: wrap,
+    input: inp,
+    get value() { return +inp.value; },
+    show() { setTex(val, fmt(+inp.value)); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) sw.style.background = it.color;
+    else sw.style.borderTop = '2px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+// Session events. Optional: with no bridge, nothing is sent.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* the view works without the bridge */ }
+}
+// ---------- primer helpers: N = 8 samples, circular (the ends wrap) ----------
+const N = 8, PI = Math.PI;
+// Palette for the SVG being drawn. plotBox sets COL at every paint, so a draw always uses the current theme.
+// Role names keep the old meaning: input = grey arrow, out = blue arrow, light = light blue, dark = dark arrow.
+let COL = {};
+function readPalette() {
+  const c = n => FluidTheme.color(n);
+  return {
+    input: c('slate-4'), out: c('accent'), light: c('blue-light'), dark: c('text-2'), ink: c('ink'),
+    grid: c('grey'), muted: c('muted'), text2: c('text-2'), text3: c('text-3'), panel: c('panel'), soft: c('soft'), soft2: c('soft-2'),
+    line: c('line'), halo: c('bg'), amber: c('amber'), amberBg: c('amber-bg'), amberInk: c('amber-ink'),
+    bluePale: c('blue-pale'),
+  };
+}
+// Legend swatches are HTML, so they take CSS variables: they follow the theme with no redraw.
+const SW = { input: 'var(--pal-text-3)', out: 'var(--pal-accent)', light: 'var(--pal-blue-light)', dark: 'var(--pal-text-2)',
+  ink: 'var(--pal-ink)', grey: 'var(--pal-grey)', bluePale: 'var(--pal-blue-pale)' };
+// The plots on the current slide. A theme switch redraws them; sliders, picks and proof state are DOM, so they stay.
+let PLOTS = [];
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+const cis = t => ({ re: Math.cos(t), im: Math.sin(t) });
+const realC = x => ({ re: x, im: 0 });
+const cxAdd = (a, b) => ({ re: a.re + b.re, im: a.im + b.im });
+const cxDiv = (a, b) => { const d = b.re * b.re + b.im * b.im; return { re: (a.re * b.re + a.im * b.im) / d, im: (a.im * b.re - a.re * b.im) / d }; };
+const cxAbs = a => Math.hypot(a.re, a.im);
+const cxArg = a => Math.atan2(a.im, a.re);
+// Fixed decimals, with no minus sign on zero.
+function fx(x, d) { const y = Math.abs(x) < 0.5 * Math.pow(10, -d) ? 0 : x; return y.toFixed(d); }
+const cv = (x, i) => x[((i % N) + N) % N];   // circular index
+const zeros = () => new Array(N).fill(0);
+const vadd = (a, b) => a.map((x, i) => x + b[i]);
+// Real filters on 8 samples.
+const realAvg = x => x.map((_, n) => (cv(x, n - 1) + cv(x, n) + cv(x, n + 1)) / 3);
+const realGain = x => x.map((v, n) => n * v);
+const realMed = x => x.map((_, n) => [cv(x, n - 1), cv(x, n), cv(x, n + 1)].sort((p, q) => p - q)[1]);
+const realShift = x => x.map((_, n) => cv(x, n - 1));          // (Su)_n = u_{n-1}
+// Taps: y_n = sum_j c_j u_{n-j}, circular. [[j, c_j], ...]
+const AVG = [[-1, 1 / 3], [0, 1 / 3], [1, 1 / 3]];
+const LAG = [[0, 0.5], [1, 0.5]];
+function applyTaps(taps, u) {
+  return u.map((_, n) => taps.reduce((acc, [j, c]) => {
+    const x = cv(u, n - j);
+    return { re: acc.re + c * x.re, im: acc.im + c * x.im };
+  }, { re: 0, im: 0 }));
+}
+// H(f) = sum_j c_j e^{-i 2 pi f j}; the eigenvalue of wave e_k is H(k/8).
+function Hof(taps, f) {
+  return taps.reduce((acc, [j, c]) => cxAdd(acc, { re: c * Math.cos(2 * PI * f * j), im: -c * Math.sin(2 * PI * f * j) }), { re: 0, im: 0 });
+}
+// Complex number as TeX (no $ signs): real part, or |z| and angle in degrees.
+function fmtTex(z) {
+  if (Math.abs(z.im) < 1e-9) return fx(z.re, 3);
+  return fx(cxAbs(z), 3) + '\\angle{' + fx(cxArg(z) * 180 / PI, 1) + '^\\circ}';
+}
+function clean(o) { const r = {}; for (const k in o) if (o[k] !== null && o[k] !== undefined) r[k] = o[k]; return r; }
+function line(svg, x1, y1, x2, y2, o) { return svgNode('line', clean(Object.assign({ x1, y1, x2, y2 }, o || {})), svg); }
+function dot(svg, x, y, r, fill, o) { return svgNode('circle', clean(Object.assign({ cx: x, cy: y, r, fill }, o || {})), svg); }
+// Arrow with a head. o: {color, w, dash, id}.
+function arrow(svg, x1, y1, x2, y2, o) {
+  const g = svgNode('g', clean({ 'data-item': 'mark', 'data-id': o.id }), svg);
+  svgNode('line', clean({ x1, y1, x2, y2, stroke: o.color, 'stroke-width': o.w || 2.5, 'stroke-dasharray': o.dash }), g);
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  if (len > 2) {
+    const a = Math.atan2(y2 - y1, x2 - x1), L = 9, s = 4.5;
+    const bx = x2 - L * Math.cos(a), by = y2 - L * Math.sin(a);
+    const pts = [[x2, y2], [bx - s * Math.sin(a), by + s * Math.cos(a)], [bx + s * Math.sin(a), by - s * Math.cos(a)]];
+    svgNode('polygon', { points: pts.map(p => p.join(',')).join(' '), fill: o.color }, g);
+  }
+  return g;
+}
+// A plot that takes the height left in its parent. draw(svg, W, H) runs on every resize.
+// Returns the element to append and a redraw function.
+function plotBox(draw, cls) {
+  const wrap = h('div', 'fill' + (cls ? ' ' + cls : ''));
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 40) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// Stems for one value per sample n = 0..7. o: {vals, lo, hi, ticks, color, id, label,
+// on(n) -> filled (default true), hollow (dashed values), rings (values drawn as rings)}.
+function stems(svg, W, H, o) {
+  const L = 36, R = 12, T = 36, B = 22;
+  const X = n => L + (n + 0.5) * (W - L - R) / N;
+  const Y = v => T + (o.hi - v) / (o.hi - o.lo) * (H - T - B);
+  line(svg, L, Y(0), W - R, Y(0), { stroke: COL.grid });
+  line(svg, L, T, L, H - B, { stroke: COL.soft2 });
+  for (const t of o.ticks) svgText(svg, L - 6, Y(t) + 5, fx(t, 1).replace(/\.0$/, ''), { 'text-anchor': 'end', 'font-size': 14 });
+  for (let n = 0; n < N; n++) svgText(svg, X(n), H - 5, String(n), { 'text-anchor': 'middle', 'font-size': 14 });
+  if (o.hollow) o.hollow.forEach((v, n) => {
+    if (Math.abs(v) > 1e-9) {
+      line(svg, X(n), Y(0), X(n), Y(v), { stroke: COL.input, 'stroke-dasharray': '4 3' });
+      dot(svg, X(n), Y(v), 5, COL.panel, { stroke: COL.input, 'stroke-width': 2 });
+    }
+  });
+  o.vals.forEach((v, n) => {
+    const on = o.on ? o.on(n) : true;
+    if (on) {
+      line(svg, X(n), Y(0), X(n), Y(v), { stroke: o.color, 'stroke-width': 3 });
+      dot(svg, X(n), Y(v), 5.5, o.color, { 'data-item': 'mark', 'data-id': (o.id || 'stem') + '-' + n });
+    } else {
+      dot(svg, X(n), Y(v), 5, COL.panel, { stroke: o.color, 'stroke-width': 2 });
+    }
+  });
+  if (o.rings) o.rings.forEach((v, n) => dot(svg, X(n), Y(v), 9, 'none', { stroke: COL.ink, 'stroke-width': 1.5 }));
+  if (o.label) svgTex(svg, L + 6, 14, o.label, { anchor: 'start', w: W - L - 20, size: 15, fill: o.color });
+  return { X, Y };
+}
+// Phasor row: one circle per sample, the arrow is the complex sample at scale sc.
+function phasors(svg, W, H, zs, sc, color, id) {
+  const cw = W / N, Rc = Math.min(cw, H - 16) / 2 - 3, cy = (H - 14) / 2;
+  zs.forEach((z, n) => {
+    const cx = (n + 0.5) * cw;
+    dot(svg, cx, cy, Rc, COL.panel, { stroke: COL.soft2 });
+    line(svg, cx - Rc, cy, cx + Rc, cy, { stroke: COL.soft });
+    line(svg, cx, cy - Rc, cx, cy + Rc, { stroke: COL.soft });
+    const k = sc * (Rc - 5);
+    arrow(svg, cx, cy, cx + z.re * k, cy - z.im * k, { color, id: id + '-' + n });
+    svgText(svg, cx, H - 2, String(n), { 'text-anchor': 'middle', 'font-size': 13 });
+  });
+}
+// A labelled range input. o: {id, min, max, step, value, fmt(v) -> text, onInput(v)}.
+function ctl(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = setTex(h('span'), label);
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.id);
+  const val = h('span', 'val');
+  const show = v => setTex(val, o.fmt(v));
+  inp.addEventListener('input', () => { show(+inp.value); o.onInput(+inp.value); });
+  show(o.value);
+  wrap.append(lab, inp, val);
+  return { el: wrap, set(v) { inp.value = v; show(v); } };
+}
+// A number box, applied as it is typed.
+function numBox(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const inp = h('input');
+  inp.type = 'number'; inp.min = o.min; inp.step = o.step; inp.value = o.value;
+  inp.style.width = '84px';
+  mark(inp, 'control', o.id, o.id);
+  inp.addEventListener('input', () => { const v = +inp.value; if (isFinite(v) && v > 0) o.onInput(v); });
+  wrap.append(setTex(h('span'), label), inp);
+  return { el: wrap, set(v) { inp.value = v; } };
+}
+// The takeaway appears after the first try: on the first click or press in the widget, or on "Show".
+function takeBox(widget, text) {
+  const holder = h('div', 'takeholder');
+  const btn = mark(h('button', 'btn'), 'control', 'show-takeaway');
+  setTex(btn, 'Show the takeaway');
+  const tk = takeLine(text);
+  tk.hidden = true;
+  const show = () => { tk.hidden = false; btn.hidden = true; };
+  btn.addEventListener('click', show);
+  for (const ev of ['input', 'click', 'pointerdown']) widget.addEventListener(ev, show);
+  holder.append(btn, tk);
+  return holder;
+}
+// ---------- primer helpers: complex numbers ----------
+const cxMul = (a, b) => ({ re: a.re * b.re - a.im * b.im, im: a.re * b.im + a.im * b.re });
+const cxScale = (a, k) => ({ re: a.re * k, im: a.im * k });
+// A complex value as LaTeX text, without $ signs: a + bi with d decimals.
+function cxTex(z, d) {
+  const im = Math.abs(z.im) < 0.5 * Math.pow(10, -d) ? 0 : z.im;
+  return fx(z.re, d) + (im < 0 ? ' - ' : ' + ') + fx(Math.abs(im), d) + 'i';
+}
+// An angle in radians shown in degrees, in (-180, 180].
+const degN = rad => ((rad * 180 / PI) % 360 + 540) % 360 - 180;
+const degTxt = rad => fx(degN(rad), 1) + '°';
+// A button that runs onClick; the id marks it as a control.
+function actBtn(id, label, onClick) {
+  const b = mark(h('button', 'btn'), 'control', id);
+  setTex(b, label);
+  b.addEventListener('click', onClick);
+  return b;
+}
+// Complex plane with labelled axes. R: half-width in units. Returns X(re), Y(im), sc, cx, cy.
+function cplane(svg, W, H, R) {
+  const cx = W / 2, cy = H / 2, sc = (Math.min(W, H) / 2 - 24) / R;
+  const X = re => cx + re * sc, Y = im => cy - im * sc;
+  line(svg, 6, cy, W - 6, cy, { stroke: COL.grid });
+  line(svg, cx, 6, cx, H - 6, { stroke: COL.grid });
+  svgTex(svg, W - 44, cy + 14, String.raw`$\mathrm{Re}$`, { w: 50, anchor: 'start', size: 15 });
+  svgTex(svg, cx + 6, 14, String.raw`$\mathrm{Im}$`, { w: 50, anchor: 'start', size: 15 });
+  return { X, Y, sc, cx, cy };
+}
+function unitCircle(svg, P, r) {
+  svgNode('circle', { cx: P.cx, cy: P.cy, r: r * P.sc, fill: 'none', stroke: COL.line, 'stroke-dasharray': '4 4' }, svg);
+}
+// Label at the tip of an arrow.
+function tipTex(svg, x, y, s, color) {
+  return svgTex(svg, x + 10, y - 12, s, { w: 90, anchor: 'start', size: 16, fill: color });
+}
+// A name line: what a term's name means and how it points at the idea. html may hold <i> and $...$.
+function nameLine(html) { const p = h('p', 'sym name'); p.innerHTML = html; return tex(p); }
+// Partial sum S_K = sum over n < K of (i t)^n / n!, the first K terms of e^{i t}.
+function partialExp(t, K) {
+  let s = { re: 0, im: 0 }, term = { re: 1, im: 0 };
+  for (let n = 0; n < K; n++) {
+    s = cxAdd(s, term);
+    term = cxScale(cxMul(term, { re: 0, im: t }), 1 / (n + 1));
+  }
+  return s;
+}
+
+// ---------- 1. a complex number is an arrow ----------
+function slideI(widget, side) {
+  const st = { a: 1, b: 0 };
+  const cA = ctl(String.raw`$a$, real part`, { id: 'a', min: -2, max: 2, step: 0.05, value: 1,
+    fmt: v => v.toFixed(2), onInput: v => { st.a = v; update(); } });
+  const cB = ctl(String.raw`$b$, imaginary part`, { id: 'b', min: -2, max: 2, step: 0.05, value: 0,
+    fmt: v => v.toFixed(2), onInput: v => { st.b = v; update(); } });
+  const setZ = (a, b) => { st.a = a; st.b = b; cA.set(a); cB.set(b); update(); };
+  const bI = actBtn('times-i', String.raw`multiply by $i$`, () => setZ(-st.b, st.a));
+  const bOne = actBtn('reset', String.raw`reset to $1$`, () => setZ(1, 0));
+  const rZ = readout('z', String.raw`$z=a+bi$`);
+  const rLen = readout('len', String.raw`$|z|=\sqrt{a^2+b^2}$, length`);
+  const rAng = readout('angle', String.raw`$\arg z$, angle`);
+  function drawPlane(svg, W, H) {
+    const P = cplane(svg, W, H, 3);
+    unitCircle(svg, P, 1);
+    const z = { re: st.a, im: st.b }, iz = cxMul({ re: 0, im: 1 }, z);
+    arrow(svg, P.X(0), P.Y(0), P.X(iz.re), P.Y(iz.im), { color: COL.input, dash: '6 4', id: 'iz' });
+    tipTex(svg, P.X(iz.re), P.Y(iz.im), String.raw`$iz$`, COL.text3);
+    arrow(svg, P.X(0), P.Y(0), P.X(z.re), P.Y(z.im), { color: COL.out, id: 'z' });
+    tipTex(svg, P.X(z.re), P.Y(z.im), String.raw`$z$`, COL.out);
+  }
+  const plane = plotBox(drawPlane);
+  function update() {
+    const z = { re: st.a, im: st.b };
+    rZ.set('$' + cxTex(z, 2) + '$');
+    rLen.set(fx(cxAbs(z), 3));
+    rAng.set(degTxt(cxArg(z)));
+    plane.redraw();
+  }
+  widget.append(
+    hh('div', 'sliders', cA.el, cB.el),
+    hh('div', 'btnrow', bI, bOne),
+    plane.wrap,
+    hh('div', 'readouts', rZ.el, rLen.el, rAng.el),
+    legend([
+      { color: SW.out, text: String.raw`blue arrow: $z=a+bi$` },
+      { color: SW.input, dash: true, text: String.raw`grey dashed arrow: $iz$, after a quarter turn` },
+      { color: SW.grey, dash: true, text: String.raw`dashed circle: length $1$` }]));
+  side.append(
+    sym(String.raw`$z=a+bi$ is the arrow $(a,b)$, a vector of two numbers (Primer · Vectors): $a$ steps right, $b$ steps up. $i$ is the arrow $(0,1)$. Example: $z=1+i$ has length $\sqrt2$ and angle $45^\circ$.`),
+    nameLine('<i>complex</i>: from Latin <i>complexus</i>, woven together (<i>com-</i>, together; <i>plectere</i>, to weave): one number woven from two parts, $a$ and $b$.'),
+    triesList([
+      String.raw`Press multiply by $i$ once. The arrow turns a quarter turn: $1$ becomes $i$.`,
+      String.raw`Press it again. The arrow points left, at $-1$. So $i^2=-1$.`,
+      String.raw`Set $a=1$ and $b=1$. The length is $\sqrt2\approx1.414$ and the angle is $45^\circ$.`]),
+    takeBox(widget, String.raw`A complex number holds a length and an angle in one object. Multiplying by $i$ turns it a quarter turn.`));
+  update();
+}
+
+// ---------- 2. multiplying: lengths multiply, angles add ----------
+function slideMul(widget, side) {
+  const st = { a: 1, b: 1, pick: 'same' };
+  const wOf = { same: () => ({ re: st.a, im: st.b }), i: () => ({ re: 0, im: 1 }), two: () => ({ re: 2, im: 0 }) };
+  const cA = ctl(String.raw`$a$, real part of $z$`, { id: 'a', min: -2, max: 2, step: 0.05, value: 1,
+    fmt: v => v.toFixed(2), onInput: v => { st.a = v; update(); } });
+  const cB = ctl(String.raw`$b$, imaginary part of $z$`, { id: 'b', min: -2, max: 2, step: 0.05, value: 1,
+    fmt: v => v.toFixed(2), onInput: v => { st.b = v; update(); } });
+  const presets = [['same', String.raw`$w=z$`], ['i', String.raw`$w=i$`], ['two', String.raw`$w=2$`]];
+  const pBtns = presets.map(([id, label]) => actBtn('w-' + id, label, () => { st.pick = id; update(); }));
+  const rMag = readout('mag', String.raw`$|z|\,|w|$`);
+  const rMagP = readout('mag-p', String.raw`$|zw|$, the blue length`);
+  const rAng = readout('ang', String.raw`$\arg z+\arg w$`);
+  const rAngP = readout('ang-p', String.raw`$\arg(zw)$, the blue angle`);
+  const zw = () => cxMul({ re: st.a, im: st.b }, wOf[st.pick]());
+  function drawPlane(svg, W, H) {
+    const z = { re: st.a, im: st.b }, w = wOf[st.pick](), p = cxMul(z, w);
+    const P = cplane(svg, W, H, Math.max(3, 1.1 * cxAbs(p), cxAbs(z), cxAbs(w)));
+    arrow(svg, P.X(0), P.Y(0), P.X(z.re), P.Y(z.im), { color: COL.input, id: 'z' });
+    tipTex(svg, P.X(z.re), P.Y(z.im), String.raw`$z$`, COL.text3);
+    arrow(svg, P.X(0), P.Y(0), P.X(w.re), P.Y(w.im), { color: COL.dark, id: 'w' });
+    tipTex(svg, P.X(w.re), P.Y(w.im), String.raw`$w$`, COL.dark);
+    arrow(svg, P.X(0), P.Y(0), P.X(p.re), P.Y(p.im), { color: COL.out, id: 'zw' });
+    tipTex(svg, P.X(p.re), P.Y(p.im), String.raw`$zw$`, COL.out);
+  }
+  const plane = plotBox(drawPlane);
+  function update() {
+    const z = { re: st.a, im: st.b }, w = wOf[st.pick](), p = zw();
+    pBtns.forEach((b, i) => b.classList.toggle('on', presets[i][0] === st.pick));
+    rMag.set(fx(cxAbs(z) * cxAbs(w), 3));
+    rMagP.set(fx(cxAbs(p), 3));
+    rAng.set(degTxt(cxArg(z) + cxArg(w)));
+    rAngP.set(degTxt(cxArg(p)));
+    plane.redraw();
+  }
+  widget.append(
+    hh('div', 'sliders', cA.el, cB.el),
+    hh('div', 'btnrow', setTex(h('span', 'lab'), String.raw`w:`), ...pBtns),
+    plane.wrap,
+    hh('div', 'readouts', rMag.el, rMagP.el, rAng.el, rAngP.el),
+    legend([
+      { color: SW.input, text: String.raw`grey arrow: $z$` },
+      { color: SW.dark, text: String.raw`solid arrow: $w$` },
+      { color: SW.out, text: String.raw`blue arrow: $zw$, the product` }]));
+  side.append(
+    sym(String.raw`$z=a+bi$ and $w$: two complex numbers. $zw$: their product. Example: $z=w=1+i$ gives $zw=(1+i)^2=2i$.`),
+    triesList([
+      String.raw`Keep $w=z=1+i$. The blue arrow is $2i$: length $2=\sqrt2\cdot\sqrt2$, angle $90^\circ=45^\circ+45^\circ$.`,
+      String.raw`Press $w=i$. The blue arrow is the grey $z$ turned a quarter turn.`,
+      String.raw`Press $w=2$. The blue arrow is $z$ made twice as long: length $2\sqrt2$.`]),
+    takeBox(widget, String.raw`Multiplying complex numbers multiplies their lengths and adds their angles. So $(1+i)^2=2i$.`));
+  update();
+}
+
+// ---------- 6. adding many arrows ----------
+function slideSum(widget, side) {
+  const st = { N: 1, deg: 0 };
+  const sumOf = (N, x) => { let s = { re: 0, im: 0 }; for (let k = -N; k <= N; k++) s = cxAdd(s, cis(k * x)); return s; };
+  const closed = (N, x) => Math.abs(Math.sin(x / 2)) < 1e-9 ? 2 * N + 1 : Math.sin((N + 0.5) * x) / Math.sin(x / 2);
+  const cN = ctl(String.raw`$N$, arrows on each side`, { id: 'N', min: 1, max: 8, step: 1, value: 1,
+    fmt: v => String(v), onInput: v => { st.N = v; update(); } });
+  const cX = ctl(String.raw`$x$, angle step`, { id: 'x', min: 0, max: 360, step: 1, value: 0,
+    fmt: v => v + '°', onInput: v => { st.deg = v; update(); } });
+  const rS = readout('sum', String.raw`$S$, the sum`);
+  const rLen = readout('len', String.raw`$|S|$, its length`);
+  const rCf = readout('closed', String.raw`closed form, same value`);
+  function drawPlane(svg, W, H) {
+    const N = st.N, x = st.deg * PI / 180;
+    const P = cplane(svg, W, H, 2 * N + 1);
+    let pen = { re: 0, im: 0 };
+    for (let k = -N; k <= N; k++) {
+      const u = cis(k * x), nxt = cxAdd(pen, u);
+      arrow(svg, P.X(pen.re), P.Y(pen.im), P.X(nxt.re), P.Y(nxt.im), { color: COL.light, w: 2, id: 'k' + (k + N) });
+      pen = nxt;
+    }
+    arrow(svg, P.X(0), P.Y(0), P.X(pen.re), P.Y(pen.im), { color: COL.out, w: 3.5, id: 'S' });
+    tipTex(svg, P.X(pen.re), P.Y(pen.im), String.raw`$S$`, COL.out);
+  }
+  const plane = plotBox(drawPlane);
+  function update() {
+    const N = st.N, x = st.deg * PI / 180, S = sumOf(N, x);
+    rS.set('$' + cxTex(S, 2) + '$');
+    rLen.set(fx(cxAbs(S), 3));
+    rCf.set(fx(closed(N, x), 3));
+    plane.redraw();
+  }
+  widget.append(
+    hh('div', 'sliders', cN.el, cX.el),
+    plane.wrap,
+    hh('div', 'readouts', rS.el, rLen.el, rCf.el),
+    legend([
+      { color: SW.light, text: String.raw`thin blue arrows: $e^{ikx}$ for $k=-N$ to $N$, added tip to tail` },
+      { color: SW.out, text: String.raw`blue arrow: their sum $S$` }]));
+  side.append(
+    sym(String.raw`$k$: the index, from $-N$ to $N$. $e^{ikx}$: a unit arrow at angle $kx$. The closed form is the geometric sum of Primer · Series, step 3, with ratio $e^{ix}$.`),
+    triesList([
+      String.raw`The start is $N=1$, $x=0^\circ$. The three arrows point the same way: $|S|=3$.`,
+      String.raw`Set $x=120^\circ$. The arrows at $-120^\circ$, $0^\circ$ and $120^\circ$ close into a loop: $S=0$.`,
+      String.raw`Set $N=8$ and $x=45^\circ$. Seventeen arrows add to length $1$, not $17$.`]),
+    takeBox(widget, String.raw`Arrows add as vectors, so their sum can be much shorter than the total of their lengths.`));
+  update();
+}
+
+// ---------- 7. differentiating e^{i w t} ----------
+function slideDeriv(widget, side) {
+  const st = { w: 2, t: 0 };
+  const cW = ctl(String.raw`$\omega$, radians per unit of $t$`, { id: 'omega', min: 0, max: 8, step: 0.05, value: 2,
+    fmt: v => v.toFixed(2), onInput: v => { st.w = v; update(); } });
+  const cT = ctl(String.raw`$t$, time`, { id: 't', min: 0, max: 6.28, step: 0.01, value: 0,
+    fmt: v => v.toFixed(2), onInput: v => { st.t = v; update(); } });
+  const rZ = readout('z', String.raw`$|z|$, length of $z=e^{i\omega t}$`);
+  const rD = readout('dz', String.raw`$\left|\dfrac{dz}{dt}\right|$, should be $\omega$`);
+  const rN = readout('num', String.raw`numeric slope, $h=10^{-4}$`);
+  const slope = () => {
+    const w = st.w, t = st.t, hh_ = 1e-4;
+    return { re: (Math.cos(w * (t + hh_)) - Math.cos(w * t)) / hh_, im: (Math.sin(w * (t + hh_)) - Math.sin(w * t)) / hh_ };
+  };
+  function drawPlane(svg, W, H) {
+    const z = cis(st.w * st.t), dz = cxMul({ re: 0, im: st.w }, z);
+    const P = cplane(svg, W, H, Math.max(1.2, 1.1 * st.w));
+    unitCircle(svg, P, 1);
+    arrow(svg, P.X(0), P.Y(0), P.X(dz.re), P.Y(dz.im), { color: COL.dark, id: 'dz' });
+    svgTex(svg, P.X(dz.re) - 10, P.Y(dz.im) - 12, String.raw`$\tfrac{dz}{dt}$`, { w: 90, anchor: 'end', size: 16, fill: COL.dark });
+    arrow(svg, P.X(0), P.Y(0), P.X(z.re), P.Y(z.im), { color: COL.out, id: 'z' });
+    tipTex(svg, P.X(z.re), P.Y(z.im), String.raw`$z$`, COL.out);
+  }
+  const plane = plotBox(drawPlane);
+  function update() {
+    const z = cis(st.w * st.t);
+    rZ.set(fx(cxAbs(z), 3));
+    rD.set(fx(st.w * cxAbs(z), 3));
+    rN.set('$' + cxTex(slope(), 2) + '$');
+    plane.redraw();
+  }
+  widget.append(
+    hh('div', 'sliders', cW.el, cT.el),
+    plane.wrap,
+    hh('div', 'readouts', rZ.el, rD.el, rN.el),
+    legend([
+      { color: SW.out, text: String.raw`blue arrow: $z=e^{i\omega t}$, length $1$` },
+      { color: SW.dark, text: String.raw`solid arrow: $\tfrac{dz}{dt}=i\omega z$, length $\omega$` },
+      { color: SW.grey, dash: true, text: String.raw`dashed circle: length $1$` }]));
+  side.append(
+    sym(String.raw`$z=e^{i\omega t}$: a unit arrow turning $\omega$ radians per unit of $t$; $\omega=2\pi f$. Example: $\omega=2$ at $t=0$: $z=1$ and $\tfrac{dz}{dt}=2i$, a step straight up.`),
+    triesList([
+      String.raw`Move $t$. Both arrows turn together. The solid arrow stays a quarter turn ahead of the blue one.`,
+      String.raw`Set $\omega=4$. The solid arrow's length is now $4$; the blue arrow stays at $1$.`,
+      String.raw`Set $\omega=8$. The solid arrow is eight times the blue one. Fast waves gain the most.`]),
+    takeBox(widget, String.raw`Differentiating turns the arrow a quarter turn and multiplies it by $\omega$. High frequencies gain most, so noise grows too.`));
+  update();
+}
+
+// ---------- 1.3 complex arrow ----------
+function slideComplex(widget, side) {
+  const st = { A: 2, phi: 60, f: 0.125, n: 0 };   // f in rotations per sample; one step turns 2 pi f
+  const w = () => 2 * PI * st.f;
+  const ph = () => st.phi * PI / 180;
+  const zAt = m => ({ re: st.A * Math.cos(ph() + w() * m), im: st.A * Math.sin(ph() + w() * m) });
+  const cA = ctl(String.raw`$A$, length`, { id: 'A', min: 0, max: 2, step: 0.05, value: 2,
+    fmt: v => v.toFixed(2), onInput: v => { st.A = v; update(); } });
+  const cP = ctl(String.raw`$\varphi$, angle`, { id: 'phi', min: -180, max: 180, step: 1, value: 60,
+    fmt: v => v + '°', onInput: v => { st.phi = v; update(); } });
+  const cW = ctl(String.raw`$f$, rotations`, { id: 'f', min: 0, max: 0.5, step: 0.005, value: 0.125,
+    fmt: v => v.toFixed(3), onInput: v => { st.f = v; update(); } });
+  const cN = ctl(String.raw`$n$, steps`, { id: 'n', min: 0, max: 8, step: 1, value: 0,
+    fmt: v => String(v), onInput: v => { st.n = v; update(); } });
+  const rU = readout('u', String.raw`$u_n=\mathrm{Re}(c\,e^{i2\pi fn})$, at step $n$`);
+  const rTh = readout('theta', String.raw`$\theta=2\pi fn+\varphi$`);
+  const rLen = readout('len', String.raw`$|c\,e^{i2\pi fn}|$, its length`);
+  function drawPlane(svg, W, H) {
+    const cx = W / 2, cy = H / 2, sc = (Math.min(W, H) / 2 - 22) / 2.4;
+    const X = re => cx + re * sc, Y = im => cy - im * sc;
+    line(svg, 6, cy, W - 6, cy, { stroke: COL.grid });
+    line(svg, cx, 6, cx, H - 6, { stroke: COL.grid });
+    svgTex(svg, W - 44, cy + 14, String.raw`$\mathrm{Re}$`, { w: 50, anchor: 'start', size: 15 });
+    svgTex(svg, cx + 6, 14, String.raw`$\mathrm{Im}$`, { w: 50, anchor: 'start', size: 15 });
+    svgNode('circle', { cx, cy, r: st.A * sc, fill: 'none', stroke: COL.line, 'stroke-dasharray': '4 4' }, svg);
+    for (let m = 0; m < Math.min(st.n, 8); m++) { const z = zAt(m); dot(svg, X(z.re), Y(z.im), 3, COL.light); }
+    const c = zAt(0);
+    arrow(svg, X(0), Y(0), X(c.re), Y(c.im), { color: COL.input, id: 'c' });
+    svgTex(svg, X(c.re) + 10, Y(c.im) - 12, String.raw`$c$`, { w: 40, anchor: 'start', size: 16, fill: COL.text3 });
+    arrow(svg, X(0), Y(0), X(Math.cos(w())), Y(Math.sin(w())), { color: COL.ink, dash: '6 4', id: 'step' });
+    svgTex(svg, X(Math.cos(w())) + 14, Y(Math.sin(w())) + 16, String.raw`$e^{i2\pi f}$, one step`, { w: 150, anchor: 'start', size: 15, fill: COL.ink });
+    const z = zAt(st.n);
+    line(svg, X(z.re), Y(z.im), X(z.re), Y(0), { stroke: COL.out, 'stroke-dasharray': '2 3' });
+    arrow(svg, X(0), Y(0), X(z.re), Y(z.im), { color: COL.out, id: 'z' });
+    dot(svg, X(z.re), Y(0), 5, COL.out, { 'data-item': 'mark', 'data-id': 'shadow' });
+    svgTex(svg, X(z.re) + 10, Y(z.im) - 12, String.raw`$c\,e^{i2\pi fn}$`, { w: 110, anchor: 'start', size: 15, fill: COL.out });
+  }
+  function drawHalf(svg, W, H) {
+    const cx = W / 2, cy = H / 2, sc = (Math.min(W, H) / 2 - 22) / 1.2;
+    line(svg, 6, cy, W - 6, cy, { stroke: COL.grid });
+    line(svg, cx, 6, cx, H - 6, { stroke: COL.grid });
+    svgTex(svg, W - 44, cy + 14, String.raw`$\mathrm{Re}$`, { w: 50, anchor: 'start', size: 15 });
+    svgTex(svg, cx + 6, 14, String.raw`$\mathrm{Im}$`, { w: 50, anchor: 'start', size: 15 });
+    const th = w() * st.n + ph();
+    const hx = 0.5 * Math.cos(th), hy = 0.5 * Math.sin(th);
+    arrow(svg, cx, cy, cx + hx * sc, cy - hy * sc, { color: COL.out, id: 'half-plus' });
+    arrow(svg, cx, cy, cx + hx * sc, cy + hy * sc, { color: COL.input, id: 'half-minus' });
+    dot(svg, cx + Math.cos(th) * sc, cy, 5, COL.dark, { 'data-item': 'mark', 'data-id': 'sum' });
+    svgTex(svg, cx + hx * sc + 6, cy - hy * sc - 10, String.raw`$\tfrac12 e^{i\theta}$`, { w: 110, anchor: 'start', size: 15, fill: COL.out });
+    svgTex(svg, cx + hx * sc + 6, cy + hy * sc + 16, String.raw`$\tfrac12 e^{-i\theta}$`, { w: 110, anchor: 'start', size: 15, fill: COL.text3 });
+  }
+  function drawStems(svg, W, H) {
+    const vals = Array.from({ length: N }, (_, n) => zAt(n).re);
+    stems(svg, W, H, { vals, lo: -2.4, hi: 2.4, ticks: [-2, 0, 2], color: COL.out, id: 'u',
+      on: n => n <= Math.min(st.n, 7),
+      label: String.raw`samples $u_n=\mathrm{Re}(c\,e^{i2\pi fn})$: filled stems are the shadows so far` });
+  }
+  const plane = plotBox(drawPlane);
+  const half = plotBox(drawHalf);
+  const stemP = plotBox(drawStems, 'stemrow');
+  function update() {
+    const z = zAt(st.n);
+    rU.set(fx(z.re, 3));
+    rTh.set(fx(w() * st.n * 180 / PI + st.phi, 1) + '°');
+    rLen.set(fx(cxAbs(z), 3));
+    plane.redraw(); half.redraw(); stemP.redraw();
+  }
+  widget.append(
+    hh('div', 'sliders', cA.el, cP.el, cW.el, cN.el),
+    hh('div', 'row plane', plane.wrap, half.wrap),
+    stemP.wrap,
+    hh('div', 'readouts', rU.el, rTh.el, rLen.el),
+    legend([
+      { color: SW.input, text: String.raw`grey arrow: $c=Ae^{i\varphi}$, the start` },
+      { color: SW.ink, dash: true, text: String.raw`dashed arrow: $e^{i2\pi f}$, one step` },
+      { color: SW.out, text: String.raw`blue arrow: $c\,e^{i2\pi fn}$; its dot is $u_n$` },
+      { color: SW.out, text: String.raw`right panel, blue $\tfrac12 e^{i\theta}$, grey $\tfrac12 e^{-i\theta}$, solid dot their sum, $\cos\theta$` }]));
+  side.append(
+    sym(String.raw`The arrow of Primer · Waves, steps 1 and 11, as a complex number: it starts at $c=Ae^{i\varphi}$, here $1+1.732i$, and turns by $e^{i2\pi f}$ each step, $f$ in rotations per sample (Primer · Sampling, step 3). $\mathrm{Re}$: its shadow.`),
+    triesList([
+      String.raw`Step $n$ up by one. The arrow turns by $2\pi f$ and keeps its length. Its shadow moves to the next dot.`,
+      String.raw`Keep $f=\tfrac18$, a turn of $\tfrac{\pi}{4}$, and step $n$ from $0$ to $8$. Each dot on the real axis fills one stem below.`,
+      String.raw`Watch the right panel. The two half arrows turn in opposite directions. Their sum always lies on the real axis: it is $\cos\theta$.`]),
+    takeBox(widget, String.raw`Each sample multiplies the arrow once more by $e^{i2\pi f}$; the real wave is its shadow.`));
+  update();
+}
+
+// ---------- proof slides: shared parts ----------
+// Amber marks what the newest proof line is about, in the picture and in the proof.
+const C = (re, im) => ({ re, im });
+const O0 = C(0, 0);
+const toPx = (P, zs) => zs.map(z => [P.X(z.re), P.Y(z.im)]);
+function pathPts(svg, pts, attrs, close) {
+  const d = 'M' + pts.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L') + (close ? 'Z' : '');
+  return svgNode('path', Object.assign({ d, fill: 'none' }, attrs), svg);
+}
+function glowPts(svg, pts, w) {
+  return pathPts(svg, pts, { stroke: COL.amberBg, 'stroke-width': w || 12, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+}
+function glowFill(svg, pts) { return pathPts(svg, pts, { fill: COL.amberBg, 'fill-opacity': .9, stroke: COL.amber, 'stroke-width': 1.5 }, true); }
+function glowDot(svg, x, y, r) { return svgNode('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: r || 11, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 }, svg); }
+// Points of an arc round (cx, cy) in px, radius r px, from angle a0 to a1 (radians, counterclockwise as in the plane).
+function arcPx(cx, cy, r, a0, a1) {
+  const n = Math.max(6, Math.ceil(Math.abs(a1 - a0) * 24)), pts = [];
+  for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; pts.push([cx + r * Math.cos(a), cy - r * Math.sin(a)]); }
+  return pts;
+}
+// The caption row of a proof picture: what the amber part is while a line is lit, else what the picture shows.
+function caption(svg, W, lit, texts, idle) {
+  const t = lit ? texts[lit] : null;
+  if (t) svgTex(svg, W / 2, 13, t, { w: W - 8, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  else svgTex(svg, W / 2, 13, idle, { w: W - 8, size: 15, fill: COL.muted });
+}
+// A complex plane below the caption row. o: {top, R (half-size in units, centered on 0)} or
+// {top, fit: {x0, x1, y0, y1}} to show that box. Axes through 0 when 0 is in view.
+function plane(svg, W, H, o) {
+  const top = o.top || 0, m = 20;
+  let sc, cre, cim;
+  if (o.fit) {
+    const f = o.fit;
+    sc = Math.min((W - 2 * m) / Math.max(1e-6, f.x1 - f.x0), (H - top - 2 * m) / Math.max(1e-6, f.y1 - f.y0));
+    cre = (f.x0 + f.x1) / 2; cim = (f.y0 + f.y1) / 2;
+  } else { sc = (Math.min(W, H - top) / 2 - m) / o.R; cre = 0; cim = 0; }
+  const cx = W / 2, cy = top + (H - top) / 2;
+  const X = re => cx + (re - cre) * sc, Y = im => cy - (im - cim) * sc;
+  const x0 = X(0), y0 = Y(0);
+  if (y0 > top && y0 < H) {
+    line(svg, 4, y0, W - 4, y0, { stroke: COL.grid });
+    svgTex(svg, W - 40, y0 + 13, String.raw`$\mathrm{Re}$`, { w: 40, anchor: 'start', size: 14 });
+  }
+  if (x0 > 0 && x0 < W) {
+    line(svg, x0, top + 2, x0, H - 2, { stroke: COL.grid });
+    svgTex(svg, x0 + 6, top + 12, String.raw`$\mathrm{Im}$`, { w: 40, anchor: 'start', size: 14 });
+  }
+  return { X, Y, sc };
+}
+function boxOf(zs, m) {
+  const xs = zs.map(q => q.re), ys = zs.map(q => q.im);
+  return { x0: Math.min(...xs) - m, x1: Math.max(...xs) + m, y0: Math.min(...ys) - m, y1: Math.max(...ys) + m };
+}
+function circleU(svg, P, c, r, attrs) {
+  return svgNode('circle', Object.assign({ cx: P.X(c.re), cy: P.Y(c.im), r: Math.max(0, r * P.sc), fill: 'none', stroke: COL.line, 'stroke-dasharray': '4 4' }, attrs || {}), svg);
+}
+function arrowU(svg, P, a, b, o) { return arrow(svg, P.X(a.re), P.Y(a.im), P.X(b.re), P.Y(b.im), o); }
+function halo(fo) { fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg; return fo; }
+// A label just past the tip of the arrow from a to b, on the side it points to.
+function endLabel(svg, P, a, b, s, color, o) {
+  o = o || {};
+  let dx = P.X(b.re) - P.X(a.re), dy = P.Y(b.im) - P.Y(a.im);
+  const L = Math.hypot(dx, dy);
+  if (L < 1e-6) { dx = 1; dy = 0; } else { dx /= L; dy /= L; }
+  const g = o.gap || 10;
+  const x = P.X(b.re) + dx * g, y = P.Y(b.im) + dy * (g + 5);
+  const anchor = dx > 0.35 ? 'start' : dx < -0.35 ? 'end' : 'middle';
+  return halo(svgTex(svg, x, y, s, { w: o.w || 140, anchor, size: o.size || 15, fill: color }));
+}
+// A label beside the middle of the segment a-b, on the side away from the point `away`.
+function midLabel(svg, P, a, b, s, color, away) {
+  const x1 = P.X(a.re), y1 = P.Y(a.im), x2 = P.X(b.re), y2 = P.Y(b.im);
+  const L = Math.hypot(x2 - x1, y2 - y1);
+  if (L < 22) return null;
+  let nx = -(y2 - y1) / L, ny = (x2 - x1) / L;
+  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+  if (away && (mx - P.X(away.re)) * nx + (my - P.Y(away.im)) * ny < 0) { nx = -nx; ny = -ny; }
+  const anchor = nx > 0.5 ? 'start' : nx < -0.5 ? 'end' : 'middle';
+  return halo(svgTex(svg, mx + nx * 12, my + ny * 14, s, { w: 120, anchor, size: 14, fill: color }));
+}
+// A small right-angle mark at `base` between the directions d1 and d2 (complex numbers).
+function rightMark(svg, P, base, d1, d2, s) {
+  const l1 = cxAbs(d1), l2 = cxAbs(d2);
+  if (l1 < 1e-9 || l2 < 1e-9) return;
+  const bx = P.X(base.re), by = P.Y(base.im);
+  const ux = d1.re / l1 * s, uy = -d1.im / l1 * s, vx = d2.re / l2 * s, vy = -d2.im / l2 * s;
+  pathPts(svg, [[bx + ux, by + uy], [bx + ux + vx, by + uy + vy], [bx + vx, by + vy]], { stroke: COL.muted, 'stroke-width': 1.2 });
+}
+// Left column of a proof slide: controls, the picture, legend, readouts, the test, the mental model.
+function proofLeft(widget, o) {
+  if (o.controls && o.controls.length) widget.append(hh('div', 'sliders', ...o.controls));
+  const plot = plotBox(o.draw);
+  widget.append(plot.wrap, legend(o.legend));
+  if (o.readouts && o.readouts.length) widget.append(hh('div', 'readouts', ...o.readouts.map(r => r.el)));
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList(o.tests));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+  widget.append(test, model);
+  return { redraw: plot.redraw, test };
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is
+// done, the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight, hint) {
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = hint || 'Look back: under the picture.';
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+const val2 = v => v.toFixed(2);
+
+// ---------- step 2: why multiplying by i is a quarter turn (proof) ----------
+function drawTurn(svg, W, H, a, b, lit) {
+  caption(svg, W, lit, {
+    legs: String.raw`amber: the two pieces of $z$, $a$ and $bi$; line 1 gives each a factor $i$`,
+    iz: String.raw`amber: $iz=-b+ai$: $b$ steps left, then $a$ steps up`,
+    turn: String.raw`amber: $z$ and its legs turned a quarter turn: $1\to i$, $i\to-1$; it lands on $iz$` },
+    String.raw`$z$ with its legs $a$ and $bi$; $iz$ with its legs`);
+  const z = C(a, b), iz = C(-b, a), r = Math.hypot(a, b), m = Math.max(r, 0.5) * 1.12;
+  const P = plane(svg, W, H, { top: 26, fit: { x0: -m, x1: m, y0: -m, y1: m } });
+  const zl = [O0, C(a, 0), z], izl = [O0, C(0, a), iz];
+  if (r > 0.02) circleU(svg, P, O0, r);
+  if (lit === 'legs' || lit === 'turn') glowPts(svg, toPx(P, zl), 10);
+  if (lit === 'iz' || lit === 'turn') glowPts(svg, toPx(P, izl), 10);
+  if (lit === 'iz') glowDot(svg, P.X(-b), P.Y(a), 10);
+  if (lit === 'turn' && r > 0.02) glowPts(svg, arcPx(P.X(0), P.Y(0), Math.min(46, r * P.sc * 0.55), Math.atan2(b, a), Math.atan2(b, a) + PI / 2), 9);
+  pathPts(svg, toPx(P, zl), { stroke: COL.out, 'stroke-width': 1.5, 'stroke-dasharray': '5 4' });
+  pathPts(svg, toPx(P, izl), { stroke: COL.dark, 'stroke-width': 1.5, 'stroke-dasharray': '5 4' });
+  const cz = C(2 * a / 3, b / 3), ciz = C(-b / 3, 2 * a / 3);
+  midLabel(svg, P, O0, C(a, 0), '$a$', COL.out, cz);
+  midLabel(svg, P, C(a, 0), z, '$bi$', COL.out, cz);
+  midLabel(svg, P, O0, C(0, a), '$ai$', COL.dark, ciz);
+  midLabel(svg, P, C(0, a), iz, '$-b$', COL.dark, ciz);
+  if (r > 0.02) {
+    rightMark(svg, P, O0, z, iz, 11);
+    arrowU(svg, P, O0, iz, { color: COL.dark, id: 'iz' });
+    arrowU(svg, P, O0, z, { color: COL.out, id: 'z' });
+    endLabel(svg, P, O0, iz, '$iz$', COL.dark);
+    endLabel(svg, P, O0, z, '$z$', COL.out);
+  }
+}
+function slideWhyTurn(widget, side) {
+  let a = 1.5, b = 1, lit = '';
+  const cA = ctl('$a$', { id: 'a', min: -2, max: 2, step: 0.05, value: a, fmt: val2, onInput: v => { a = v; update(); } });
+  const cB = ctl('$b$', { id: 'b', min: -2, max: 2, step: 0.05, value: b, fmt: val2, onInput: v => { b = v; update(); } });
+  const rIZ = readout('iz', String.raw`$iz$`);
+  const rLen = readout('lens', String.raw`$|z|$ and $|iz|$`);
+  const rAng = readout('turn', String.raw`turn from $z$ to $iz$`);
+  const plot = proofLeft(widget, {
+    controls: [cA.el, cB.el],
+    draw: (svg, W, Hh) => drawTurn(svg, W, Hh, a, b, lit),
+    legend: [
+      { color: SW.out, text: String.raw`blue: $z=a+bi$ and its legs` },
+      { color: SW.dark, text: String.raw`solid: $iz$ and its legs` },
+      { color: SW.grey, dash: true, text: String.raw`circle: length $|z|$` }],
+    readouts: [rIZ, rLen, rAng],
+    tests: [
+      String.raw`Set $a=2$, $b=1$: $iz=-1+2i$, the same length $2.236$, turned $90^\circ$.`,
+      String.raw`Try other $z$, with $a<0$ or $b<0$ too: always $90^\circ$, the same length. Cases are evidence, not proof.`],
+    model: String.raw`$z$ is $a$ steps along $1$, then $b$ along $i$. Turn the picture a quarter turn: the steps become $a$ along $i$ and $b$ along $-1$. That arrow is $iz$.` });
+  proofRight(side, {
+    id: 'quarter-turn',
+    goal: { words: String.raw`for every $z=a+bi$, the arrow $iz$ is $z$ turned a quarter turn counterclockwise.` },
+    facts: [
+      { tex: 'i^2=-1', words: String.raw`is the one rule that defines $i$` },
+      { tex: 'z=a+bi', words: String.raw`is $a$ steps along $1$, then $b$ steps along $i$`, ref: 'step 1' },
+      { words: String.raw`a turn moves the whole picture: the legs of $z$ turn with it` }],
+    lines: [
+      { tex: String.raw`iz=i(a+bi)=a\,i+b\,i^2`, move: 'Rearrange',
+        why: String.raw`multiply out, as with ordinary numbers: each piece of $z$ gets a factor $i$`, choices: ['Unfold the definition', 'Name a piece'], highlight: 'legs' },
+      { tex: String.raw`iz=-b+a\,i`, move: 'Unfold the definition',
+        why: String.raw`$i^2=-1$ is what $i$ means`, choices: ['Use symmetry', 'Rearrange'], highlight: 'iz' },
+      { tex: String.raw`\text{turned } z=a\,i+b\,(-1)=iz`, move: 'Compute it two ways',
+        why: String.raw`now turn $z$ itself: its legs turn with it, $1$ to $i$ and $i$ to $-1$. That is $-b+ai$, the arrow of line 2`,
+        choices: ['Use an earlier result', 'Contradiction'], highlight: 'turn' }],
+    lookBack: [
+      { q: 'What did the proof use?',
+        a: String.raw`Only $i^2=-1$ and multiplying out: the quarter turn is not a second rule. Step 1 went the other way, from the turn to $i^2=-1$.` },
+      { q: String.raw`What do $i^2$, $i^3$, $i^4$ do to $z$?`,
+        a: String.raw`Two quarter turns make a half turn, $i^2z=-z$; three, a quarter turn clockwise, $-iz$; four, a full turn: $i^4=1$.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const z = C(a, b), iz = C(-b, a);
+    rIZ.set('$' + cxTex(iz, 2) + '$');
+    rLen.set(fx(cxAbs(z), 3) + ' and ' + fx(cxAbs(iz), 3));
+    rAng.set(cxAbs(z) < 1e-9 ? String.raw`none: $z=0$` : degTxt(cxArg(iz) - cxArg(z)));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 4: why lengths multiply and angles add (proof) ----------
+function drawMulProof(svg, W, H, z, w, lit) {
+  caption(svg, W, lit, {
+    legs: String.raw`amber: $a\,w$, then $b\,(iw)$: the two pieces of line 1, end to end`,
+    iw: String.raw`amber: $w$ and $iw$, at right angles, both $|w|$ long`,
+    grid: String.raw`amber: $T$ takes the square of $1$ and $i$ to the square of $w$ and $iw$`,
+    box: String.raw`amber: the legs of $z$, and the same legs on the grid of $w$: $T(z)=zw$`,
+    result: String.raw`amber: the angle of $zw$ is $\arg w$, then $\arg z$ more` },
+    String.raw`$z$ on the grid of $1$ and $i$; $zw$ on the grid of $w$ and $iw$`);
+  const one = C(1, 0), I = C(0, 1);
+  const iw = cxMul(I, w), p = cxMul(z, w), aw = cxScale(w, z.re), lw = cxAbs(w);
+  const R = Math.max(2.4, 1.1 * Math.max(cxAbs(z), lw, cxAbs(p), cxAbs(aw), cxAbs(cxAdd(w, iw)), 1.5));   // reach of the grid
+  const P = plane(svg, W, H, { top: 26, fit: boxOf([O0, one, I, C(1, 1), z, C(z.re, 0), w, iw, cxAdd(w, iw), p, aw], 0.45) });
+  if (lw > 0.08) {   // the grid of w and iw
+    const M = Math.min(14, Math.ceil(1.6 * R / lw) + 1);
+    for (let m = -M; m <= M; m++) {
+      const a1 = cxAdd(cxScale(w, m), cxScale(iw, -M)), a2 = cxAdd(cxScale(w, m), cxScale(iw, M));
+      const b1 = cxAdd(cxScale(iw, m), cxScale(w, -M)), b2 = cxAdd(cxScale(iw, m), cxScale(w, M));
+      line(svg, P.X(a1.re), P.Y(a1.im), P.X(a2.re), P.Y(a2.im), { stroke: COL.bluePale });
+      line(svg, P.X(b1.re), P.Y(b1.im), P.X(b2.re), P.Y(b2.im), { stroke: COL.bluePale });
+    }
+  }
+  const zl = [O0, C(z.re, 0), z], pl = [O0, aw, p];
+  if (lit === 'legs' || lit === 'box') glowPts(svg, toPx(P, pl), 10);
+  if (lit === 'box') glowPts(svg, toPx(P, zl), 10);
+  if (lit === 'iw') { glowPts(svg, toPx(P, [O0, w]), 11); glowPts(svg, toPx(P, [O0, iw]), 11); }
+  if (lit === 'grid') { glowFill(svg, toPx(P, [O0, one, C(1, 1), I])); if (lw > 0.02) glowFill(svg, toPx(P, [O0, w, cxAdd(w, iw), iw])); }
+  if (lit === 'result' && cxAbs(z) > 0.02 && lw > 0.02) {
+    const a0 = cxArg(w), a1 = a0 + cxArg(z), cx0 = P.X(0), cy0 = P.Y(0);
+    glowPts(svg, arcPx(cx0, cy0, 30, 0, a0), 8);
+    glowPts(svg, arcPx(cx0, cy0, 30, a0, a1), 8);
+    const lab = (ang, s) => halo(svgTex(svg, cx0 + 50 * Math.cos(ang), cy0 - 50 * Math.sin(ang), s, { w: 80, size: 13, fill: COL.ink }));
+    if (Math.abs(a0) > 0.2) lab(a0 / 2, String.raw`$\arg w$`);
+    if (Math.abs(a1 - a0) > 0.2) lab((a0 + a1) / 2, String.raw`$\arg z$`);
+  }
+  pathPts(svg, toPx(P, zl), { stroke: COL.input, 'stroke-width': 1.5, 'stroke-dasharray': '5 4' });
+  pathPts(svg, toPx(P, pl), { stroke: COL.out, 'stroke-width': 1.5, 'stroke-dasharray': '5 4' });
+  rightMark(svg, P, O0, w, iw, 10);
+  arrowU(svg, P, O0, iw, { color: COL.dark, dash: '6 4', id: 'iw' });
+  arrowU(svg, P, O0, w, { color: COL.dark, id: 'w' });
+  arrowU(svg, P, O0, z, { color: COL.input, id: 'z' });
+  arrowU(svg, P, O0, p, { color: COL.out, id: 'zw' });
+  endLabel(svg, P, O0, iw, '$iw$', COL.dark);
+  endLabel(svg, P, O0, w, '$w$', COL.dark);
+  endLabel(svg, P, O0, z, '$z$', COL.text3);
+  endLabel(svg, P, O0, p, '$zw$', COL.out);
+}
+function slideWhyMul(widget, side) {
+  let z = C(2, 1), w = C(1, 1), lit = '';
+  const v1 = v => v.toFixed(1);
+  const cA = ctl('$a$', { id: 'a', min: -2, max: 2, step: 0.1, value: z.re, fmt: v1, onInput: v => { z = C(v, z.im); update(); } });
+  const cB = ctl('$b$', { id: 'b', min: -2, max: 2, step: 0.1, value: z.im, fmt: v1, onInput: v => { z = C(z.re, v); update(); } });
+  const cC = ctl('$c$', { id: 'c', min: -2, max: 2, step: 0.1, value: w.re, fmt: v1, onInput: v => { w = C(v, w.im); update(); } });
+  const cD = ctl('$d$', { id: 'd', min: -2, max: 2, step: 0.1, value: w.im, fmt: v1, onInput: v => { w = C(w.re, v); update(); } });
+  const rLen = readout('lens', String.raw`$|z|\,|w|$ and $|zw|$`);
+  const rAng = readout('angs', String.raw`$\arg z+\arg w$ and $\arg(zw)$`);
+  const rP = readout('zw', String.raw`$zw$`);
+  const plot = proofLeft(widget, {
+    controls: [cA.el, cB.el, cC.el, cD.el],
+    draw: (svg, W, Hh) => drawMulProof(svg, W, Hh, z, w, lit),
+    legend: [
+      { color: SW.input, text: String.raw`grey: $z=a+bi$` },
+      { color: SW.dark, text: String.raw`solid: $w=c+di$; dashed: $iw$` },
+      { color: SW.out, text: String.raw`blue: $zw$; dashed: $a\,w$, $b\,(iw)$` },
+      { color: SW.bluePale, text: String.raw`faint blue lines: grid of $w$` }],
+    readouts: [rLen, rAng, rP],
+    tests: [
+      String.raw`With $z=2+i$, $w=1+i$: $|z|\,|w|=2.236\cdot1.414=3.162=|zw|$, and $26.6^\circ+45^\circ=71.6^\circ=\arg(zw)$.`,
+      String.raw`Try $w=-1+2i$: $zw=-4+3i$, length $5$. Cases are evidence, not proof.`],
+    model: String.raw`$zw$ is $z$ redrawn on the grid of $w$: $a$ steps along $w$, $b$ along $iw$. That grid is the usual one, turned by $\arg w$ and stretched by $|w|$.` });
+  proofRight(side, {
+    id: 'multiply',
+    goal: { words: String.raw`for all $z=a+bi$ and $w$: $|zw|=|z|\,|w|$ and $\arg(zw)=\arg z+\arg w$.` },
+    facts: [
+      { tex: 'iw', words: String.raw`is $w$ turned a quarter turn`, ref: 'step 2' },
+      { words: 'a turn or a stretch moves the whole picture: legs and all' }],
+    lines: [
+      { tex: String.raw`zw=(a+bi)\,w=a\,w+b\,(iw)`, move: 'Rearrange',
+        why: 'multiply out', choices: ['Name a piece', 'Compute it two ways'], highlight: 'legs' },
+      { tex: String.raw`iw=w\ \text{turned a quarter turn}`, move: 'Use an earlier result',
+        why: String.raw`step 2: $w$ and $iw$ are at right angles and both $|w|$ long`, choices: ['Unfold the definition', 'Use symmetry'], highlight: 'iw' },
+      { tex: String.raw`T(1)=w,\quad T(i)=iw`, move: 'Name a piece',
+        why: String.raw`$T$: turn by $\arg w$ and stretch by $|w|$. $i$ is $1$ turned a quarter, so $T(i)$ is $w$ turned a quarter: $iw$ (line 2)`,
+        choices: ['Change variables', 'Unfold the definition'], highlight: 'grid' },
+      { tex: String.raw`T(z)=a\,T(1)+b\,T(i)=a\,w+b\,(iw)=zw`, move: 'Compute it two ways',
+        why: String.raw`$T$ moves the legs of $z$ with the rest; line 1 built the same arrow`, choices: ['Rearrange', 'Induction'], highlight: 'box' },
+      { tex: String.raw`|zw|=|w|\,|z|,\quad\arg(zw)=\arg z+\arg w`, move: 'Unfold the definition',
+        why: String.raw`what $T$ does: each length times $|w|$, each angle plus $\arg w$`, choices: ['Take a limit', 'Use an earlier result'], highlight: 'result' }],
+    lookBack: [
+      { q: 'What else does it give?',
+        a: String.raw`Powers: $|z^n|=|z|^n$ and $\arg z^n=n\arg z$. With $z=1+i$: $z^2=2i$, $z^4=-4$, $z^8=16$.` },
+      { q: 'What does dividing do?',
+        a: String.raw`Undo $T$: for $w\ne0$, $z/w$ has length $|z|/|w|$ and angle $\arg z-\arg w$. So $1/i=-i$, a quarter turn back.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const p = cxMul(z, w);
+    rLen.set(fx(cxAbs(z) * cxAbs(w), 3) + ' and ' + fx(cxAbs(p), 3));
+    rAng.set(cxAbs(p) < 1e-9 ? String.raw`none: $zw=0$` : degTxt(cxArg(z) + cxArg(w)) + ' and ' + degTxt(cxArg(p)));
+    rP.set('$' + cxTex(p, 2) + '$');
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 5: Euler's formula (proof) ----------
+function eulerChain(th, K) {   // the first K terms (i th)^n / n!, and the sums before each
+  const terms = [], sums = [O0];
+  let t = C(1, 0);
+  for (let n = 0; n < K; n++) {
+    terms.push(t);
+    sums.push(cxAdd(sums[n], t));
+    t = cxScale(cxMul(t, C(0, th)), 1 / (n + 1));
+  }
+  return { terms, sums, S: sums[K] };
+}
+function drawEulerProof(svg, W, H, deg, K, lit) {
+  const th = deg * PI / 180;
+  caption(svg, W, lit, {
+    chain: String.raw`amber: the terms $\tfrac{(i\theta)^n}{n!}$, end to end; the first $K$ add up to $S_K$`,
+    turns: String.raw`amber: the factors $i^n$: right, up, left, down, right: a quarter turn each time`,
+    split: String.raw`amber: left-right steps add to the real part, up-down steps to the imaginary part`,
+    legs: String.raw`amber: $\cos\theta$ and $\sin\theta$, the legs of the unit arrow at angle $\theta$` },
+    String.raw`the terms of the series end to end, and the unit arrow $e^{i\theta}$`);
+  const { sums, S } = eulerChain(th, K);
+  const P = plane(svg, W, H, { top: 26, fit: boxOf(sums.concat([C(Math.cos(th), Math.sin(th)), C(0.6, 0.6), C(-0.6, -0.6)]), 0.3) });
+  circleU(svg, P, O0, 1);
+  const c = Math.cos(th), s = Math.sin(th), e = C(c, s);
+  if (lit === 'chain' || lit === 'turns') glowPts(svg, toPx(P, sums), 10);
+  if (lit === 'split') { glowPts(svg, toPx(P, [O0, C(S.re, 0)]), 10); glowPts(svg, toPx(P, [O0, C(0, S.im)]), 10); }
+  if (lit === 'legs') glowPts(svg, toPx(P, [O0, C(c, 0), e]), 10);
+  pathPts(svg, toPx(P, [O0, C(c, 0), e]), { stroke: COL.out, 'stroke-width': 1.5, 'stroke-dasharray': '4 3' });
+  midLabel(svg, P, O0, C(c, 0), String.raw`$\cos\theta$`, COL.out, C(c / 2, s));
+  midLabel(svg, P, C(c, 0), e, String.raw`$\sin\theta$`, COL.out, C(Math.abs(c) < 0.15 ? -1 : 0, s / 2));
+  if (lit === 'split') {
+    halo(svgTex(svg, P.X(S.re), P.Y(0) + (S.im >= 0 ? 16 : -16), String.raw`real part`, { w: 100, size: 14, fill: COL.ink }));
+    halo(svgTex(svg, P.X(0) + (S.re >= 0 ? -8 : 8), P.Y(S.im), String.raw`imaginary part`, { w: 130, size: 14, fill: COL.ink, anchor: S.re >= 0 ? 'end' : 'start' }));
+  }
+  for (let n = 0; n < K; n++) {
+    arrowU(svg, P, sums[n], sums[n + 1], { color: n % 2 ? COL.light : COL.input, w: 2.5, id: 'term-' + n });
+    if (lit === 'turns') midLabel(svg, P, sums[n], sums[n + 1], '$' + ['1', 'i', '-1', '-i'][n % 4] + '$', COL.ink, S);
+  }
+  arrowU(svg, P, O0, e, { color: COL.out, id: 'e' });
+  endLabel(svg, P, O0, e, String.raw`$e^{i\theta}$`, COL.out);
+  dot(svg, P.X(S.re), P.Y(S.im), 6, 'none', { stroke: COL.dark, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'sk' });
+  halo(svgTex(svg, P.X(S.re) + 10, P.Y(S.im) + 14, '$S_K$', { w: 50, anchor: 'start', size: 15, fill: COL.dark }));
+}
+function slideEuler(widget, side) {
+  let deg = 90, K = 4, lit = '';
+  const cT = ctl(String.raw`$\theta$`, { id: 'theta', min: -180, max: 180, step: 1, value: deg, fmt: v => v + '°', onInput: v => { deg = v; update(); } });
+  const cK = ctl(String.raw`$K$, terms`, { id: 'K', min: 1, max: 12, step: 1, value: K, fmt: v => String(v), onInput: v => { K = v; update(); } });
+  const rS = readout('sk', String.raw`$S_K$, the first $K$ terms`);
+  const rE = readout('e', String.raw`$\cos\theta+i\sin\theta$`);
+  const rErr = readout('err', String.raw`$|S_K-e^{i\theta}|$`);
+  const plot = proofLeft(widget, {
+    controls: [cT.el, cK.el],
+    draw: (svg, W, Hh) => drawEulerProof(svg, W, Hh, deg, K, lit),
+    legend: [
+      { color: SW.input, text: String.raw`grey: $n$ even` },
+      { color: SW.light, text: String.raw`second blue: $n$ odd` },
+      { color: SW.out, text: String.raw`blue: $e^{i\theta}$, legs` },
+      { color: SW.dark, text: String.raw`ring: $S_K$` }],
+    readouts: [rS, rE, rErr],
+    tests: [
+      String.raw`Guess where the series ends. Keep $\theta=90^\circ$ and raise $K$ to $10$: the ring lands on $i$, the unit arrow at $90^\circ$.`,
+      String.raw`Set $\theta=180^\circ$, $K=4$: the ring is far out. At $K=12$ it reaches $-1$. Cases are evidence, not proof.`],
+    model: String.raw`Each term is the last one times $\tfrac{i\theta}{n}$: a quarter turn left and a shrink. The steps curl round onto the unit circle at angle $\theta$.` });
+  proofRight(side, {
+    id: 'euler',
+    goal: { tex: String.raw`e^{i\theta}=\cos\theta+i\sin\theta`, words: String.raw`for every angle $\theta$, in radians.` },
+    facts: [
+      { tex: String.raw`e^{x}=1+x+\tfrac{x^2}{2!}+\tfrac{x^3}{3!}+\cdots`, ref: 'Primer · Series, step 5' },
+      { tex: 'i^2=-1', words: String.raw`so each factor $i$ is a quarter turn`, ref: 'step 2' }],
+    lines: [
+      { tex: String.raw`e^{i\theta}=1+i\theta+\tfrac{(i\theta)^2}{2!}+\tfrac{(i\theta)^3}{3!}+\cdots`, move: 'Unfold the definition',
+        why: String.raw`for a complex number, $e^{x}$ means this series; put $x=i\theta$`, choices: ['Change variables', 'Use an earlier result'], highlight: 'chain' },
+      { tex: String.raw`e^{i\theta}=1+i\theta-\tfrac{\theta^2}{2!}-i\tfrac{\theta^3}{3!}+\cdots`, move: 'Use an earlier result',
+        why: String.raw`$i^2=-1$, $i^3=-i$, $i^4=1$: each $i$ is a quarter turn (step 2), four make a full turn`, choices: ['Induction', 'Rearrange'], highlight: 'turns' },
+      { tex: String.raw`e^{i\theta}=\big(1-\tfrac{\theta^2}{2!}+\cdots\big)+i\big(\theta-\tfrac{\theta^3}{3!}+\cdots\big)`, move: 'Rearrange',
+        why: String.raw`collect: even powers are real (steps left or right), odd powers carry one $i$ (steps up or down)`, choices: ['Telescope', 'Use symmetry'], highlight: 'split' },
+      { tex: String.raw`e^{i\theta}=\cos\theta+i\sin\theta`, move: 'Use an earlier result',
+        why: String.raw`the brackets are the series of $\cos$ and $\sin$ (Primer · Series, step 5): their slopes at 0 cycle $1,0,-1,0$ and $0,1,0,-1$ (Primer · Waves, step 12)`,
+        choices: ['Take a limit', 'Unfold the definition'], highlight: 'legs' }],
+    lookBack: [
+      { q: String.raw`Why may we put $i\theta$ into a series made for real $x$?`,
+        a: String.raw`For a complex number the series is what $e^{x}$ means. It agrees with $e^x$ for real $x$, and it settles for every $\theta$ (Primer · Series, step 10).` },
+      { q: 'Where could the proof break?',
+        a: String.raw`Line 3 splits an endless sum in two, which can change its value. Not here: the sizes $\tfrac{|\theta|^n}{n!}$ add to $e^{|\theta|}$, finite (why that suffices is beyond these primers).` },
+      { q: 'What else does it give?',
+        a: String.raw`$e^{i\pi}=-1$. And $|e^{i\theta}|^2=\cos^2\theta+\sin^2\theta=1$: the arrow ends on the circle of Primer · Waves, step 1.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const th = deg * PI / 180, { S } = eulerChain(th, K), e = C(Math.cos(th), Math.sin(th));
+    rS.set('$' + cxTex(S, 2) + '$');
+    rE.set('$' + cxTex(e, 3) + '$');
+    rErr.set(fx(cxAbs(C(S.re - e.re, S.im - e.im)), 3));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 7: why the shadow is a cosine (proof) ----------
+function shadowArrows(st) {   // the arrow after each step, by repeated multiplication
+  const ph = st.phi * PI / 180, step = cis(2 * PI * st.f);
+  const pos = [C(st.A * Math.cos(ph), st.A * Math.sin(ph))];
+  for (let m = 1; m <= st.n; m++) pos.push(cxMul(pos[m - 1], step));
+  return { pos, step };
+}
+function drawShadowProof(svg, W, H, st, lit) {
+  caption(svg, W, lit, {
+    steps: String.raw`amber: the arrow after each step; every step turns it by $2\pi f$`,
+    arrow: String.raw`amber: after $n$ steps: length $A$, angle $\theta=2\pi fn+\varphi$`,
+    legs: String.raw`amber: its legs, $A\cos\theta$ along and $A\sin\theta$ up`,
+    shadow: String.raw`amber: the shadow on the real axis, $u_n=A\cos\theta$`,
+    mirror: String.raw`amber: the arrow and its mirror image; their halves add to $A\cos\theta$` },
+    String.raw`the arrow after $n$ steps, its mirror image, and its shadow $u_n$`);
+  const P = plane(svg, W, H, { R: Math.max(1.2, 1.12 * st.A), top: 26 });
+  const { pos, step } = shadowArrows(st);
+  const z = pos[st.n], zb = C(z.re, -z.im), sh = C(z.re, 0), c = pos[0];
+  circleU(svg, P, O0, st.A);
+  if (lit === 'steps') pos.forEach(q => glowDot(svg, P.X(q.re), P.Y(q.im), 9));
+  if (lit === 'arrow') {   // the angle theta, counterclockwise from the real axis (whole turns dropped)
+    glowPts(svg, toPx(P, [O0, z]), 11);
+    if (st.A > 0.05) glowPts(svg, arcPx(P.X(0), P.Y(0), 28, 0, ((cxArg(z) % (2 * PI)) + 2 * PI) % (2 * PI)), 8);
+  }
+  if (lit === 'legs') glowPts(svg, toPx(P, [O0, sh, z]), 10);
+  if (lit === 'shadow') { glowPts(svg, toPx(P, [z, sh]), 8); glowDot(svg, P.X(sh.re), P.Y(0), 10); }
+  if (lit === 'mirror') { glowPts(svg, toPx(P, [O0, z]), 10); glowPts(svg, toPx(P, [O0, zb]), 10); }
+  for (let m = 0; m < st.n; m++) dot(svg, P.X(pos[m].re), P.Y(pos[m].im), 3.5, COL.light);
+  arrowU(svg, P, O0, step, { color: COL.ink, dash: '5 4', w: 1.8, id: 'step' });
+  endLabel(svg, P, O0, step, String.raw`$e^{i2\pi f}$`, COL.ink, { size: 14 });
+  if (st.n > 0) { arrowU(svg, P, O0, c, { color: COL.input, w: 1.8, id: 'c' }); endLabel(svg, P, O0, c, '$c$', COL.text3); }
+  arrowU(svg, P, O0, zb, { color: COL.grid, dash: '6 4', w: 2, id: 'mirror' });
+  endLabel(svg, P, O0, zb, String.raw`$Ae^{-i\theta}$`, COL.muted, { size: 14 });
+  if (lit === 'mirror') {
+    const hz = cxScale(z, 0.5), hb = cxScale(zb, 0.5);
+    pathPts(svg, toPx(P, [hz, sh, hb]), { stroke: COL.ink, 'stroke-width': 1.2, 'stroke-dasharray': '3 3' });
+    arrowU(svg, P, O0, hz, { color: COL.out, w: 3.5, id: 'half-plus' });
+    arrowU(svg, P, O0, hb, { color: COL.input, w: 3.5, id: 'half-minus' });
+  }
+  line(svg, P.X(z.re), P.Y(z.im), P.X(z.re), P.Y(0), { stroke: COL.out, 'stroke-dasharray': '2 3' });
+  arrowU(svg, P, O0, z, { color: COL.out, id: 'z' });
+  endLabel(svg, P, O0, z, String.raw`$c\,e^{i2\pi fn}$`, COL.out);
+  dot(svg, P.X(sh.re), P.Y(0), 5.5, COL.out, { 'data-item': 'mark', 'data-id': 'shadow' });
+  halo(svgTex(svg, P.X(sh.re), P.Y(0) + (z.im >= 0 ? 16 : -16), '$u_n$', { w: 40, size: 15, fill: COL.out }));
+}
+function slideWhyShadow(widget, side) {
+  const st = { A: 2, phi: 60, f: 0.125, n: 3 };
+  let lit = '';
+  const cA = ctl('$A$', { id: 'A', min: 0, max: 2, step: 0.05, value: st.A, fmt: val2, onInput: v => { st.A = v; update(); } });
+  const cP = ctl(String.raw`$\varphi$`, { id: 'phi', min: -180, max: 180, step: 1, value: st.phi, fmt: v => v + '°', onInput: v => { st.phi = v; update(); } });
+  const cF = ctl('$f$', { id: 'f', min: 0, max: 0.5, step: 0.005, value: st.f, fmt: v => v.toFixed(3), onInput: v => { st.f = v; update(); } });
+  const cN = ctl('$n$', { id: 'n', min: 0, max: 16, step: 1, value: st.n, fmt: v => String(v), onInput: v => { st.n = v; update(); } });
+  const rM = readout('un-mult', String.raw`$u_n$ from $n$ multiplications`);
+  const rF = readout('un-formula', String.raw`$A\cos(2\pi fn+\varphi)$`);
+  const rT = readout('theta', String.raw`$\theta=2\pi fn+\varphi$`);
+  const plot = proofLeft(widget, {
+    controls: [cA.el, cP.el, cF.el, cN.el],
+    draw: (svg, W, Hh) => drawShadowProof(svg, W, Hh, st, lit),
+    legend: [
+      { color: SW.input, text: String.raw`grey: $c=Ae^{i\varphi}$` },
+      { color: SW.ink, dash: true, text: 'one step' },
+      { color: SW.out, text: String.raw`blue: $n$ steps on; dot: $u_n$` },
+      { color: SW.grey, dash: true, text: 'mirror image' }],
+    readouts: [rM, rF, rT],
+    tests: [
+      String.raw`Pick any $A$, $\varphi$, $f$ and step $n$ up: the shadow after $n$ multiplications and $A\cos(2\pi fn+\varphi)$ agree.`,
+      String.raw`Watch the grey mirror arrow: it turns the other way, and its shadow is the same. Cases are evidence, not proof.`],
+    model: String.raw`Each step multiplies by the same $e^{i2\pi f}$, so the arrow turns at a steady rate, like the point on the circle of Primer · Waves, step 1. Its shadow is a cosine.` });
+  proofRight(side, {
+    id: 'shadow',
+    goal: { words: String.raw`$\mathrm{Re}\big(c\,(e^{i2\pi f})^n\big)=A\cos(2\pi fn+\varphi)$ for every $n$, with $c=Ae^{i\varphi}$; and $\cos\theta=\tfrac12(e^{i\theta}+e^{-i\theta})$.` },
+    facts: [
+      { words: 'lengths multiply, angles add', ref: 'step 4' },
+      { tex: String.raw`e^{i\theta}=\cos\theta+i\sin\theta`, ref: 'step 5' }],
+    lines: [
+      { tex: String.raw`\big(e^{i2\pi f}\big)^n=e^{i2\pi fn}`, move: 'Induction',
+        why: String.raw`true at $n=0$; one more step multiplies by $e^{i2\pi f}$: length stays $1$, angle grows by $2\pi f$ (step 4)`,
+        choices: ['Telescope', 'Use symmetry'], highlight: 'steps' },
+      { tex: String.raw`c\,e^{i2\pi fn}=Ae^{i\varphi}e^{i2\pi fn}=Ae^{i\theta}`, move: 'Use an earlier result',
+        why: String.raw`lengths multiply, $A\cdot1$; angles add, $\theta=2\pi fn+\varphi$ (step 4)`, choices: ['Name a piece', 'Rearrange'], highlight: 'arrow' },
+      { tex: String.raw`Ae^{i\theta}=A\cos\theta+i\,A\sin\theta`, move: 'Use an earlier result',
+        why: String.raw`Euler's formula (step 5), times $A$`, choices: ['Unfold the definition', 'Compute it two ways'], highlight: 'legs' },
+      { tex: String.raw`u_n=\mathrm{Re}\big(Ae^{i\theta}\big)=A\cos(2\pi fn+\varphi)`, move: 'Unfold the definition',
+        why: String.raw`$\mathrm{Re}$ keeps the part along the real axis: the shadow`, choices: ['Undo with the inverse', 'Rearrange'], highlight: 'shadow' },
+      { tex: String.raw`\tfrac12\big(e^{i\theta}+e^{-i\theta}\big)=\tfrac12\cdot2\cos\theta=\cos\theta`, move: 'Use symmetry',
+        why: String.raw`$e^{-i\theta}$ is the mirror image: $\cos(-\theta)=\cos\theta$, $\sin(-\theta)=-\sin\theta$ (Primer · Waves, step 8), so the up parts cancel`,
+        choices: ['Telescope', 'Contradiction'], highlight: 'mirror' }],
+    lookBack: [
+      { q: 'What else does the same proof give?',
+        a: String.raw`Two waves of one frequency: $A\cos\theta+B\cos(\theta+\varphi)=\mathrm{Re}\big((A+Be^{i\varphi})e^{i\theta}\big)$: one arrow, one wave, of height $|A+Be^{i\varphi}|$. That is the arrow sum of Primer · Waves, step 11, in one line.` },
+      { q: String.raw`What if $f$ grows by $1$?`,
+        a: String.raw`Each step turns one full turn more, which changes nothing at whole $n$: the same dots, the same samples. That is aliasing (Primer · Sampling, step 5).` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const { pos } = shadowArrows(st), z = pos[st.n];
+    rM.set(fx(z.re, 3));
+    rF.set(fx(st.A * Math.cos(2 * PI * st.f * st.n + st.phi * PI / 180), 3));
+    rT.set(fx(360 * st.f * st.n + st.phi, 1) + '°');
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 8: a product of two cosines (proof) ----------
+function drawProductProof(svg, W, H, Ad, Bd, lit) {
+  const A = Ad * PI / 180, B = Bd * PI / 180;
+  caption(svg, W, lit, {
+    turn: String.raw`amber: $e^{iA}$, turned by $+B$ and by $-B$`,
+    sum: String.raw`amber: the two arrows added: the diagonal of their box`,
+    along: String.raw`amber: the diagonal lies along $e^{iA}$ and is $2\cos B$ long`,
+    shadow: String.raw`amber: the two shadows add to the diagonal's shadow, $2\cos A\cos B$` },
+    String.raw`the arrows at $A+B$ and $A-B$, their sum, and the shadows`);
+  const e0 = cis(A), p0 = cis(A + B), q0 = cis(A - B), s0 = cxAdd(p0, q0);
+  const P = plane(svg, W, H, { top: 26, fit: boxOf([O0, e0, p0, q0, s0, C(0.7, 0.7), C(-0.7, -0.7)], 0.4) });
+  const e = e0, p = p0, q = q0, s = s0, cx0 = P.X(0), cy0 = P.Y(0);
+  circleU(svg, P, O0, 1);
+  line(svg, P.X(-2.3 * e.re), P.Y(-2.3 * e.im), P.X(2.3 * e.re), P.Y(2.3 * e.im), { stroke: COL.line, 'stroke-dasharray': '2 4' });
+  if (lit === 'turn') {
+    glowPts(svg, toPx(P, [O0, e]), 11);
+    if (Math.abs(B) > 0.02) { glowPts(svg, arcPx(cx0, cy0, 0.62 * P.sc, A, A + B), 8); glowPts(svg, arcPx(cx0, cy0, 0.62 * P.sc, A, A - B), 8); }
+  }
+  if (lit === 'sum') glowPts(svg, toPx(P, [O0, p, s, q, O0]), 9);
+  if (lit === 'along') glowPts(svg, toPx(P, [O0, s]), 13);
+  if (lit === 'shadow') {
+    for (const v of [p, q, s]) glowPts(svg, toPx(P, [v, C(v.re, 0)]), 7);
+    glowDot(svg, P.X(s.re), cy0, 10);
+  }
+  pathPts(svg, toPx(P, [p, s, q]), { stroke: COL.grid, 'stroke-width': 1.2, 'stroke-dasharray': '4 3' });
+  line(svg, P.X(p.re), P.Y(p.im), P.X(p.re), cy0, { stroke: COL.out, 'stroke-dasharray': '3 3' });
+  line(svg, P.X(q.re), P.Y(q.im), P.X(q.re), cy0, { stroke: COL.dark, 'stroke-dasharray': '3 3' });
+  line(svg, P.X(s.re), P.Y(s.im), P.X(s.re), cy0, { stroke: COL.ink, 'stroke-dasharray': '1 3' });
+  arrowU(svg, P, O0, e, { color: COL.input, w: 1.8, id: 'eA' });
+  arrowU(svg, P, O0, s, { color: COL.ink, w: 3, id: 'sum' });
+  arrowU(svg, P, O0, q, { color: COL.dark, id: 'diff' });
+  arrowU(svg, P, O0, p, { color: COL.out, id: 'plus' });
+  endLabel(svg, P, O0, p, String.raw`$e^{i(A+B)}$`, COL.out);
+  endLabel(svg, P, O0, q, String.raw`$e^{i(A-B)}$`, COL.dark);
+  if (cxAbs(s) > 0.15) endLabel(svg, P, O0, s, String.raw`$2\cos B\,e^{iA}$`, COL.ink);
+  {   // e^{iA} lies on the sum's line, so its label sits beside the tip, away from e^{i(A+B)}
+    let nx = -e.im, ny = e.re;
+    if (nx * (p.re - e.re) + ny * (p.im - e.im) > 0) { nx = -nx; ny = -ny; }
+    halo(svgTex(svg, P.X(e.re + 0.16 * nx), P.Y(e.im + 0.16 * ny), String.raw`$e^{iA}$`, { w: 50, size: 14, fill: COL.text3 }));
+  }
+  const avg = Math.cos(A) * Math.cos(B), below = s.im >= 0 ? 1 : -1;
+  dot(svg, P.X(s.re), cy0, 4, COL.ink);
+  dot(svg, P.X(avg), cy0, 6, 'none', { stroke: COL.ink, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'avg' });
+  halo(svgTex(svg, P.X(avg), cy0 + 17 * below, String.raw`$\cos A\cos B$`, { w: 120, size: 14, fill: COL.ink }));
+}
+function slideProduct(widget, side) {
+  let Ad = 60, Bd = 30, lit = '';
+  const cA = ctl('$A$', { id: 'A', min: -180, max: 180, step: 1, value: Ad, fmt: v => v + '°', onInput: v => { Ad = v; update(); } });
+  const cB = ctl('$B$', { id: 'B', min: -180, max: 180, step: 1, value: Bd, fmt: v => v + '°', onInput: v => { Bd = v; update(); } });
+  const rL = readout('left', String.raw`$\cos A\cos B$`);
+  const rR = readout('right', 'average of the two shadows');
+  const rS = readout('diag', String.raw`$2\cos B$, the diagonal`);
+  const plot = proofLeft(widget, {
+    controls: [cA.el, cB.el],
+    draw: (svg, W, Hh) => drawProductProof(svg, W, Hh, Ad, Bd, lit),
+    legend: [
+      { color: SW.out, text: String.raw`blue: $e^{i(A+B)}$` },
+      { color: SW.dark, text: String.raw`solid: $e^{i(A-B)}$` },
+      { color: SW.input, text: String.raw`grey: $e^{iA}$` },
+      { color: SW.ink, text: 'solid: their sum' }],
+    readouts: [rL, rR, rS],
+    tests: [
+      String.raw`Keep $A=60^\circ$, $B=30^\circ$. The blue shadow is $0$, the solid one $0.866$; the ring, their average, is $0.433=\cos60^\circ\cos30^\circ$.`,
+      String.raw`Set $B=0$: both arrows sit on $e^{iA}$ and the ring is $\cos A$. Set $B=A$: the ring is $\cos^2A$. Cases are evidence, not proof.`],
+    model: String.raw`The arrows at $A\pm B$ are $e^{iA}$ turned by $B$ each way. Their sum lies along $e^{iA}$, $2\cos B$ long, so its shadow is $2\cos A\cos B$.` });
+  proofRight(side, {
+    id: 'product',
+    goal: { tex: String.raw`\cos A\cos B=\tfrac12\big[\cos(A+B)+\cos(A-B)\big]`, words: String.raw`for all angles $A$, $B$.` },
+    facts: [
+      { words: 'multiplying adds angles', ref: 'step 4' },
+      { tex: String.raw`e^{i\theta}+e^{-i\theta}=2\cos\theta,\ \ \mathrm{Re}\,e^{i\theta}=\cos\theta`, ref: 'step 7' }],
+    lines: [
+      { tex: String.raw`e^{i(A+B)}=e^{iA}e^{iB},\quad e^{i(A-B)}=e^{iA}e^{-iB}`, move: 'Use an earlier result',
+        why: String.raw`angles add (step 4): the two arrows are $e^{iA}$ turned by $B$ each way`, choices: ['Unfold the definition', 'Change variables'], highlight: 'turn' },
+      { tex: String.raw`e^{i(A+B)}+e^{i(A-B)}=e^{iA}\big(e^{iB}+e^{-iB}\big)`, move: 'Rearrange',
+        why: String.raw`add them and take out the common factor $e^{iA}$`, choices: ['Telescope', 'Compute it two ways'], highlight: 'sum' },
+      { tex: String.raw`e^{i(A+B)}+e^{i(A-B)}=2\cos B\;e^{iA}`, move: 'Use an earlier result',
+        why: String.raw`two mirror arrows add to twice the cosine (step 7, line 5)`, choices: ['Use symmetry', 'Name a piece'], highlight: 'along' },
+      { tex: String.raw`\cos(A+B)+\cos(A-B)=2\cos B\cos A`, move: 'Unfold the definition',
+        why: String.raw`take real parts, the shadows: $\mathrm{Re}$ of a sum is the sum of the $\mathrm{Re}$ parts. Then halve both sides`,
+        choices: ['Undo with the inverse', 'Rearrange'], highlight: 'shadow' }],
+    lookBack: [
+      { q: 'What is it good for?',
+        a: String.raw`A voice $\cos B$ times a fast carrier $\cos A$ gives two waves near the carrier, at $A\pm B$: the voice moves up, and a second voice can share the wire (L14 26:06).` },
+      { q: 'What else does the same proof give?',
+        a: String.raw`$B=A$: $\cos^2A=\tfrac12(1+\cos2A)$ (L16 11:07). Imaginary parts of line 3: $\sin(A+B)+\sin(A-B)=2\sin A\cos B$.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const A = Ad * PI / 180, B = Bd * PI / 180;
+    rL.set(fx(Math.cos(A) * Math.cos(B), 3));
+    rR.set(fx(0.5 * (Math.cos(A + B) + Math.cos(A - B)), 3));
+    rS.set(fx(2 * Math.cos(B), 3));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 10: why the sum of arrows has its closed form (proof) ----------
+// The chain of arrows e^{ikx}, k=-N..N, from 0; its corners lie on a circle of radius 1/(2 sin(x/2)).
+function sumGeom(Nn, x) {
+  const cs = [O0];
+  for (let k = -Nn; k <= Nn; k++) cs.push(cxAdd(cs[cs.length - 1], cis(k * x)));
+  const sx = Math.sin(x / 2), phi = (Nn + 0.5) * x;
+  return { cs, S: cs[cs.length - 1], rho: 1 / (2 * Math.abs(sx)), O: C(Math.sin(phi) / (2 * sx), Math.cos(phi) / (2 * sx)) };
+}
+function drawSumProof(svg, W, H, Nn, deg, lit) {
+  const x = deg * PI / 180, g = sumGeom(Nn, x), cs = g.cs, S = g.S, Oc = g.O, last = cs.length - 1;
+  caption(svg, W, lit, {
+    arrows: String.raw`amber: each arrow is the one before turned by $x$: $e^{ikx}=r^k$`,
+    radii: String.raw`amber: the arrow $r^0$ is the step between two radii from the center`,
+    chord: String.raw`amber: all steps added: last radius minus first radius, the chord $S$`,
+    mirror: String.raw`amber: the first and last radii are mirror images: their difference has no up part`,
+    sum: String.raw`amber: $S=\sin\big((N+\tfrac12)x\big)/\sin(x/2)=` + fx(S.re, 3) + '$' },
+    String.raw`the arrows end to end, their sum $S$, and the circle through the corners`);
+  const xs = cs.map(c => c.re), ys = cs.map(c => c.im);
+  const ext = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys), 1);
+  const showC = 2 * g.rho <= 2.6 * ext;
+  if (showC) { xs.push(Oc.re - g.rho, Oc.re + g.rho); ys.push(Oc.im - g.rho, Oc.im + g.rho); }
+  const fit = { x0: Math.min(...xs) - 0.3, x1: Math.max(...xs) + 0.3, y0: Math.min(...ys) - 0.3, y1: Math.max(...ys) + 0.3 };
+  const P = plane(svg, W, H, { top: 26, fit });
+  circleU(svg, P, Oc, g.rho, { stroke: COL.grid, 'stroke-dasharray': '5 4' });
+  const mid = [cs[Nn], cs[Nn + 1]];
+  if (lit === 'arrows') glowPts(svg, toPx(P, cs), 10);
+  if (lit === 'radii') { glowPts(svg, toPx(P, [Oc, mid[0]]), 8); glowPts(svg, toPx(P, [Oc, mid[1]]), 8); glowPts(svg, toPx(P, mid), 12); }
+  if (lit === 'chord' || lit === 'mirror') { glowPts(svg, toPx(P, [Oc, cs[0]]), 8); glowPts(svg, toPx(P, [Oc, cs[last]]), 8); }
+  if (lit === 'chord' || lit === 'sum') glowPts(svg, toPx(P, [O0, S]), 12);
+  if (lit === 'mirror') line(svg, P.X(Oc.re), 30, P.X(Oc.re), H - 4, { stroke: COL.ink, 'stroke-dasharray': '3 4' });
+  const radii = lit === 'radii' ? [mid[0], mid[1]] : (lit === 'chord' || lit === 'mirror') ? [cs[0], cs[last]] : [];
+  radii.forEach(c => line(svg, P.X(Oc.re), P.Y(Oc.im), P.X(c.re), P.Y(c.im), { stroke: COL.dark, 'stroke-width': 1.3 }));
+  if (P.X(Oc.re) > 0 && P.X(Oc.re) < W && P.Y(Oc.im) > 26 && P.Y(Oc.im) < H) {
+    dot(svg, P.X(Oc.re), P.Y(Oc.im), 3.5, COL.muted);
+    halo(svgTex(svg, P.X(Oc.re) + 8, P.Y(Oc.im) - 10, 'center', { w: 70, anchor: 'start', size: 14, fill: COL.muted }));
+  }
+  for (let j = 0; j < last; j++) arrowU(svg, P, cs[j], cs[j + 1], { color: COL.light, w: 2, id: 'k' + j });
+  arrowU(svg, P, O0, S, { color: COL.out, w: 3.5, id: 'S' });
+  endLabel(svg, P, O0, S, '$S$', COL.out);
+}
+function slideWhySum(widget, side) {
+  let Nn = 2, deg = 60, lit = '';
+  const cN = ctl('$N$', { id: 'N', min: 1, max: 8, step: 1, value: Nn, fmt: v => String(v), onInput: v => { Nn = v; update(); } });
+  const cX = ctl('$x$', { id: 'x', min: 10, max: 350, step: 1, value: deg, fmt: v => v + '°', onInput: v => { deg = v; update(); } });
+  const rS = readout('sum', String.raw`$S$, the arrows added`);
+  const rC = readout('closed', 'the closed form');
+  const rR = readout('radius', String.raw`radius $\tfrac{1}{2\sin(x/2)}$`);
+  const plot = proofLeft(widget, {
+    controls: [cN.el, cX.el],
+    draw: (svg, W, Hh) => drawSumProof(svg, W, Hh, Nn, deg, lit),
+    legend: [
+      { color: SW.light, text: String.raw`thin blue arrows: $e^{ikx}$` },
+      { color: SW.out, text: String.raw`blue: sum $S$` },
+      { color: SW.grey, dash: true, text: 'circle through the corners' }],
+    readouts: [rS, rC, rR],
+    tests: [
+      String.raw`Guess $S$ at $N=2$, $x=60^\circ$: five arrows, five sides of a hexagon. The formula says $\sin150^\circ/\sin30^\circ=1$.`,
+      String.raw`Move $x$ and $N$: the corners stay on the dashed circle, and $S$ equals the formula. Cases are evidence, not proof.`],
+    model: String.raw`Each arrow is the one before turned by $x$, so the chain walks round a circle. The sum is the chord from start to end: zero when the chain closes a loop.` });
+  proofRight(side, {
+    id: 'sum-arrows',
+    goal: { tex: String.raw`\textstyle\sum_{k=-N}^{N}e^{ikx}=\frac{\sin((N+\frac12)x)}{\sin(x/2)}`,
+      words: String.raw`when $x$ is not a whole number of turns.` },
+    facts: [
+      { words: 'multiplying adds angles', ref: 'step 4' },
+      { tex: String.raw`e^{i\theta}=\cos\theta+i\sin\theta`, ref: 'step 5' }],
+    lines: [
+      { tex: String.raw`\textstyle S=\sum_{k=-N}^{N}r^k,\qquad r=e^{ix}`, move: 'Name a piece',
+        why: String.raw`$r$: one turn by $x$, so $r^k=e^{ikx}$ (step 7, line 1); $r^{1/2}=e^{ix/2}$`,
+        choices: ['Change variables', 'Unfold the definition'], highlight: 'arrows' },
+      { tex: String.raw`\textstyle r^k=\frac{r^{k+1/2}-r^{k-1/2}}{r^{1/2}-r^{-1/2}}`, move: 'Add zero or multiply by one',
+        why: String.raw`multiply $r^k$ by $\frac{r^{1/2}-r^{-1/2}}{r^{1/2}-r^{-1/2}}=1$; on top, angles add`, choices: ['Rearrange', 'Telescope'], highlight: 'radii' },
+      { tex: String.raw`\textstyle S=\frac{r^{N+1/2}-r^{-N-1/2}}{r^{1/2}-r^{-1/2}}`, move: 'Telescope',
+        why: String.raw`add line 2 over $k$: the middle terms cancel in pairs; only the two ends stay`,
+        choices: ['Use an earlier result', 'Induction'], highlight: 'chord' },
+      { tex: String.raw`e^{i\theta}-e^{-i\theta}=2i\sin\theta`, move: 'Use symmetry',
+        why: String.raw`$e^{-i\theta}$ is the mirror image of $e^{i\theta}$: the $\cos$ parts cancel, the $\sin$ parts add (Primer · Waves, step 8)`,
+        choices: ['Unfold the definition', 'Compare or bound'], highlight: 'mirror' },
+      { tex: String.raw`\textstyle S=\frac{2i\sin((N+\frac12)x)}{2i\sin(x/2)}=\frac{\sin((N+\frac12)x)}{\sin(x/2)}`, move: 'Rearrange',
+        why: String.raw`line 4 above, at $\theta=(N+\frac12)x$, and below, at $\theta=\frac x2$; cancel $2i$`, choices: ['Take a limit', 'Undo with the inverse'], highlight: 'sum' }],
+    lookBack: [
+      { q: 'Where did the dashed circle come from?',
+        a: String.raw`Line 2 makes each arrow the step between two radii from one center, $\tfrac{1}{2\sin(x/2)}$ long. So the corners lie on one circle, and $S$ is a chord (line 3).` },
+      { q: 'Where does it break?',
+        a: String.raw`At $x=0$ or a whole turn, line 2 divides by zero. There every arrow is $1$ and $S=2N+1$; near $0$, $\sin u\approx u$ gives the closed form $\approx2N+1$ too.` },
+      { q: 'How is it the geometric sum?',
+        a: String.raw`$S=r^{-N}(1+r+\cdots+r^{2N})$, the sum of Primer · Series, step 3, turned back by $r^{-N}$. Mirror pairs $e^{\pm ikx}$ make it real.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const x = deg * PI / 180, g = sumGeom(Nn, x);
+    rS.set(fx(g.S.re, 3));
+    rC.set(fx(Math.sin((Nn + 0.5) * x) / Math.sin(x / 2), 3));
+    rR.set(fx(g.rho, 3));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 12: why differentiating multiplies by i omega (proof) ----------
+function derivParts(st) {
+  const w = st.w, t = st.t, hs = st.h;
+  const z = cis(w * t), z2 = cis(w * (t + hs));
+  const s1 = cxScale(cxAdd(cis(w * hs), C(-1, 0)), 1 / hs);        // (e^{i w h} - 1) / h
+  return {
+    z, z2, s1,
+    sec: cxScale(cxAdd(z2, cxScale(z, -1)), 1 / hs),              // (z(t+h) - z(t)) / h = z s1
+    tan: cxMul(C(0, w), z) };                                      // i w z
+}
+function drawDerivProof(svg, W, H, st, lit) {
+  caption(svg, W, lit, {
+    secant: String.raw`amber: the change from $t$ to $t+h$, over $h$: the secant, $z(t)$ times $\tfrac{e^{i\omega h}-1}{h}$`,
+    parts: String.raw`amber: its parts: $\tfrac{\cos\omega h-1}{h}$ along $z$, $\tfrac{\sin\omega h}{h}$ along $iz$`,
+    limit: String.raw`amber: as $h\to0$ the part along $z$ goes to $0$, the part along $iz$ to $\omega$`,
+    tangent: String.raw`amber: the slope $i\omega z$: a quarter turn ahead of $z$, $\omega$ long` },
+    String.raw`$z(t)$ and $z(t+h)$ on the circle; the secant and the slope at $z(t)$`);
+  const d = derivParts(st), z = d.z, iz = cxMul(C(0, 1), z);
+  const secEnd = cxAdd(z, d.sec), tanEnd = cxAdd(z, d.tan);
+  const knee = cxAdd(z, cxScale(z, d.s1.re));                     // the part along z, then the part along iz
+  const pts = [secEnd, tanEnd, C(1.1, 0), C(-1.1, 0), C(0, 1.1), C(0, -1.1)];
+  const xs = pts.map(q => q.re), ys = pts.map(q => q.im);
+  const P = plane(svg, W, H, { top: 26, fit: { x0: Math.min(...xs) - 0.3, x1: Math.max(...xs) + 0.3, y0: Math.min(...ys) - 0.2, y1: Math.max(...ys) + 0.2 } });
+  circleU(svg, P, O0, 1);
+  const arc = [];
+  for (let i = 0; i <= 40; i++) arc.push(cis(st.w * (st.t + st.h * i / 40)));
+  pathPts(svg, toPx(P, arc), { stroke: COL.bluePale, 'stroke-width': 6, 'stroke-linecap': 'round' });
+  if (lit === 'secant') { glowPts(svg, toPx(P, [z, secEnd]), 11); glowPts(svg, toPx(P, [z, d.z2]), 8); }
+  if (lit === 'parts') glowPts(svg, toPx(P, [z, knee, secEnd]), 10);
+  if (lit === 'limit') { glowPts(svg, toPx(P, [z, knee]), 10); glowPts(svg, toPx(P, [z, tanEnd]), 10); }
+  if (lit === 'tangent') glowPts(svg, toPx(P, [z, tanEnd]), 12);
+  line(svg, P.X(0), P.Y(0), P.X(d.z2.re), P.Y(d.z2.im), { stroke: COL.grid, 'stroke-width': 1.5 });
+  midLabel(svg, P, O0, d.z2, '$z(t+h)$', COL.muted, z);
+  line(svg, P.X(z.re), P.Y(z.im), P.X(d.z2.re), P.Y(d.z2.im), { stroke: COL.muted, 'stroke-width': 1.5 });
+  if (lit === 'parts' || lit === 'limit') pathPts(svg, toPx(P, [z, knee, secEnd]), { stroke: COL.ink, 'stroke-width': 1.3, 'stroke-dasharray': '3 3' });
+  arrowU(svg, P, O0, z, { color: COL.out, id: 'z' });
+  midLabel(svg, P, O0, z, '$z(t)$', COL.out, d.z2);
+  rightMark(svg, P, z, cxScale(z, -1), iz, 9);
+  arrowU(svg, P, z, tanEnd, { color: COL.dark, id: 'slope' });
+  arrowU(svg, P, z, secEnd, { color: COL.dark, dash: '6 4', w: 2, id: 'secant' });
+  endLabel(svg, P, z, tanEnd, String.raw`$i\omega z$`, COL.dark);
+  endLabel(svg, P, z, secEnd, 'secant', COL.dark, { size: 14 });
+}
+function slideWhyDeriv(widget, side) {
+  const st = { w: 2, t: 0.5, h: 0.5 };
+  let lit = '';
+  const cW = ctl(String.raw`$\omega$`, { id: 'omega', min: 0.5, max: 3, step: 0.05, value: st.w, fmt: val2, onInput: v => { st.w = v; update(); } });
+  const cT = ctl('$t$', { id: 't', min: 0, max: 6.28, step: 0.01, value: st.t, fmt: val2, onInput: v => { st.t = v; update(); } });
+  const cH = ctl('$h$', { id: 'h', min: 0.001, max: 1, step: 0.001, value: st.h, fmt: v => v.toFixed(3), onInput: v => { st.h = v; update(); } });
+  const rSec = readout('secant', String.raw`secant $\tfrac{z(t+h)-z(t)}{h}$`);
+  const rTan = readout('slope', String.raw`$i\omega z$`);
+  const rLen = readout('lens', String.raw`secant length, and $\omega$`);
+  const plot = proofLeft(widget, {
+    controls: [cW.el, cT.el, cH.el],
+    draw: (svg, W, Hh) => drawDerivProof(svg, W, Hh, st, lit),
+    legend: [
+      { color: SW.out, text: String.raw`blue: $z=e^{i\omega t}$` },
+      { color: SW.grey, text: String.raw`grey: $z(t+h)$` },
+      { color: SW.dark, dash: true, text: 'secant' },
+      { color: SW.dark, text: String.raw`slope $i\omega z$` }],
+    readouts: [rSec, rTan, rLen],
+    tests: [
+      String.raw`Shrink $h$ from $0.5$ to $0.001$: the dashed secant closes in on the solid arrow, and its readout on $i\omega z$.`,
+      String.raw`Set $\omega=3$, $h=0.5$: the secant is $2.727$ long; at $h=0.001$ it is $3.000$. Cases are evidence, not proof.`],
+    model: String.raw`In a short time $h$ the arrow turns by $\omega h$, the same small turn wherever it is. So the change is $z$ times a fixed small step, about $i\omega h$.` });
+  proofRight(side, {
+    id: 'derivative',
+    goal: { tex: String.raw`\frac{d}{dt}e^{i\omega t}=i\omega\,e^{i\omega t}`, words: String.raw`for every $t$. Write $z(t)=e^{i\omega t}$.` },
+    facts: [
+      { tex: String.raw`\tfrac{dz}{dt}=\lim_{h\to0}\tfrac{z(t+h)-z(t)}{h}`, ref: 'Primer · Derivatives, step 2' },
+      { words: String.raw`angles add (step 4); $e^{i\theta}=\cos\theta+i\sin\theta$ (step 5)` }],
+    lines: [
+      { tex: String.raw`\textstyle\frac{z(t+h)-z(t)}{h}=z(t)\,\frac{e^{i\omega h}-1}{h}`, move: 'Use an earlier result',
+        why: String.raw`$z(t+h)=z(t)\,e^{i\omega h}$: angles add (step 4). Take out $z(t)$`, choices: ['Rearrange', 'Name a piece'], highlight: 'secant' },
+      { tex: String.raw`\textstyle\frac{e^{i\omega h}-1}{h}=\frac{\cos\omega h-1}{h}+i\,\frac{\sin\omega h}{h}`, move: 'Use an earlier result',
+        why: String.raw`Euler's formula at $\theta=\omega h$`, choices: ['Change variables', 'Compare or bound'], highlight: 'parts' },
+      { tex: String.raw`\textstyle\frac{\cos\omega h-1}{h}\to0,\qquad\frac{\sin\omega h}{h}\to\omega`, move: 'Take a limit',
+        why: String.raw`$h\to0$: $\omega$ times the slopes of $\cos$ and $\sin$ at $0$, which are $0$ and $1$ (Primer · Waves, step 12)`,
+        choices: ['Compare or bound', 'Contradiction'], highlight: 'limit' },
+      { tex: String.raw`\textstyle\frac{dz}{dt}=z(t)\,(0+i\omega)=i\omega\,e^{i\omega t}`, move: 'Unfold the definition',
+        why: 'the limit of line 1', choices: ['Rearrange', 'Use symmetry'], highlight: 'tangent' }],
+    lookBack: [
+      { q: String.raw`What did the proof use about $e^{i\omega t}$?`,
+        a: String.raw`Only that a later arrow is the earlier one times a fixed factor, $z(t+h)=z(t)\,e^{i\omega h}$. So the slope is $z$ times a fixed number, as for $e^{rt}$.` },
+      { q: 'What does a second derivative do?',
+        a: String.raw`Turn and stretch twice: $(i\omega)^2=-\omega^2$, so $z''=-\omega^2z$, pointing back at the center. With $\omega=1$: $y''=-y$ of Primer · Waves, step 12.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); }, CLOSING);
+  side.querySelector('fl-proof-steps').primerMoves = PRIMER_MOVES;
+  side.querySelector('fl-proof-steps').endNote = NEXT;
+  function update() {
+    const d = derivParts(st);
+    rSec.set('$' + cxTex(d.sec, 3) + '$');
+    rTan.set('$' + cxTex(d.tan, 3) + '$');
+    rLen.set(fx(cxAbs(d.sec), 3) + ' and ' + fx(st.w, 3));
+    plot.redraw();
+  }
+  update();
+}
+// The view's close. The primer's last proof lists every move the primer's proofs used, in order of first
+// use, once it is proved, so the list never gives a pick away; the last step names what comes next.
+const CLOSING = 'Look back: under the picture.';
+const PRIMER_MOVES = ['Rearrange', 'Unfold the definition', 'Compute it two ways', 'Use an earlier result', 'Name a piece', 'Induction', 'Use symmetry', 'Add zero or multiply by one', 'Telescope', 'Take a limit'];
+const NEXT = 'Next: Primer · Matrices.';
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'i-arrow', title: 'A complex number is an arrow in a plane', tag: 'Used in L14 14:43 · L16 00:35',
+    question: String.raw`What is a complex number, and what does it buy you?`,
+    formula: String.raw`$$i^2=-1$$`, mount: slideI },
+  { id: 'why-quarter-turn', proof: true, title: String.raw`Why it's true: multiplying by $i$ is a quarter turn`, tag: 'Used in L14 14:43 · L16 00:35',
+    question: String.raw`Why does multiplying by $i$ turn every arrow a quarter turn counterclockwise?`, mount: slideWhyTurn },
+  { id: 'multiply', title: 'Multiplying adds angles and multiplies lengths', tag: 'Used in L16 17:55-19:29',
+    question: String.raw`What does multiplying two complex numbers do to length and angle?`,
+    formula: String.raw`$$\begin{aligned}|zw|&=|z|\,|w|\\ \arg(zw)&=\arg z+\arg w\end{aligned}$$`, mount: slideMul },
+  { id: 'why-multiply', proof: true, title: String.raw`Why it's true: lengths multiply, angles add`, tag: 'Used in L16 17:55-19:29',
+    question: String.raw`Why does $zw$ have length $|z|\,|w|$ and angle $\arg z+\arg w$?`, mount: slideWhyMul },
+  { id: 'euler', proof: true, title: String.raw`Why it's true: $e^{i\theta}=\cos\theta+i\sin\theta$`, tag: 'Used in L14 14:43-15:13',
+    question: String.raw`Why does putting $i\theta$ into the series of $e^x$ give the unit arrow at angle $\theta$?`, mount: slideEuler },
+  { id: 'shadow', title: 'The turning arrow as a complex number', tag: 'Used in L14 14:43 · L15 04:55-05:28 · L16 00:35',
+    question: String.raw`How does a complex number turn the arrow of a wave, sample by sample?`,
+    formula: String.raw`$$A\cos(2\pi fn+\varphi)=\operatorname{Re}\!\big(A e^{i\varphi}\,e^{i2\pi fn}\big)$$`, mount: slideComplex },
+  { id: 'why-shadow', proof: true, title: String.raw`Why it's true: the shadow is $A\cos(2\pi fn+\varphi)$`, tag: 'Used in L14 14:43 · L15 04:55-05:28 · L16 00:35',
+    question: String.raw`Why does one multiplication per sample trace a cosine, and why is $\cos\theta$ two half arrows?`, mount: slideWhyShadow },
+  { id: 'product', proof: true, title: String.raw`Why it's true: $\cos A\cos B=\tfrac12[\cos(A+B)+\cos(A-B)]$`, tag: 'Used in L14 25:33-26:36 · L16 11:07',
+    question: String.raw`How do trig identities come for free?`, mount: slideProduct },
+  { id: 'sum-arrows', title: 'Adding many arrows can cancel', tag: 'Used in L15 27:00-27:30 · L16 24:45-25:16',
+    question: String.raw`What happens when you add many arrows?`,
+    formula: String.raw`$$\sum_{k=-N}^{N}e^{ikx}=\frac{\sin\big((N+\tfrac12)x\big)}{\sin(x/2)}$$`, mount: slideSum },
+  { id: 'why-sum-arrows', proof: true, title: String.raw`Why it's true: the closed form of a sum of arrows`, tag: 'Used in L15 27:00-27:30 · L16 24:45-25:16',
+    question: String.raw`Why do $2N+1$ arrows, each turned $x$ from the last, add to a ratio of two sines?`, mount: slideWhySum },
+  { id: 'derivative', title: String.raw`Differentiating turns an arrow and multiplies it by $\omega$`, tag: 'Used in L17 16:44',
+    question: String.raw`What does differentiating do to $e^{i\omega t}$?`,
+    formula: String.raw`$$\frac{d}{dt}e^{i\omega t}=i\omega\,e^{i\omega t}$$`, mount: slideDeriv },
+  { id: 'why-derivative', proof: true, title: String.raw`Why it's true: $\tfrac{d}{dt}e^{i\omega t}=i\omega\,e^{i\omega t}$`, tag: 'Used in L17 16:44',
+    question: String.raw`Why is the slope of the turning arrow $i\omega$ times the arrow?`, mount: slideWhyDeriv },
+];
+// A title in plain text, for data-title and the dots' tooltips.
+const plainTitle = s => s.title.replace(/\\tfrac\{d\}\{dt\}/g, 'd/dt').replace(/\\tfrac12/g, '½').replace(/\\theta/g, 'θ')
+  .replace(/\\omega/g, 'ω').replace(/\\varphi/g, 'φ').replace(/\\pi/g, 'π').replace(/\\(cos|sin)/g, '$1 ').replace(/\\,/g, ' ')
+  .replace(/[${}]/g, '').replace(/ +/g, ' ').replace(/ ([=)\]+])/g, '$1');
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  epoch++;
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side',
+    h('div', 'tag', s.tag),
+    setTex(h('h2'), s.title),
+    setTex(h('p', 'question'), s.question),
+    s.formula ? setTex(h('div', 'formula'), s.formula) : null);
+  const sec = mark(h('section', 'slide' + (s.proof ? ' proof-slide' : '')), 'step', s.id, plainTitle(s));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  s.mount(widget, side);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = plainTitle(s);
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],input[type=number],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

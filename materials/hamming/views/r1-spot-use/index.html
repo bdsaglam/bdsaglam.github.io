@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Spot it, use it: high dimensions in your work</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Same look as l13-shannon-moves: white page, blue accent, red only for a flipped bit. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --good:var(--pal-good-ink); --bad:var(--pal-red); --badbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 28px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1.2vh,14px) 28px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 28px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: the widget on the left (about 3/5); question, try-steps, source and takeaway on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:clamp(20px,2.6vw,40px)}
+.widget{min-width:0;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(8px,1.6vh,14px)}
+.tag{font:15px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(22px,2.2vw,30px);line-height:1.2;margin:0;font-weight:650}
+.q{margin:0;font-size:17px;font-weight:600;line-height:1.35}
+.kicker{font-size:14px;color:var(--muted);margin:0 0 4px}
+.blk{display:flex;flex-direction:column;gap:4px}
+.src{margin:0;font-size:15px;line-height:1.4;color:var(--muted)}
+.takeaway{margin:0;padding:12px 14px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;line-height:1.4}
+.takeaway.idle{background:var(--pal-soft-hover);border-left-color:var(--line);color:var(--muted);font-style:italic}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px;line-height:1.4}
+.tries li::marker{color:var(--accent);font-weight:600}
+
+/* The problem box */
+.prob{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:6px 14px;background:var(--pal-soft-hover);font-size:16px;line-height:1.4}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob p{margin:0}
+
+/* Three cards for a pick step: sized by their content */
+.opts{display:flex;flex-direction:column;gap:clamp(4px,0.5vw,8px)}
+.opts{flex:1 1 auto;min-height:0}
+.opt{flex:1 1 0;align-content:center;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 14px;padding:clamp(6px,0.75vw,11px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;gap:3px;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:16px}
+.opt .letter{font-weight:700;color:var(--accent)}
+.opt .who{font-size:14px;color:var(--muted);text-align:right}
+.opt .body{font-size:clamp(16px,1.4vw,19px);line-height:1.3}
+.opt .asm{margin:0;font-size:16px;line-height:1.35;color:var(--muted)}
+.opt .verdict{font-size:16px;line-height:1.35;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.right{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.right .who{color:var(--pal-accent-deep);font-weight:600}
+
+/* The reveal fills what is left. Before a pick it holds the show-answer button. */
+.reveal{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:16px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.reveal.idle{background:var(--pal-soft-hover);color:var(--muted)}
+.rv{margin:0;line-height:1.35}
+.rv .k{font-weight:650;color:var(--accent)}
+.rv .hold{color:var(--muted)}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.btn{font:inherit;padding:7px 16px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent)}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* Sort step: one row per setting, two choices each */
+.rows{flex:1 1 auto;min-height:auto;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(3px,0.5vw,6px)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:clamp(4px,0.6vw,8px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel)}
+.row .txt{font-size:16px;line-height:1.3}
+.row .btns{display:flex;gap:6px}
+.row .btns .btn{padding:5px 10px;font-size:15px;min-width:0}
+.row .btns .btn.sel{background:var(--chip);border-color:var(--accent);color:var(--accent);font-weight:600}
+.row .res{grid-column:1 / -1;margin:0;font-size:16px;line-height:1.3;color:var(--fg);border-top:1px dashed var(--pal-soft-2);padding-top:4px}
+.row .res.ok{color:var(--good)}
+.row .res.no{color:var(--bad)}
+.row.right{border-color:var(--accent)}
+.row.wrong{background:var(--badbg)}
+.score{margin:0;font-size:17px;font-weight:600}
+
+/* Project steps: a card with a design, the place where high dimensions show up, and two questions */
+/* Project slides carry long answers: the widget column takes more width. */
+.slide.wide{grid-template-columns:minmax(0,2.4fr) minmax(0,1fr)}
+.card{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--pal-soft-hover);display:flex;flex-direction:column;gap:5px;font-size:clamp(16px,1.3vw,18px);line-height:1.4}
+.card .lbl{font-weight:650;color:var(--accent)}
+.card p{margin:0}
+.qa{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-radius:10px;padding:8px 14px;background:var(--pal-panel)}
+.qa .qt{margin:0;font-size:clamp(16px,1.3vw,18px);line-height:1.35}
+.qa .qt .k{font-weight:650;color:var(--accent)}
+.qa .qans{margin:0;font-size:16px;line-height:1.4;padding-top:6px;border-top:1px solid var(--line)}
+.qa .btn{align-self:flex-start}
+.status{font-size:15px;color:var(--muted)}
+.status.err{color:var(--bad)}
+
+/* Short windows: tighter chrome and gaps, same type sizes */
+@media (max-height:660px){
+  header{padding-top:6px}
+  #stage{padding:4px 28px}
+  footer{padding:5px 28px}
+  .reveal{gap:3px}
+  .rv{line-height:1.3}
+  .opts{gap:3px}
+  .opt{padding:5px 12px}
+  .widget{gap:5px}
+  .row{padding:4px 10px}
+  .rows{gap:3px}
+  .row .res{padding-top:2px}
+  .card{padding:6px 12px;gap:3px}
+}
+</style>
+</head>
+<body>
+<header>Recitation 1: High-dimensional space. Part 3 of 3: where it arises, how to use it, where it hurts, how to spot it.</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+// $...$ and $$...$$ render with KaTeX. If the CDN did not load, the text stays as typed.
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function flat(s) { return String(s == null ? '' : s).replace(/\s*[\r\n]+\s*/g, ' ').trim(); }
+// Session events. With no bridge, nothing is sent and the view still works.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* no bridge */ }
+}
+
+const TRIES_DEFAULT = ['Read the problem.', 'Pick the answer you expect.', 'Read every verdict, not only yours.'];
+
+// ---------- the seven steps ----------
+// kind 'sort': mark each setting with one of two labels (labels, default high-dimensional or not), then check.
+// kind 'pick': three ways to model it; each card has an assumption and a verdict.
+// kind 'projects': a project card with two questions, each with an answer to reveal.
+const SLIDES = [
+  { kind: 'sort', id: 'where-it-arises', tag: 'Recitation 1 · 1 of 7', title: 'Where does high dimension come from?',
+    question: 'Which settings are secretly high-dimensional, and what is n?',
+    problem: 'A point is high-dimensional when it has many numbers, one axis for each. Mark each setting, then check.',
+    tries: ['Mark each setting: many numbers, or few?', 'Check, then read n for each setting.', 'Find the setting that looks big but has n = 1.'],
+    rows: [
+      { text: 'A reply of 1,000 bits sent over a noisy wire.', high: true, n: '1,000', why: 'One reply is one corner of a cube, one axis per bit.' },
+      { text: 'A learning rate of 0.001.', high: false, n: '1', why: 'One number is one axis.' },
+      { text: 'A sentence turned into a list of 768 numbers (an embedding).', high: true, n: '768', why: 'Each number is one coordinate.' },
+      { text: 'The class of an image: cat, dog, or bird.', high: false, n: '1', why: 'One choice with three values: one axis, three positions.' },
+      { text: 'A sweep over 8 settings of a model.', high: true, n: '8', why: 'Each setting is one axis: a grid in 8 dimensions.' },
+      { text: 'All weights of a model with 7 billion parameters.', high: true, n: String.raw`$7 \times 10^{9}$`, why: 'One point is one full setting of all weights.' }
+    ],
+    source: 'Hamming, Lecture 9: a design is a point in a space with one axis for each design choice.',
+    takeaway: 'A setting is high-dimensional when it has many numbers or choices. Count the numbers first; the count is n.' },
+
+  { kind: 'pick', id: 'lift-to-separate', tag: 'Recitation 1 · 2 of 7', title: 'Lift the points: a flat cut may then work',
+    question: 'What makes a straight cut possible when no line in the plane separates the classes?',
+    problem: 'Class A sits in a disk at the center. Class B sits in a ring around it. No straight line separates them in the plane. Which move makes a flat cut possible?',
+    tries: ['Read the two classes.', 'Pick the move that makes a flat cut possible.', 'Check the squared distance: which class has the small value?'],
+    right: 1,
+    options: [
+      { text: 'Add more points to each class.', assumes: 'Assumes the problem is the number of points.', verdict: 'More points of the same shape stay just as tangled.' },
+      { text: String.raw`Give each point a third coordinate, its squared distance $r^{2}$ from the center. Then a flat plane $z = c$ separates the disk from the ring.`, assumes: 'Assumes the new coordinate can be computed.', verdict: 'Right. A flat rule in 3D is a curved rule in the plane.' },
+      { text: 'Fit a more curved line in the same plane.', assumes: 'Assumes a curve is easy to fit.', verdict: 'It can work, but the rule is curved and harder to fit. The lift keeps the rule flat.' }
+    ],
+    reveal: [
+      { k: 'The move', v: 'Lift the points to more dimensions. A flat rule there is a curved rule in the original plane.' },
+      { k: 'Cover (1965)', v: String.raw`With $N$ points in $d$ dimensions, most random labelings are linearly separable when $N$ is below $2d$. At $N = 2d$, half of them are.` },
+      { k: 'Random lifts', v: 'Rahimi and Recht (2007): random features let a linear learner match a kernel machine.' }
+    ],
+    source: 'Cover, IEEE Trans. Electronic Computers 14 (1965), as commonly cited; Rahimi and Recht, Random Features for Large-Scale Kernel Machines, NIPS 2007. Hamming made the same move in Lecture 12: lifting the walk into more dimensions (part 1).',
+    takeaway: 'A hard problem in few dimensions can become a flat one in more. Lift first, then cut with a plain linear rule.' },
+
+  { kind: 'pick', id: 'random-projection', tag: 'Recitation 1 · 3 of 7', title: 'Random directions keep distances',
+    question: 'How do you shrink many numbers per point and keep the distances?',
+    problem: 'You have $N$ points, each with 10,000 numbers. You need 500 numbers per point, and pairwise distances should change only a little. Which map do you use?',
+    tries: ['Read the three maps.', 'Pick the one that keeps distances without training.', 'Check the bound: what must the target size satisfy?'],
+    right: 1,
+    options: [
+      { text: 'Keep the first 500 numbers of each point.', assumes: 'Assumes the signal sits in the first numbers.', verdict: 'Drops information. Distances change a lot if the signal sits in the dropped numbers.' },
+      { text: String.raw`Multiply by a random matrix with $k = 500$ rows. For $N$ points, if $k = O(\log N / \varepsilon^{2})$, all pairwise distances stay within $1 \pm \varepsilon$.`, assumes: 'Assumes random directions keep lengths, since a length is a sum of many small pieces.', verdict: String.raw`Right, with high probability. It needs no training, but $k = 500$ must be large enough for your $N$ and $\varepsilon$.` },
+      { text: 'Learn the best 500 directions first, with gradient descent.', assumes: 'Assumes the data and a loss are ready.', verdict: 'Can fit the task better, but it needs training. The random map needs neither.' }
+    ],
+    reveal: [
+      { k: 'The fact', v: 'A length in many dimensions is a sum of many small pieces, so a random map keeps it up to a small error.' },
+      { k: 'Johnson–Lindenstrauss', v: String.raw`$N$ points map into $k = O(\log N / \varepsilon^{2})$ dimensions with distances within $1 \pm \varepsilon$. Elementary proof: Dasgupta and Gupta (2003).` },
+      { k: 'What it costs', v: 'The map ignores the task. It keeps all distances, including the ones you do not need.' }
+    ],
+    source: 'Dasgupta and Gupta, An Elementary Proof of a Theorem of Johnson and Lindenstrauss, Random Structures and Algorithms 22(1), 2003.',
+    takeaway: 'To shrink many numbers, multiply by a random matrix. It keeps distances for all points at once, without looking at the data.' },
+
+  { kind: 'pick', id: 'random-search', tag: 'Recitation 1 · 4 of 7', title: 'Where it hurts: a grid. Sample at random instead',
+    question: 'Why does a grid waste runs when there are many settings but only a few matter?',
+    problem: 'You tune 10 settings with a budget of 100 runs. Only 2 of them change the result much, and you do not know which 2. How do you spend the 100 runs?',
+    tries: ['Read the budget and the settings.', 'Pick how you would spend the runs.', 'For each choice, count how many values the 2 settings that matter get to try.'],
+    right: 1,
+    options: [
+      { text: 'A 10 × 10 grid over the 2 settings you guess matter. The other 8 stay fixed.', assumes: 'Assumes you know which settings matter.', verdict: 'If a guess is wrong, a setting that matters stays fixed in all 100 runs.' },
+      { text: '100 runs, each drawing all 10 settings at random.', assumes: 'Assumes only a few settings matter.', verdict: 'Right. Every run draws a new value of every setting, so each of the 2 that matter tries 100 values, whichever 2 they are.' },
+      { text: String.raw`A full grid over all 10 settings, 2 values each.`, assumes: 'Assumes 2 values per setting are enough.', verdict: String.raw`That is $2^{10} = 1{,}024$ runs, 10 times the budget, and each setting still tries only 2 values.` }
+    ],
+    reveal: [
+      { k: 'What hurts', v: String.raw`A full grid over $n$ settings with $c$ values each costs $c^{n}$ runs (part 1, the design count). A fixed budget covers a shrinking part of it.` },
+      { k: 'Why random wins', v: String.raw`Look at one setting that matters. A $3 \times 3$ grid of 9 runs tries only 3 of its values; 9 random runs try 9. With few settings that matter, the space is small in effect, and random runs cover it.` },
+      { k: 'What it costs', v: 'Random runs ignore what earlier runs found. When many settings matter at once, you still need many runs.' }
+    ],
+    source: 'Bergstra and Bengio, Random Search for Hyper-Parameter Optimization, JMLR 13 (2012), Figure 1. Hamming, Lecture 9: the design space.',
+    takeaway: 'When there are many settings but few matter, sample them at random. A grid spends its runs repeating the same few values of each setting.' },
+
+  { kind: 'sort', id: 'spot-it', tag: 'Recitation 1 · 5 of 7', title: 'Spot it: does high dimension help or hurt here?',
+    question: 'For each setting, which effect of high dimension is at work, and does it help or hurt?',
+    problem: 'Does high dimension help or hurt here? Mark each, then check: the check names the effect from part 2.',
+    labels: ['Helps', 'Hurts'],
+    tries: ['Mark each setting: helps or hurts.', 'Check, then read which effect each one is.', 'Find the setting closest to your own work.'],
+    rows: [
+      { text: 'Find the stored embedding (4,096 numbers) closest to a query.', high: false, why: 'Distances bunch: the nearest is barely nearer than the rest.' },
+      { text: 'Shrink points from 10,000 numbers to 500 with a random matrix.', high: true, why: 'A length is a sum of many pieces, so a random map keeps it.' },
+      { text: 'Store 5,000 features, few active at once, in 512 numbers.', high: true, why: String.raw`Random directions are nearly perpendicular: leak $1/\sqrt{512} = 0.044$.` },
+      { text: 'Draw a uniform point in a 20-dimensional ball by rejection.', high: false, why: String.raw`Empty volume: about $4 \times 10^{7}$ tries per kept point.` },
+      { text: 'Send 1,000-bit blocks with a random code below capacity.', high: true, why: 'The noise total is predictable, so random code words stay apart.' },
+      { text: 'Walk a straight line between two Gaussian latent samples.', high: false, why: String.raw`The midpoint has length $0.71\sqrt{n}$, inside the shell.` }
+    ],
+    source: 'Part 2 of this recitation: bunching distances, near-perpendicular directions, the thin shell, random codes, and the Gaussian shell.',
+    takeaway: 'Name the effect first: a sum that concentrates, nearly perpendicular directions, bunching distances, or empty volume. The effect tells you whether it helps or hurts.' },
+
+  { kind: 'projects', id: 'project-adaptation', tag: 'Recitation 1 · 6 of 7', title: 'Your project: domain adaptation with few labels',
+    question: 'Where do high dimensions help your design, and where do they hurt it?',
+    projectTitle: 'Domain adaptation with few labels',
+    core: 'Core design (from your notes): an adaptive service that builds a specialist for each client on an open model. Client labels are the budget. Recent tests used up to 1,024 labels, with frozen-feature heads or with weight adaptation.',
+    where: 'Where high dimension shows up: each input is a vector of hidden features with thousands of numbers. A head on those features has one weight per feature for each class.',
+    qs: [
+      { k: 'Leverage', q: 'Could a random projection of the frozen features, down to a few hundred numbers, keep enough distances for a small head to fit on 1,024 labels? How would you check it?',
+        a: String.raw`Likely yes. A random map to $k$ numbers keeps all distances among $N$ points within a factor $1 \pm \varepsilon$ once $k \ge 4 \ln N / (\varepsilon^2/2 - \varepsilon^3/3)$: about 330 numbers for $N = 1024$ and $\varepsilon = 0.5$. Classes apart in the full space stay apart, and the head needs 12 times fewer weights than on 4,096 features. Check: fit the head at $k$ = 64 to 512 and on all features, and compare held-out accuracy. If PCA at the same $k$ wins clearly, the signal sits in a few directions.` },
+      { k: 'Hurt', q: 'With thousands of features and 1,024 labels, do nearest-neighbor or density-based fixes still find close cases? Which number would you hold fixed to test that?',
+        a: String.raw`Only if the data varies along few axes. Cut each axis into 10 slices. One axis gives 10 cells, two axes $10 \times 10 = 100$ cells, three give 1,000, and $d$ axes give $10^d$. A labeled example is close to a new input only when both sit in the same cell, so you need about one label per cell: 1,024 labels fill the cells of only 3 axes. Test: keep the 1,024 labels, vary the dimension by projection, and track nearest-neighbor accuracy and the nearest over the farthest distance. A ratio near 1 means "nearest" no longer means similar.` }
+    ],
+    tries: ['Read the core design and where the space is.', 'Answer each question in your head first.', 'Click Show answer and compare.'],
+    takeaway: 'Name the space, count its axes, then say what a random map or a sparse fit would keep and what it would lose.' },
+
+  { kind: 'projects', id: 'project-language', tag: 'Recitation 1 · 7 of 7', title: 'Your project: learning from feedback in words',
+    question: 'Where do high dimensions help this design, and where do they hurt it?',
+    projectTitle: 'Learning from feedback in words',
+    core: 'Core design (from your notes): a model writes its own lesson from feedback, and that lesson should change its weights for good. The question is how a self-written statement becomes a lasting change.',
+    where: 'Where high dimension shows up: the weights, billions of numbers. A lesson is a string of tokens, and the space of possible lessons is huge. Experience is a long sequence.',
+    qs: [
+      { k: 'Leverage', q: 'If a lesson is cheap to sample, could scoring many sampled lessons and keeping the best one raise the chance of a good lesson, as repeated sampling raises coverage? What would count as good?',
+        a: String.raw`Yes. If one sample is good with chance $p$, at least one of $N$ is good with chance $1 - (1-p)^N$. With $p = 0.02$ and $N = 100$ that is 0.87. Good means that after the model takes the lesson in, it does better on new cases from the same experience, not on the case it was written from. The best of many noisy scores is partly luck: if all 100 lessons were equally good, the top score would still sit about 2.5 noise widths above the truth. So score on one set and confirm the winner on another.` },
+      { k: 'Hurt', q: 'A random lesson almost never fits the experience. How many lessons would you have to test to find a good one, and which check is cheap enough to run on each?',
+        a: String.raw`The size of the space does not set the count; the chance $p$ that a sample is good does. The model samples from its own typical set, not from all token strings. To find one good lesson with 90% chance you need $N \approx 2.3/p$: about 230 when $p = 1\%$. Run a cheap check on all of them: put the lesson in the prompt and see whether it fixes the failure it came from. Then run the costly check, a weight update scored on held-out cases, only on the top few.` }
+    ],
+    tries: ['Read the core design and where the space is.', 'Answer each question in your head first.', 'Click Show answer and compare.'],
+    takeaway: String.raw`The size of the space does not set the search cost. The chance $p$ that one sample is good does, so estimate $p$ first.` }
+];
+
+// ---------- state: each step keeps its answers, so Prev and Next restore them ----------
+const state = SLIDES.map(() => ({ pick: null, shown: false, sort: null, checked: false, answers: {} }));
+let cur = 0, shownId = null, endSent = false;
+const isOpen = i => state[i].pick !== null || state[i].shown;
+
+function pickCard(i, L) {
+  const i0 = i, s = SLIDES[i0];
+  if (isOpen(i0)) return;
+  state[i0].pick = L;
+  emit('view.action', { action: 'pick', step: s.id, option: L, correct: 'ABC'.indexOf(L) === s.right });
+  draw();
+}
+function showAnswer() {
+  const i = cur, s = SLIDES[i];
+  if (isOpen(i)) return;
+  state[i].shown = true;
+  emit('view.action', { action: 'show', step: s.id });
+  draw();
+}
+function setSort(k, v) {
+  const i = cur, st = state[i];
+  if (st.checked) return;
+  if (!st.sort) st.sort = SLIDES[i].rows.map(() => null);
+  st.sort[k] = v;
+  draw();
+}
+function checkSort() {
+  const i = cur, s = SLIDES[i], st = state[i];
+  if (st.checked || !st.sort || st.sort.some(v => v === null)) return;
+  st.checked = true;
+  const matched = s.rows.filter((r, k) => st.sort[k] === r.high).length;
+  emit('view.action', { action: 'check', step: s.id, matched: matched, of: s.rows.length });
+  draw();
+}
+
+// ---------- drawing ----------
+function drawPick(s, st, open, widget) {
+  const prob = mark(h('div', 'prob'), 'problem', s.id);
+  prob.append(hh('p', '', h('span', 'lead', 'The problem. '), setTex(h('span'), s.problem)));
+  const opts = h('div', 'opts');
+  s.options.forEach((o, k) => {
+    const L = 'ABC'[k];
+    const card = mark(h('div', 'opt'), 'option', L, o.text);
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-disabled', open ? 'true' : 'false');
+    card.tabIndex = open ? -1 : 0;
+    card.classList.toggle('on', st.pick === L);
+    card.classList.toggle('right', open && k === s.right);
+    const who = open ? [st.pick === L ? 'Your pick' : '', k === s.right ? 'Right' : ''].filter(Boolean).join(', ') : '';
+    const top = hh('div', 'top', setTex(h('span', 'letter'), L), h('span', 'who', who));
+    const body = setTex(h('div', 'body'), o.text);
+    const asm = setTex(h('p', 'asm'), o.assumes);
+    const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'Verdict after your pick.');
+    card.append(hh('div', 'lhs', top, body), hh('div', 'rhs', asm, verdict));
+    card.addEventListener('click', () => { if (!isOpen(cur)) pickCard(cur, L); });
+    opts.append(card);
+  });
+  const rev = mark(h('div', 'reveal'), 'reveal', s.id);
+  if (!open) {
+    rev.classList.add('idle');
+    const btn = mark(h('button', 'btn primary', 'Show answer'), 'control', 'show-answer');
+    btn.addEventListener('click', showAnswer);
+    for (const r of s.reveal) rev.append(hh('p', 'rv hold', h('span', 'k', r.k + '. '), h('span', '', 'Shown after your pick.')));
+    rev.append(hh('div', 'actions', btn));
+  } else {
+    for (const r of s.reveal) rev.append(hh('p', 'rv', h('span', 'k', r.k + '. '), setTex(h('span'), r.v)));
+  }
+  widget.append(prob, opts, rev);
+}
+
+function drawSort(s, st, widget) {
+  const prob = mark(h('div', 'prob'), 'problem', s.id);
+  prob.append(hh('p', '', h('span', 'lead', 'The problem. '), setTex(h('span'), s.problem)));
+  const rows = h('div', 'rows');
+  s.rows.forEach((r, k) => {
+    const pick = st.sort ? st.sort[k] : null;
+    const row = mark(h('div', 'row'), 'row', String(k + 1), r.text);
+    if (st.checked) row.classList.add(pick === r.high ? 'right' : 'wrong');
+    const btns = h('div', 'btns');
+    const labels = s.labels || ['High-dimensional', 'Few numbers'];
+    [[true, labels[0]], [false, labels[1]]].forEach(([v, label]) => {
+      const b = mark(h('button', 'btn' + (pick === v ? ' sel' : ''), label), 'control', 'set-' + (k + 1) + '-' + (v ? 'high' : 'low'));
+      b.disabled = st.checked;
+      b.addEventListener('click', () => setSort(k, v));
+      btns.append(b);
+    });
+    row.append(setTex(h('div', 'txt'), r.text), btns);
+    if (st.checked) {
+      const ok = pick === r.high;
+      const res = h('p', 'res ' + (ok ? 'ok' : 'no'));
+      res.append(setTex(h('span'), (ok ? 'Right. ' : 'Not quite. ') + (r.n ? 'n = ' + r.n + '. ' : '') + r.why));
+      row.append(tex(res));
+    }
+    rows.append(row);
+  });
+  widget.append(prob, rows);
+  // After the check, the score goes to the right column (draw), so the rows keep the whole widget column.
+  if (!st.checked) {
+    const bar = h('div', 'actions');
+    const btn = mark(h('button', 'btn primary', 'Check my picks'), 'control', 'check');
+    btn.disabled = !st.sort || st.sort.some(v => v === null);
+    btn.addEventListener('click', checkSort);
+    bar.append(btn, h('span', 'status', btn.disabled ? 'Mark every setting first.' : ''));
+    widget.append(bar);
+  }
+}
+
+function drawProjects(i, s, st, widget) {
+  const card = mark(h('div', 'card'), 'problem', s.id);
+  card.append(setTex(h('p', ''), s.core), setTex(h('p', ''), s.where));
+  widget.append(card);
+  s.qs.forEach((q, k) => {
+    const box = mark(h('div', 'qa'), 'question', String(k + 1), q.k);
+    box.append(hh('p', 'qt', h('span', 'k', q.k + '. '), setTex(h('span'), q.q)));
+    if (st.answers[k]) box.append(mark(setTex(h('p', 'qans'), q.a), 'answer', String(k + 1)));
+    else {
+      const btn = mark(h('button', 'btn', 'Show answer'), 'control', 'show-' + (k + 1));
+      btn.addEventListener('click', () => {
+        st.answers[k] = true;
+        emit('view.action', { action: 'show-answer', step: s.id, question: k + 1 });
+        draw();
+      });
+      box.append(btn);
+    }
+    widget.append(box);
+  });
+}
+
+function draw() {
+  const i = cur, s = SLIDES[i], st = state[i], open = isOpen(i);
+  const sec = mark(h('section', 'slide' + (s.kind === 'projects' ? ' wide' : '')), 'step', s.id, s.title);
+  const widget = h('div', 'widget');
+  if (s.kind === 'pick') drawPick(s, st, open, widget);
+  else if (s.kind === 'sort') drawSort(s, st, widget);
+  else if (s.kind === 'projects') drawProjects(i, s, st, widget);
+
+  const side = h('div', 'side');
+  side.append(h('div', 'tag', s.tag), setTex(h('h2'), s.title), setTex(h('p', 'q'), s.question));
+  side.append(hh('div', 'blk', h('div', 'kicker', 'Try it'), hh('ol', 'tries', ...(s.tries || TRIES_DEFAULT).map(t => setTex(h('li'), t)))));
+  const showExtra = s.kind === 'pick' ? open : s.kind === 'sort' ? st.checked : true;
+  if (s.kind === 'sort' && st.checked) {
+    const matched = s.rows.filter((r, k) => st.sort[k] === r.high).length;
+    side.append(h('p', 'score', 'You matched ' + matched + ' of ' + s.rows.length + '.'));
+  }
+  if (showExtra && s.source) side.append(hh('div', 'blk', h('div', 'kicker', 'Source'), setTex(h('p', 'src'), s.source)));
+  if (showExtra) side.append(setTex(h('p', 'takeaway'), s.takeaway));
+  else side.append(h('p', 'takeaway idle', s.kind === 'sort' ? 'Source and takeaway: shown after you check.' : 'Source and takeaway: shown after your pick.'));
+
+  sec.append(widget, side);
+  $('#stage').replaceChildren(sec);
+  $('#stage').scrollTop = 0;
+  tex(sec);
+}
+
+function paintNav() {
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  draw();
+  paintNav();
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+}
+
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title;
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt') && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); e.target.click(); return;
+    }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

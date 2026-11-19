@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Minimum distance: why 3 corrects one error</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: white page, one accent (blue), red only for a failing check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line); --surface:var(--pal-soft);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft); --red:var(--pal-red);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 28px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(8px,1.2vh,16px) 28px}
+footer{display:flex;align-items:center;gap:10px;padding:10px 28px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (60%), text on the right (40%). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(20px,2.6vw,44px)}
+.widget{min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.side{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(10px,1.8vh,18px)}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(22px,2.3vw,34px);line-height:1.2;margin:0;font-weight:650}
+.formula{font-size:clamp(22px,2.4vw,34px)}
+.line-txt{margin:0}
+
+/* Controls */
+button{font:inherit;color:var(--fg)}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toolbar{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;min-height:38px}
+.lbl{color:var(--muted)}
+.btn,.dbtn{padding:5px 12px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;min-width:38px}
+.btn[aria-pressed="true"],.dbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent)}
+.dbtn{font-family:ui-monospace,Menlo,monospace}
+
+/* Cube (SVG; word labels plain, A/B and distances as KaTeX in foreignObject) */
+.cubewrap{min-height:0}
+#cube{display:block;width:100%;height:auto}
+#cube .word{cursor:pointer}
+#cube .word:focus{outline:none}
+#cube .ring{fill:none;stroke:var(--pal-ink-2);stroke-width:1.5;stroke-dasharray:3 2;opacity:0}
+#cube .wt{font:13px ui-monospace,Menlo,monospace;text-anchor:middle;dominant-baseline:central}
+#cube .fo{width:100%;height:100%;display:flex;align-items:center;font-size:16px;color:var(--fg);white-space:nowrap;pointer-events:none}
+#cube .fo.c{justify-content:center}
+#cube .fo.r{justify-content:flex-end}
+#cube .fo.l{justify-content:flex-start}
+#cube .fo.band{font-size:14px;font-weight:600;justify-content:center}
+
+.readout{font-size:17px;line-height:1.4;padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.verdict{padding:7px 12px;border-radius:10px;border:1px solid;font-size:17px;font-weight:600;line-height:1.35}
+.verdict.good{background:var(--pal-good-bg);border-color:var(--pal-good-line);color:var(--pal-good-ink)}
+.verdict.bad{background:var(--pal-bad-bg);border-color:var(--pal-bad-line);color:var(--pal-bad-ink)}
+.verdict.warn{background:var(--pal-warn-bg);border-color:var(--pal-warn-line);color:var(--pal-warn-ink)}
+.caption{margin:0;font-size:16px;line-height:1.4;color:var(--muted)}
+
+/* Summary table */
+.tbl{border-collapse:collapse;width:100%;font-size:20px}
+.tbl th,.tbl td{text-align:left;padding:14px 14px;border-bottom:1px solid var(--line)}
+.tbl th{font-weight:600;color:var(--muted);font-size:16px}
+.tbl tr.current td{background:var(--chip);font-weight:650;color:var(--pal-accent-deep)}
+.note{margin:0;font-size:16px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>Lecture 12: error-correcting codes</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+(function(){
+'use strict';
+
+// Math: $...$ is rendered by KaTeX auto-render. TEX() gives KaTeX HTML for SVG labels.
+var MATH={delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false};
+function tex(n){ if(n && typeof renderMathInElement==='function') renderMathInElement(n,MATH); return n; }
+function TEX(s){ return window.katex ? katex.renderToString(s,{throwOnError:false}) : s; }
+function fo(x,y,w,h,cls,html,style){
+  return '<foreignObject x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'"><div xmlns="http://www.w3.org/1999/xhtml" class="fo '+cls+'"'+(style?' style="'+style+'"':'')+'>'+html+'</div></foreignObject>';
+}
+var NS='http://www.w3.org/2000/svg';
+
+// Shared state: the d, the received word, and the detect-only switch persist across steps.
+var st = { d: 3, word: '100', detect: false, hover: null };
+// COL holds the palette for the cube being drawn. paint() and buildCube() read it at every draw, so a theme
+// switch redraws with the new colors. PLOTS holds the cube on the current slide.
+var COL = {};
+var PAL_NAMES = ['accent', 'accent-deep', 'hue-pink', 'grey-3', 'panel', 'on-accent', 'ink-2', 'muted-2', 'grey-2', 'info-line', 'info-tint'];
+function readPalette() {
+  var o = {};
+  PAL_NAMES.forEach(function (n) { o[n.replace(/-(\w)/g, function (_, c) { return c.toUpperCase(); })] = FluidTheme.color(n); });
+  return o;
+}
+var PLOTS = [];
+var SVGW = 560, X0 = 70, X1 = 490, CYc = 170, GAP = 22, PW = 50, PH = 20;
+
+/*LOGIC*/
+function popcount(w) { var n = 0; for (var i = 0; i < w.length; i++) if (w[i] === '1') n++; return n; }
+function binom(n, k) { var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); }
+function radiusOf(d, detectOnly) { return detectOnly ? 0 : Math.floor((d - 1) / 2); }
+function regionOf(d, j, r) {
+  if (j <= r) return 'A';
+  if (d - j <= r) return 'B';
+  return 'gray';
+}
+function verdictOf(d, e, detectOnly) {
+  if (e === 0) return { kind: 'A', tone: 'good', text: 'Received $A$. No error.' };
+  if (e === d) return { kind: 'landedB', tone: 'bad', text: 'Landed on $B$. Looks valid. Error not seen.' };
+  if (detectOnly) return { kind: 'detected', tone: 'warn', text: 'Not a code word. Error detected, not corrected.' };
+  if (e < d - e) return { kind: 'corrected', tone: 'good', text: 'Nearest code word is $A$, so it is corrected.' };
+  if (e === d - e) return { kind: 'tie', tone: 'warn', text: 'Equally far from $A$ and $B$. Error detected, cannot fix.' };
+  return { kind: 'wrongB', tone: 'bad', text: 'Nearest code word is $B$, so it is "corrected" to the wrong word.' };
+}
+var SUMMARY = { 1: ['0', '0'], 2: ['0', '1'], 3: ['1', '1'], 4: ['1', '2'], 5: ['2', '2'] };
+/*END LOGIC*/
+
+function xOf(d, k) { return X0 + k * (X1 - X0) / d; }
+
+// Words grouped by distance from A (number of 1s); column k holds the C(d,k) words with k ones.
+// Within a column, a left-to-right barycenter pass orders words by their neighbors in the column
+// before it, which cuts crossings. Ties keep lexicographic order.
+function layout(d) {
+  var cols = [];
+  for (var k = 0; k <= d; k++) cols.push([]);
+  for (var i = 0; i < (1 << d); i++) {
+    var w = i.toString(2); while (w.length < d) w = '0' + w;
+    cols[popcount(w)].push(w);
+  }
+  var idx = {};
+  cols[0].forEach(function (w, i) { idx[w] = i; });
+  for (var k2 = 1; k2 <= d; k2++) {
+    var bary = {};
+    cols[k2].forEach(function (w) {
+      var sum = 0, cnt = 0;
+      for (var p = 0; p < d; p++) {
+        if (w[p] === '1') { sum += idx[w.slice(0, p) + '0' + w.slice(p + 1)]; cnt++; }
+      }
+      bary[w] = sum / cnt;
+    });
+    cols[k2].sort(function (a, b) { return bary[a] - bary[b] || (a < b ? -1 : a > b ? 1 : 0); });
+    cols[k2].forEach(function (w, i) { idx[w] = i; });
+  }
+  var pos = {}, nb = {}, edgeList = [];
+  cols.forEach(function (col, k3) { col.forEach(function (w, i) {
+    pos[w] = { x: xOf(d, k3), y: CYc + (i - (col.length - 1) / 2) * GAP };
+    nb[w] = [];
+  }); });
+  // Each edge flips one 0 to 1, so it is listed once, from its 0 end.
+  Object.keys(pos).forEach(function (w) {
+    for (var p = 0; p < d; p++) {
+      if (w[p] !== '0') continue;
+      var v = w.slice(0, p) + '1' + w.slice(p + 1);
+      nb[w].push(v); nb[v].push(w);
+      edgeList.push([w, v]);
+    }
+  });
+  return { pos: pos, nb: nb, edgeList: edgeList };
+}
+
+function captionText(d, det) {
+  if (det) {
+    return 'Detect only: $t = 0$, so each sphere is just its code word. Every other word is an error: it is detected, not corrected.';
+  }
+  var t = Math.floor((d - 1) / 2);
+  var terms = ['1'], vals = [1], V = 1;
+  for (var i = 1; i <= t; i++) {
+    var c = binom(d, i);
+    terms.push('\\binom{' + d + '}{' + i + '}'); vals.push(c); V += c;
+  }
+  var holds = t === 0 ? '$1$ word' : '$' + terms.join(' + ') + ' = ' + vals.join(' + ') + ' = ' + V + '$ words';
+  var total = 1 << d;
+  var s = 'Sphere of radius $t = ' + t + '$: all words within $t$ flips of a code word. Each sphere holds ' + holds +
+    '. Two spheres: $' + (2 * V) + '$ of $' + total + '$ words. ';
+  s += (2 * V === total
+    ? 'The spheres fill the whole cube (perfect code).'
+    : (total - 2 * V) + ' words are left over (gray): in neither sphere, so an error there is only detected.');
+  return s;
+}
+
+// The cube widget. opts.toggle adds a Detect only switch; opts.detect sets its start value.
+function cubeWidget(box, side, opts) {
+  st.detect = !!opts.detect;
+  var toggleHTML = opts.toggle
+    ? '<button type="button" class="btn" id="detect" aria-pressed="false" data-item="control" data-id="detect">Detect only</button>' : '';
+  box.innerHTML =
+    '<div class="toolbar">' +
+      '<span class="lbl">Min distance $d$</span>' +
+      [1, 2, 3, 4, 5].map(function (d) {
+        return '<button type="button" class="dbtn" data-item="d" data-id="d-' + d + '" aria-pressed="false">' + d + '</button>';
+      }).join('') +
+      toggleHTML +
+    '</div>' +
+    '<div class="cubewrap"><svg id="cube" viewBox="0 0 ' + SVGW + ' 340" role="img" aria-label="The d-cube in layers by distance from A, with the spheres shaded"></svg></div>' +
+    '<div class="readout" id="readout"></div>' +
+    '<div class="verdict" id="verdict" data-item="verdict"></div>' +
+    '<p class="caption" id="caption"></p>';
+  var svg = box.querySelector('#cube');
+  var readoutEl = box.querySelector('#readout');
+  var verdictEl = box.querySelector('#verdict');
+  var captionEl = box.querySelector('#caption');
+  var detectBtn = box.querySelector('#detect');
+  var nodes = {}, edges = [], nbrs = {}, distEl = null;
+
+  function dimLine(x1, x2, y, col, label, labelY, textCol) {
+    var mid = Math.min(SVGW - 80, Math.max(80, (x1 + x2) / 2));
+    var s = '<line x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '" stroke="' + col + '" stroke-width="1.5"/>';
+    s += '<line x1="' + x1 + '" y1="' + (y - 4) + '" x2="' + x1 + '" y2="' + (y + 4) + '" stroke="' + col + '" stroke-width="1.5"/>';
+    s += '<line x1="' + x2 + '" y1="' + (y - 4) + '" x2="' + x2 + '" y2="' + (y + 4) + '" stroke="' + col + '" stroke-width="1.5"/>';
+    s += fo(mid - 70, labelY - 12, 140, 22, 'c', label, 'color:' + (textCol || col) + ';font-weight:600');
+    return s;
+  }
+
+  function buildCube() {
+    COL = readPalette();
+    var d = st.d, r = radiusOf(d, st.detect), L = layout(d);
+    var hw = Math.min(36, (X1 - X0) / d / 2 - 3);
+    var s = '';
+    var k = 0;
+    while (k <= d) {
+      var reg = regionOf(d, k, r), end = k;
+      while (end + 1 <= d && regionOf(d, end + 1, r) === reg) end++;
+      var x1 = xOf(d, k) - hw, x2 = xOf(d, end) + hw, cx = (x1 + x2) / 2;
+      var col = reg === 'A' ? COL.accent : (reg === 'B' ? COL.huePink : COL.grey3);
+      var label = reg === 'A' ? 'sphere of ' + TEX('A') : (reg === 'B' ? 'sphere of ' + TEX('B') : 'neither sphere');
+      s += '<rect x="' + x1 + '" y="22" width="' + (x2 - x1) + '" height="316" rx="10" fill="' + col + '" fill-opacity="' + (reg === 'gray' ? 0.16 : 0.1) + '"/>';
+      var labelCol = reg === 'gray' ? COL.muted2 : (reg === 'A' ? COL.accentDeep : COL.ink2);
+      s += fo(cx - 90, 0, 180, 22, 'c band', label, 'color:' + labelCol);
+      k = end + 1;
+    }
+    L.edgeList.forEach(function (e) {
+      var pa = L.pos[e[0]], pb = L.pos[e[1]];
+      s += '<line class="edge" data-a="' + e[0] + '" data-b="' + e[1] + '" x1="' + pa.x + '" y1="' + pa.y + '" x2="' + pb.x + '" y2="' + pb.y + '" stroke="' + COL.grey2 + '" stroke-width="1" stroke-opacity="0.45"/>';
+    });
+    Object.keys(L.pos).forEach(function (w) {
+      var p = L.pos[w];
+      var isA = /^0+$/.test(w), isB = /^1+$/.test(w);
+      s += '<g class="word" data-item="word" data-id="' + w + '" data-title="' + w + '" tabindex="0" role="button" aria-label="word ' + w + '">';
+      s += '<rect class="ring" x="' + (p.x - PW / 2 - 5) + '" y="' + (p.y - PH / 2 - 5) + '" width="' + (PW + 10) + '" height="' + (PH + 10) + '" rx="' + ((PH + 10) / 2) + '"/>';
+      s += '<rect class="pill" x="' + (p.x - PW / 2) + '" y="' + (p.y - PH / 2) + '" width="' + PW + '" height="' + PH + '" rx="' + (PH / 2) + '"/>';
+      s += '<text class="wt" x="' + p.x + '" y="' + (p.y + 0.5) + '">' + w + '</text>';
+      if (isA) s += fo(p.x - PW / 2 - 40, p.y - 11, 30, 22, 'r', TEX('A'), 'color:' + COL.accentDeep + ';font-weight:700');
+      if (isB) s += fo(p.x + PW / 2 + 10, p.y - 11, 30, 22, 'l', TEX('B'), 'color:' + COL.ink2 + ';font-weight:700');
+      s += '</g>';
+    });
+    s += '<g id="dist"></g>';
+    svg.innerHTML = s;
+    nodes = {};
+    Array.prototype.forEach.call(svg.querySelectorAll('[data-item="word"]'), function (g) { nodes[g.dataset.id] = g; });
+    edges = Array.prototype.slice.call(svg.querySelectorAll('line.edge'));
+    distEl = svg.querySelector('#dist');
+    nbrs = L.nb;
+  }
+
+  function paint() {
+    COL = readPalette();
+    var d = st.d, det = st.detect, r = radiusOf(d, det);
+    var e = popcount(st.word);
+    var hov = st.hover;
+    var hovNb = new Set(hov ? nbrs[hov] : []);
+    Object.keys(nodes).forEach(function (w) {
+      var g = nodes[w];
+      var j = popcount(w), reg = regionOf(d, j, r);
+      var code = j === 0 || j === d;
+      var stroke = reg === 'A' ? COL.accent : (reg === 'B' ? COL.huePink : COL.grey3);
+      var hi = w === hov || hovNb.has(w);
+      var fill = code ? stroke : COL.panel;
+      if (!code && hi) fill = COL.infoTint;
+      var pill = g.querySelector('.pill');
+      pill.setAttribute('fill', fill);
+      pill.setAttribute('stroke', hi ? COL.infoLine : stroke);
+      pill.setAttribute('stroke-width', hi ? 2.5 : 1.5);
+      g.querySelector('.wt').setAttribute('fill', code ? COL.onAccent : COL.ink2);
+      g.querySelector('.ring').style.opacity = w === st.word ? 1 : 0;
+    });
+    edges.forEach(function (l) {
+      var hot = !!hov && (l.dataset.a === hov || l.dataset.b === hov);
+      l.setAttribute('stroke', hot ? COL.infoLine : COL.grey2);
+      l.setAttribute('stroke-width', hot ? 2 : 1);
+      l.setAttribute('stroke-opacity', hot ? 1 : 0.45);
+    });
+    var xA = xOf(d, 0), xE = xOf(d, e), xB = xOf(d, d);
+    distEl.innerHTML =
+      dimLine(xA, xE, 40, COL.accent, TEX('d_A = ' + e), 30, COL.accentDeep) +
+      dimLine(xE, xB, 298, COL.huePink, TEX('d_B = ' + (d - e)), 316, COL.ink2);
+  }
+
+  function render() {
+    var d = st.d, det = st.detect, e = popcount(st.word);
+    box.querySelectorAll('.dbtn').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(parseInt(b.dataset.id.split('-')[1], 10) === d));
+    });
+    if (detectBtn) detectBtn.setAttribute('aria-pressed', String(det));
+    var r = radiusOf(d, det), reg = regionOf(d, e, r);
+    var where = reg === 'A' ? 'Inside the sphere of $A$.' : (reg === 'B' ? 'Inside the sphere of $B$.' : 'In neither sphere.');
+    readoutEl.innerHTML = 'Sent $A$, errors $e = ' + e + '$. Received ' + st.word + ': $d_A = ' + e + '$, $d_B = ' + (d - e) + '$. ' + where;
+    tex(readoutEl);
+    var v = verdictOf(d, e, det);
+    verdictEl.className = 'verdict ' + v.tone;
+    verdictEl.dataset.id = v.kind;
+    verdictEl.innerHTML = v.text;
+    tex(verdictEl);
+    captionEl.innerHTML = captionText(d, det);
+    tex(captionEl);
+    paint();
+    if (opts.onChange) opts.onChange();
+  }
+
+  // Changing d rebuilds the cube. The received word keeps its error count e, as the leftmost e bits set.
+  function setD(d) {
+    var e = Math.min(popcount(st.word), d);
+    st.d = d;
+    st.word = '1'.repeat(e) + '0'.repeat(d - e);
+    st.hover = null;
+    buildCube();
+    render();
+  }
+  function wordAt(target) {
+    var g = target && target.closest ? target.closest('[data-item="word"]') : null;
+    return g ? g.dataset.id : null;
+  }
+  function setHover(w) {
+    if (st.hover === w) return;
+    st.hover = w;
+    paint();
+  }
+
+  box.querySelectorAll('.dbtn').forEach(function (b) {
+    b.addEventListener('click', function () { setD(parseInt(b.dataset.id.split('-')[1], 10)); });
+  });
+  if (detectBtn) detectBtn.addEventListener('click', function () {
+    st.detect = !st.detect;
+    buildCube();
+    render();
+  });
+  svg.addEventListener('click', function (ev) {
+    var w = wordAt(ev.target);
+    if (!w) return;
+    st.word = w;
+    render();
+  });
+  svg.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    var w = wordAt(ev.target);
+    if (!w) return;
+    ev.preventDefault();
+    st.word = w;
+    render();
+  });
+  svg.addEventListener('pointerover', function (ev) { setHover(wordAt(ev.target)); });
+  svg.addEventListener('pointerleave', function () { setHover(null); });
+  svg.addEventListener('focusin', function (ev) { setHover(wordAt(ev.target)); });
+  svg.addEventListener('focusout', function () { setHover(null); });
+
+  buildCube();
+  render();
+  PLOTS.push({ redraw: function () { buildCube(); render(); } });
+}
+
+// The summary table (step 3). Shows the d -> corrects / detects rows, with the current d highlighted.
+function tableWidget(box) {
+  box.innerHTML =
+    '<div class="toolbar">' +
+      '<span class="lbl">Min distance $d$</span>' +
+      [1, 2, 3, 4, 5].map(function (d) {
+        return '<button type="button" class="dbtn" data-item="d" data-id="d-' + d + '" aria-pressed="false">' + d + '</button>';
+      }).join('') +
+    '</div>' +
+    '<table class="tbl" data-item="summary"><thead><tr><th>$d$</th><th>Corrects</th><th>Detects</th></tr></thead><tbody></tbody></table>' +
+    '<p class="note">Detects: up to this many errors, none turned into the wrong word.</p>';
+  var tbody = box.querySelector('tbody');
+  var h = '';
+  for (var d = 1; d <= 5; d++) {
+    var extra = d === 3 ? ' (2 if no correction)' : '';
+    h += '<tr data-item="row" data-id="d-' + d + '"><td>$' + d + '$</td><td>' + SUMMARY[d][0] + '</td><td>' + SUMMARY[d][1] + extra + '</td></tr>';
+  }
+  tbody.innerHTML = h;
+  function sync() {
+    box.querySelectorAll('.dbtn').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(parseInt(b.dataset.id.split('-')[1], 10) === st.d));
+    });
+    box.querySelectorAll('tr[data-item="row"]').forEach(function (r) {
+      r.classList.toggle('current', parseInt(r.dataset.id.split('-')[1], 10) === st.d);
+    });
+  }
+  box.querySelectorAll('.dbtn').forEach(function (b) {
+    b.addEventListener('click', function () { st.d = parseInt(b.dataset.id.split('-')[1], 10); sync(); });
+  });
+  tex(box);
+  sync();
+}
+
+// ---------- frame ----------
+var SLIDES = [
+  { id: 'step-1', title: 'Spheres around code words', tag: 'Lecture 31:48',
+    formula: String.raw`$$t = \left\lfloor \frac{d-1}{2} \right\rfloor$$`,
+    lines: ['Each sphere holds every word within $t$ flips of its code word.',
+      'Spheres of radius $t$ stay apart when $d \\ge 2t + 1$.',
+      'Click a word to receive it.'],
+    mount: function (box, side) { cubeWidget(box, side, { toggle: false, detect: false }); } },
+  { id: 'step-2', title: 'Detect only: no correction', tag: 'Lecture 31:18',
+    formula: String.raw`$$t = 0 \;\Rightarrow\; \text{detect } d-1$$`,
+    lines: ['The decoder never corrects. It flags every word that is not a code word.',
+      'Up to $d-1$ flips never turn one code word into another.'],
+    mount: function (box, side) {
+      var p = document.createElement('p');
+      p.className = 'line-txt';
+      side.appendChild(p);
+      cubeWidget(box, side, { toggle: true, detect: true, onChange: function () {
+        p.innerHTML = 'With $d = ' + st.d + '$ it detects up to $' + (st.d - 1) + '$ errors and corrects none.';
+        tex(p);
+      } });
+    } },
+  { id: 'step-3', title: 'Why $d = 3$ corrects one error', tag: 'Lecture 31:48',
+    formula: String.raw`$$d = 3 \quad\Rightarrow\quad t = 1$$`,
+    lines: ['With $d = 3$, one error leaves you 1 step from $A$ and 2 from $B$.',
+      'The nearest word is the right one.',
+      'With $d = 2$, one error sits in the exact middle: you see it, but not which way to go.'],
+    mount: function (box) { tableWidget(box); } }
+];
+
+var $ = function (s) { return document.querySelector(s); };
+// Session events. Optional: an older server has no fluid.emit, and then nothing is sent.
+function emitEvent(kind, data) {
+  if (!window.fluid || typeof fluid.emit !== 'function') return;
+  Promise.resolve().then(function () { fluid.emit(kind, data); }).catch(function () {});
+}
+var cur = 0;
+function goTo(i) {
+  var was = cur;
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  var s = SLIDES[cur];
+  var stage = $('#stage');
+  stage.innerHTML = '';
+  var widget = document.createElement('div');
+  widget.className = 'widget';
+  var side = document.createElement('div');
+  side.className = 'side';
+  side.innerHTML = '<div class="tag">' + s.tag + '</div><h2>' + s.title + '</h2><div class="formula">' + s.formula + '</div>' +
+    s.lines.map(function (t) { return '<p class="line-txt">' + t + '</p>'; }).join('');
+  var sec = document.createElement('section');
+  sec.className = 'slide';
+  sec.dataset.item = 'step';
+  sec.dataset.id = s.id;
+  sec.dataset.title = s.title;
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  PLOTS = [];
+  s.mount(widget, side);
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  Array.prototype.forEach.call($('#dots').children, function (d, k) { d.classList.toggle('on', k === cur); });
+  if (cur !== was) emitEvent('view.step', { step: s.id });
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  var i = SLIDES.findIndex(function (s) { return s.id === (msg && msg.step); });
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  var dots = $('#dots');
+  SLIDES.forEach(function (s, i) {
+    var b = document.createElement('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1) + ': ' + s.title);
+    b.title = s.title;
+    b.addEventListener('click', function () { goTo(i); });
+    dots.append(b);
+  });
+  $('#prev').addEventListener('click', function () { goTo(cur - 1); });
+  $('#next').addEventListener('click', function () { goTo(cur + 1); });
+  document.addEventListener('keydown', function (e) {
+    if (e.target && e.target.matches && e.target.matches('input[type=text],input[type=range],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  window.addEventListener('fluid-themechange', function () { PLOTS.forEach(function (p) { p.redraw(); }); });
+  goTo(0);
+  if (window.fluid && typeof fluid.onCue === 'function') fluid.onCue(onCue);
+})();
+})();
+</script>
+</body>
+</html>
