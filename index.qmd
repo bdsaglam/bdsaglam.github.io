@@ -58,7 +58,7 @@ pagetitle: "Barış Deniz Sağlam"
 - [Is Everything an Abstraction?](posts/is-everything-an-abstraction/index.html){.pt}[Jan 2025]{.pd}[Physics, Kant, and the layers we build to grasp reality.]{.pdesc}
 :::
 
-[All blogs →](writing.html#posts){.more}
+[All blog posts →](writing.html#posts){.more}
 
 ## Experience
 

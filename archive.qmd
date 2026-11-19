@@ -18,7 +18,7 @@ listing:
 # Archive
 
 ::: {.pagelead}
-Older blogs, kept for posterity.
+Older blog posts, kept for posterity.
 :::
 
 ::: {#archived}
