@@ -1,0 +1,1683 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Primer: Limits and derivatives</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: white page, one accent (blue), red only for a failing check, amber for the newest proof line. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:7px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);grid-template-rows:minmax(0,1fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(4px,0.8vh,8px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(18px,1.7vw,24px);line-height:1.15;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.2vw,17px);line-height:1.3;font-weight:600}
+.formula{font-size:clamp(17px,1.6vw,22px);line-height:1.3}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.name i{font-style:italic}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.note{margin:0;font-size:16px;color:var(--muted)}
+.takeaway{margin:0;padding:6px 10px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;line-height:1.3}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%;align-items:center}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(120px,11vw,170px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:52px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 130px;min-width:0;padding:4px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.rule{margin:0;font-size:16px}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.twoplots{display:flex;gap:12px;flex:1 1 0;min-height:160px;width:100%}
+.twoplots .cell{flex:1 1 0;min-width:0;display:flex;flex-direction:column;position:relative}
+
+/* Difference tables */
+.dt{display:grid;grid-template-columns:max-content repeat(7,minmax(0,1fr));grid-auto-rows:minmax(30px,1fr);gap:6px 4px;align-items:center;width:100%;flex:1 1 0;min-height:0}
+.dt .x{font-size:14px;color:var(--muted);text-align:center}
+.dt .lab{font-size:16px;padding-right:8px;white-space:nowrap}
+.dt .c{height:100%;min-height:30px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--pal-soft);font:16px ui-monospace,Menlo,monospace}
+.dt .c.const{background:var(--accent);color:var(--pal-on-accent);font-weight:700}
+.dt .c.empty{background:transparent}
+.dt.dt-proof{grid-template-columns:max-content repeat(7,minmax(0,1fr)) max-content;grid-auto-rows:minmax(26px,1fr)}
+.dt .form{font-size:16px;padding:2px 6px;white-space:nowrap;border-radius:5px}
+.dt .lit,.dt .c.lit{background:var(--pal-amber-bg);color:var(--pal-ink);outline:1.5px solid var(--pal-amber)}
+.tbox{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:6px}
+.tcap{margin:0;font-size:15px;color:var(--muted);text-align:center;padding:1px 6px;border-radius:5px;align-self:center}
+.tcap.on{background:var(--pal-amber-bg);color:var(--pal-ink)}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side,.side.with-proof{justify-content:flex-start}
+.slide.proof-slide .fill{min-height:100px}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,8vw,130px)}
+.slide.proof-slide .slide-ctl .val{min-width:40px}
+.slide.proof-slide .sliders{gap:6px 18px}
+.slide.proof-slide .legend{gap:4px 12px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px;padding-bottom:4px}
+.test .tries{gap:3px}
+.model{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;line-height:1.3}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:2px}
+  #stage{padding:2px 24px}
+  footer{padding:2px 24px}
+  footer .btn{padding:3px 10px}
+  .tag{font-size:12px;line-height:1.2}
+  .widget{gap:4px}
+  .side{gap:3px}
+  .tries{gap:2px}
+  .question{line-height:1.2}
+  .sym,.tries,.note{line-height:1.2}
+  .readout{padding:3px 8px}
+  .takeaway{padding:4px 10px}
+  .dt{grid-auto-rows:minmax(26px,1fr)}
+  .dt.dt-proof{grid-auto-rows:minmax(22px,1fr);gap:4px 4px}
+  .dt .c{min-height:22px}
+  .twoplots{min-height:140px}
+  h2{font-size:18px}
+  .formula{font-size:18px}
+  .model{padding:4px 10px;line-height:1.2}
+  .test .tries{gap:1px}
+  .legend{line-height:1.2}
+}
+</style>
+</head>
+<body>
+<header>Primer · Limits and derivatives</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// ---------- DOM and drawing helpers ----------
+const $ = s => document.querySelector(s);
+
+// ---------- palette and redraw ----------
+// COL holds the palette colors for the SVG being drawn: a plot re-reads it at every paint, and the slide
+// re-reads it when it is shown. A theme switch redraws the plots and keeps every control's state.
+let COL = {};
+const PAL_NAMES = ['accent', 'accent-2', 'amber', 'amber-bg', 'blue-deep', 'blue-light', 'blue-strong', 'accent-tint', 'grey', 'soft-3', 'guide', 'bg', 'ink', 'line', 'muted', 'panel', 'text-3', 'soft', 'soft-2', 'text-2'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];   // the plots on the current slide
+window.addEventListener('fluid-themechange', () => { COL = readPalette(); PLOTS.forEach(p => p.redraw()); });
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula. o.bg gives it a background.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 5px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// Same label with a white halo, so it reads over a curve or bars.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  return fo;
+}
+// A labelled range input. label is LaTeX-ready text; fmt gives the value text.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmt = o.fmt || String;
+  const api = {
+    el: wrap,
+    input: inp,
+    get value() { return +inp.value; },
+    show() { setTex(val, fmt(+inp.value)); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) { sw.style.background = it.color; if (it.border) sw.style.border = '1.5px solid ' + it.border; }
+    else sw.style.borderTop = '2px ' + (it.dash ? 'dashed' : it.dot ? 'dotted' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize.
+function fillPlot(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// A small number for a readout: plain decimals, or a LaTeX power of ten for tiny values.
+function sci(x) {
+  if (x === 0) return '0';
+  if (Math.abs(x) >= 0.01) return x.toFixed(4);
+  const parts = x.toExponential(2).split('e');
+  return '$' + parts[0] + '\\times 10^{' + parseInt(parts[1], 10) + '}$';
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function nameLine(html) { const p = h('p', 'sym name'); p.innerHTML = html; return tex(p); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+// Session events. Optional: with no bridge, nothing is sent.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* the view works without the bridge */ }
+}
+
+// ---------- plot helpers: one frame, axes with KaTeX labels, curves, marks ----------
+const PL = { L: 54, R: 16, T: 14, B: 46 };
+function scaleOf(W, H, P, M) {
+  M = M || PL;
+  const pw = W - M.L - M.R, ph = H - M.T - M.B;
+  return {
+    X: x => M.L + (x - P.x0) / (P.x1 - P.x0) * pw,
+    Y: y => M.T + ph - (y - P.y0) / (P.y1 - P.y0) * ph,
+    base: M.T + ph, M: M,
+  };
+}
+function fmtNum(v) { return String(Math.round(v * 1000) / 1000); }
+function axes(svg, W, H, P, S) {
+  const M = S.M;
+  svgNode('line', { x1: M.L, y1: S.base, x2: W - M.R, y2: S.base, stroke: COL.grey }, svg);
+  svgNode('line', { x1: M.L, y1: M.T, x2: M.L, y2: S.base, stroke: COL.grey }, svg);
+  for (const v of P.xt) svgText(svg, S.X(v), S.base + 18, fmtNum(v), { 'text-anchor': 'middle', 'font-size': 15 });
+  for (const v of P.yt) svgText(svg, M.L - 8, S.Y(v) + 5, fmtNum(v), { 'text-anchor': 'end', 'font-size': 15 });
+  if (P.xlabel) svgTex(svg, (M.L + W - M.R) / 2, H - 13, P.xlabel, { w: 320, size: 15 });
+  if (P.ylabel) haloTex(svg, M.L + 6, M.T + 10, P.ylabel, { w: 220, size: 15, anchor: 'start', fill: COL.ink });
+}
+let CLIP_N = 0;
+// Clip marks to the plot box, so a curve that leaves the range stops at the edge.
+function plotClip(svg, S, W) {
+  const id = 'pclip' + (++CLIP_N);
+  const cp = svgNode('clipPath', { id: id }, svgNode('defs', {}, svg));
+  svgNode('rect', { x: S.M.L, y: S.M.T, width: W - S.M.L - S.M.R, height: S.base - S.M.T }, cp);
+  return 'url(#' + id + ')';
+}
+function ptsD(pts, close) {
+  return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ') + (close ? ' Z' : '');
+}
+// The path of y = f(x). A null or non-finite value lifts the pen (a hole in the curve).
+function curveD(S, f, x0, x1, n) {
+  let d = '', pen = false;
+  n = n || 240;
+  for (let i = 0; i <= n; i++) {
+    const x = x0 + (x1 - x0) * i / n, y = f(x);
+    if (y === null || y === undefined || !isFinite(y)) { pen = false; continue; }
+    d += (pen ? 'L' : 'M') + S.X(x).toFixed(1) + ' ' + S.Y(y).toFixed(1);
+    pen = true;
+  }
+  return d;
+}
+function curve(svg, S, f, x0, x1, attrs) {
+  const a = Object.assign({ fill: 'none', 'stroke-width': 2.5, 'data-item': 'mark' }, attrs || {});
+  a.d = curveD(S, f, x0, x1);
+  return svgNode('path', a, svg);
+}
+// A straight segment between two data points.
+function seg(svg, S, xa, ya, xb, yb, attrs) {
+  const a = Object.assign({ 'stroke-width': 2.5, 'data-item': 'mark' }, attrs || {});
+  a.x1 = S.X(xa).toFixed(1); a.y1 = S.Y(ya).toFixed(1); a.x2 = S.X(xb).toFixed(1); a.y2 = S.Y(yb).toFixed(1);
+  return svgNode('line', a, svg);
+}
+// A dot at a data point.
+function dotAt(svg, S, x, y, fill, id) {
+  return svgNode('circle', { cx: S.X(x).toFixed(1), cy: S.Y(y).toFixed(1), r: 6, fill: fill, stroke: COL.panel,
+    'stroke-width': 2, 'data-item': 'mark', 'data-id': id }, svg);
+}
+const DASH = '5 4';
+
+// ---------- proof slides: shared parts ----------
+// Amber marks what the newest proof line is about, in the picture and in the proof.
+function glowPath(svg, d, w) {
+  return svgNode('path', { d: d, fill: 'none', stroke: COL.amberBg, 'stroke-width': w || 12, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+}
+function glowFill(svg, d) { return svgNode('path', { d: d, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5, 'stroke-linejoin': 'round' }, svg); }
+function glowDot(svg, x, y, r) { return svgNode('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: r || 12, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 }, svg); }
+function glowBox(svg, x, y, w, ht, pad) {
+  pad = pad == null ? 4 : pad;
+  return svgNode('rect', { x: (x - pad).toFixed(1), y: (y - pad).toFixed(1), width: Math.max(0, w + 2 * pad).toFixed(1),
+    height: Math.max(0, ht + 2 * pad).toFixed(1), rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.5 }, svg);
+}
+// The picture's title row: grey when it names the picture, amber when it says what the newest line is about.
+function plotTitle(svg, W, text, lit) {
+  svgTex(svg, W / 2, 13, text, { w: W - 8, size: 15, fill: lit ? COL.ink : COL.muted, bg: lit ? COL.amberBg : null });
+}
+// Left column of a proof slide: controls, the picture, legend, readouts, the test, the mental model.
+function proofLeft(widget, o) {
+  if (o.controls && o.controls.length) widget.append(hh('div', 'sliders', ...o.controls));
+  let plot;
+  if (o.box) { widget.append(o.box); plot = { redraw: o.redraw }; }
+  else plot = fillPlot(widget, o.draw);
+  widget.append(legend(o.legend.concat([{ chip: true, color: COL.amberBg, text: 'amber: the newest proof line' }])));
+  if (o.readouts && o.readouts.length) widget.append(hh('div', 'readouts', ...o.readouts.map(r => r.el)));
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList(o.tests));
+  widget.append(test);
+  if (o.model) {
+    const model = h('p', 'model');
+    model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+    widget.append(model);
+  }
+  plot.test = test;
+  return plot;
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is
+// done, the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight, hint) {
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = hint || 'Look back: under the picture.';
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+
+// ---------- step 1: a limit ----------
+function slideLimit(widget, side) {
+  const XS = [0, 0.001, 0.01, 0.1, 0.5, 1, 2];
+  const XL = ['$0$', '$0.001$', '$0.01$', '$0.1$', '$0.5$', '$1$', '$2$'];
+  const P = { x0: -3, x1: 3, y0: -0.4, y1: 1.5, xt: [-3, -2, -1, 0, 1, 2, 3], yt: [0, 0.5, 1],
+    xlabel: String.raw`$x$`, ylabel: String.raw`$\sin x / x$` };
+  const fx = x => x === 0 ? null : Math.sin(x) / x;
+  let xi = 3;
+  const sl = slider(String.raw`$x$, the input`, { id: 'x', name: 'input x', min: 0, max: XS.length - 1, step: 1, value: xi,
+    fmt: v => XL[v], onInput: v => { xi = v; update(); } });
+  const rX = readout('x', String.raw`input $x$`);
+  const rV = readout('out', String.raw`output $\sin x / x$`);
+  const rG = readout('gap', String.raw`gap to $1$`);
+  const rL = readout('limit', String.raw`limit as $x \to 0$`);
+  rL.set('$1$');
+  widget.append(legend([
+    { color: COL.grey, text: String.raw`grey: $\sin x / x$ for $x \neq 0$` },
+    { color: COL.accent, text: String.raw`blue dot: the output at your $x$` },
+    { color: COL.ink, text: String.raw`open circle: $x=0$, the formula gives $0/0$` },
+  ]), hh('div', 'sliders', sl.el));
+  const plot = fillPlot(widget, drawLim);
+  widget.append(hh('div', 'readouts', rX.el, rV.el, rG.el, rL.el));
+  function drawLim(svg, W, H) {
+    const S = scaleOf(W, H, P);
+    axes(svg, W, H, P, S);
+    curve(svg, S, fx, P.x0, P.x1, { stroke: COL.grey });
+    svgNode('circle', { cx: S.X(0).toFixed(1), cy: S.Y(1).toFixed(1), r: 6, fill: COL.panel, stroke: COL.ink,
+      'stroke-width': 2, 'data-item': 'mark', 'data-id': 'hole' }, svg);
+    haloTex(svg, S.X(0) - 12, S.Y(1) - 16, String.raw`hole: $0/0$, no value`, { w: 220, size: 15, anchor: 'end', fill: COL.ink });
+    const x = XS[xi];
+    if (x === 0) {
+      dotAt(svg, S, 0, 1, COL.accent, 'dot');
+      haloTex(svg, S.X(0) + 12, S.Y(1) + 20, String.raw`$x=0$: no value`, { w: 160, size: 15, anchor: 'start', fill: COL.accent });
+    } else {
+      seg(svg, S, x, 0, x, fx(x), { stroke: COL.accent, 'stroke-dasharray': DASH, 'stroke-width': 1.5 });
+      dotAt(svg, S, x, fx(x), COL.accent, 'dot');
+      haloTex(svg, S.X(x) + 12, S.Y(fx(x)) + 22, '$x=' + x + '$', { w: 120, size: 15, anchor: 'start', fill: COL.accent });
+    }
+  }
+  function update() {
+    const x = XS[xi];
+    rX.set('$' + x + '$');
+    rV.set(x === 0 ? String.raw`no value, $0/0$` : fx(x).toFixed(6));
+    rG.set(x === 0 ? 'undefined' : sci(1 - fx(x)));
+    plot.redraw();
+  }
+  update();
+  side.append(
+    sym(String.raw`$x$: the input, in radians. $\sin x / x$: the output. At $x=0$ the formula gives $0/0$, so it has no value.`),
+    nameLine(String.raw`<i>limit</i>: Latin <i>limes</i>, a boundary between fields. Here $1$ is a border: $\sin x/x$ comes as close as you like but never stands on it.`),
+    triesList([
+      String.raw`Set $x$ to $0.1$. The output is $0.998334$, just under $1$.`,
+      String.raw`Set $x$ to $0.001$, then to $0$. The output closes in on $1$; at $0$ the readout says no value.`,
+      String.raw`The limit is $1$. Does finding it need a value at $x=0$?`,
+    ]),
+    takeLine(String.raw`A limit is the value the output closes in on as the input closes in on a point, even when the formula has no value there.`),
+    setTex(h('p', 'note'), String.raw`Why the limit is exactly $1$: Primer · Waves, step 5 proves it from the circle.`),
+  );
+}
+
+// ---------- step 3: the derivative as a slope you approach (with its two-line proof) ----------
+function slideSecant(widget, side) {
+  const HS = [1, 0.5, 0.1, 0.01, 0.001];
+  const s = t => t * t;
+  const P = { x0: 0, x1: 2.6, y0: 0, y1: 7, xt: [0, 0.5, 1, 1.5, 2, 2.5], yt: [0, 2, 4, 6],
+    xlabel: String.raw`$t$, time in seconds`, ylabel: String.raw`$s$, metres` };
+  let hi = 1, lit = '';
+  const sl = slider(String.raw`$h$, the step after $t=1$`, { id: 'h', name: 'step h', min: 0, max: HS.length - 1, step: 1, value: hi,
+    fmt: v => '$h=' + HS[v] + '$', onInput: v => { hi = v; update(); } });
+  const rA = readout('s1', String.raw`position $s(1)$`);
+  const rB = readout('s2', String.raw`position $s(1+h)$`);
+  const rC = readout('slope', String.raw`secant slope`);
+  const rT = readout('tan', String.raw`speed at $t=1$`);
+  rT.set('$2$ m/s');
+  widget.append(legend([
+    { color: COL.grey, text: String.raw`grey: $s(t)=t^2$` },
+    { color: COL.accent, text: String.raw`blue: secant from $t=1$ to $t=1+h$` },
+    { color: COL.ink, dash: true, text: String.raw`dashed: tangent at $t=1$` },
+    { color: COL.muted, dot: true, text: String.raw`dotted: run $h$, rise $2h+h^2$` },
+    { chip: true, color: COL.amberBg, text: 'amber: the newest proof line' },
+  ]), hh('div', 'sliders', sl.el));
+  const plot = fillPlot(widget, drawSec);
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList([
+    String.raw`Set $h=1$. The blue secant runs from $t=1$ to $t=2$; its slope is $3$.`,
+    String.raw`Set $h=0.001$. The secant almost lies on the dashed tangent: slope $2.001$. Cases are evidence, not proof.`,
+  ]));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', String.raw`the secant's slope is rise over run, $\frac{2h+h^2}{h}$. As the second point slides onto the first, the secant turns into the tangent.`)));
+  widget.append(hh('div', 'readouts', rA.el, rB.el, rC.el, rT.el), test, model);
+  function drawSec(svg, W, H) {
+    const S = scaleOf(W, H, P);
+    axes(svg, W, H, P, S);
+    const h0 = HS[hi], top = s(1 + h0);
+    const tanD = ptsD([[S.X(0.2), S.Y(1 + 2 * (0.2 - 1))], [S.X(2.2), S.Y(1 + 2 * (2.2 - 1))]]);
+    const legsD = ptsD([[S.X(1), S.Y(1)], [S.X(1 + h0), S.Y(1)], [S.X(1 + h0), S.Y(top)]]);
+    if (lit === 'tangent') glowPath(svg, tanD, 12);
+    if (lit === 'rise') glowPath(svg, legsD, 11);
+    curve(svg, S, s, P.x0, P.x1, { stroke: COL.grey });
+    svgNode('path', { d: tanD, stroke: COL.ink, 'stroke-dasharray': DASH, 'stroke-width': 2, fill: 'none', 'data-item': 'mark', 'data-id': 'tangent' }, svg);
+    svgNode('path', { d: legsD, stroke: COL.muted, 'stroke-dasharray': '2 3', 'stroke-width': 1.8, fill: 'none', 'data-item': 'mark', 'data-id': 'run-rise' }, svg);
+    if (h0 >= 0.5) {
+      haloTex(svg, S.X(1 + h0 / 2), S.Y(1) + 15, 'run $h$', { w: 90, size: 15, fill: COL.text2 });
+      haloTex(svg, S.X(1 + h0) + 8, S.Y((1 + top) / 2), 'rise $2h+h^2$', { w: 130, size: 15, anchor: 'start', fill: COL.text2 });
+    }
+    seg(svg, S, 1, s(1), 1 + h0, top, { stroke: COL.accent, 'stroke-width': 3 });
+    dotAt(svg, S, 1, s(1), COL.accent, 'p0');
+    dotAt(svg, S, 1 + h0, top, COL.accent, 'p1');
+    haloTex(svg, S.X(1) - 8, S.Y(s(1)) - 16, '$t=1$', { w: 80, size: 15, anchor: 'end', fill: COL.accent });
+    haloTex(svg, S.X(1 + h0) - 10, S.Y(top) - 16, '$t=1+h$', { w: 110, size: 15, anchor: 'end', fill: COL.accent });
+  }
+  function update() {
+    const h0 = HS[hi];
+    rA.set('$1$ m');
+    rB.set('$' + s(1 + h0).toFixed(4) + '$ m');
+    rC.set(((s(1 + h0) - s(1)) / h0).toFixed(4));
+    plot.redraw();
+  }
+  update();
+  side.append(
+    sym(String.raw`$s(t)$: position in metres at time $t$ seconds. $h$: a small step after $t=1$. Speed is the slope of $s$.`),
+    nameLine(String.raw`<i>secant</i>: Latin <i>secare</i>, to cut: the line cuts the curve at two points.`));
+  proofRight(side, {
+    id: 'secant-slope',
+    goal: { tex: String.raw`s'(1)=2`, words: String.raw`for $s(t)=t^2$ metres.` },
+    lines: [
+      { tex: String.raw`\frac{(1+h)^2-1}{h}=\frac{2h+h^2}{h}=2+h`, move: 'Rearrange',
+        why: String.raw`put in $s(t)=t^2$; $(1+h)^2=1+2h+h^2$; cancel $h\neq0$`, choices: ['Take a limit', 'Unfold the definition'], highlight: 'rise' },
+      { tex: String.raw`2+h\to2\ \text{ as } h\to0`, move: 'Take a limit',
+        why: String.raw`the secant turns into the tangent: $2$ m/s`, choices: ['Compare or bound', 'Rearrange'], highlight: 'tangent' }],
+    lookBack: [
+      { q: String.raw`What do the same two lines give at time $t$?`,
+        a: String.raw`$\frac{(t+h)^2-t^2}{h}=2t+h\to2t$: speed $2t$ m/s. Cancel $h$ first; never put $h=0$ into $\frac00$.` }] },
+    { test: test }, key => { lit = key || ''; plot.redraw(); });
+  side.append(takeLine(String.raw`The derivative is the slope of the secant as its second point slides onto the first.`));
+}
+
+// ---------- step 4: derivatives by rules ----------
+function slideRules(widget, side) {
+  const FNS = [
+    { id: 'cube', tex: String.raw`$x^3$`, f: x => x * x * x, d: x => 3 * x * x, yt: [-8, -4, 0, 4, 8, 12], y0: -8, y1: 12,
+      rule: String.raw`power rule: $\dfrac{d}{dx}x^n = n x^{n-1}$, so $f'(x)=3x^2$` },
+    { id: 'exp', tex: String.raw`$e^{x/2}$`, f: x => Math.exp(x / 2), d: x => Math.exp(x / 2) / 2, yt: [0, 1, 2, 3], y0: -0.5, y1: 3,
+      rule: String.raw`chain rule, inner $u=x/2$: $\dfrac{d}{dx}e^{u}=e^{u}u'$, so $f'(x)=\tfrac12 e^{x/2}$` },
+    { id: 'gauss', tex: String.raw`$e^{-x^2}$`, f: x => Math.exp(-x * x), d: x => -2 * x * Math.exp(-x * x), yt: [-1, 0, 1], y0: -1, y1: 1.2,
+      rule: String.raw`chain rule, inner $u=-x^2$, $u'=-2x$: $f'(x)=-2x\,e^{-x^2}$` },
+  ];
+  let fi = 2, xv = 20;  // slider counts in steps of 1/20
+  const sl = slider(String.raw`$x$, where you are`, { id: 'x', name: 'x', min: -40, max: 40, step: 1, value: xv,
+    fmt: v => '$x=' + (v / 20).toFixed(2) + '$', onInput: v => { xv = v; update(); } });
+  const chips = FNS.map((fn, i) => {
+    const b = mark(h('button', 'btn'), 'control', 'fn-' + fn.id);
+    setTex(b, fn.tex);
+    b.addEventListener('click', () => { fi = i; refresh(); });
+    return b;
+  });
+  const ruleEl = h('p', 'rule');
+  const rR = readout('rule', String.raw`rule: $f'(x)$`);
+  const rN = readout('num', String.raw`numeric slope $\frac{f(x+h)-f(x-h)}{2h}$`);
+  const rM = readout('check', String.raw`same?`);
+  widget.append(legend([
+    { color: COL.grey, text: String.raw`grey: $f(x)$` },
+    { color: COL.accent, text: String.raw`blue: $f'(x)$ from the rule` },
+    { color: COL.ink, text: String.raw`dots: $f$ (the plain dot) and $f'$ (blue) at your $x$` },
+  ]), hh('div', 'btnrow', ...chips), hh('div', 'sliders', sl.el));
+  const plot = fillPlot(widget, drawRules);
+  widget.append(ruleEl, hh('div', 'readouts', rR.el, rN.el, rM.el));
+  function drawRules(svg, W, H) {
+    const fn = FNS[fi];
+    const P = { x0: -2, x1: 2, y0: fn.y0, y1: fn.y1, xt: [-2, -1, 0, 1, 2], yt: fn.yt, xlabel: String.raw`$x$`, ylabel: String.raw`$f$, $f'$` };
+    const S = scaleOf(W, H, P);
+    axes(svg, W, H, P, S);
+    curve(svg, S, fn.f, P.x0, P.x1, { stroke: COL.grey });
+    curve(svg, S, fn.d, P.x0, P.x1, { stroke: COL.accent, 'stroke-width': 2.5 });
+    const x = xv / 20;
+    dotAt(svg, S, x, fn.f(x), COL.text2, 'dot-f');
+    dotAt(svg, S, x, fn.d(x), COL.accent, 'dot-d');
+    haloTex(svg, S.X(x) + 10, S.Y(fn.f(x)) - 14, '$f(x)$', { w: 80, size: 15, anchor: 'start', fill: COL.text2 });
+    haloTex(svg, S.X(x) + 10, S.Y(fn.d(x)) + 16, "$f'(x)$", { w: 80, size: 15, anchor: 'start', fill: COL.accent });
+  }
+  function refresh() {
+    chips.forEach((b, i) => b.classList.toggle('on', i === fi));
+    setTex(ruleEl, FNS[fi].rule);
+    update();
+  }
+  function update() {
+    const fn = FNS[fi], x = xv / 20, e = 1e-4;
+    const num = (fn.f(x + e) - fn.f(x - e)) / (2 * e);
+    rR.set(fn.d(x).toFixed(4));
+    rN.set(num.toFixed(4));
+    rM.set(Math.abs(num - fn.d(x)) < 1e-4 ? 'match' : 'differ', Math.abs(num - fn.d(x)) >= 1e-4);
+    plot.redraw();
+  }
+  refresh();
+  side.append(
+    sym(String.raw`$f$: the function. $f'$: its slope at each $x$. The chain rule needs one inner function $u(x)$.`),
+    triesList([
+      String.raw`Pick $e^{-x^2}$ and set $x=1$. The rule gives $-0.7358$, and the numeric slope agrees.`,
+      String.raw`Pick $x^3$ and set $x=-1$. $f=-1$ but $f'=3$: the curve rises there.`,
+      String.raw`For $e^{-x^2}$, which part of the rule gives the $-2x$? Find $u$ in the rule line.`,
+    ]),
+    takeLine(String.raw`The rules are a fixed recipe, so a program can apply them. The hard part is simplifying the answer.`),
+    setTex(h('p', 'note'), String.raw`The slope of $\sin x$ is in Primer · Waves, step 12; of $e^{i\omega t}$, in Primer · Complex numbers, step 11.`),
+  );
+}
+
+// ---------- step 5: why the power rule holds (proof) ----------
+// A rectangle of sides f = x and g = x^(n-1), area x^n. Both sides grow when x grows by h.
+function drawRect(svg, W, Hh, n, x, hs, lit) {
+  const f = x, g = Math.pow(x, n - 1), df = hs, dg = Math.pow(x + hs, n - 1) - g;
+  const CAP = {
+    sides: String.raw`amber: $\Delta f$ and $\Delta g$, how much each side grows`,
+    strips: String.raw`amber: the new area, two strips and a corner`,
+    corner: String.raw`amber: the corner over $h$ is $\Delta f\,\Delta g/h=\Delta g$, which goes to 0`,
+    induct: String.raw`amber: $f=x$ and $g=x^{n-1}$; the rule one power down gives $g'$` }[lit];
+  plotTitle(svg, W, CAP || String.raw`left: area $x^{n}=f\cdot g$ grows with $x$; right: new area $\div\,h$`, !!CAP);
+  const top = 34, bot = 30, left = 74;
+  const panelW = Math.max(200, W * 0.6);
+  // the rectangle fills its panel at the current size
+  const u = Math.min((panelW - left - 64) / (f + df), (Hh - top - bot - 6) / (g + dg));
+  const X = v => left + v * u, Y = v => Hh - bot - v * u;
+  const rect = (x0, y0, x1, y1) => [X(x0), Y(y1), X(x1) - X(x0), Y(y0) - Y(y1)];
+  const box = (r, attrs) => svgNode('rect', Object.assign({ x: r[0].toFixed(1), y: r[1].toFixed(1), width: Math.max(0, r[2]).toFixed(1), height: Math.max(0, r[3]).toFixed(1) }, attrs), svg);
+  const main = rect(0, 0, f, g), sR = rect(f, 0, f + df, g), sT = rect(0, g, f, g + dg), cn = rect(f, g, f + df, g + dg);
+  if (lit === 'strips') { glowBox(svg, ...sR, 5); glowBox(svg, ...sT, 5); glowBox(svg, ...cn, 5); }
+  if (lit === 'corner') glowBox(svg, ...cn, 7);
+  if (lit === 'sides') { glowBox(svg, X(f), Y(0) + 4, X(f + df) - X(f), 22, 2); glowBox(svg, X(0) - 30, Y(g + dg), 24, Y(g) - Y(g + dg), 2); }
+  if (lit === 'induct') { glowBox(svg, X(0), Y(0) + 4, X(f) - X(0), 22, 2); glowBox(svg, X(0) - 30, Y(g), 24, Y(0) - Y(g), 2); }
+  box(main, { fill: COL.soft2, stroke: COL.grey, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'area' });
+  box(sR, { fill: COL.blueLight, stroke: COL.panel, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'strip-right' });
+  box(sT, { fill: COL.blueLight, stroke: COL.panel, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'strip-top' });
+  box(cn, { fill: COL.blueDeep, stroke: COL.panel, 'stroke-width': 1, 'data-item': 'mark', 'data-id': 'corner' });
+  if (main[2] > 70 && main[3] > 30) svgTex(svg, X(f / 2), Y(g / 2), '$fg=x^{' + n + '}$', { w: 100, size: 16, fill: COL.text2 });
+  if (sR[2] > 40) haloTex(svg, X(f + df / 2), Y(g / 2), String.raw`$g\Delta f$`, { w: 60, size: 15, fill: COL.blueDeep });
+  if (sT[3] > 20) haloTex(svg, X(f / 2), Y(g + dg / 2), String.raw`$f\Delta g$`, { w: 60, size: 15, fill: COL.blueDeep });
+  // the sides, named under and beside the rectangle
+  const tick = (x0, y0, x1, y1) => svgNode('path', { d: ptsD([[x0, y0], [x1, y1]]), stroke: COL.muted, 'stroke-width': 1.5 }, svg);
+  tick(X(0), Y(0) + 7, X(f) - 2, Y(0) + 7); tick(X(f) + 2, Y(0) + 7, X(f + df), Y(0) + 7);
+  svgTex(svg, X(f / 2), Y(0) + 18, '$f=x$', { w: 80, size: 15, fill: COL.ink, ht: 22 });
+  if (sR[2] > 18) svgTex(svg, X(f + df / 2), Y(0) + 18, String.raw`$\Delta f$`, { w: 40, size: 15, fill: COL.ink, ht: 22 });
+  tick(X(0) - 7, Y(0), X(0) - 7, Y(g) + 2); tick(X(0) - 7, Y(g) - 2, X(0) - 7, Y(g + dg));
+  svgTex(svg, X(0) - 12, Y(g / 2), n === 2 ? '$g=x$' : '$g=x^2$', { w: 70, size: 15, anchor: 'end', fill: COL.ink });
+  if (sT[3] > 14) svgTex(svg, X(0) - 12, Y(g + dg / 2), String.raw`$\Delta g$`, { w: 50, size: 15, anchor: 'end', fill: COL.ink });
+  svgTex(svg, X(f + df) + 6, Y(g + dg / 2), 'corner', { w: 60, size: 14, anchor: 'start', fill: COL.blueDeep });
+  // Right: the secant slope as a stacked bar of strips/h and corner/h, against n x^(n-1).
+  const bx0 = panelW + 6, bx1 = W - 6;
+  if (bx1 - bx0 < 150) return;
+  const s1 = g, s2 = f * dg / hs, s3 = dg, tot = s1 + s2 + s3, target = n * Math.pow(x, n - 1);
+  const vmax = Math.max(tot, target) * 1.08, bw = Math.min(44, (bx1 - bx0) * 0.2), bx = bx0 + 6;
+  const by0 = Hh - bot, by1 = top + 26, Yb = v => by0 - v / vmax * (by0 - by1);
+  if (lit === 'corner') glowBox(svg, bx, Yb(tot), bw, Yb(s1 + s2) - Yb(tot), 5);
+  if (lit === 'strips') glowBox(svg, bx, Yb(tot), bw, by0 - Yb(tot), 5);
+  svgNode('rect', { x: bx, y: Yb(s1).toFixed(1), width: bw, height: (by0 - Yb(s1)).toFixed(1), fill: COL.blueLight, stroke: COL.panel, 'data-item': 'mark', 'data-id': 'bar-strip1' }, svg);
+  svgNode('rect', { x: bx, y: Yb(s1 + s2).toFixed(1), width: bw, height: (Yb(s1) - Yb(s1 + s2)).toFixed(1), fill: COL.blueLight, stroke: COL.panel, 'data-item': 'mark', 'data-id': 'bar-strip2' }, svg);
+  svgNode('rect', { x: bx, y: Yb(tot).toFixed(1), width: bw, height: Math.max(0.5, Yb(s1 + s2) - Yb(tot)).toFixed(1), fill: COL.blueDeep, 'data-item': 'mark', 'data-id': 'bar-corner' }, svg);
+  svgNode('line', { x1: bx - 4, y1: by0, x2: bx + bw + 4, y2: by0, stroke: COL.grey }, svg);
+  svgNode('line', { x1: bx - 6, y1: Yb(target).toFixed(1), x2: bx + bw + 6, y2: Yb(target).toFixed(1), stroke: COL.ink, 'stroke-width': 2.5, 'stroke-dasharray': '6 3', 'data-item': 'mark', 'data-id': 'target' }, svg);
+  const lx = bx + bw + 10, labs = [[Yb(s1 / 2), String.raw`$g\Delta f/h=` + s1.toFixed(2) + '$'], [Yb(s1 + s2 / 2), String.raw`$f\Delta g/h=` + s2.toFixed(2) + '$'],
+    [Yb(tot) - 4, String.raw`corner$/h=` + s3.toFixed(2) + '$']];
+  for (let i = labs.length - 2; i >= 0; i--) labs[i][0] = Math.max(labs[i][0], labs[i + 1][0] + 20);   // keep labels apart
+  labs.forEach(([y, t]) => svgTex(svg, lx, Math.min(y, by0 - 8), t, { w: bx1 - lx, size: 14, anchor: 'start', fill: COL.blueDeep }));
+  svgTex(svg, bx - 4, top + 8, String.raw`dashed: $n\,x^{n-1}=` + target.toFixed(2) + '$', { w: bx1 - bx0, size: 14, anchor: 'start', fill: COL.ink });
+}
+function slideWhyPower(widget, side) {
+  let n = 3, x = 1, hs = 0.3, lit = '';
+  const chips = [2, 3].map(d => {
+    const b = mark(h('button', 'btn' + (d === n ? ' on' : '')), 'control', 'n-' + d);
+    setTex(b, '$n=' + d + '$');
+    b.addEventListener('click', () => { n = d; chips.forEach((c, i) => c.classList.toggle('on', [2, 3][i] === n)); update(); });
+    return b;
+  });
+  const sX = slider('$x$', { id: 'x', name: 'x', min: 0.5, max: 1.5, step: 0.05, value: x, fmt: v => v.toFixed(2), onInput: v => { x = v; update(); } });
+  const sH = slider('$h$', { id: 'h', name: 'step h', min: 0.02, max: 0.5, step: 0.01, value: hs, fmt: v => v.toFixed(2), onInput: v => { hs = v; update(); } });
+  const rS = readout('secant', String.raw`secant slope $\frac{(x+h)^n-x^n}{h}$`);
+  const rC = readout('corner', String.raw`corner $\div\,h$`);
+  const rT = readout('rule', String.raw`$n\,x^{n-1}$`);
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'btnrow', ...chips), sX.el, sH.el],
+    draw: (svg, W, Hh) => drawRect(svg, W, Hh, n, x, hs, lit),
+    legend: [
+      { chip: true, color: COL.soft2, border: COL.grey, text: String.raw`grey: area $fg=x^n$` },
+      { chip: true, color: COL.blueLight, text: 'blue: two strips' },
+      { chip: true, color: COL.blueDeep, text: String.raw`the corner block: $\Delta f\,\Delta g$` }],
+    readouts: [rS, rC, rT],
+    tests: [
+      String.raw`At $n=3$, $x=1$, shrink $h$ to $0.02$: the slope is $3.0604$, near $3x^2=3$.`,
+      String.raw`The corner over $h$ falls from $0.69$ at $h=0.3$ to $0.04$. Cases are evidence, not proof.`],
+    model: String.raw`Grow both sides: the area gains two strips and a corner, small times small, which the slope can ignore.` });
+  proofRight(side, {
+    id: 'power-rule',
+    goal: { tex: String.raw`\frac{d}{dx}x^n=n\,x^{n-1}`, words: String.raw`for every whole $n\ge1$.` },
+    facts: [{ tex: String.raw`f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}`, ref: 'step 2' }],
+    lines: [
+      { tex: String.raw`\Delta f=f(x+h)-f(x)`, move: 'Name a piece',
+        why: String.raw`how much side $f$ grows, and $\Delta g$ the same for $g$; here $f=x$, $g=x^{n-1}$`, choices: ['Unfold the definition', 'Change variables'], highlight: 'sides' },
+      { tex: String.raw`\text{new area}=g\,\Delta f+f\,\Delta g+\Delta f\,\Delta g`, move: 'Rearrange',
+        why: String.raw`multiply out $(f+\Delta f)(g+\Delta g)$; $fg$ cancels: two strips and a corner`, choices: ['Compute it two ways', 'Telescope'], highlight: 'strips' },
+      { tex: String.raw`g\tfrac{\Delta f}{h}+f\tfrac{\Delta g}{h}+\tfrac{\Delta f}{h}\Delta g\ \to\ gf'+fg'`, move: 'Take a limit',
+        why: String.raw`divide by $h$, let $h\to0$; $\Delta g\to0$ kills the corner. This is the product rule`, choices: ['Compare or bound', 'Rearrange'], highlight: 'corner' },
+      { tex: String.raw`(x\cdot x^{n-1})'=x^{n-1}+(n-1)x^{n-1}=nx^{n-1}`, move: 'Induction',
+        why: String.raw`true at $n=1$: $(x)'=1$. If true for $n-1$, line 3 with $f=x$, $g=x^{n-1}$ gives it for $n$, as $x\cdot x^{n-2}=x^{n-1}$`, choices: ['Use an earlier result', 'Contradiction'], highlight: 'induct' }],
+    lookBack: [
+      { q: 'What else did the proof prove on the way?',
+        a: String.raw`The product rule, $(fg)'=f'g+fg'$, for any smooth $f$ and $g$. Step 8 uses it to find a peak, and integration by parts reads it backwards (Primer · Integrals: techniques, step 4).` },
+      { q: String.raw`Does the rule hold for $n=\tfrac12$?`,
+        a: String.raw`Yes, $(\sqrt x)'=\frac{1}{2\sqrt x}$, but induction only climbs whole steps. Take the slope of $(\sqrt x)^2=x$ with the chain rule (step 6): $2\sqrt x\,(\sqrt x)'=1$.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const g = Math.pow(x, n - 1), dg = Math.pow(x + hs, n - 1) - g;
+    rS.set(((Math.pow(x + hs, n) - Math.pow(x, n)) / hs).toFixed(4));
+    rC.set(dg.toFixed(4));
+    rT.set((n * Math.pow(x, n - 1)).toFixed(4));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 6: why the slope of e^x is e^x (proof) ----------
+function drawExp(svg, W, Hh, x0, hs, lit) {
+  const E = Math.exp;
+  const CAP = {
+    factor: String.raw`amber: the same step $h$ at $x$ and at 0; the rise at $x$ is $e^x$ times the rise at 0`,
+    lower: String.raw`amber: the line $1+x$ stays under $e^x$`,
+    upper: String.raw`amber: the curve $\frac{1}{1-x}$ stays over $e^x$, for $x<1$`,
+    squeeze: String.raw`amber: the secant at 0 is pinned between slopes $1$ and $\frac{1}{1-h}$`,
+    tangent: String.raw`amber: the tangent at $x$, slope $e^x=` + E(x0).toFixed(3) + '$' }[lit];
+  plotTitle(svg, W, CAP || String.raw`$e^x$ between the line $1+x$ and the curve $\frac{1}{1-x}$`, !!CAP);
+  const P = { x0: -1.6, x1: 1.3, y0: -0.6, y1: 4.2, xt: [-1.5, -1, -0.5, 0, 0.5, 1], yt: [0, 1, 2, 3, 4], xlabel: '$x$' };
+  const S = scaleOf(W, Hh, P, { L: 40, R: 14, T: 34, B: 40 });
+  axes(svg, W, Hh, P, S);
+  const clip = plotClip(svg, S, W);
+  svgNode('line', { x1: S.M.L, y1: S.Y(0), x2: W - S.M.R, y2: S.Y(0), stroke: COL.soft3 }, svg);
+  svgNode('line', { x1: S.X(0), y1: S.M.T, x2: S.X(0), y2: S.base, stroke: COL.soft3 }, svg);
+  const up = x => x < 0.995 ? 1 / (1 - x) : null;
+  const secX = [[S.X(x0), S.Y(E(x0))], [S.X(x0 + hs), S.Y(E(x0 + hs))]], sec0 = [[S.X(0), S.Y(1)], [S.X(hs), S.Y(E(hs))]];
+  const tanD = ptsD([[S.X(x0 - 0.45), S.Y(E(x0) * (1 - 0.45))], [S.X(x0 + 0.45), S.Y(E(x0) * (1 + 0.45))]]);
+  const g = svgNode('g', { 'clip-path': clip }, svg);
+  if (lit === 'factor') { glowPath(g, ptsD(secX), 13); glowPath(g, ptsD(sec0), 13); }
+  if (lit === 'lower') glowPath(g, curveD(S, x => 1 + x, P.x0, P.x1), 12);
+  if (lit === 'upper') glowPath(g, curveD(S, up, P.x0, 0.99), 12);
+  if (lit === 'squeeze') {
+    const pts = [];
+    for (let i = 0; i <= 20; i++) { const t = hs * i / 20; pts.push([S.X(t), S.Y(1 + t)]); }
+    for (let i = 20; i >= 0; i--) { const t = hs * i / 20; pts.push([S.X(t), S.Y(1 / (1 - t))]); }
+    glowFill(g, ptsD(pts, true));
+    glowPath(g, ptsD(sec0), 12);
+  }
+  if (lit === 'tangent') glowPath(g, tanD, 12);
+  curve(g, S, x => 1 + x, P.x0, P.x1, { stroke: COL.grey, 'stroke-width': 2, 'data-id': 'lower' });
+  curve(g, S, up, P.x0, 0.99, { stroke: COL.grey, 'stroke-width': 2, 'stroke-dasharray': DASH, 'data-id': 'upper' });
+  curve(g, S, E, P.x0, P.x1, { stroke: COL.ink, 'stroke-width': 2.5, 'data-id': 'exp' });
+  if (lit === 'tangent') svgNode('path', { d: tanD, stroke: COL.ink, 'stroke-dasharray': DASH, 'stroke-width': 2, fill: 'none', 'data-item': 'mark', 'data-id': 'tangent' }, g);
+  svgNode('path', { d: ptsD(sec0), stroke: COL.accent2, 'stroke-width': 3.5, fill: 'none', 'data-item': 'mark', 'data-id': 'secant-0' }, g);
+  svgNode('path', { d: ptsD(secX), stroke: COL.accent, 'stroke-width': 3.5, fill: 'none', 'data-item': 'mark', 'data-id': 'secant-x' }, g);
+  dotAt(svg, S, x0, E(x0), COL.accent, 'at-x');
+  dotAt(svg, S, 0, 1, COL.accent2, 'at-0');
+  haloTex(svg, S.X(1.2) - 4, S.Y(E(1.2)) + 2, '$e^x$', { w: 50, size: 16, anchor: 'end', fill: COL.ink });
+  haloTex(svg, S.X(1.12), S.Y(2.12) + 14, '$1+x$', { w: 60, size: 15, fill: COL.text3 });
+  haloTex(svg, S.X(0.71) - 6, S.Y(3.75), String.raw`$\frac{1}{1-x}$`, { w: 60, size: 15, anchor: 'end', fill: COL.text3, ht: 34 });
+  haloTex(svg, S.X(x0) + 8, S.Y(E(x0)) + 16, 'at $x$', { w: 60, size: 15, anchor: 'start', fill: COL.accent });
+  if (Math.abs(x0) > 0.25) haloTex(svg, S.X(0) - 8, S.Y(1) - 14, 'at $0$', { w: 60, size: 15, anchor: 'end', fill: COL.accent });
+}
+function slideWhyExp(widget, side) {
+  const E = Math.exp;
+  let x0 = 0.5, hs = 0.3, lit = '';
+  const sX = slider('$x$', { id: 'x', name: 'x', min: -1, max: 0.7, step: 0.05, value: x0, fmt: v => v.toFixed(2), onInput: v => { x0 = v; update(); } });
+  const sH = slider('$h$', { id: 'h', name: 'step h', min: 0.01, max: 0.5, step: 0.01, value: hs, fmt: v => v.toFixed(2), onInput: v => { hs = v; update(); } });
+  const rS = readout('secant', String.raw`secant at $x$`);
+  const rF = readout('factored', String.raw`$e^x\cdot\frac{e^h-1}{h}$`);
+  const rQ = readout('at-0', String.raw`$\frac{e^h-1}{h}$ in $[1,\frac{1}{1-h}]$`);
+  const plot = proofLeft(widget, {
+    controls: [sX.el, sH.el],
+    draw: (svg, W, Hh) => drawExp(svg, W, Hh, x0, hs, lit),
+    legend: [
+      { color: COL.ink, text: String.raw`solid: $e^x$` },
+      { color: COL.grey, text: String.raw`grey: $1+x$` },
+      { color: COL.grey, dash: true, text: String.raw`grey dashed: $\frac{1}{1-x}$` },
+      { color: COL.accent, text: String.raw`blue: secants over $h$, at $x$ and at $0$ (the second blue)` }],
+    readouts: [rS, rF, rQ],
+    tests: [
+      String.raw`At $h=0.1$ the secant is $1.0517$ at $x=0$ and $1.7340=e^{0.5}\cdot1.0517$ at $x=0.5$.`,
+      String.raw`At $h=0.01$, $\frac{e^h-1}{h}=1.0050$, inside $[1,\,1.0101]$. Evidence, not proof.`],
+    model: String.raw`A step $h$ multiplies $e^x$ by the same $e^h$ anywhere, so the rise at $x$ is $e^x$ times the rise at 0.` });
+  proofRight(side, {
+    id: 'exp-slope',
+    goal: { tex: String.raw`\frac{d}{dx}e^x=e^x`, words: String.raw`with steps $0<h<1$; the look-back takes $h<0$.` },
+    facts: [
+      { tex: String.raw`e^{a+b}=e^a\,e^b`, ref: 'Primer · Exponentials, step 2' },
+      { tex: String.raw`e^r=\lim_n\big(1+\tfrac{r}{n}\big)^n`, ref: 'Primer · Exponentials, step 5' }],
+    lines: [
+      { tex: String.raw`\frac{e^{x+h}-e^x}{h}=e^x\cdot\frac{e^h-1}{h}`, move: 'Use an earlier result',
+        why: String.raw`$e^{x+h}=e^xe^h$; take out $e^x$`, choices: ['Rearrange', 'Change variables'], highlight: 'factor' },
+      { tex: String.raw`e^h\ge1+h`, move: 'Compare or bound',
+        why: String.raw`$(1+\frac hn)^n$ is $1+h$ plus positive terms; let $n\to\infty$`, choices: ['Take a limit', 'Induction'], highlight: 'lower' },
+      { tex: String.raw`e^{-h}\ge1-h,\ \text{ so }\ e^h\le\tfrac{1}{1-h}`, move: 'Compare or bound',
+        why: String.raw`$n$ losses, each at most $\frac hn$, lose at most $h$; flip`, choices: ['Undo with the inverse', 'Use symmetry'], highlight: 'upper' },
+      { tex: String.raw`1\le\frac{e^h-1}{h}\le\tfrac{1}{1-h}`, move: 'Rearrange',
+        why: String.raw`subtract 1, divide by $h$; $\frac{1}{1-h}-1=\frac{h}{1-h}$`, choices: ['Add zero or multiply by one', 'Telescope'], highlight: 'squeeze' },
+      { tex: String.raw`\frac{e^h-1}{h}\to1,\ \text{ so }\ (e^x)'=e^x`, move: 'Take a limit',
+        why: String.raw`both bounds go to $1$, so the ratio caught between them does; line 1 gives $e^x\cdot1$`, choices: ['Compare or bound', 'Use an earlier result'], highlight: 'tangent' }],
+    lookBack: [
+      { q: String.raw`What about a step to the left, $h<0$?`,
+        a: String.raw`Put $h=-k$: $\frac{e^{-k}-1}{-k}=e^{-k}\cdot\frac{e^k-1}{k}$, and both factors go to 1. The slope is the same from either side.` },
+      { q: String.raw`Why is $e$ the special base?`,
+        a: String.raw`For $2^x$, line 1 gives $2^x\cdot\frac{2^h-1}{h}$, and that factor goes to $\ln2=0.693$, not 1. Only $e$, built from $(1+\frac1n)^n$, makes it exactly 1.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    rS.set(((E(x0 + hs) - E(x0)) / hs).toFixed(4));
+    rF.set((E(x0) * (E(hs) - 1) / hs).toFixed(4));
+    rQ.set('$' + ((E(hs) - 1) / hs).toFixed(4) + String.raw`\in[1,\,` + (1 / (1 - hs)).toFixed(4) + ']$');
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 7: why the chain rule holds (proof) ----------
+const CHAIN = [
+  { id: 'gauss', tex: String.raw`$e^{-x^2}$`, u: x => -x * x, du: x => -2 * x, uName: String.raw`$u=-x^2$` },
+  { id: 'half', tex: String.raw`$e^{x/2}$`, u: x => x / 2, du: () => 0.5, uName: String.raw`$u=x/2$` },
+];
+function fmtSig(v) { const s = String(+v.toPrecision(4)); return s === '-0' ? '0' : s; }
+function drawChain(svg, W, Hh, fn, x, hs, lit) {
+  const u0 = fn.u(x), u1 = fn.u(x + hs), k = u1 - u0, f0 = Math.exp(u0), f1 = Math.exp(u1), df = f1 - f0;
+  const flat = Math.abs(k) < 1e-12;
+  const CAP = {
+    k: String.raw`amber: $k=u(x+h)-u(x)$, the step in $u$`,
+    two: String.raw`amber: the whole stretch $\frac{\Delta f}{h}$ is the product of the two stretches`,
+    limit: String.raw`amber: as $h\to0$ the stretches go to $u'(x)$ and $f'(u)$`,
+    exp: String.raw`amber: for $f=e^u$, the second slope is $f'(u)=e^u$ (step 5)` }[lit];
+  plotTitle(svg, W, CAP || 'three steps at one common scale: each length shows a stretch', !!CAP);
+  const nameW = 104, rightW = 170;
+  const usable = Hh - 34 - 30;
+  const rowY = i => 34 + 22 + i * (usable - 22) / 2;
+  const X0 = nameW + (W - nameW - rightW) * 0.42;
+  const steps = [hs, k, df];
+  const roomR = W - rightW - 8 - X0, roomL = X0 - nameW - 8;
+  let Z = 150 / hs;
+  for (const s of steps) { if (s > 1e-12) Z = Math.min(Z, roomR / s); if (s < -1e-12) Z = Math.min(Z, roomL / -s); }
+  const rowsInfo = [
+    { name: '$x$', a: x, b: x + hs, s: hs, la: '$x=' + fmtSig(x) + '$', lb: '$x+h=' + fmtSig(x + hs) + '$', col: COL.grey, id: 'x' },
+    { name: fn.uName, a: u0, b: u1, s: k, la: '$u=' + fmtSig(u0) + '$', lb: '$u+k=' + fmtSig(u1) + '$', col: COL.blueLight, id: 'u' },
+    { name: '$f=e^{u}$', a: f0, b: f1, s: df, la: '$e^{u}=' + f0.toFixed(4) + '$', lb: '$e^{u+k}=' + f1.toFixed(4) + '$', col: COL.accent, id: 'f' }];
+  const ends = rowsInfo.map(r => X0 + r.s * Z);
+  rowsInfo.forEach((r, i) => {
+    const y = rowY(i), e = ends[i];
+    svgNode('line', { x1: nameW, y1: y, x2: W - rightW, y2: y, stroke: COL.soft2, 'stroke-width': 2 }, svg);
+    if ((lit === 'k' && i === 1) || (lit === 'exp' && i === 2)) glowBox(svg, Math.min(X0, e), y - 8, Math.abs(e - X0), 16, 5);
+    if (lit === 'exp' && i === 2) glowBox(svg, 2, y - 12, nameW - 12, 24, 2);
+    svgNode('rect', { x: Math.min(X0, e).toFixed(1), y: y - 7, width: Math.max(1.5, Math.abs(e - X0)).toFixed(1), height: 14, rx: 3, fill: r.col, 'data-item': 'mark', 'data-id': 'step-' + r.id }, svg);
+    svgNode('line', { x1: X0, y1: y - 11, x2: X0, y2: y + 11, stroke: COL.ink, 'stroke-width': 1.5 }, svg);
+    svgTex(svg, 4, y, r.name, { w: nameW - 8, anchor: 'start', size: 15, fill: COL.ink });
+    const right = r.s >= 0;
+    svgTex(svg, right ? X0 - 4 : X0 + 4, y + 22, r.la, { w: 130, anchor: right ? 'end' : 'start', size: 14, fill: COL.text2 });
+    if (!flat || i === 0) svgTex(svg, right ? e + 4 : e - 4, y + 22, r.lb, { w: 130, anchor: right ? 'start' : 'end', size: 14, fill: COL.text2 });
+    const stepTex = i === 0 ? '$h=' + fmtSig(hs) + '$' : i === 1 ? '$k=' + fmtSig(k) + '$' : String.raw`$\Delta f=` + (+df.toPrecision(3)) + '$';
+    svgTex(svg, W - 4, y, stepTex, { w: rightW - 6, anchor: 'end', size: 15, fill: COL.ink });
+    if (i < 2) {   // the mapping from this row to the next
+      const yn = rowY(i + 1);
+      svgNode('line', { x1: X0, y1: y + 8, x2: X0, y2: yn - 8, stroke: COL.guide, 'stroke-dasharray': '2 3' }, svg);
+      svgNode('line', { x1: e.toFixed(1), y1: y + 8, x2: ends[i + 1].toFixed(1), y2: yn - 8, stroke: COL.guide, 'stroke-dasharray': '2 3' }, svg);
+      const ratio = i === 0 ? k / hs : (flat ? null : df / k);
+      const lim = lit === 'limit' || lit === 'exp';
+      const r3 = v => String(+v.toPrecision(3));
+      let t = i === 0 ? String.raw`$\times\frac{k}{h}=` + r3(ratio) : flat ? String.raw`$k=0$: no $\frac{\Delta f}{k}` : String.raw`$\times\frac{\Delta f}{k}=` + r3(ratio);
+      if (lim && !(i === 1 && flat)) t += String.raw`\to ` + (i === 0 ? fmtSig(fn.du(x)) : r3(f0));
+      t += '$';
+      const ym = (y + yn) / 2;
+      if (lit === 'two' || lit === 'limit' || (lit === 'exp' && i === 1)) glowBox(svg, W - rightW - 16, ym - 14, rightW + 12, 28, 0);
+      svgTex(svg, W - 4, ym, t, { w: rightW - 6, anchor: 'end', size: 15, fill: COL.blueStrong, ht: 30 });
+    }
+  });
+}
+function slideWhyChain(widget, side) {
+  let fi = 0, x = 1, hs = 0.1, lit = '';
+  const chips = CHAIN.map((fn, i) => {
+    const b = mark(h('button', 'btn' + (i === fi ? ' on' : '')), 'control', 'fn-' + fn.id);
+    setTex(b, fn.tex);
+    b.addEventListener('click', () => { fi = i; chips.forEach((c, j) => c.classList.toggle('on', j === fi)); update(); });
+    return b;
+  });
+  const sX = slider('$x$', { id: 'x', name: 'x', min: -1.5, max: 1.5, step: 0.05, value: x, fmt: v => v.toFixed(2), onInput: v => { x = v; update(); } });
+  const sH = slider('$h$', { id: 'h', name: 'step h', min: 0.01, max: 0.5, step: 0.01, value: hs, fmt: v => v.toFixed(2), onInput: v => { hs = v; update(); } });
+  const r1 = readout('k-over-h', String.raw`$\frac{k}{h}$`);
+  const r2 = readout('df-over-k', String.raw`$\frac{f(u+k)-f(u)}{k}$`);
+  const r3 = readout('product', 'their product');
+  const r4 = readout('whole', String.raw`$\frac{f(u(x+h))-f(u(x))}{h}$`);
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'btnrow', ...chips), sX.el, sH.el],
+    draw: (svg, W, Hh) => drawChain(svg, W, Hh, CHAIN[fi], x, hs, lit),
+    legend: [
+      { chip: true, color: COL.grey, text: String.raw`grey: the step $h$ in $x$` },
+      { chip: true, color: COL.blueLight, text: String.raw`blue: the step $k$ in $u$` },
+      { chip: true, color: COL.accent, text: String.raw`blue: the step in $f$` }],
+    readouts: [r1, r2, r3, r4],
+    tests: [
+      String.raw`$e^{-x^2}$, $x=1$, $h=0.01$: $\frac kh=-2.01$, $\frac{\Delta f}{k}=0.3642$, product $-0.7321$, the whole step's slope.`,
+      String.raw`Shrink $h$: the stretches go to $u'(1)=-2$ and $e^{-1}=0.3679$. Evidence, not proof.`],
+    model: String.raw`Step $h$ in $x$ gives $k\approx u'h$ in $u$, then $\approx f'(u)\,k$ in $f$: stretches multiply, like gears.` });
+  proofRight(side, {
+    id: 'chain-rule',
+    goal: { tex: String.raw`\frac{d}{dx}f(u(x))=f'(u)\,u'(x)`, words: String.raw`for smooth $f$ and $u$; $f=e^u$ gives step 3's formula.` },
+    facts: [
+      { tex: String.raw`\frac{d}{du}e^u=e^u`, ref: 'step 5' },
+      { words: 'a slope is the limit of secant slopes', ref: 'step 2' }],
+    lines: [
+      { tex: String.raw`k=u(x+h)-u(x)`, move: 'Name a piece',
+        why: String.raw`the step in $u$ when $x$ steps by $h$; $k\to0$ as $h\to0$`, choices: ['Change variables', 'Unfold the definition'], highlight: 'k' },
+      { tex: String.raw`\frac{f(u+k)-f(u)}{h}=\frac{f(u+k)-f(u)}{k}\cdot\frac{k}{h}`, move: 'Add zero or multiply by one',
+        why: String.raw`multiply and divide by $k$, when $k\neq0$`, choices: ['Rearrange', 'Compute it two ways'], highlight: 'two' },
+      { tex: String.raw`\to\ f'(u)\cdot u'(x)`, move: 'Take a limit',
+        why: String.raw`as $h\to0$, $k\to0$: the first factor is $f$'s secant slope, the second is $u$'s`, choices: ['Compare or bound', 'Use symmetry'], highlight: 'limit' },
+      { tex: String.raw`\frac{d}{dx}e^{u(x)}=e^{u(x)}\,u'(x)`, move: 'Use an earlier result',
+        why: String.raw`$f=e^u$ has $f'(u)=e^u$ (step 5); for $u=-x^2$, $u'=-2x$`, choices: ['Unfold the definition', 'Rearrange'], highlight: 'exp' }],
+    lookBack: [
+      { q: 'Where is the proof not complete?',
+        a: String.raw`Line 2 divides by $k$. If $u$ is flat near $x$, $k=0$ for some small $h$ (try $x=-0.05$, $h=0.1$). For those $h$ the quotient is 0, and a full proof treats them apart.` },
+      { q: 'What does a longer chain give?',
+        a: String.raw`One factor per link: $\frac{d}{dx}f(g(u(x)))=f'(g)\,g'(u)\,u'(x)$. Backpropagation computes this product link by link, from the loss back to each weight.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const fn = CHAIN[fi], u0 = fn.u(x), u1 = fn.u(x + hs), k = u1 - u0, df = Math.exp(u1) - Math.exp(u0);
+    r1.set(fmtSig(k / hs));
+    if (Math.abs(k) < 1e-12) { r2.set(String.raw`no value: $k=0$`); r3.set(String.raw`no value: $k=0$`); }
+    else { r2.set((df / k).toFixed(4)); r3.set((k / hs * df / k).toFixed(4)); }
+    r4.set((df / hs).toFixed(4));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 8: finding a peak ----------
+function slideMaximum(widget, side) {
+  let a = 3, b = 7, zi = 50;
+  const f = z => Math.pow(z, a) * Math.pow(1 - z, b);
+  const fp = z => Math.pow(z, a - 1) * Math.pow(1 - z, b - 1) * (a * (1 - z) - b * z);
+  const peak = () => a / (a + b);
+  const g = z => f(z) / f(peak());      // scaled so the peak is 1
+  const gp = z => fp(z) / f(peak());    // slope of g
+  const sA = slider(String.raw`$a$, heads`, { id: 'a', name: 'a', min: 1, max: 8, step: 1, value: a,
+    fmt: v => '$a=' + v + '$', onInput: v => { a = v; update(); } });
+  const sB = slider(String.raw`$b$, tails`, { id: 'b', name: 'b', min: 1, max: 8, step: 1, value: b,
+    fmt: v => '$b=' + v + '$', onInput: v => { b = v; update(); } });
+  const sZ = slider(String.raw`$z$, heads chance`, { id: 'z', name: 'z', min: 1, max: 99, step: 1, value: zi,
+    fmt: v => '$z=' + (v / 100).toFixed(2) + '$', onInput: v => { zi = v; update(); } });
+  const rZ = readout('z', String.raw`your $z$`);
+  const rS = readout('slope', String.raw`slope of $g$ at $z$`);
+  const rP = readout('peak', String.raw`peak $z^*=\dfrac{a}{a+b}$`);
+  const rQ = readout('is-peak', String.raw`at the peak?`);
+  widget.append(legend([
+    { color: COL.grey, text: String.raw`grey: $g(z)=z^a(1-z)^b$, scaled to peak $1$` },
+    { color: COL.accent, dash: true, text: String.raw`dashed: slope of $g$ at your $z$` },
+    { color: COL.ink, dash: true, text: String.raw`dashed: the peak $z^*$` },
+  ]), hh('div', 'sliders', sA.el, sB.el, sZ.el));
+  const plot = fillPlot(widget, drawMax);
+  widget.append(hh('div', 'readouts', rZ.el, rS.el, rP.el, rQ.el));
+  function drawMax(svg, W, H) {
+    const P = { x0: 0, x1: 1, y0: 0, y1: 1.3, xt: [0, 0.25, 0.5, 0.75, 1], yt: [0, 0.5, 1],
+      xlabel: String.raw`$z$, chance of heads`, ylabel: String.raw`$g$` };
+    const S = scaleOf(W, H, P);
+    axes(svg, W, H, P, S);
+    curve(svg, S, g, 0, 1, { stroke: COL.grey });
+    const z = zi / 100, zs = peak();
+    seg(svg, S, zs, 0, zs, 1.1, { stroke: COL.ink, 'stroke-dasharray': DASH, 'stroke-width': 1.5 });
+    haloTex(svg, S.X(zs) + 6, S.Y(1.2), String.raw`peak $z^*=` + zs.toFixed(3) + '$', { w: 200, size: 15, anchor: 'start', fill: COL.ink });
+    const z0 = Math.max(0, z - 0.2), z1 = Math.min(1, z + 0.2);
+    seg(svg, S, z0, g(z) + gp(z) * (z0 - z), z1, g(z) + gp(z) * (z1 - z), { stroke: COL.accent, 'stroke-dasharray': DASH, 'stroke-width': 2 });
+    dotAt(svg, S, z, g(z), COL.accent, 'dot');
+  }
+  function update() {
+    const z = zi / 100, zs = peak();
+    rZ.set('$' + z.toFixed(2) + '$');
+    const sl0 = Math.abs(gp(z)) < 5e-4 ? 0 : gp(z);
+    rS.set(sl0.toFixed(3));
+    rP.set('$' + zs.toFixed(3) + '$');
+    const near = Math.abs(z - zs) < 0.005;
+    rQ.set(near ? 'yes, slope $0$' : 'no', false);
+    plot.redraw();
+  }
+  update();
+  side.append(
+    sym(String.raw`$a$: heads seen. $b$: tails seen. One specific sequence of them, with heads chance $z$, has chance $z^a(1-z)^b$.`),
+    triesList([
+      String.raw`Set $a=3$, $b=7$, then $z$ to $0.30$. The slope reads $0$.`,
+      String.raw`Move $z$ a little left of the peak: the slope is positive. A little right: negative.`,
+    ]),
+    setTex(h('p', 'note'), String.raw`In Lecture 2, $z^a(1-z)^b$ is the growth rate of Hamming's S-curve, so its peak is where the S-curve climbs fastest.`),
+    takeLine(String.raw`A smooth peak has zero slope: solve for zero slope, then check that the answer is a peak.`),
+  );
+}
+
+// ---------- step 9: why the peak is at a/(a+b) (proof) ----------
+function drawPeak(svg, W, Hh, a, b, z, lit) {
+  const g0 = t => Math.pow(t, a) * Math.pow(1 - t, b), zs = a / (a + b), top = g0(zs);
+  const g = t => g0(t) / top;
+  const gp = t => Math.pow(t, a - 1) * Math.pow(1 - t, b - 1) * (a - (a + b) * t) / top;
+  const line = t => a - (a + b) * t;
+  const CAP = {
+    slope: String.raw`amber: the slope $g'(z)$ at your $z$`,
+    line: String.raw`amber: $g'$ is a positive factor times this straight line`,
+    sign: String.raw`amber: the factor is positive, so $g'$ has the sign of the line`,
+    zero: String.raw`amber: the line is 0 only at $z=\frac{a}{a+b}$`,
+    peak: 'amber: rising before, falling after: the top' }[lit];
+  plotTitle(svg, W, CAP || String.raw`top: $g$, scaled to height 1; bottom: the line $a-(a+b)z$`, !!CAP);
+  const split = Hh * 0.5, ym = Math.max(a, b) + 0.6;
+  const P1 = { x0: 0, x1: 1, y0: 0, y1: 1.25, xt: [], yt: [0, 1] };
+  const S1 = scaleOf(W, Hh, P1, { L: 50, R: 16, T: 36, B: Hh - split });
+  const P2 = { x0: 0, x1: 1, y0: -ym, y1: ym, xt: [0, 0.25, 0.5, 0.75, 1], yt: [0], xlabel: String.raw`$z$, chance of heads` };
+  const S2 = scaleOf(W, Hh, P2, { L: 50, R: 16, T: split + 14, B: 40 });
+  // frames
+  svgNode('line', { x1: 50, y1: S1.base, x2: W - 16, y2: S1.base, stroke: COL.grey }, svg);
+  svgNode('line', { x1: 50, y1: 36, x2: 50, y2: S1.base, stroke: COL.grey }, svg);
+  for (const v of P1.yt) svgText(svg, 42, S1.Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+  axes(svg, W, Hh, P2, S2);
+  svgNode('line', { x1: 50, y1: S2.Y(0), x2: W - 16, y2: S2.Y(0), stroke: COL.grey, 'stroke-dasharray': '2 3' }, svg);
+  // sign regions under the line
+  const posD = ptsD([[S2.X(0), S2.Y(0)], [S2.X(0), S2.Y(a)], [S2.X(zs), S2.Y(0)]], true);
+  const negD = ptsD([[S2.X(zs), S2.Y(0)], [S2.X(1), S2.Y(-b)], [S2.X(1), S2.Y(0)]], true);
+  if (lit === 'sign') { glowFill(svg, posD); glowFill(svg, negD); }
+  else {
+    svgNode('path', { d: posD, fill: COL.accentTint, 'data-item': 'mark', 'data-id': 'plus' }, svg);
+    svgNode('path', { d: negD, fill: COL.soft2, 'data-item': 'mark', 'data-id': 'minus' }, svg);
+  }
+  if (lit === 'line') glowPath(svg, ptsD([[S2.X(0), S2.Y(a)], [S2.X(1), S2.Y(-b)]]), 12);
+  svgNode('path', { d: ptsD([[S2.X(0), S2.Y(a)], [S2.X(1), S2.Y(-b)]]), stroke: COL.text2, 'stroke-width': 2.5, fill: 'none', 'data-item': 'mark', 'data-id': 'line' }, svg);
+  haloTex(svg, S2.X(0.99), S2.Y(ym) + 9, String.raw`line $a-(a+b)z$`, { w: 160, anchor: 'end', size: 15, fill: COL.text2 });
+  // the curve and its slope
+  const curD = curveD(S1, g, 0, 1);
+  if (lit === 'peak') { glowPath(svg, curveD(S1, g, 0, zs), 10); glowPath(svg, curveD(S1, g, zs, 1), 10); glowDot(svg, S1.X(zs), S1.Y(1), 11); }
+  const zt0 = Math.max(0, z - 0.18), zt1 = Math.min(1, z + 0.18);
+  const tanD = ptsD([[S1.X(zt0), S1.Y(g(z) + gp(z) * (zt0 - z))], [S1.X(zt1), S1.Y(g(z) + gp(z) * (zt1 - z))]]);
+  const clip = plotClip(svg, S1, W);
+  if (lit === 'slope') glowPath(svgNode('g', { 'clip-path': clip }, svg), tanD, 12);
+  svgNode('path', { d: curD, stroke: COL.grey, 'stroke-width': 2.5, fill: 'none', 'data-item': 'mark', 'data-id': 'curve' }, svg);
+  svgNode('path', { d: tanD, stroke: COL.accent, 'stroke-dasharray': DASH, 'stroke-width': 2, fill: 'none', 'clip-path': clip, 'data-item': 'mark', 'data-id': 'tangent' }, svg);
+  dotAt(svg, S1, z, g(z), COL.accent, 'dot');
+  svgTex(svg, 56, 44, '$g$', { w: 30, anchor: 'start', size: 15, fill: COL.ink });
+  // the peak, through both panels
+  if (lit === 'zero') { glowDot(svg, S2.X(zs), S2.Y(0), 11); glowPath(svg, ptsD([[S1.X(zs), S1.Y(1.1)], [S2.X(zs), S2.base]]), 8); }
+  svgNode('line', { x1: S1.X(zs), y1: S1.Y(1.1), x2: S2.X(zs), y2: S2.base, stroke: COL.ink, 'stroke-dasharray': DASH, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'peak' }, svg);
+  const right = zs < 0.6;
+  haloTex(svg, S1.X(zs) + (right ? 6 : -6), S1.Y(1.17), String.raw`peak $\frac{a}{a+b}=` + zs.toFixed(3) + '$', { w: 220, anchor: right ? 'start' : 'end', size: 15, fill: COL.ink, ht: 30 });
+  svgNode('circle', { cx: S2.X(z).toFixed(1), cy: S2.Y(line(z)).toFixed(1), r: 5, fill: COL.accent, 'data-item': 'mark', 'data-id': 'line-dot' }, svg);
+}
+function slideWhyPeak(widget, side) {
+  let a = 3, b = 7, z = 0.2, lit = '';
+  const sA = slider('$a$', { id: 'a', name: 'heads a', min: 1, max: 8, step: 1, value: a, onInput: v => { a = v; update(); } });
+  const sB = slider('$b$', { id: 'b', name: 'tails b', min: 1, max: 8, step: 1, value: b, onInput: v => { b = v; update(); } });
+  const sZ = slider('$z$', { id: 'z', name: 'heads chance z', min: 0.01, max: 0.99, step: 0.01, value: z, fmt: v => v.toFixed(2), onInput: v => { z = v; update(); } });
+  const rF = readout('factor', String.raw`factor $z^{a-1}(1-z)^{b-1}$`);
+  const rL = readout('line', String.raw`line $a-(a+b)z$`);
+  const rG = readout('slope', String.raw`$g'(z)$, their product`);
+  const plot = proofLeft(widget, {
+    controls: [sA.el, sB.el, sZ.el],
+    draw: (svg, W, Hh) => drawPeak(svg, W, Hh, a, b, z, lit),
+    legend: [
+      { color: COL.grey, text: String.raw`grey: $g(z)$` },
+      { color: COL.accent, dash: true, text: 'dashed: slope at $z$' },
+      { chip: true, color: COL.accentTint, text: String.raw`line $>0$: $g$ rises` },
+      { chip: true, color: COL.soft2, text: String.raw`line $<0$: falls` }],
+    readouts: [rF, rL, rG],
+    tests: [
+      String.raw`$a=3$, $b=7$: at $z=0.2$ the line is $3-10\cdot0.2=1$, the curve rises; at $z=0.4$ it is $-1$.`,
+      String.raw`Try $a=2$, $b=3$: the top moves to $0.4$. Cases are evidence, not proof.`],
+    model: String.raw`The slope is a positive factor times a straight line, and a line crosses zero once: one top.` });
+  proofRight(side, {
+    id: 'peak',
+    goal: { words: String.raw`for whole $a,b\ge1$, $g(z)=z^a(1-z)^b$ rises up to $z=\frac{a}{a+b}$, then falls.` },
+    facts: [
+      { words: String.raw`product rule $(fg)'=f'g+fg'$, power rule`, ref: 'step 4' },
+      { words: 'chain rule', ref: 'step 6' }],
+    lines: [
+      { tex: String.raw`g'=a\,z^{a-1}(1-z)^b-b\,z^a(1-z)^{b-1}`, move: 'Use an earlier result',
+        why: String.raw`product and power rules; the chain rule on $(1-z)^b$ brings the $-1$`, choices: ['Unfold the definition', 'Rearrange'], highlight: 'slope' },
+      { tex: String.raw`g'=z^{a-1}(1-z)^{b-1}\,\big[a-(a+b)z\big]`, move: 'Rearrange',
+        why: String.raw`take out $z^{a-1}(1-z)^{b-1}$; then $a(1-z)-bz=a-(a+b)z$`, choices: ['Name a piece', 'Add zero or multiply by one'], highlight: 'line' },
+      { tex: String.raw`z^{a-1}(1-z)^{b-1}>0\ \text{ for } 0<z<1`, move: 'Compare or bound',
+        why: String.raw`so $g'$ has the sign of the line $a-(a+b)z$`, choices: ['Use symmetry', 'Take a limit'], highlight: 'sign' },
+      { tex: String.raw`a-(a+b)z=0\iff z=\frac{a}{a+b}`, move: 'Rearrange',
+        why: String.raw`add $(a+b)z$, then divide by $a+b$`, choices: ['Undo with the inverse', 'Contradiction'], highlight: 'zero' },
+      { tex: String.raw`z<\tfrac{a}{a+b}:\ g'>0;\qquad z>\tfrac{a}{a+b}:\ g'<0`, move: 'Compare or bound',
+        why: 'the line falls through zero once: the curve rises, then falls. A peak', choices: ['Induction', 'Take a limit'], highlight: 'peak' }],
+    lookBack: [
+      { q: 'Why check the sign, when the slope is already zero?',
+        a: String.raw`Slope 0 also happens at a valley or a flat bend: $x^3$ has slope 0 at 0 and no peak there. The change from $+$ to $-$ is what makes a peak.` },
+      { q: 'What does the peak mean for coins?',
+        a: String.raw`After $a$ heads and $b$ tails, $\frac{a}{a+b}$ is the heads chance that makes what you saw most likely: the share of heads. This is maximum likelihood, the rule behind most model training.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const fac = Math.pow(z, a - 1) * Math.pow(1 - z, b - 1), ln = a - (a + b) * z;
+    const fm = v => Math.abs(v) >= 0.01 || v === 0 ? (+v.toFixed(4)).toString() : sci(v);
+    rF.set(fm(fac));
+    rL.set((+ln.toFixed(2)).toString());
+    rG.set(fm(fac * ln));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 10: partial derivatives ----------
+function slidePartial(widget, side) {
+  const X = [0, 1, 2], Y = [1, 3, 4];
+  let a = 0.5, b = 1;
+  const E = (aa, bb) => X.reduce((s, x, i) => s + (Y[i] - aa - bb * x) ** 2, 0);
+  const dA = () => -2 * X.reduce((s, x, i) => s + (Y[i] - a - b * x), 0);
+  const dB = () => -2 * X.reduce((s, x, i) => s + x * (Y[i] - a - b * x), 0);
+  const sA = slider(String.raw`$a$, intercept`, { id: 'a', name: 'a', min: -1, max: 3, step: 0.001, value: a,
+    fmt: v => '$a=' + v.toFixed(3) + '$', onInput: v => { a = v; update(); } });
+  const sB = slider(String.raw`$b$, slope`, { id: 'b', name: 'b', min: -0.5, max: 3, step: 0.001, value: b,
+    fmt: v => '$b=' + v.toFixed(3) + '$', onInput: v => { b = v; update(); } });
+  const best = mark(h('button', 'btn'), 'control', 'best-fit');
+  setTex(best, 'Best fit');
+  best.addEventListener('click', () => {
+    a = 1.167; b = 1.5;
+    sA.input.value = a; sB.input.value = b; sA.show(); sB.show(); update();
+  });
+  const rDA = readout('da', String.raw`$\partial E/\partial a$`);
+  const rDB = readout('db', String.raw`$\partial E/\partial b$`);
+  const rL = readout('loss', String.raw`squared misses $E(a,b)$`);
+  widget.append(legend([
+    { color: COL.ink, text: String.raw`solid dots: the data $(0,1)$, $(1,3)$, $(2,4)$` },
+    { color: COL.accent, text: String.raw`blue: the line $y=a+bx$` },
+    { color: COL.grey, text: String.raw`grey: $E(a)$ with $b$ held` },
+    { color: COL.accent, dash: true, text: String.raw`dashed: slope in $a$` },
+  ]), hh('div', 'sliders', sA.el, sB.el), hh('div', 'btnrow', best));
+  const cells = [h('div', 'cell'), h('div', 'cell')];
+  widget.append(hh('div', 'twoplots', ...cells));
+  const plotL = fillPlot(cells[0], drawLine);
+  const plotR = fillPlot(cells[1], drawLoss);
+  widget.append(hh('div', 'readouts', rDA.el, rDB.el, rL.el));
+  function drawLine(svg, W, H) {
+    const P = { x0: -0.3, x1: 2.4, y0: 0, y1: 5, xt: [0, 1, 2], yt: [0, 2, 4], xlabel: String.raw`$x$`, ylabel: String.raw`$y$` };
+    const S = scaleOf(W, H, P);
+    axes(svg, W, H, P, S);
+    seg(svg, S, P.x0, a + b * P.x0, P.x1, a + b * P.x1, { stroke: COL.accent, 'stroke-width': 2.5 });
+    X.forEach((x, i) => dotAt(svg, S, x, Y[i], COL.ink, 'point-' + i));
+  }
+  function drawLoss(svg, W, H) {
+    const xs = [];
+    for (let i = 0; i <= 100; i++) xs.push(-1 + 5 * i / 100);
+    const top = Math.max(...xs.map(v => E(v, b)));
+    const y1 = Math.max(4, Math.ceil(top / 10) * 10);
+    const P = { x0: -1, x1: 4, y0: 0, y1: y1, xt: [-1, 0, 1, 2, 3, 4], yt: [0, y1 / 2, y1], xlabel: String.raw`$a$`, ylabel: String.raw`$E$` };
+    const S = scaleOf(W, H, P);
+    axes(svg, W, H, P, S);
+    curve(svg, S, v => E(v, b), P.x0, P.x1, { stroke: COL.grey });
+    const l0 = E(a, b), d0 = dA();
+    seg(svg, S, a - 0.8, l0 + d0 * (-0.8), a + 0.8, l0 + d0 * 0.8, { stroke: COL.accent, 'stroke-dasharray': DASH, 'stroke-width': 2 });
+    dotAt(svg, S, a, l0, COL.accent, 'dot');
+  }
+  function update() {
+    rDA.set(dA().toFixed(2));
+    rDB.set(dB().toFixed(2));
+    rL.set(E(a, b).toFixed(3));
+    plotL.redraw();
+    plotR.redraw();
+  }
+  update();
+  side.append(
+    setTex(h('div', 'formula'), String.raw`$$\begin{aligned}\frac{\partial E}{\partial a}&=-2\sum_i (y_i-a-bx_i)\\ \frac{\partial E}{\partial b}&=-2\sum_i x_i\,(y_i-a-bx_i)\end{aligned}$$`),
+    sym(String.raw`$E(a,b)=\sum_i (y_i-a-bx_i)^2$: the squared misses of the line. A partial derivative moves one knob and holds the other.`),
+    triesList([
+      String.raw`Set $a=0.5$, $b=1$. Both slopes are negative: raising $a$ or $b$ lowers $E$.`,
+      String.raw`Hold $b=1$ and move $a$ until the dashed slope reads $0.00$. That is the lowest point of the grey curve.`,
+      String.raw`Press Best fit. Both slopes read $0.00$: $a=7/6$, $b=3/2$, and $E=1/6$.`,
+    ]),
+    takeLine(String.raw`A partial derivative is one knob's slope with the other knobs held. At the bottom of the bowl, every partial is zero.`),
+    setTex(h('p', 'note'), String.raw`Primer · Least squares, step 3 solves both $=0$.`),
+  );
+}
+
+// ---------- step 11: why the partials of E are those sums (proof) ----------
+function fmt2(v) { const s = String(+v.toFixed(2)); return s === '-0' ? '0' : s; }
+function drawMisses(svg, W, Hh, a, b, mode, lit) {
+  const X = [0, 1, 2], Y = [1, 3, 4], STEP = 0.5;
+  const r = X.map((x, i) => Y[i] - a - b * x);
+  const m = lit === 'shift' ? 'a' : lit === 'tilt' ? 'b' : mode;
+  const a2 = m === 'a' ? a + STEP : a, b2 = m === 'b' ? b + STEP : b;
+  const sum = r.reduce((s, v) => s + v, 0);
+  const CAP = {
+    misses: String.raw`amber: the misses $r_i=y_i-a-bx_i$, one per point`,
+    shift: String.raw`amber: $a$ up by $0.5$ lowers every miss by $0.5$`,
+    square: String.raw`amber: each squared miss has slope $2r_i\cdot(-1)$ in $a$`,
+    sum: String.raw`amber: add them: $-2(` + r.map(fmt2).join('+').replace(/\+-/g, '-') + ')=' + fmt2(-2 * sum) + '$',
+    tilt: String.raw`amber: $b$ up by $0.5$ lowers miss $i$ by $0.5\,x_i$` }[lit];
+  plotTitle(svg, W, CAP || String.raw`dashed: the line after a step of $0.5$ in $` + m + '$', !!CAP);
+  const P = { x0: -0.3, x1: 2.75, y0: -0.2, y1: 5.2, xt: [0, 1, 2], yt: [0, 2, 4], xlabel: '$x$', ylabel: '$y$' };
+  const S = scaleOf(W, Hh, P, { L: 44, R: 12, T: 34, B: 40 });
+  axes(svg, W, Hh, P, S);
+  const clip = plotClip(svg, S, W);
+  const g = svgNode('g', { 'clip-path': clip }, svg);
+  X.forEach((x, i) => {
+    const yl = a + b * x, yl2 = a2 + b2 * x;
+    if (lit === 'misses') glowPath(g, ptsD([[S.X(x), S.Y(Y[i])], [S.X(x), S.Y(yl)]]), 12);
+    if ((lit === 'shift' || lit === 'tilt') && Math.abs(yl2 - yl) > 1e-9) glowPath(g, ptsD([[S.X(x) + 9, S.Y(yl)], [S.X(x) + 9, S.Y(yl2)]]), 11);
+  });
+  seg(g, S, P.x0, a + b * P.x0, P.x1, a + b * P.x1, { stroke: COL.accent, 'stroke-width': 2.5, 'data-id': 'line' });
+  seg(g, S, P.x0, a2 + b2 * P.x0, P.x1, a2 + b2 * P.x1, { stroke: COL.accent, 'stroke-width': 2, 'stroke-dasharray': DASH, 'data-id': 'line-after' });
+  X.forEach((x, i) => {
+    const yl = a + b * x, yl2 = a2 + b2 * x;
+    seg(g, S, x, Y[i], x, yl, { stroke: COL.text2, 'stroke-width': 3, 'data-id': 'miss-' + (i + 1) });
+    if (Math.abs(yl2 - yl) > 1e-9) svgNode('line', { x1: S.X(x) + 9, y1: S.Y(yl).toFixed(1), x2: S.X(x) + 9, y2: S.Y(yl2).toFixed(1), stroke: COL.blueStrong, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'change-' + (i + 1) }, g);
+  });
+  X.forEach((x, i) => {
+    dotAt(svg, S, x, Y[i], COL.ink, 'point-' + i);
+    const yl = a + b * x, yl2 = a2 + b2 * x, above = Y[i] >= yl;
+    // the miss above its point (below it when the line passes over the point); the change under the line
+    let t = '$r_' + (i + 1) + '=' + fmt2(r[i]) + '$';
+    if (lit === 'square' || lit === 'sum') t = '$2r_' + (i + 1) + String.raw`\cdot(-1)=` + fmt2(-2 * r[i]) + '$';
+    const litLab = lit === 'square' || lit === 'sum';
+    const yLab = Math.min(Math.max(S.Y(Y[i]) + (above ? -18 : 18), S.M.T + 10), S.base - 10);
+    haloTex(svg, S.X(x) + (i === 2 ? 8 : 0), yLab, t, { w: 170, anchor: i === 2 ? 'end' : 'middle', size: 15, fill: COL.ink, bg: litLab ? COL.amberBg : null });
+    const ch = m === 'a' ? String.raw`$-0.5$` : x === 0 ? '$0$' : '$-0.5\\cdot' + x + '$';
+    const yCh = Math.min(Math.max(S.Y(Math.min(yl, yl2)) + 16, S.M.T + 10), S.base - 8);
+    haloTex(svg, S.X(x) + 14, yCh, ch, { w: 90, anchor: 'start', size: 14, fill: COL.blueStrong });
+  });
+}
+function slideWhyPartials(widget, side) {
+  const X = [0, 1, 2], Y = [1, 3, 4];
+  let a = 0.5, b = 1, mode = 'a', lit = '';
+  const E = (aa, bb) => X.reduce((s, x, i) => s + (Y[i] - aa - bb * x) ** 2, 0);
+  const chips = ['a', 'b'].map(k => {
+    const bt = mark(h('button', 'btn' + (k === mode ? ' on' : '')), 'control', 'step-' + k);
+    setTex(bt, 'step in $' + k + '$');
+    bt.addEventListener('click', () => { mode = k; chips.forEach((c, i) => c.classList.toggle('on', ['a', 'b'][i] === mode)); plot.redraw(); });
+    return bt;
+  });
+  const sA = slider('$a$', { id: 'a', name: 'a', min: -1, max: 3, step: 0.01, value: a, fmt: v => v.toFixed(2), onInput: v => { a = v; update(); } });
+  const sB = slider('$b$', { id: 'b', name: 'b', min: -0.5, max: 3, step: 0.01, value: b, fmt: v => v.toFixed(2), onInput: v => { b = v; update(); } });
+  const rA = readout('da', String.raw`$\partial E/\partial a$: formula, small step`);
+  const rB = readout('db', String.raw`$\partial E/\partial b$: formula, small step`);
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'btnrow', ...chips), sA.el, sB.el],
+    draw: (svg, W, Hh) => drawMisses(svg, W, Hh, a, b, mode, lit),
+    legend: [
+      { color: COL.text2, text: String.raw`solid bars: misses $r_i$` },
+      { color: COL.accent, text: 'blue: the line' },
+      { color: COL.accent, dash: true, text: 'dashed: after the step' },
+      { color: COL.blueStrong, text: 'thin blue: change in each miss' }],
+    readouts: [rA, rB],
+    tests: [
+      String.raw`At $a=0.5$, $b=1$ the misses are $0.5,1.5,1.5$; $-2(0.5+1.5+1.5)=-7$, as the small step says.`,
+      String.raw`Pick step in $b$: the misses change by $0$, $-0.5$, $-1$, more far out. Evidence, not proof.`],
+    model: String.raw`A step $h$ in $a$ lowers every miss by $h$; a step in $b$ lowers miss $i$ by $x_ih$.` });
+  proofRight(side, {
+    id: 'partials',
+    goal: { tex: String.raw`\frac{\partial E}{\partial a}=-2\sum\nolimits_i r_i,\quad \frac{\partial E}{\partial b}=-2\sum\nolimits_i x_ir_i`, words: String.raw`$r_i=y_i-a-bx_i$: the miss at point $i$.` },
+    facts: [{ words: String.raw`chain rule; $(r^2)'=2r$`, ref: 'steps 6, 4' }],
+    lines: [
+      { tex: String.raw`E=\sum\nolimits_i r_i^2,\quad r_i=y_i-a-bx_i`, move: 'Name a piece',
+        why: String.raw`a letter per miss; with $b$ held, $r_i$ moves with $a$ alone`, choices: ['Change variables', 'Unfold the definition'], highlight: 'misses' },
+      { tex: String.raw`\frac{\partial r_i}{\partial a}=-1`, move: 'Unfold the definition',
+        why: String.raw`raise $a$ by $h$ and $r_i$ drops by $h$; $y_i$ and $bx_i$ stay`, choices: ['Use symmetry', 'Take a limit'], highlight: 'shift' },
+      { tex: String.raw`\frac{\partial}{\partial a}\,r_i^2=2r_i\cdot(-1)`, move: 'Use an earlier result',
+        why: String.raw`chain rule with $f(r)=r^2$, $f'=2r$`, choices: ['Rearrange', 'Compute it two ways'], highlight: 'square' },
+      { tex: String.raw`\frac{\partial E}{\partial a}=\sum\nolimits_i(-2r_i)=-2\sum\nolimits_i r_i`, move: 'Rearrange',
+        why: 'the secant slope of a sum is the sum of the secant slopes', choices: ['Telescope', 'Compare or bound'], highlight: 'sum' },
+      { tex: String.raw`\frac{\partial r_i}{\partial b}=-x_i,\ \text{ so }\ \frac{\partial E}{\partial b}=-2\sum\nolimits_i x_ir_i`, move: 'Use symmetry',
+        why: String.raw`the same lines with $a$ held; $b$ enters $r_i$ as $-bx_i$`, choices: ['Name a piece', 'Induction'], highlight: 'tilt' }],
+    lookBack: [
+      { q: String.raw`Why does $b$ get the extra $x_i$?`,
+        a: String.raw`A step in $b$ turns the line about its point at $x=0$, so far points move most. The point at $x=0$ does not feel $b$ at all.` },
+      { q: 'Where does this go next?',
+        a: String.raw`Setting both to 0 gives two straight-line equations for $a$ and $b$ (Primer · Least squares, step 3). Training a network computes the same kind of partials, one per weight, with the chain rule.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const r = X.map((x, i) => Y[i] - a - b * x), d = 1e-3;
+    rA.set('$' + (-2 * r.reduce((s, v) => s + v, 0)).toFixed(3) + ',\\ ' + ((E(a + d, b) - E(a - d, b)) / (2 * d)).toFixed(3) + '$');
+    rB.set('$' + (-2 * r.reduce((s, v, i) => s + X[i] * v, 0)).toFixed(3) + ',\\ ' + ((E(a, b + d) - E(a, b - d)) / (2 * d)).toFixed(3) + '$');
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 12: the tangent line and where it fails ----------
+function slideTangent(widget, side) {
+  const f = x => 1 / (1 + x), tan = x => 1 - x;
+  const P = { x0: -0.5, x1: 3, y0: -2.2, y1: 2.4, xt: [-0.5, 0, 1, 2, 3], yt: [-2, -1, 0, 1, 2],
+    xlabel: String.raw`$x$`, ylabel: String.raw`$y$` };
+  let xv = 1;  // slider counts in steps of 0.1
+  const sl = slider(String.raw`$x$, distance from $0$`, { id: 'x', name: 'x', min: -5, max: 30, step: 1, value: xv,
+    fmt: v => '$x=' + (v / 10).toFixed(1) + '$', onInput: v => { xv = v; update(); } });
+  const preset = (label, v) => {
+    const b = mark(h('button', 'btn'), 'control', 'preset-' + v);
+    setTex(b, label);
+    b.addEventListener('click', () => { xv = v; sl.input.value = v; sl.show(); update(); });
+    return b;
+  };
+  const rF = readout('f', String.raw`curve $\dfrac{1}{1+x}$`);
+  const rT = readout('tan', String.raw`tangent $1-x$`);
+  const rG = readout('gap', String.raw`gap $=\dfrac{x^2}{1+x}$`);
+  widget.append(legend([
+    { color: COL.grey, text: String.raw`grey: $f(x)=\dfrac{1}{1+x}$` },
+    { color: COL.accent, dash: true, text: String.raw`dashed: tangent at $x=0$, the line $1-x$` },
+    { color: COL.ink, text: String.raw`solid bar: the gap between them` },
+  ]), hh('div', 'btnrow', preset('$x=0.1$', 1), preset('$x=2$', 20)), hh('div', 'sliders', sl.el));
+  const plot = fillPlot(widget, drawTan);
+  widget.append(hh('div', 'readouts', rF.el, rT.el, rG.el));
+  function drawTan(svg, W, H) {
+    const S = scaleOf(W, H, P);
+    axes(svg, W, H, P, S);
+    curve(svg, S, f, P.x0, P.x1, { stroke: COL.grey });
+    seg(svg, S, P.x0, tan(P.x0), P.x1, tan(P.x1), { stroke: COL.accent, 'stroke-dasharray': DASH, 'stroke-width': 2 });
+    const x = xv / 10;
+    seg(svg, S, x, tan(x), x, f(x), { stroke: COL.ink, 'stroke-width': 3 });
+    dotAt(svg, S, x, f(x), COL.text2, 'dot-f');
+    dotAt(svg, S, x, tan(x), COL.accent, 'dot-t');
+    haloTex(svg, S.X(x) + 10, S.Y(f(x)) - 16, '$\\frac{1}{1+x}$', { w: 110, size: 15, anchor: 'start', fill: COL.text2 });
+  }
+  function update() {
+    const x = xv / 10;
+    rF.set(f(x).toFixed(4));
+    rT.set(tan(x).toFixed(4));
+    rG.set((f(x) - tan(x)).toFixed(4));
+    plot.redraw();
+  }
+  update();
+  side.append(
+    setTex(h('div', 'formula'), String.raw`$f(x)\approx 1-x$ for $x$ near $0$`),
+    sym(String.raw`$f(x)=\frac{1}{1+x}$: the curve. $1-x$: its tangent at $x=0$. The gap is what the line misses.`),
+    nameLine(String.raw`<i>tangent</i>: Latin <i>tangere</i>, to touch: the line touches the curve at one point, with the same slope.`),
+    triesList([
+      String.raw`Set $x=0.1$. The gap is $0.0091$: the straight line is nearly right.`,
+      String.raw`Set $x=2$. The line says $-1$, but $f(2)=1/3$. Far from $0$, the line fails.`,
+      String.raw`Halve $x$ from $0.2$ to $0.1$. By how much does the gap shrink? Guess, then read it.`,
+    ]),
+    takeLine(String.raw`A tangent line is good only near its point; the gap is the next term, about $x^2$.`),
+  );
+}
+
+// ---------- step 13: why the gap is x^2/(1+x) (proof) ----------
+function drawGap(svg, W, Hh, x, lit) {
+  const f = t => 1 / (1 + t), tan = t => 1 - t, gap = f(x) - tan(x);
+  const CAP = {
+    one: String.raw`amber: the curve's height $\frac{1}{1+x}$, about to be split`,
+    split: String.raw`amber: curve $=$ line $1-x$ $+$ gap $\frac{x^2}{1+x}$`,
+    bound: String.raw`amber: for $|x|\le\tfrac12$, gap $\div\,x^2$ stays between $\tfrac23$ and $2$`,
+    slope: String.raw`amber: the secant from $0$ to $x$ has slope $-1+\frac{x}{1+x}$` }[lit];
+  plotTitle(svg, W, CAP || String.raw`left: curve, tangent and gap; right: gap $\div\,x^2$`, !!CAP);
+  const WL = Math.floor(W * 0.58);
+  const P = { x0: -0.55, x1: 3, y0: -2.2, y1: 2.4, xt: [0, 1, 2, 3], yt: [-2, -1, 0, 1, 2], xlabel: '$x$' };
+  const S = scaleOf(WL, Hh, P, { L: 40, R: 10, T: 34, B: 40 });
+  axes(svg, WL, Hh, P, S);
+  svgNode('line', { x1: S.M.L, y1: S.Y(0), x2: WL - S.M.R, y2: S.Y(0), stroke: COL.soft3 }, svg);
+  const clip = plotClip(svg, S, WL);
+  const g = svgNode('g', { 'clip-path': clip }, svg);
+  const secD = ptsD([[S.X(0), S.Y(1)], [S.X(x), S.Y(f(x))]]);
+  if (lit === 'split') { glowPath(g, ptsD([[S.X(x), S.Y(tan(x))], [S.X(x), S.Y(f(x))]]), 12); glowDot(g, S.X(x), S.Y(tan(x)), 10); }
+  if (lit === 'one') glowDot(g, S.X(x), S.Y(f(x)), 11);
+  if (lit === 'slope' && Math.abs(x) > 1e-9) glowPath(g, secD, 12);
+  curve(g, S, f, -0.55, 3, { stroke: COL.grey, 'data-id': 'curve' });
+  curve(g, S, tan, -0.55, 3, { stroke: COL.accent, 'stroke-dasharray': DASH, 'stroke-width': 2, 'data-id': 'tangent' });
+  if (lit === 'slope' && Math.abs(x) > 1e-9) svgNode('path', { d: secD, stroke: COL.text2, 'stroke-width': 2, fill: 'none', 'data-item': 'mark', 'data-id': 'secant' }, g);
+  seg(g, S, x, tan(x), x, f(x), { stroke: COL.ink, 'stroke-width': 3, 'data-id': 'gap' });
+  dotAt(svg, S, x, f(x), COL.text2, 'dot-f');
+  dotAt(svg, S, x, tan(x), COL.accent, 'dot-t');
+  haloTex(svg, S.X(2.2), S.Y(f(2.2)) - 16, String.raw`$\frac{1}{1+x}$`, { w: 60, size: 15, fill: COL.text2, ht: 34 });
+  haloTex(svg, S.X(2.35) + 4, S.Y(tan(2.35)) + 4, '$1-x$', { w: 60, size: 15, anchor: 'start', fill: COL.accent });
+  // Right: gap / x^2, which is 1/(1+x).
+  const x0r = WL + 6;
+  const P2 = { x0: -0.55, x1: 3, y0: 0, y1: 2.3, xt: [0, 1, 2, 3], yt: [0, 1, 2], xlabel: String.raw`$x$` };
+  const M2 = { L: x0r + 34, R: 8, T: 34, B: 40 };
+  const S2 = scaleOf(W, Hh, P2, M2);
+  axes(svg, W, Hh, P2, S2);
+  const band = ptsD([[S2.X(-0.5), S2.Y(2 / 3)], [S2.X(0.5), S2.Y(2 / 3)], [S2.X(0.5), S2.Y(2)], [S2.X(-0.5), S2.Y(2)]], true);
+  if (lit === 'bound') glowFill(svg, band);
+  else svgNode('path', { d: band, fill: COL.soft, stroke: COL.line, 'data-item': 'mark', 'data-id': 'band' }, svg);
+  svgNode('line', { x1: S2.M.L, y1: S2.Y(1), x2: W - S2.M.R, y2: S2.Y(1), stroke: COL.line, 'stroke-dasharray': '2 3' }, svg);
+  curve(svg, S2, t => 1 / (1 + t), -0.55, 3, { stroke: COL.ink, 'stroke-width': 2.2, 'data-id': 'ratio' });
+  if (Math.abs(x) > 1e-9) dotAt(svg, S2, x, gap / (x * x), COL.accent, 'ratio-dot');
+  else svgNode('circle', { cx: S2.X(0), cy: S2.Y(1), r: 6, fill: COL.panel, stroke: COL.accent, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'ratio-hole' }, svg);
+  haloTex(svg, S2.X(1.1), S2.Y(1.25), String.raw`$\frac{\text{gap}}{x^2}=\frac{1}{1+x}$`, { w: 130, anchor: 'start', size: 15, fill: COL.ink, ht: 36 });
+}
+function slideWhyGap(widget, side) {
+  let x = 0.5, lit = '';
+  const f = t => 1 / (1 + t);
+  const sl = slider('$x$', { id: 'x', name: 'x', min: -0.5, max: 3, step: 0.01, value: x, fmt: v => v.toFixed(2), onInput: v => { x = v; update(); } });
+  const rC = readout('curve', String.raw`curve $\frac{1}{1+x}$`);
+  const rL = readout('line', String.raw`line $1-x$`);
+  const rG = readout('gap', 'gap');
+  const rR = readout('ratio', String.raw`gap $\div\,x^2$`);
+  const plot = proofLeft(widget, {
+    controls: [sl.el],
+    draw: (svg, W, Hh) => drawGap(svg, W, Hh, x, lit),
+    legend: [
+      { color: COL.grey, text: String.raw`grey: $\frac{1}{1+x}$` },
+      { color: COL.accent, dash: true, text: String.raw`dashed: $1-x$` },
+      { color: COL.ink, text: 'solid bar: the gap; right: gap $\\div\\,x^2$' },
+      { chip: true, color: COL.soft, border: COL.line, text: String.raw`band: $\tfrac23$ to $2$ on $|x|\le\tfrac12$` }],
+    readouts: [rC, rL, rG, rR],
+    tests: [
+      String.raw`At $x=0.1$ the gap is $0.0091$ and gap$\div x^2=0.909$; at $x=0.01$, $0.990$.`,
+      String.raw`At $x=2$ the line says $-1$, the curve $0.333$: a gap of $1.333$. Cases are evidence, not proof.`],
+    model: String.raw`The leftover is $x^2$ over a number near 1, so near 0 it shrinks like $x^2$, faster than $x$.` });
+  proofRight(side, {
+    id: 'tangent-gap',
+    goal: { tex: String.raw`\frac{1}{1+x}=(1-x)+\frac{x^2}{1+x}`, words: String.raw`for $x>-1$, and $1-x$ is the tangent at 0.` },
+    facts: [{ words: String.raw`tangent at 0: through $(0,f(0))$, slope $f'(0)$`, ref: 'step 2' }],
+    lines: [
+      { tex: String.raw`\frac{1}{1+x}=\frac{(1-x^2)+x^2}{1+x}`, move: 'Add zero or multiply by one',
+        why: String.raw`write $1$ as $1-x^2+x^2$`, choices: ['Rearrange', 'Change variables'], highlight: 'one' },
+      { tex: String.raw`=(1-x)+\frac{x^2}{1+x}`, move: 'Rearrange',
+        why: String.raw`$1-x^2=(1-x)(1+x)$; cancel $1+x$`, choices: ['Use an earlier result', 'Telescope'], highlight: 'split' },
+      { tex: String.raw`\tfrac23x^2\le\frac{x^2}{1+x}\le2x^2\ \text{ for } |x|\le\tfrac12`, move: 'Compare or bound',
+        why: String.raw`$1+x$ is between $\tfrac12$ and $\tfrac32$: the gap shrinks like $x^2$`, choices: ['Take a limit', 'Use symmetry'], highlight: 'bound' },
+      { tex: String.raw`\frac{f(h)-f(0)}{h}=-1+\frac{h}{1+h}\to-1`, move: 'Take a limit',
+        why: String.raw`line 2 at $x=h$, minus $f(0)=1$, over $h$: slope $-1$, so the tangent is $1-x$`, choices: ['Compare or bound', 'Unfold the definition'], highlight: 'slope' }],
+    lookBack: [
+      { q: 'Where does it break?',
+        a: String.raw`At $x=-1$ the curve has no value. Far out the gap is bigger than the line: at $x=2$ the line says $-1$, the curve $\tfrac13$. Line 3 holds only near 0.` },
+      { q: 'What does one more split give?',
+        a: String.raw`$\frac{1}{1+x}=1-x+x^2-\frac{x^3}{1+x}$. Each split adds the next term of $1-x+x^2-\cdots$, the geometric sum with ratio $-x$ (Primer · Series, step 3).` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    const g = f(x) - (1 - x);
+    rC.set(f(x).toFixed(4));
+    rL.set((1 - x).toFixed(4));
+    rG.set(g.toFixed(4));
+    rR.set(Math.abs(x) < 1e-9 ? String.raw`no value at $0$: $\frac00$` : (g / (x * x)).toFixed(4));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 14: differences of a table ----------
+function slideDifferences(widget, side) {
+  const XS = [0, 1, 2, 3, 4, 5, 6];
+  const FN = { 2: x => x * x, 3: x => x * x * x };
+  const diff = arr => arr.slice(1).map((v, i) => v - arr[i]);
+  let deg = 2;
+  const rowsFor = d => {
+    const rows = [XS.map(FN[d])];
+    for (let k = 1; k <= 3; k++) rows.push(diff(rows[k - 1]));
+    return rows;
+  };
+  const LABELS = [String.raw`$f$`, String.raw`$\Delta f$`, String.raw`$\Delta^2 f$`, String.raw`$\Delta^3 f$`];
+  const chips = [2, 3].map(d => {
+    const b = mark(h('button', 'btn'), 'control', 'deg-' + d);
+    setTex(b, '$x^' + d + '$');
+    b.addEventListener('click', () => { deg = d; update(); });
+    return b;
+  });
+  const table = h('div', 'dt');
+  const rBuild = readout('build', String.raw`next entry, by addition`);
+  const rConst = readout('const', String.raw`constant row`);
+  widget.append(legend([
+    { color: COL.accent, text: String.raw`blue cell: a constant row` },
+    { color: COL.grey, text: String.raw`grey: the entries of $f$, then of each difference row` },
+  ]), hh('div', 'btnrow', ...chips), table, hh('div', 'readouts', rBuild.el, rConst.el));
+  function update() {
+    chips.forEach((b, i) => b.classList.toggle('on', [2, 3][i] === deg));
+    const rows = rowsFor(deg);
+    table.replaceChildren();
+    table.append(h('div', 'x', 'x'), ...XS.map(x => h('div', 'x', String(x))));
+    rows.forEach((row, k) => {
+      const constant = row.every(v => v === row[0]);
+      table.append(setTex(h('div', 'lab'), LABELS[k]));
+      XS.forEach((_, j) => {
+        const filled = j < row.length;
+        const c = h('div', 'c' + (constant && filled ? ' const' : ''));
+        c.textContent = filled ? String(row[j]) : '';
+        if (filled) c.dataset.item = 'cell';
+        table.append(c);
+      });
+    });
+    // Build by addition: each row's next entry is its last entry plus the next entry of the row below.
+    const next = [];
+    next[3] = rows[3][rows[3].length - 1];
+    for (let k = 2; k >= 0; k--) next[k] = rows[k][rows[k].length - 1] + next[k + 1];
+    rBuild.set(String.raw`$` + rows[0][6] + ' + ' + next[1] + ' = ' + next[0] + '$');
+    const cst = rows[deg].every(v => v === rows[deg][0]);
+    rConst.set(String.raw`$\Delta^{` + deg + String.raw`} f$ is all $` + rows[deg][0] + '$', !cst);
+  }
+  update();
+  side.append(
+    sym(String.raw`$\Delta f = f(x+1)-f(x)$: the step from one entry to the next. $\Delta^2 f = \Delta(\Delta f)$: the step of the steps.`),
+    triesList([
+      String.raw`Keep $x^2$. Every entry of the $\Delta^2 f$ row is $2$.`,
+      String.raw`Switch to $x^3$. The $\Delta^3 f$ row is all $6$: a degree-3 table has constant third differences.`,
+      String.raw`For $x^3$, predict the next entry from the last ones, then read the readout.`,
+    ]),
+    takeLine(String.raw`A degree-$k$ polynomial has constant $k$-th differences. The second difference is its curvature.`),
+  );
+}
+
+// ---------- step 15: why degree k gives constant k-th differences (proof) ----------
+function slideWhyDiff(widget, side) {
+  const XS = [0, 1, 2, 3, 4, 5, 6];
+  const FORM = { 2: ['x^2', '2x+1', '2', '0', '0'], 3: ['x^3', '3x^2+3x+1', '6x+6', '6', '0'], 4: ['x^4', '4x^3+6x^2+4x+1', '12x^2+24x+14', '24x+36', '24'] };
+  const LAB = ['f', '\\Delta f', '\\Delta^2 f', '\\Delta^3 f', '\\Delta^4 f'];
+  const FACT = { 2: 2, 3: 6, 4: 24 };
+  const diff = arr => arr.slice(1).map((v, i) => v - arr[i]);
+  let k = 3, lit = '';
+  const chips = [2, 3, 4].map(d => {
+    const b = mark(h('button', 'btn' + (d === k ? ' on' : '')), 'control', 'deg-' + d);
+    setTex(b, '$x^' + d + '$');
+    b.addEventListener('click', () => { k = d; draw(); });
+    return b;
+  });
+  const cap = h('p', 'tcap');
+  const table = h('div', 'dt dt-proof');
+  const box = hh('div', 'tbox', cap, table);
+  const rC = readout('const', 'the constant row');
+  const rF = readout('fact', String.raw`$c\,k!$ with $c=1$`);
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'btnrow', ...chips)],
+    box: box, redraw: () => draw(),
+    legend: [
+      { chip: true, color: COL.accent, text: 'blue cells: the constant row' },
+      { chip: true, color: COL.soft, border: COL.line, text: 'grey: entries and their steps' }],
+    readouts: [rC, rF],
+    tests: [
+      String.raw`Pick $x^3$: the rows read $3x^2+3x+1$, $6x+6$, $6$. Check one: $\Delta f(2)=27-8=19=3\cdot4+3\cdot2+1$.`,
+      String.raw`Pick $x^4$ and guess the constant row before you look. Cases are evidence, not proof.`],
+    model: String.raw`Each difference turns $x^k$ into $k\,x^{k-1}$ plus lower powers, as a slope does. So each row loses one degree, and after $k$ rows only a constant is left.` });
+  function draw() {
+    chips.forEach((b, i) => b.classList.toggle('on', [2, 3, 4][i] === k));
+    const rows = [];
+    let row = XS.map(x => Math.pow(x, k));
+    rows.push(row);
+    for (let j = 1; j <= 4; j++) { row = diff(row); rows.push(row); }
+    table.replaceChildren();
+    table.append(h('div', 'x', ''), ...XS.map(x => h('div', 'x', 'x=' + x)), h('div', 'x', 'as a polynomial'));
+    rows.forEach((rw, j) => {
+      const isConst = j === k, litRow = lit === 'const' && j === k;
+      const lab = setTex(h('div', 'lab'), '$' + LAB[j] + '$');
+      if (litRow) lab.classList.add('lit');
+      table.append(lab);
+      for (let i = 0; i < 7; i++) {
+        const filled = i < rw.length;
+        const c = h('div', 'c' + (filled ? (isConst ? ' const' : '') : ' empty'));
+        c.textContent = filled ? String(rw[i]) : '';
+        if (filled) c.dataset.item = 'cell';
+        const litDiff = lit === 'diff' && ((j === 0 && (i === 2 || i === 3)) || (j === 1 && i === 2));
+        if (filled && (litRow || litDiff)) c.classList.add('lit');
+        table.append(c);
+      }
+      const fm = setTex(h('div', 'form'), '$' + FORM[k][j] + '$');
+      if (lit === 'drop' || litRow || (lit === 'lead' && j === 1)) fm.classList.add('lit');
+      table.append(fm);
+    });
+    const f2 = Math.pow(2, k), f3 = Math.pow(3, k);
+    const CAP = {
+      diff: String.raw`amber: $\Delta f(2)=f(3)-f(2)=` + f3 + '-' + f2 + '=' + (f3 - f2) + '$',
+      lead: String.raw`amber: $\Delta x^{` + k + '}=' + FORM[k][1] + String.raw`$; it starts with $` + k + 'x^{' + (k - 1) + '}$',
+      drop: 'amber: each row is a polynomial one degree lower',
+      const: String.raw`amber: after $` + k + String.raw`$ rows, the constant $` + k + '!=' + FACT[k] + '$' }[lit];
+    setTex(cap, CAP || 'each row lists the steps of the row above; on the right, the row as a polynomial in $x$');
+    cap.classList.toggle('on', !!CAP);
+    rC.set(String.raw`$\Delta^{` + k + String.raw`} f$ is all $` + rows[k][0] + '$');
+    rF.set('$' + k + '!=' + FACT[k] + '$');
+  }
+  proofRight(side, {
+    id: 'differences',
+    goal: { tex: String.raw`\Delta^k p=c\,k!`, words: String.raw`at every $x$, for $p(x)=c\,x^k+$ lower powers.` },
+    facts: [{ tex: String.raw`\Delta f(x)=f(x+1)-f(x)`, ref: 'step 13' }],
+    lines: [
+      { tex: String.raw`\Delta x^k=(x+1)^k-x^k`, move: 'Unfold the definition',
+        why: 'the step from one entry to the next', choices: ['Name a piece', 'Change variables'], highlight: 'diff' },
+      { tex: String.raw`(x+1)^k=x^k+k\,x^{k-1}+\text{lower powers}`, move: 'Rearrange',
+        why: String.raw`multiply out $k$ factors $(x+1)$: take one $1$ and $k-1$ copies of $x$, in $k$ ways`, choices: ['Induction', 'Compute it two ways'], highlight: 'lead' },
+      { tex: String.raw`\Delta\big(c\,x^k+\cdots\big)=c\,k\,x^{k-1}+\text{lower powers}`, move: 'Rearrange',
+        why: String.raw`$x^k$ cancels; $\Delta$ of a sum is the sum of the $\Delta$s, and each lower power drops too`, choices: ['Telescope', 'Use symmetry'], highlight: 'drop' },
+      { tex: String.raw`\Delta^k p=c\,k(k-1)\cdots1=c\,k!`, move: 'Induction',
+        why: 'line 3 on each row: one degree less and one more factor, down to degree 0', choices: ['Use an earlier result', 'Take a limit'], highlight: 'const' }],
+    lookBack: [
+      { q: 'How is this like the slope?',
+        a: String.raw`Slopes do the same with $h\to0$ in place of a step of 1: $x^k$ turns into exactly $k\,x^{k-1}$ (step 4). So taking the slope of $x^k$ $k$ times also leaves $k!$.` },
+      { q: 'What happens one row further?',
+        a: String.raw`$\Delta^{k+1}p=0$: the steps of a constant row are all 0 (see the bottom rows for $x^2$). A table whose rows never reach a constant is no polynomial.` }] },
+    plot, key => { lit = key || ''; draw(); }, CLOSING);
+  side.querySelector('fl-proof-steps').primerMoves = PRIMER_MOVES;
+  side.querySelector('fl-proof-steps').endNote = NEXT;
+  draw();
+}
+
+// The view's close. The primer's last proof lists every move the primer's proofs used, in order of first
+// use, once it is proved, so the list never gives a pick away; the last step names what comes next.
+const CLOSING = 'Look back: under the picture.';
+const PRIMER_MOVES = ['Rearrange', 'Take a limit', 'Name a piece', 'Induction', 'Use an earlier result', 'Compare or bound', 'Add zero or multiply by one', 'Unfold the definition', 'Use symmetry'];
+const NEXT = 'Next: Primer · Waves.';
+
+// ---------- the slides, in order: id, title, tag, question, formula, mount ----------
+const SLIDES = [
+  { id: 'limit', title: 'A limit: the value a formula closes in on', tag: 'Used in L15 22:49 · L14 34:30 · L9 10:05',
+    question: 'What is a limit, and why do we need one?',
+    formula: String.raw`$\displaystyle \lim_{x\to 0}\frac{\sin x}{x}=1$`, mount: slideLimit },
+  { id: 'secant', sideProof: true, title: 'The derivative: a slope you approach', tag: 'Used in L20 00:35 · L22 32:04',
+    question: 'What is a derivative?',
+    formula: String.raw`$s'(1)=\displaystyle\lim_{h\to 0}\frac{s(1+h)-s(1)}{h}$`, mount: slideSecant },
+  { id: 'rules', title: 'Derivatives by rules, even for a machine', tag: 'Used in L7 12:28 · L20 06:49',
+    question: 'Why can a machine take derivatives by rules?',
+    formula: String.raw`$\dfrac{d}{dx}\,e^{u(x)}=e^{u(x)}\,u'(x)$`, mount: slideRules },
+  { id: 'why-power-rule', proof: true, title: String.raw`Why it's true: $\frac{d}{dx}x^n=n\,x^{n-1}$`, tag: 'Used in L7 12:28 · L20 06:49',
+    question: String.raw`Why does the slope of $x^n$ come out as $n\,x^{n-1}$?`, mount: slideWhyPower },
+  { id: 'why-exp-slope', proof: true, title: String.raw`Why it's true: $\frac{d}{dx}e^x=e^x$`, tag: 'Used in L7 12:28 · L20 06:49',
+    question: String.raw`Why is the slope of $e^x$ equal to $e^x$ itself?`, mount: slideWhyExp },
+  { id: 'why-chain-rule', proof: true, title: String.raw`Why it's true: $\frac{d}{dx}f(u(x))=f'(u)\,u'(x)$`, tag: 'Used in L7 12:28 · L20 06:49',
+    question: 'Why do the slopes multiply when one function sits inside another?', mount: slideWhyChain },
+  { id: 'maximum', title: 'Finding a peak: set the slope to zero', tag: 'Used in L2 ch.',
+    question: 'How do you find a maximum?',
+    formula: String.raw`$\dfrac{d}{dz}\,z^a(1-z)^b=0$ at $z=\dfrac{a}{a+b}$`, mount: slideMaximum },
+  { id: 'why-peak', proof: true, title: String.raw`Why it's true: the peak is at $z=\frac{a}{a+b}$`, tag: 'Used in L2 ch.',
+    question: String.raw`Why is the top exactly at $a/(a+b)$, and how do we know it is a top?`, mount: slideWhyPeak },
+  { id: 'partial', title: 'Partial derivatives: one knob at a time', tag: 'Used in L14 27:38-32:58 · L6 41:32',
+    question: 'What is a partial derivative?',
+    formula: null, mount: slidePartial },
+  { id: 'why-partials', proof: true, title: String.raw`Why it's true: $\frac{\partial E}{\partial a}=-2\sum_i(y_i-a-bx_i)$`, tag: 'Used in L14 27:38-32:58 · L6 41:32',
+    question: String.raw`Where do the $-2$, the sum, and the extra $x_i$ in $\partial E/\partial b$ come from?`, mount: slideWhyPartials },
+  { id: 'tangent', title: 'The tangent line, and where it fails', tag: 'Used in L18 12:16 · L18 22:08',
+    question: 'What is the tangent line good for, and when does it fail?',
+    formula: null, mount: slideTangent },
+  { id: 'why-tangent-gap', proof: true, title: String.raw`Why it's true: the gap is $\frac{x^2}{1+x}$`, tag: 'Used in L18 12:16 · L18 22:08',
+    question: String.raw`Why is $1-x$ the tangent, and why is its miss about $x^2$?`, mount: slideWhyGap },
+  { id: 'differences', title: 'Differences: the derivative of a table', tag: 'Used in L3 12:36-13:08 · L20 23:30',
+    question: 'What are differences, and what do they tell you about a table?',
+    formula: String.raw`$\Delta f(x)=f(x+1)-f(x)$`, mount: slideDifferences },
+  { id: 'why-differences', proof: true, title: String.raw`Why it's true: degree $k$ gives constant $k$-th differences`, tag: 'Used in L3 12:36-13:08 · L20 23:30',
+    question: 'Why does each difference lower the degree by one, and which constant is left?', mount: slideWhyDiff },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  COL = readPalette();
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side' + (s.sideProof ? ' with-proof' : ''),
+    h('div', 'tag', s.tag),
+    setTex(h('h2'), s.title),
+    setTex(h('p', 'question'), s.question),
+    s.formula ? setTex(h('div', 'formula'), s.formula) : null);
+  const sec = mark(h('section', 'slide' + (s.proof ? ' proof-slide' : '')), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  s.mount(widget, side);
+  if (cur === SLIDES.length - 1) {
+    if (!endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

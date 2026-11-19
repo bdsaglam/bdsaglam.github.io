@@ -1,0 +1,7 @@
+{
+  "title": "The running median, and what linearity forces",
+  "group": "l17",
+  "about": "A nonlinear filter that keeps jumps, what it costs on noise, and why every linear theory trades width in time for width in frequency.",
+  "w": 1280,
+  "h": 720
+}

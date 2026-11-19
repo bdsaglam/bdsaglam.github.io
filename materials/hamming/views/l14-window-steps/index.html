@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>From a least-squares fit to a filter</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: white page, blue for the main curve, black for the second, grey for context. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-panel);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.widget>*{max-width:100%;min-width:0}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(17px,1.5vw,22px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.where{margin:0;font-size:16px}
+.where b{color:var(--accent)}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;transition:opacity .2s}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%}
+.sliders.tight{gap:6px 16px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(110px,10vw,160px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:58px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plot-static svg{display:block;width:100%;height:auto}
+
+/* Derivation: one line at a time; unrevealed lines are dimmed, not hidden */
+.proof{display:flex;flex-direction:column;width:100%}
+.proof-line{display:grid;grid-template-columns:24px minmax(0,1fr);gap:0 6px;align-items:center;padding:2px 0;border-bottom:1px solid var(--pal-soft-3)}
+.proof-num{font:15px ui-monospace,Menlo,monospace;color:var(--muted)}
+.proof-eq{font-size:16px;min-width:0}
+.proof-why{grid-column:2;margin:0;color:var(--muted);font-size:16px;line-height:1.15}
+/* Dark only: a dimmed, not yet read line or takeaway stays at 4.5:1 (light keeps its look). */
+.actions{padding-top:6px}
+.btn.primary{border-color:var(--accent);color:var(--accent)}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:6px}
+  .tries{gap:3px}
+  .sym,.where,.tries{line-height:1.2}
+  .side{gap:4px}
+  .proof-line{padding:1px 0}
+  .readout{padding:3px 8px}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:19px}
+  .fill{min-height:110px}
+  h2{font-size:20px}
+  .slide-ctl input{width:110px}
+}
+</style>
+</head>
+<body>
+<header id="head">From a least-squares fit to a filter · Lecture 14</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// ---------- data and math (checked with Python, see the notes in the build log) ----------
+const KS = [-2, -1, 0, 1, 2];            // positions k
+const U0 = [1.0, 2.6, 2.2, 3.9, 4.3];    // shared data u_k, the default points
+const U = U0.slice();                    // the draggable points, shared by the slides
+const WA = [0.2, 0.2, 0.2, 0.2, 0.2];                       // 5-point average
+const WQ = [-3 / 35, 12 / 35, 17 / 35, 12 / 35, -3 / 35];   // 5-point quadratic window
+const sum = a => a.reduce((s, x) => s + x, 0);
+const fmt3 = x => (Math.abs(x) < 0.0005 ? 0 : x).toFixed(3);
+const clampU = v => Math.max(0, Math.min(6, Math.round(v * 20) / 20));
+
+// Least-squares line through (k, u_k): a is the middle value, b the slope.
+function lineFit(u) { return { a: sum(u) / 5, b: sum(KS.map((k, i) => k * u[i])) / 10 }; }
+function sse(u, a, b) { return sum(u.map((x, i) => (x - a - b * KS[i]) ** 2)); }
+// Least-squares parabola a + b k + c k^2 (the closed form from the derivation).
+function quadFit(u) {
+  const s0 = sum(u), s2 = sum(u.map((x, i) => KS[i] * KS[i] * x));
+  const a = (17 * s0 - 5 * s2) / 35;
+  return { a, b: sum(u.map((x, i) => KS[i] * x)) / 10, c: (s2 - 10 * a) / 34 };
+}
+// Center weights of a degree-d least-squares fit on 2h+1 points (exact, by normal equations).
+function fitWeights(h, d) {
+  const ks = []; for (let k = -h; k <= h; k++) ks.push(k);
+  const n = d + 1;
+  const M = Array.from({ length: n }, (_, p) => [
+    ...Array.from({ length: n }, (_, q) => ks.reduce((s, k) => s + Math.pow(k, p + q), 0)),
+    ...Array.from({ length: n }, (_, q) => (p === q ? 1 : 0))]);
+  for (let c = 0; c < n; c++) {
+    let piv = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[piv][c])) piv = r;
+    [M[c], M[piv]] = [M[piv], M[c]];
+    const pv = M[c][c]; for (let j = 0; j < 2 * n; j++) M[c][j] /= pv;
+    for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c]; for (let j = 0; j < 2 * n; j++) M[r][j] -= f * M[c][j]; }
+  }
+  const row0 = M[0].slice(n);
+  return ks.map(k => { let s = 0; for (let p = 0; p < n; p++) s += row0[p] * Math.pow(k, p); return s; });
+}
+// Gain of a symmetric window at frequency f (rotations per sample): sum_k w_k cos(2 pi f k).
+function gain(w, f) {
+  const hh_ = (w.length - 1) / 2; let s = 0;
+  w.forEach((c, i) => { s += c * Math.cos(2 * Math.PI * f * (i - hh_)); });
+  return s;
+}
+// Filter a sequence: y_n = sum_k w_k x_{n+k}, for n with a full window.
+function applyWindow(w, x) {
+  const hh_ = (w.length - 1) / 2, y = new Array(x.length).fill(null);
+  for (let n = hh_; n < x.length - hh_; n++) { let s = 0; w.forEach((c, i) => { s += c * x[n + i - hh_]; }); y[n] = s; }
+  return y;
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function gaussNoise(seed, n, sd) {
+  const rnd = mulberry32(seed), out = [];
+  for (let i = 0; i < n; i++) {
+    let u = 0; while (u === 0) u = rnd();
+    out.push(sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()));
+  }
+  return out;
+}
+
+// ---------- DOM and drawing helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+// Palette read at paint time: SVG attributes take no var(), so every draw reads COL afresh.
+const PAL_NAMES = ['ink', 'text-2', 'text-3', 'muted', 'grid', 'soft-3', 'guide', 'grey', 'accent', 'accent-2',
+  'panel', 'on-accent', 'bg', 'amber', 'amber-bg', 'amber-ink', 'soft', 'soft-2', 'line', 'red', 'fg', 'blue-strong'];
+let COL = {};
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];                     // the current slide's plots, redrawn on a theme switch
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// Same label with a halo in the page color, so it reads over a curve or bars in both themes.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px var(--pal-bg), 0 0 3px var(--pal-bg), 0 0 2px var(--pal-bg)';
+  return fo;
+}
+// A labelled range input. label is LaTeX-ready text; fmt gives the value text.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmtv = o.fmt || String;
+  const api = {
+    el: wrap,
+    input: inp,
+    get value() { return +inp.value; },
+    show() { setTex(val, fmtv(+inp.value)); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text) { setTex(v, text); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) sw.style.background = it.color;
+    else sw.style.borderTop = '2px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize and may
+// return a geometry object (wrap._geo) that the pointer handlers use to map pixels to data.
+function fillPlot(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    const svg = svgRoot(w, ht);
+    COL = readPalette();
+    wrap._geo = draw(svg, w, ht) || null;
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// Drag the nearest data point up and down. onMove(index, value) is called while dragging.
+function attachDrag(wrap, onMove) {
+  let act = -1;
+  const at = e => { const r = wrap.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  wrap.addEventListener('pointerdown', e => {
+    const g = wrap._geo; if (!g || !g.X) return;
+    const p = at(e); let best = 0, bd = Infinity;
+    KS.forEach((k, i) => { const d = Math.abs(g.X(k) - p.x); if (d < bd) { bd = d; best = i; } });
+    if (bd > 36) return;
+    act = best; wrap.setPointerCapture(e.pointerId); e.preventDefault();
+    onMove(act, wrap._geo.inv(p.y));
+  });
+  wrap.addEventListener('pointermove', e => { if (act >= 0 && wrap._geo) onMove(act, wrap._geo.inv(at(e).y)); });
+  const end = () => { act = -1; };
+  wrap.addEventListener('pointerup', end);
+  wrap.addEventListener('pointercancel', end);
+}
+// A bar chart in a fixed box: vals are the weights, labels the LaTeX value of each bar.
+function weightBars(vals, labels) {
+  const svg = svgNode('svg', { viewBox: '0 0 600 160', role: 'img', 'font-family': 'system-ui, sans-serif' });
+  const base = 80, sc = 100;
+  svgNode('line', { x1: 20, y1: base, x2: 580, y2: base, stroke: COL.grey }, svg);
+  vals.forEach((v, i) => {
+    const cx = 60 + i * 120, bw = 56;
+    const top = v >= 0 ? base - v * sc : base, hgt = Math.abs(v) * sc;
+    svgNode('rect', { x: cx - bw / 2, y: top, width: bw, height: Math.max(1, hgt), fill: v >= 0 ? COL.accent : COL.ink,
+      'data-item': 'mark', 'data-id': 'weight-' + KS[i] }, svg);
+    svgTex(svg, cx, v >= 0 ? top - 14 : top + hgt + 14, labels[i], { w: 110, size: 15 });
+    svgTex(svg, cx, 146, '$k=' + KS[i] + '$', { w: 80, size: 15 });
+  });
+  return svg;
+}
+// Proof lines: each line is a rendered equation and a short reason; one more line per click.
+function proofLines(steps) {
+  let shown = 0;
+  const rows = steps.map(([eq, why], i) => mark(hh('div', 'proof-line', h('span', 'proof-num', (i + 1) + '.'),
+    setTex(h('div', 'proof-eq'), eq), setTex(h('p', 'proof-why'), why)), 'line', 'line-' + (i + 1)));
+  const next = mark(h('button', 'btn primary', 'Next line'), 'control', 'next-line');
+  next.addEventListener('click', () => { shown = Math.min(steps.length, shown + 1); render(); });
+  function render() {
+    rows.forEach((r, i) => r.classList.toggle('dim', i >= shown));
+    next.disabled = shown >= steps.length;
+    next.textContent = shown >= steps.length ? 'Derivation done' : 'Next line';
+  }
+  render();
+  return hh('div', 'proof', ...rows, hh('div', 'actions', next));
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function whereLine(text) {
+  const p = h('p', 'where');
+  const s = h('span');
+  setTex(s, text);
+  p.append(h('b', '', 'Where you meet it: '), s);
+  return p;
+}
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+// Session events. Optional: with no bridge, nothing is sent.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* the view works without the bridge */ }
+}
+
+// ---------- slide 1: line-fit (27:38) ----------
+function slideLine(widget, side) {
+  let A = 2.0, B = 0.0, plot;
+  const sA = slider(String.raw`$a$, middle value`, { id: 'a', name: 'a, middle value', min: 0, max: 6, step: 0.01, value: A,
+    fmt: v => v.toFixed(2), onInput: v => { A = v; update(); } });
+  const sB = slider(String.raw`$b$, slope`, { id: 'b', name: 'b, slope', min: -1, max: 1, step: 0.01, value: B,
+    fmt: v => v.toFixed(2), onInput: v => { B = v; update(); } });
+  const rE = readout('sse-now', String.raw`$E$ at your $a$, $b$`);
+  const rMin = readout('sse-min', String.raw`$E$ at the least-squares line`);
+  const rBest = readout('best', 'least-squares line');
+  const snap = mark(h('button', 'btn', 'Snap to minimum'), 'control', 'snap');
+  const reset = mark(h('button', 'btn', 'Reset points'), 'control', 'reset');
+  snap.addEventListener('click', () => { const f = lineFit(U); A = f.a; B = f.b; sA.input.value = A; sB.input.value = B; sA.show(); sB.show(); update(); });
+  reset.addEventListener('click', () => { U.splice(0, U.length, ...U0); update(); });
+  widget.append(hh('div', 'sliders', sA.el, sB.el), hh('div', 'btnrow', snap, reset), legend([
+    { chip: true, color: COL.ink, text: String.raw`filled dots: data $u_k$ (drag them)` },
+    { color: 'var(--pal-accent)', text: String.raw`blue line: $a+bk$` },
+    { chip: true, color: 'color-mix(in srgb, var(--pal-grey) 60%, transparent)', text: String.raw`grey squares: area $(u_k-a-bk)^2$, the terms of $E$` }]));
+  plot = fillPlot(widget, drawLine);
+  plot.wrap.style.cursor = 'ns-resize';
+  attachDrag(plot.wrap, (i, v) => { U[i] = clampU(v); update(); });
+  widget.append(hh('div', 'readouts', rE.el, rMin.el, rBest.el));
+
+  function update() {
+    const f = lineFit(U);
+    rE.set(sse(U, A, B).toFixed(3));
+    rMin.set(sse(U, f.a, f.b).toFixed(3));
+    rBest.set(String.raw`$a=${f.a.toFixed(2)},\ b=${f.b.toFixed(2)}$`);
+    plot.redraw();
+  }
+  function drawLine(svg, W, H) {
+    const L = 52, R = 16, T = 14, base = H - 44, pw = W - L - R, YM = 6;
+    const X = x => L + (x + 2.5) / 5 * pw;
+    const Y = v => base - v / YM * (base - T);
+    const inv = py => (base - py) / (base - T) * YM;
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const k of KS) svgText(svg, X(k), base + 18, String(k), { 'text-anchor': 'middle', 'font-size': 15 });
+    for (const v of [0, 2, 4, 6]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+    KS.forEach((k, i) => {
+      const fit = A + B * k, gap = U[i] - fit;
+      const sq = Math.abs(gap) * 45;   // side proportional to the gap, so the area is proportional to the squared gap
+      const top = Y(Math.max(U[i], fit)), bot = Y(Math.min(U[i], fit));
+      const x0 = k < 0 ? X(k) + 8 : X(k) - 8 - sq;
+      svgNode('rect', { x: x0, y: top, width: sq, height: sq, fill: COL.grey, 'fill-opacity': 0.55, stroke: COL.muted,
+        'data-item': 'mark', 'data-id': 'square-' + k }, svg);
+      svgNode('line', { x1: X(k), y1: top, x2: X(k), y2: bot, stroke: COL.muted, 'stroke-dasharray': '3 3' }, svg);
+    });
+    svgNode('path', { d: 'M' + X(-2.5) + ' ' + Y(A - 2.5 * B) + ' L' + X(2.5) + ' ' + Y(A + 2.5 * B),
+      fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'fit-line' }, svg);
+    haloTex(svg, X(2.5) - 6, Y(A + 2.5 * B) - 18, String.raw`$a+bk$`, { w: 90, anchor: 'end', size: 15, fill: COL.accent });
+    KS.forEach((k, i) => svgNode('circle', { cx: X(k), cy: Y(U[i]), r: 6, fill: COL.ink, 'data-item': 'mark', 'data-id': 'point-' + k }, svg));
+    svgTex(svg, (L + W - R) / 2, H - 8, String.raw`$k$, position`, { w: 200, size: 15 });
+    svgTex(svg, L + 4, T + 8, '$u$', { w: 40, anchor: 'start', size: 15 });
+    return { X: k => X(k), inv };
+  }
+  side.append(
+    sym(String.raw`$k$: position, $-2$ to $2$. $u_k$: value there, e.g. $u_2=4.3$. Line $a+bk$: $a$ middle, $b$ slope.`),
+    triesList([
+      String.raw`Press Snap to minimum: $E=0.859$ at $a=2.80$, $b=0.79$.`,
+      String.raw`Drag a dot up by $1$, then Snap again.`]),
+    proofLines([
+      [String.raw`$\partial E/\partial a=0 \Rightarrow \sum_k u_k=5a$`, String.raw`set the slope in $a$ to zero; $\sum_k k=0$, so $b$ drops out`],
+      [String.raw`$a=\bar u=\dfrac{14}{5}=2.8$`, 'the middle value is the mean'],
+      [String.raw`$\partial E/\partial b=0 \Rightarrow b=\dfrac{\sum_k k\,u_k}{\sum_k k^2}=\dfrac{7.9}{10}=0.79$`, String.raw`$\sum_k k^2=10$`]]),
+    takeLine(String.raw`The unknowns are $a$ and $b$. The best middle value is the mean of the points.`));
+  update();
+}
+
+// ---------- slide 2: quad-window (30:48) ----------
+function slideQuad(widget, side) {
+  let plot;
+  const rA = readout('mid', String.raw`middle value $a$, parabola`);
+  const rW = readout('wu', String.raw`$\sum_k w_k u_k$, same value`);
+  const rChk = readout('checks', String.raw`checks: $\sum_k w_k$, $\sum_k k\,w_k$, $\sum_k k^2 w_k$`);
+  rChk.set(String.raw`$1,\ 0,\ 0$`);
+  const reset = mark(h('button', 'btn', 'Reset points'), 'control', 'reset');
+  const fresh = mark(h('button', 'btn', 'New random points'), 'control', 'random');
+  let seed = 11;
+  reset.addEventListener('click', () => { U.splice(0, U.length, ...U0); update(); });
+  fresh.addEventListener('click', () => {
+    const rnd = mulberry32(seed++);
+    for (let i = 0; i < 5; i++) U[i] = clampU(0.5 + 4 * rnd());
+    update();
+  });
+  const bars = h('div', 'plot-static');
+  bars.append(weightBars(WQ, [String.raw`$-\tfrac{3}{35}$`, String.raw`$\tfrac{12}{35}$`, String.raw`$\tfrac{17}{35}$`, String.raw`$\tfrac{12}{35}$`, String.raw`$-\tfrac{3}{35}$`]));
+  widget.append(hh('div', 'btnrow', reset, fresh), legend([
+    { chip: true, color: COL.ink, text: String.raw`filled dots: data $u_k$ (drag them)` },
+    { color: 'var(--pal-accent)', text: String.raw`blue curve: the parabola $a+bk+ck^2$` },
+    { chip: true, color: COL.accent, text: String.raw`blue bars: positive weight $w_k$` },
+    { chip: true, color: COL.ink, text: String.raw`bars below zero: negative weight` }]));
+  plot = fillPlot(widget, drawQuad);
+  plot.wrap.style.cursor = 'ns-resize';
+  attachDrag(plot.wrap, (i, v) => { U[i] = clampU(v); update(); });
+  widget.append(bars, hh('div', 'readouts', rA.el, rW.el, rChk.el));
+
+  function update() {
+    const q = quadFit(U);
+    rA.set(q.a.toFixed(3));
+    rW.set(sum(WQ.map((w, i) => w * U[i])).toFixed(3));
+    plot.redraw();
+  }
+  function drawQuad(svg, W, H) {
+    const L = 52, R = 16, T = 14, base = H - 44, pw = W - L - R, YM = 6;
+    const X = x => L + (x + 2.5) / 5 * pw;
+    const Y = v => base - v / YM * (base - T);
+    const inv = py => (base - py) / (base - T) * YM;
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const k of KS) svgText(svg, X(k), base + 18, String(k), { 'text-anchor': 'middle', 'font-size': 15 });
+    for (const v of [0, 2, 4, 6]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+    const q = quadFit(U);
+    let d = '';
+    for (let i = 0; i <= 60; i++) { const x = -2.5 + 5 * i / 60, y = q.a + q.b * x + q.c * x * x; d += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(y).toFixed(1); }
+    svgNode('path', { d: d, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'parabola' }, svg);
+    svgNode('line', { x1: L, y1: Y(q.a), x2: W - R, y2: Y(q.a), stroke: COL.accent, 'stroke-dasharray': '4 3', 'stroke-width': 1 }, svg);
+    svgNode('circle', { cx: X(0), cy: Y(q.a), r: 5.5, fill: COL.accent, stroke: COL.bg, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'middle' }, svg);
+    haloTex(svg, X(0) + 14, Y(q.a) - 30, String.raw`$a=${q.a.toFixed(3)}$, middle`, { w: 200, anchor: 'start', size: 15, fill: COL.accent });
+    KS.forEach((k, i) => svgNode('circle', { cx: X(k), cy: Y(U[i]), r: 6, fill: COL.ink, 'data-item': 'mark', 'data-id': 'point-' + k }, svg));
+    svgTex(svg, (L + W - R) / 2, H - 8, String.raw`$k$, position`, { w: 200, size: 15 });
+    svgTex(svg, L + 4, T + 8, '$u$', { w: 40, anchor: 'start', size: 15 });
+    return { X: k => X(k), inv };
+  }
+  side.append(
+    sym(String.raw`$u_k$: value at position $k$, e.g. $u_0=2.2$. Parabola $a+bk+ck^2$: $a$ is its middle value. $w_k$: weight of $u_k$ in $a$.`),
+    setTex(h('div', 'formula'), String.raw`$a=\tfrac{1}{35}\bigl(-3u_{-2}+12u_{-1}+17u_0+12u_1-3u_2\bigr)$`),
+    triesList([
+      String.raw`Drag the middle dot up by $1$. $a$ moves by $\tfrac{17}{35}\approx0.49$, not $1$.`,
+      String.raw`Press New random points. $a$ still equals $\sum_k w_k u_k$: the weights did not change.`]),
+    proofLines([
+      [String.raw`$\sum_k u_k=5a+10c$`, String.raw`$\sum_k k=0$, so $b$ drops out`],
+      [String.raw`$\sum_k k^2u_k=10a+34c$`, String.raw`$\sum_k k^3=0$ and $\sum_k k^4=34$`],
+      [String.raw`$35a=17\sum_k u_k-5\sum_k k^2u_k$`, 'solve the two equations for $a$: these are the weights']]),
+    takeLine(String.raw`The weights do not depend on $u$. So the parabola fit is one fixed window.`));
+  update();
+}
+
+// ---------- slide 3: slide-window (33:29) ----------
+function slideWindow(widget, side) {
+  let seed = 7, cursorN = 60, plot;
+  const N = 120;
+  const bump = n => 2 * Math.exp(-((n - 60) * (n - 60)) / (2 * 1.5 * 1.5));
+  const clean = Array.from({ length: N }, (_, n) => Math.sin(2 * Math.PI * n / 40) + bump(n));
+  const makeSignal = () => { const e = gaussNoise(seed, N, 0.3); return clean.map((v, n) => v + e[n]); };
+  let noisy = makeSignal();
+  // Peak and noise numbers are fixed by the window and the bump, so they do not move with the noise.
+  const peakA = sum(WA.map((w, i) => w * bump(60 + i - 2)));
+  const peakQ = sum(WQ.map((w, i) => w * bump(60 + i - 2)));
+  const noiseA = Math.sqrt(sum(WA.map(w => w * w)));
+  const noiseQ = Math.sqrt(sum(WQ.map(w => w * w)));
+  const rPA = readout('peak-avg', String.raw`bump peak, 5-point average`);
+  const rPQ = readout('peak-quad', String.raw`bump peak, quadratic window`);
+  const rNA = readout('noise-avg', String.raw`noise left, average: $\sqrt{\sum_k w_k^2}$`);
+  const rNQ = readout('noise-quad', String.raw`noise left, quadratic`);
+  rPA.set(peakA.toFixed(3)); rPQ.set(peakQ.toFixed(3));
+  rNA.set(noiseA.toFixed(3)); rNQ.set(noiseQ.toFixed(3));
+  const newNoise = mark(h('button', 'btn', 'New noise'), 'control', 'noise');
+  newNoise.addEventListener('click', () => { seed++; noisy = makeSignal(); plot.redraw(); });
+  widget.append(hh('div', 'btnrow', newNoise), legend([
+    { color: 'var(--pal-grey)', text: String.raw`grey: raw signal $x_n$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue: 5-point average` },
+    { color: 'var(--pal-ink)', text: String.raw`solid line: quadratic window` },
+    { chip: true, color: 'color-mix(in srgb, var(--pal-accent) 15%, transparent)', text: String.raw`shaded: the window at the cursor` }]));
+  plot = fillPlot(widget, drawSig);
+  plot.wrap.addEventListener('pointermove', e => {
+    const g = plot.wrap._geo; if (!g || !g.toN) return;
+    const r = plot.wrap.getBoundingClientRect();
+    cursorN = Math.max(2, Math.min(N - 3, Math.round(g.toN(e.clientX - r.left))));
+    plot.redraw();
+  });
+  widget.append(hh('div', 'readouts', rPA.el, rPQ.el, rNA.el, rNQ.el));
+
+  function drawSig(svg, W, H) {
+    const L = 52, R = 16, T = 14, base = H - 44, pw = W - L - R;
+    const X = n => L + n / N * pw;
+    const Y = v => base - (v + 1.5) / 4.3 * (base - T);
+    const toN = px => (px - L) / pw * N;
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [-1, 0, 1, 2]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+    for (let n = 0; n <= 120; n += 20) svgText(svg, X(n), base + 18, String(n), { 'text-anchor': 'middle', 'font-size': 15 });
+    // the window at the cursor: 5 samples, n-2 to n+2
+    svgNode('rect', { x: X(cursorN - 2.5), y: T, width: 5 / N * pw, height: base - T, fill: COL.accent, 'fill-opacity': 0.15, 'data-item': 'mark', 'data-id': 'window' }, svg);
+    let raw = '', avg = '', quad = '';
+    const ya = applyWindow(WA, noisy), yq = applyWindow(WQ, noisy);
+    for (let n = 0; n < N; n++) {
+      raw += (n ? 'L' : 'M') + X(n).toFixed(1) + ' ' + Y(noisy[n]).toFixed(1);
+      if (ya[n] !== null) avg += (avg ? 'L' : 'M') + X(n).toFixed(1) + ' ' + Y(ya[n]).toFixed(1);
+      if (yq[n] !== null) quad += (quad ? 'L' : 'M') + X(n).toFixed(1) + ' ' + Y(yq[n]).toFixed(1);
+    }
+    svgNode('path', { d: raw, fill: 'none', stroke: COL.grey, 'stroke-width': 1.2, 'data-item': 'mark', 'data-id': 'raw' }, svg);
+    svgNode('path', { d: quad, fill: 'none', stroke: COL.ink, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'quad' }, svg);
+    svgNode('path', { d: avg, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'avg' }, svg);
+    svgTex(svg, (L + W - R) / 2, H - 8, String.raw`$n$, time step`, { w: 200, size: 15 });
+    svgTex(svg, L + 4, T + 8, '$y$', { w: 40, anchor: 'start', size: 15 });
+    return { X, toN };
+  }
+  side.append(
+    sym(String.raw`$x_n$: signal, a slow sine $\sin(2\pi n/40)$, a bump at $n=60$ (height 2), and noise. $y_n=\sum_k w_k x_{n+k}$: the filtered value. At $n=60$ the sine is $\sin 3\pi=0$, so only the bump is there.`),
+    setTex(h('div', 'formula'), String.raw`$y_n=\sum_k w_k\,x_{n+k}$`),
+    triesList([
+      String.raw`Move the cursor onto the bump at $n=60$. The shaded window covers $n=58$ to $62$.`,
+      String.raw`At the top, the blue average reads $1.369$ and the quadratic reads $1.929$.`,
+      String.raw`Away from the bump, the average wiggles less: noise left $0.447$, against $0.697$.`]),
+    whereLine(String.raw`attention also looks through a window, but it sets the weights from the data at each position, so no single transfer function exists. The fixed-window smoother is Savitzky and Golay (1964).`),
+    takeLine(String.raw`The average kills more noise and flattens peaks. You always see data through a window.`));
+  plot.redraw();
+}
+
+// ---------- slide 4: transfer (34:30) ----------
+function slideTransfer(widget, side) {
+  let F = 0.1, plot;
+  const sF = slider(String.raw`$f$, frequency`, { id: 'f', name: 'f, frequency', min: 0, max: 0.5, step: 0.005, value: F,
+    fmt: v => v.toFixed(3), onInput: v => { F = v; update(); } });
+  const presets = [0.1, 0.2, 0.3, 0.5].map(v => {
+    const b = mark(h('button', 'btn', v.toFixed(1)), 'preset', 'f-' + v);
+    b.addEventListener('click', () => { F = v; sF.input.value = v; sF.show(); update(); });
+    return b;
+  });
+  const rA = readout('h-avg', String.raw`$H_{\text{avg}}(f)$`);
+  const rQ = readout('h-quad', String.raw`$H_{\text{quad}}(f)$`);
+  const mini = h('div', 'plot-static');
+  widget.append(hh('div', 'sliders', sF.el), hh('div', 'btnrow', ...presets), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue: average, $H=\tfrac{\sin 5\pi f}{5\sin\pi f}$` },
+    { color: 'var(--pal-ink)', text: String.raw`solid line: quadratic window` },
+    { color: 'var(--pal-grey)', text: String.raw`grey: input $\cos 2\pi f n$` }]));
+  plot = fillPlot(widget, drawGain);
+  widget.append(mini, hh('div', 'readouts', rA.el, rQ.el));
+
+  function drawGain(svg, W, H) {
+    const L = 52, R = 20, T = 14, base = H - 44, pw = W - L - R;
+    const X = f => L + f / 0.5 * pw;
+    const Y = v => base - (v + 0.6) / 1.85 * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: Y(0), x2: W - R, y2: Y(0), stroke: COL.line }, svg);
+    for (const v of [-0.5, 0, 0.5, 1]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+    for (let i = 0; i <= 5; i++) svgText(svg, X(i / 10), base + 18, (i / 10).toFixed(1), { 'text-anchor': 'middle', 'font-size': 15 });
+    for (const [w, col, id] of [[WA, COL.accent, 'avg'], [WQ, COL.ink, 'quad']]) {
+      let d = '';
+      for (let i = 0; i <= 300; i++) { const f = 0.5 * i / 300; d += (i ? 'L' : 'M') + X(f).toFixed(1) + ' ' + Y(gain(w, f)).toFixed(1); }
+      svgNode('path', { d: d, fill: 'none', stroke: col, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': id }, svg);
+      svgNode('circle', { cx: X(F), cy: Y(gain(w, F)), r: 5, fill: col, stroke: COL.bg, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': id + '-now' }, svg);
+    }
+    svgNode('line', { x1: X(F), y1: T, x2: X(F), y2: base, stroke: COL.muted, 'stroke-dasharray': '4 3' }, svg);
+    svgTex(svg, (L + W - R) / 2, H - 8, String.raw`$f$, rotations per sample`, { w: 260, size: 15 });
+    svgTex(svg, L + 4, T + 8, '$H(f)$', { w: 80, anchor: 'start', size: 15 });
+    return null;
+  }
+  function drawMini() {
+    const W = 600, Hh = 120, L = 40, R = 10, T = 12, B = 96, n0 = 0, n1 = 30;
+    const svg = svgNode('svg', { viewBox: '0 0 ' + W + ' ' + Hh, role: 'img', 'font-family': 'system-ui, sans-serif' });
+    const X = n => L + (n - n0) / (n1 - n0) * (W - L - R), Y = v => (T + B) / 2 - v * (B - T) / 2.6;
+    const inp = []; for (let n = 0; n <= n1; n++) inp.push(Math.cos(2 * Math.PI * F * n));
+    const ya = applyWindow(WA, inp), yq = applyWindow(WQ, inp);
+    const path = (ys, col, id, dash) => {
+      let d = ''; ys.forEach((v, n) => { if (v === null) return; d += (d ? 'L' : 'M') + X(n).toFixed(1) + ' ' + Y(v).toFixed(1); });
+      svgNode('path', { d: d, fill: 'none', stroke: col, 'stroke-width': 2, 'stroke-dasharray': dash || null, 'data-item': 'mark', 'data-id': id }, svg);
+    };
+    svgNode('line', { x1: L, y1: Y(0), x2: W - R, y2: Y(0), stroke: COL.line }, svg);
+    path(inp, COL.grey, 'input');
+    path(ya, COL.accent, 'avg-out');
+    path(yq, COL.ink, 'quad-out', '6 3');
+    svgText(svg, L, Hh - 6, 'n = 0 to 30, n = time', { 'font-size': 13 });
+    return svg;
+  }
+  function update() {
+    rA.set(fmt3(gain(WA, F)));
+    rQ.set(fmt3(gain(WQ, F)));
+    mini.replaceChildren(drawMini());
+    plot.redraw();
+  }
+  side.append(
+    sym(String.raw`$f$: frequency in rotations per sample; $f=0.1$ repeats every 10 samples. $H(f)$: the gain. A sine at $f$ leaves at $H(f)$ times its size. Example: at $f=0.5$ the wave flips every sample, and the average's gain $0.2$ shrinks it to a fifth.`),
+    setTex(h('div', 'formula'), String.raw`$H(f)=\sum_k w_k\cos 2\pi f k$`),
+    triesList([
+      String.raw`Set $f=0.2$. The average's gain is $0$, so its output is flat. The quadratic keeps $0.836$.`,
+      String.raw`Set $f=0.3$. The average's gain is $-0.247$: the grey wave comes back flipped in blue.`,
+      String.raw`Set $f=0.5$. The average gives $0.2$, the quadratic $-0.371$. Which one flips the sign?`]),
+    takeLine(String.raw`A window multiplies each frequency by $H(f)$. Where $H<0$, the wave flips sign.`));
+  update();
+}
+
+// ---------- slide 5: tangency (36:32) ----------
+function slideTangency(widget, side) {
+  let HW = 3, plot;
+  const sH = slider(String.raw`$h$, half-width`, { id: 'h', name: 'h, half-width', min: 2, max: 5, step: 1, value: HW,
+    fmt: v => v + ' (' + (2 * v + 1) + ' points)', onInput: v => { HW = v; update(); } });
+  const rA = readout('d01', String.raw`$H(0.05)$, degree 0/1`);
+  const rB = readout('d23', String.raw`$H(0.05)$, degree 2/3`);
+  const rC = readout('d45', String.raw`$H(0.05)$, degree 4/5`);
+  widget.append(hh('div', 'sliders', sH.el), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue: degree 0/1` },
+    { color: 'var(--pal-ink)', text: String.raw`solid line: degree 2/3` },
+    { color: 'var(--pal-muted)', dash: true, text: String.raw`dashed: degree 4/5` }]));
+  plot = fillPlot(widget, drawT);
+  widget.append(hh('div', 'readouts', rA.el, rB.el, rC.el));
+
+  function curves() {
+    return [[0, COL.accent, false, 'deg01'], [2, COL.ink, false, 'deg23'], [4, COL.muted, true, 'deg45']]
+      .map(([d, col, dash, id]) => ({ w: fitWeights(HW, d), col, dash, id }));
+  }
+  function update() {
+    const cs = curves();
+    rA.set(gain(cs[0].w, 0.05).toFixed(4));
+    rB.set(gain(cs[1].w, 0.05).toFixed(4));
+    rC.set(gain(cs[2].w, 0.05).toFixed(4));
+    plot.redraw();
+  }
+  function drawT(svg, W, H) {
+    const L = 52, R = 20, T = 14, base = H - 44, pw = W - L - R;
+    const X = f => L + f / 0.5 * pw;
+    const Y = v => base - (v + 0.6) / 1.85 * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: Y(0), x2: W - R, y2: Y(0), stroke: COL.line }, svg);
+    svgNode('line', { x1: L, y1: Y(1), x2: W - R, y2: Y(1), stroke: COL.line, 'stroke-dasharray': '2 3' }, svg);
+    for (const v of [-0.5, 0, 0.5, 1]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+    for (let i = 0; i <= 5; i++) svgText(svg, X(i / 10), base + 18, (i / 10).toFixed(1), { 'text-anchor': 'middle', 'font-size': 15 });
+    for (const c of curves()) {
+      let d = '';
+      for (let i = 0; i <= 300; i++) { const f = 0.5 * i / 300; d += (i ? 'L' : 'M') + X(f).toFixed(1) + ' ' + Y(gain(c.w, f)).toFixed(1); }
+      svgNode('path', { d: d, fill: 'none', stroke: c.col, 'stroke-width': 2.5, 'stroke-dasharray': c.dash ? '6 4' : null, 'data-item': 'mark', 'data-id': c.id }, svg);
+    }
+    svgTex(svg, (L + W - R) / 2, H - 8, String.raw`$f$, rotations per sample`, { w: 260, size: 15 });
+    svgTex(svg, L + 4, T + 8, '$H(f)$', { w: 80, anchor: 'start', size: 15 });
+    return null;
+  }
+  side.append(
+    sym(String.raw`$h$: half-width, so the window has $2h+1$ points. $d$: degree of the fitted polynomial. Example: $h=3$, $d=2$ gives $\tfrac{1}{21}(-2,3,6,7,6,3,-2)$, a 7-point quadratic.`),
+    setTex(h('div', 'formula'), String.raw`$H(f)\approx 1-c\,\omega^{d+2},\ \ \omega=2\pi f$`),
+    triesList([
+      String.raw`Set $h=3$. Near $f=0$ the dashed degree 4/5 curve stays closest to $1$; at $f=0.05$ it reads $1.0$.`,
+      String.raw`Set $h=2$ and look at degree 4/5. It lies on $1$: five points fit a quartic exactly, so nothing is removed.`,
+      String.raw`Set $h=5$ and look at degree 0/1: it crosses $0$ at $f=\tfrac{1}{11}$, sooner than $f=\tfrac15$ at $h=2$.`]),
+    takeLine(String.raw`Degree buys flatness near $0$, not a clean cutoff: the wiggles stay.`));
+  update();
+}
+
+// ---------- slide 6: even-odd (37:36) ----------
+function slideEvenOdd(widget, side) {
+  let C = [0, -0.5, 0, 0.5, 0], F = 0.1, plot;   // default: central difference
+  const sC = KS.map((k, i) => slider(String.raw`$c_{${k}}$`, { id: 'c' + k, name: 'weight c at k=' + k, min: -1, max: 1, step: 0.01,
+    value: C[i], fmt: v => v.toFixed(2), onInput: v => { C[i] = v; update(); } }));
+  const sF = slider(String.raw`$f$, frequency`, { id: 'f', name: 'f, frequency', min: 0, max: 0.5, step: 0.01, value: F,
+    fmt: v => v.toFixed(2), onInput: v => { F = v; update(); } });
+  const setC = vals => { vals.forEach((v, i) => { C[i] = v; sC[i].input.value = v; sC[i].show(); }); update(); };
+  const pCentral = mark(h('button', 'btn', 'Central difference'), 'preset', 'central');
+  const pAvg = mark(h('button', 'btn', '5-point average'), 'preset', 'average');
+  pCentral.addEventListener('click', () => setC([0, -0.5, 0, 0.5, 0]));
+  pAvg.addEventListener('click', () => setC([0.2, 0.2, 0.2, 0.2, 0.2]));
+  const rCos = readout('cos-part', String.raw`cosine series $H_{\cos}(f)$`);
+  const rSin = readout('sin-part', String.raw`sine series $H_{\sin}(f)$`);
+  const rH = readout('H', String.raw`$H=H_{\cos}+i\,H_{\sin}$`);
+  const rIdeal = readout('ideal', String.raw`ideal derivative $i\omega$, $\omega=2\pi f$`);
+  widget.append(hh('div', 'sliders tight', ...sC.map(s => s.el)), hh('div', 'sliders', sF.el),
+    hh('div', 'btnrow', pCentral, pAvg), legend([
+      { chip: true, color: COL.accent, text: String.raw`blue bars: even part $e_k=\tfrac12(c_k+c_{-k})$, a smoother` },
+      { chip: true, color: COL.ink, text: String.raw`solid bars: odd part $o_k=\tfrac12(c_k-c_{-k})$, a differentiator` }]));
+  plot = fillPlot(widget, drawEO);
+  widget.append(hh('div', 'readouts', rCos.el, rSin.el, rH.el, rIdeal.el));
+
+  // even and odd parts of the weight at index i (k = KS[i]); its mirror is index 4 - i
+  const part = i => ({ e: (C[i] + C[4 - i]) / 2, o: (C[i] - C[4 - i]) / 2 });
+  function series(f) {
+    const w = 2 * Math.PI * f;
+    let cs = 0, ss = 0;
+    KS.forEach((k, i) => { const p = part(i); cs += p.e * Math.cos(w * k); ss += p.o * Math.sin(w * k); });
+    return { cs, ss, w };
+  }
+  function update() {
+    const s = series(F);
+    rCos.set(s.cs.toFixed(3));
+    rSin.set(s.ss.toFixed(3));
+    rH.set(String.raw`$${s.cs.toFixed(3)}${s.ss < 0 ? '-' : '+'}${Math.abs(s.ss).toFixed(3)}\,i$`);
+    rIdeal.set(String.raw`$i\,${s.w.toFixed(3)}$`);
+    plot.redraw();
+  }
+  function drawEO(svg, W, H) {
+    const L = 52, R = 16, T = 14, base = H - 44, pw = W - L - R, mid = (T + base) / 2;
+    const X = k => L + (k + 2.5) / 5 * pw;
+    const Y = v => mid - v * (base - T) / 2.2;
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: mid, x2: W - R, y2: mid, stroke: COL.grey }, svg);
+    for (const v of [-1, 0, 1]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+    KS.forEach((k, i) => {
+      const p = part(i), bw = pw / 5 * 0.3, cx = X(k);
+      const eTop = Y(Math.max(0, p.e)), eBot = Y(Math.min(0, p.e));
+      const oTop = Y(Math.max(0, p.o)), oBot = Y(Math.min(0, p.o));
+      svgNode('rect', { x: cx - bw - 2, y: eTop, width: bw, height: Math.max(1, eBot - eTop), fill: COL.accent, 'data-item': 'mark', 'data-id': 'even-' + k }, svg);
+      svgNode('rect', { x: cx + 2, y: oTop, width: bw, height: Math.max(1, oBot - oTop), fill: COL.ink, 'data-item': 'mark', 'data-id': 'odd-' + k }, svg);
+      svgText(svg, cx - bw / 2 - 2, (p.e >= 0 ? eTop - 4 : eBot + 14), p.e.toFixed(2), { 'text-anchor': 'middle', 'font-size': 13, fill: COL.blueStrong });
+      svgText(svg, cx + bw / 2 + 2, (p.o >= 0 ? oTop - 4 : oBot + 14), p.o.toFixed(2), { 'text-anchor': 'middle', 'font-size': 13, fill: COL.ink });
+      svgTex(svg, cx, base + 18, '$k=' + k + '$', { w: 70, size: 15 });
+    });
+    svgTex(svg, L + 4, T + 8, String.raw`weight $\pm$ part`, { w: 200, anchor: 'start', size: 15 });
+    return null;
+  }
+  side.append(
+    sym(String.raw`$c_k$: weight at offset $k$. Central difference: $c_1=\tfrac12$, $c_{-1}=-\tfrac12$, others $0$, so $y_n=\tfrac12(u_{n+1}-u_{n-1})$.`),
+    setTex(h('div', 'formula'), String.raw`$c_k=\tfrac12(c_k+c_{-k})+\tfrac12(c_k-c_{-k})$`),
+    triesList([
+      String.raw`Press Central difference. $H$ is purely imaginary, $i\sin\omega$. At $f=0.1$: $0.588$, against the ideal $0.628$.`,
+      String.raw`Move the $c_0$ slider. Only the blue bar at $k=0$ moves. A middle weight is a pure smoother.`,
+      String.raw`Set $c_1$ and $c_{-1}$ equal. The solid bars vanish, so $H$ has no imaginary part.`]),
+    takeLine(String.raw`The design is two problems: a cosine series for the smoother, a sine series for the differentiator.`));
+  update();
+}
+
+// ---------- slide 7: fourier-design (38:38 to 42:16) ----------
+function slideFourier(widget, side) {
+  let FC = 0.2, NT = 3, plot;
+  let FC_NOW = FC;
+  const sFC = slider(String.raw`$f_c$, cutoff`, { id: 'fc', name: 'cutoff f_c', min: 0.05, max: 0.45, step: 0.01, value: FC,
+    fmt: v => v.toFixed(2), onInput: v => { FC = v; update(); } });
+  const sN = slider(String.raw`$N$, terms kept`, { id: 'n', name: 'N, terms kept', min: 1, max: 12, step: 1, value: NT,
+    fmt: v => String(v), onInput: v => { NT = v; update(); } });
+  const rC0 = readout('c0', String.raw`$c_0=2f_c$`);
+  const rB = readout('bessel', String.raw`Bessel sum $B_N$, target $2f_c$`);
+  const rOv = readout('peak', String.raw`peak of $H_N$ near $f_c$, target $1$`);
+  const coefs = h('div', 'plot-static');
+  const bessel = h('div', 'plot-static');
+  widget.append(hh('div', 'sliders', sFC.el, sN.el), legend([
+    { color: 'var(--pal-ink)', dash: true, text: String.raw`dashed: target $H$, 1 below $f_c$, 0 above` },
+    { color: 'var(--pal-accent)', text: String.raw`blue: $H_N$, the first $N$ cosine terms` }]));
+  plot = fillPlot(widget, drawF);
+  widget.append(coefs, bessel, hh('div', 'readouts', rC0.el, rB.el, rOv.el));
+
+  function coefsOf(fc, N) {
+    const c = [2 * fc];
+    for (let k = 1; k <= N; k++) c.push(Math.sin(2 * Math.PI * fc * k) / (Math.PI * k));
+    return c;
+  }
+  function HN(c, f) { let s = c[0]; for (let k = 1; k < c.length; k++) s += 2 * c[k] * Math.cos(2 * Math.PI * f * k); return s; }
+  // Largest H_N within 0.1 of the cutoff: the Gibbs peak, not the ripple at f = 0.
+  function peakNear(c) {
+    const lo = Math.max(0, FC_NOW - 0.1), hi = Math.min(0.5, FC_NOW + 0.1);
+    let bestF = lo, best = -Infinity;
+    for (let i = 0; i <= 2000; i++) { const f = lo + (hi - lo) * i / 2000, v = HN(c, f); if (v > best) { best = v; bestF = f; } }
+    return { f: bestF, v: best };
+  }
+  function overshoot(c) { return (peakNear(c).v - 1) * 100; }
+  function update() {
+    FC_NOW = FC;
+    const c = coefsOf(FC, NT);
+    const B = c.reduce((s, x, k) => s + (k ? 2 : 1) * x * x, 0);
+    rC0.set(String.raw`$c_0=${(2 * FC).toFixed(2)}$`);
+    rB.set(String.raw`$B_N=${B.toFixed(3)}$ of $2f_c=${(2 * FC).toFixed(2)}$`);
+    rOv.set(String.raw`$${peakNear(c).v.toFixed(3)}$`);
+    coefs.replaceChildren(coefBars(c));
+    bessel.replaceChildren(besselBar(B));
+    plot.redraw();
+  }
+  function coefBars(c) {
+    const svg = svgNode('svg', { viewBox: '0 0 600 130', role: 'img', 'font-family': 'system-ui, sans-serif' });
+    const base = 80, sc = 110;
+    svgNode('line', { x1: 14, y1: base, x2: 590, y2: base, stroke: COL.grey }, svg);
+    c.forEach((v, k) => {
+      const cx = 30 + k * 46, top = v >= 0 ? base - v * sc : base, hgt = Math.abs(v) * sc;
+      svgNode('rect', { x: cx - 14, y: top, width: 28, height: Math.max(1, hgt), fill: k === 0 ? COL.grey : COL.accent, 'data-item': 'mark', 'data-id': 'c' + k }, svg);
+      svgTex(svg, cx, v >= 0 ? top - 12 : top + hgt + 11, String(+v.toFixed(4)), { w: 60, size: 13 });
+      svgTex(svg, cx, 122, '$c_{' + k + '}$', { w: 50, size: 15 });
+    });
+    return svg;
+  }
+  function besselBar(B) {
+    const svg = svgNode('svg', { viewBox: '0 0 600 56', role: 'img', 'font-family': 'system-ui, sans-serif' });
+    const x0 = 120, wid = 460, scale = v => x0 + v / 0.5 * wid;   // axis 0 to 0.5
+    svgTex(svg, 4, 22, String.raw`$B_N$ (bar)`, { w: 110, anchor: 'start', size: 15 });
+    svgNode('rect', { x: x0, y: 12, width: wid, height: 20, fill: COL.soft, stroke: COL.line }, svg);
+    svgNode('rect', { x: x0, y: 12, width: Math.max(1, scale(B) - x0), height: 20, fill: COL.accent, 'data-item': 'mark', 'data-id': 'bessel' }, svg);
+    svgNode('line', { x1: scale(2 * FC), y1: 6, x2: scale(2 * FC), y2: 38, stroke: COL.ink, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'target' }, svg);
+    svgTex(svg, scale(2 * FC), 50, String.raw`target $2f_c$`, { w: 140, size: 14 });
+    return svg;
+  }
+  function drawF(svg, W, H) {
+    const L = 52, R = 20, T = 14, base = H - 44, pw = W - L - R;
+    const X = f => L + f / 0.5 * pw;
+    const Y = v => base - (v + 0.2) / 1.5 * (base - T);
+    const c = coefsOf(FC, NT);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 0.5, 1]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 15 });
+    for (let i = 0; i <= 5; i++) svgText(svg, X(i / 10), base + 18, (i / 10).toFixed(1), { 'text-anchor': 'middle', 'font-size': 15 });
+    svgNode('path', { d: 'M' + X(0) + ' ' + Y(1) + ' L' + X(FC) + ' ' + Y(1) + ' L' + X(FC) + ' ' + Y(0) + ' L' + X(0.5) + ' ' + Y(0),
+      fill: 'none', stroke: COL.ink, 'stroke-width': 2, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'target' }, svg);
+    let d = '';
+    for (let i = 0; i <= 500; i++) { const f = 0.5 * i / 500; d += (i ? 'L' : 'M') + X(f).toFixed(1) + ' ' + Y(HN(c, f)).toFixed(1); }
+    svgNode('path', { d: d, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'HN' }, svg);
+    svgNode('line', { x1: X(FC), y1: T, x2: X(FC), y2: base, stroke: COL.muted, 'stroke-dasharray': '3 3' }, svg);
+    svgTex(svg, X(FC) + 6, base - 14, String.raw`$f_c$`, { w: 50, anchor: 'start', size: 15 });
+    // the overshoot: the largest value of H_N, marked on the curve
+    FC_NOW = FC;
+    const pk = peakNear(c);
+    svgNode('circle', { cx: X(pk.f), cy: Y(pk.v), r: 5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'overshoot' }, svg);
+    haloTex(svg, X(pk.f) + 16, Y(pk.v) - 24, String.raw`peak $${pk.v.toFixed(3)}$`, { w: 190, anchor: 'start', size: 15, fill: COL.ink });
+    svgTex(svg, (L + W - R) / 2, H - 8, String.raw`$f$, rotations per sample`, { w: 260, size: 15 });
+    svgTex(svg, L + 4, T + 8, '$H(f)$', { w: 80, anchor: 'start', size: 15 });
+    return null;
+  }
+  side.append(
+    sym(String.raw`$f_c$: cutoff. Target $H$: $1$ below $f_c$, $0$ above. $H_N$: first $N$ cosine terms. Example: $f_c=0.2$ gives $c_1=0.3027$.`),
+    setTex(h('div', 'formula'), String.raw`$c_k=\dfrac{\sin 2\pi f_c k}{\pi k},\qquad c_0=2f_c$`),
+    triesList([
+      String.raw`Set $N=4$, then $8$, then $12$. The overshoot swings from about $7\%$ to $11\%$.`,
+      String.raw`Set $f_c=0.4$: $c_0=0.8$. The middle weight doubles with the cutoff.`]),
+    proofLines([
+      [String.raw`$E=\int w(f)\bigl(H(f)-\sum_m C_m f_m(f)\bigr)^2\,df$`, 'the error to make small; $w$ weights the frequencies'],
+      [String.raw`$\partial E/\partial C_m=0 \Rightarrow \int w\,f_m H=C_m\lambda_m$`, String.raw`one equation per coefficient, $\lambda_m=\int w f_m^2$`],
+      [String.raw`$C_m=\dfrac{\int w\,H\,f_m}{\lambda_m}$`, 'the cross terms vanish when the $f_m$ are orthogonal']]),
+    takeLine(String.raw`A truncated Fourier series is the least-squares best for that many terms.`));
+  update();
+}
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'line-fit', title: 'A least-squares line: what varies?', tag: 'Lecture 14, 27:38',
+    question: 'In a least-squares fit, what are the variables?',
+    formula: String.raw`$E=\sum_{k=-2}^{2}\bigl(u_k-a-bk\bigr)^2$`, mount: slideLine },
+  { id: 'quad-window', title: 'Fit a parabola: the weights are fixed', tag: 'Lecture 14, 30:48',
+    question: 'Fit a parabola instead: what weights come out?', mount: slideQuad },
+  { id: 'slide-window', title: 'What each window does to a real signal', tag: 'Lecture 14, 33:29',
+    question: 'What does each window do to a real signal?', mount: slideWindow },
+  { id: 'transfer', title: 'The window as a frequency multiplier', tag: 'Lecture 14, 34:30',
+    question: 'What does each window do to one frequency?', mount: slideTransfer },
+  { id: 'tangency', title: 'Degree buys flatness at zero', tag: 'Lecture 14, 36:32',
+    question: 'More degree, more width: what changes?', mount: slideTangency },
+  { id: 'even-odd', title: 'Every window is a smoother plus a differentiator', tag: 'Lecture 14, 37:36',
+    question: 'Why only smoothers and differentiators?', mount: slideEvenOdd },
+  { id: 'fourier-design', title: 'Start from the response you want', tag: 'Lecture 14, 38:38 to 42:16',
+    question: 'Which window is best for a response you choose?', mount: slideFourier },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  $('#head').textContent = 'From a least-squares fit to a filter · ' + s.tag;
+  const side = hh('div', 'side',
+    setTex(h('h2'), s.title),
+    setTex(h('p', 'question'), s.question),
+    s.formula ? setTex(h('div', 'formula'), s.formula) : null);
+  const sec = mark(h('section', 'slide'), 'step', s.id, s.title);
+  sec.append(widget, side);
+  stage.append(sec);
+  s.mount(widget, side);
+  // The takeaway is dimmed until the user has tried a control on this slide.
+  const tk = side.querySelector('.takeaway');
+  if (tk) {
+    tk.classList.add('dim');
+    const open = () => tk.classList.remove('dim');
+    sec.addEventListener('input', open);
+    sec.addEventListener('click', e => { if (e.target.closest('[data-item="control"],[data-item="preset"]')) open(); });
+  }
+  tex(sec);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title;
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

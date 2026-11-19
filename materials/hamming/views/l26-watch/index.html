@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture</title>
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex; flex-direction: column; overflow: hidden;
+    font: 14px/1.4 var(--fl-font, system-ui, -apple-system, sans-serif);
+    color: var(--pal-fg); background: var(--pal-bg);
+  }
+  .top {
+    flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-bottom: 1px solid var(--pal-line);
+  }
+  .picker {
+    flex: 0 1 auto; min-width: 0; padding: 5px 0; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .date {
+    flex: none; margin-left: auto; font-size: 12px; white-space: nowrap;
+    color: var(--pal-muted);
+  }
+  .video { position: relative; flex: none; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+  .video > div, .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .fallback {
+    display: none; flex: none; padding: 8px 12px; font-size: 12px; line-height: 1.5;
+    color: var(--pal-muted); border-bottom: 1px solid var(--pal-line);
+  }
+  .fallback a { color: inherit; }
+  body.no-player .video { display: none; }
+  body.no-player .fallback { display: block; }
+  /* A recitation has no video: its materials are the whole session. */
+  .recit { display: none; padding: 14px 12px; font-size: 14px; line-height: 1.5; color: var(--pal-muted); }
+  body.recitation .recit { display: block; }
+  body.recitation .video, body.recitation .fallback, body.recitation .bar,
+  body.recitation .head, body.recitation .list { display: none; }
+  .bar {
+    flex: none; display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-bottom: 1px solid var(--pal-line);
+  }
+  .chip {
+    flex: none; width: 76px; padding: 5px 6px; border: 1px solid var(--pal-line);
+    border-radius: 6px; background: var(--pal-panel); color: inherit;
+    font: 13px var(--fl-mono, ui-monospace, Menlo, monospace); text-align: center;
+  }
+  .chip.live { color: var(--pal-muted); }
+  .note-input {
+    flex: 1; min-width: 0; padding: 6px 8px; border: 1px solid var(--pal-line);
+    border-radius: 6px; font: inherit; color: inherit; background: transparent;
+  }
+  .note-input:disabled { opacity: 0.5; }
+  .pause {
+    flex: none; display: flex; align-items: center; gap: 4px; font-size: 12px;
+    color: var(--pal-muted); white-space: nowrap;
+  }
+  .head {
+    flex: none; display: flex; justify-content: space-between; gap: 8px;
+    padding: 8px 12px 4px; font-size: 12px; color: var(--pal-muted);
+  }
+  .status.bad { color: var(--pal-red); }
+  .list { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0 6px 10px; }
+  .row {
+    display: flex; align-items: flex-start; gap: 8px; padding: 6px;
+    border-bottom: 1px solid var(--pal-grid);
+  }
+  .ts {
+    flex: none; padding: 1px 0; border: 0; background: none; cursor: pointer;
+    color: var(--pal-accent); font: 13px var(--fl-mono, ui-monospace, Menlo, monospace);
+  }
+  .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; cursor: text; }
+  .edit {
+    flex: 1; min-width: 0; padding: 2px 4px; font: inherit; color: inherit;
+    border: 1px solid var(--pal-accent); border-radius: 4px; background: transparent;
+  }
+  .del {
+    flex: none; padding: 0 4px; border: 0; background: none; cursor: pointer;
+    color: var(--pal-muted); font-size: 16px; line-height: 1.2;
+  }
+  .del:hover { color: var(--pal-red); }
+  .empty { padding: 12px 6px; font-size: 13px; color: var(--pal-muted); }
+  .picker:focus-visible, .ts:focus-visible, .del:focus-visible, .chip:focus-visible, .note-input:focus-visible {
+    outline: 2px solid var(--pal-accent); outline-offset: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="picker" id="lecture-picker" data-item="readout" data-id="lecture"></span>
+  <span class="date" id="date"></span>
+</div>
+<div class="video"><div id="player"></div></div>
+<div class="fallback" id="fallback"></div>
+<div class="recit" id="recit"></div>
+<div class="bar">
+  <input class="chip" id="chip" value="--:--" aria-label="Time for the next note. Click to type mm:ss." spellcheck="false" autocomplete="off">
+  <input class="note-input" id="note" type="text" placeholder="Note at current time · Enter to save · Esc to clear" autocomplete="off" disabled>
+  <label class="pause"><input type="checkbox" id="pause"> pause on type</label>
+</div>
+<div class="head"><span id="count"></span><span class="status" id="status"></span></div>
+<div class="list" id="list"></div>
+
+<script>
+// BEGIN CORE
+// Pure helpers: time format, lecture list, notes file format. No DOM use.
+const WATCH_BASE = 'https://www.youtube.com/watch?v=';
+
+function fmtTime(sec) {
+  const s = Math.max(0, Math.floor(Number(sec) || 0));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = s % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return h > 0 ? h + ':' + pad(m) + ':' + pad(r) : pad(m) + ':' + pad(r);
+}
+
+// Accepts "ss", "m:ss", "h:mm:ss". Returns seconds or null.
+function parseTime(str) {
+  const text = String(str == null ? '' : str).trim();
+  if (!/^\d+(:\d{1,2}){0,2}$/.test(text)) return null;
+  const n = text.split(':').map(Number);
+  if (n.length === 1) return n[0];
+  if (n[n.length - 1] >= 60) return null;
+  if (n.length === 2) return n[0] * 60 + n[1];
+  if (n[1] >= 60) return null;
+  return n[0] * 3600 + n[1] * 60 + n[2];
+}
+
+function watchUrl(video) { return WATCH_BASE + video; }
+function noteUrl(video, sec) { return watchUrl(video) + '&t=' + sec + 's'; }
+
+// This view belongs to one lecture; lectures.py writes its number here when it makes the view.
+const LECTURE_N = 26;
+
+// A lecture has a video; a recitation (no video) is a session of materials only.
+function lectureLabel(lec) { return lec.label || ('Lecture ' + lec.n + ' · ' + lec.title); }
+
+function notesPath(lec) { return 'lectures/' + lec.slug + '/notes.md'; }
+function headerLine(lec) { return '# Lecture ' + lec.n + ' - ' + lec.title + ' · notes'; }
+
+function cleanText(text) {
+  return String(text == null ? '' : text).replace(/\s*[\r\n]+\s*/g, ' ').trim();
+}
+
+function serializeNotes(lec, notes) {
+  const lines = [headerLine(lec)];
+  notes.slice().sort((a, b) => a.sec - b.sec).forEach((n) => {
+    const text = cleanText(n.text);
+    lines.push('- [' + fmtTime(n.sec) + '](' + noteUrl(lec.video, n.sec) + ')' + (text ? ' ' + text : ''));
+  });
+  return lines.join('\n') + '\n';
+}
+
+// Reads "- [label](url&t=NNNs) text" lines. Seconds come from t=, else from the label.
+// Any other line is ignored.
+function parseNotes(file) {
+  const notes = [];
+  String(file == null ? '' : file).split(/\r?\n/).forEach((line) => {
+    const m = line.match(/^\s*-\s*\[([^\]]*)\](?:\(([^)]*)\))?\s*(.*)$/);
+    if (!m) return;
+    const t = (m[2] || '').match(/[?&]t=(\d+)/);
+    const sec = t ? Number(t[1]) : parseTime(m[1]);
+    if (sec == null) return;
+    notes.push({ sec: sec, text: cleanText(m[3]) });
+  });
+  return notes.sort((a, b) => a.sec - b.sec);
+}
+// END CORE
+
+// ---- playback events for questions in chat
+// Report play, pause and seeks; never publish a clock that can direct the canvas.
+const JUMP_SECONDS = 3; // a change of position above this, not explained by playback, is a seek
+
+function emitEvent(kind, data) {
+  const f = window.fluid;
+  if (!f || typeof f.emit !== 'function') return;
+  try {
+    const p = f.emit(kind, data);
+    if (p && typeof p.catch === 'function') p.catch((err) => console.warn('emit ' + kind + ' failed', err));
+  } catch (err) { console.warn('emit ' + kind + ' failed', err); }
+}
+
+
+// ---- page
+const $ = (id) => document.getElementById(id);
+const els = {
+  picker: $('lecture-picker'), date: $('date'),
+  chip: $('chip'), note: $('note'), pause: $('pause'), list: $('list'),
+  count: $('count'), status: $('status'), fallback: $('fallback'), recit: $('recit'),
+};
+const st = {
+  lectures: [], cur: null, path: '', notes: [], loadOk: false,
+  ready: false, player: null, apiReady: false, reason: '',
+  gen: 0, draft: { sec: null, manual: false },
+  playing: false,      // last state reported for the lecture on the page: playing or not
+  track: null,         // {t, wall}: video position at the last event check, for seek detection
+};
+let writes = Promise.resolve();
+
+function setStatus(msg, bad) {
+  els.status.textContent = msg;
+  els.status.className = bad ? 'status bad' : 'status';
+}
+
+function errText(err) { return String((err && err.message) || err); }
+
+function resetDraft() { st.draft = { sec: null, manual: false }; }
+
+// Player position with fractions, or null when no player is ready.
+function rawTime() {
+  if (!st.ready || !st.player || typeof st.player.getCurrentTime !== 'function') return null;
+  const t = st.player.getCurrentTime();
+  return Number.isFinite(t) ? t : null;
+}
+
+function currentTime() {
+  const t = rawTime();
+  return t == null ? null : Math.floor(t);
+}
+
+function playbackRate() {
+  const r = st.player && typeof st.player.getPlaybackRate === 'function' ? Number(st.player.getPlaybackRate()) : 1;
+  return Number.isFinite(r) && r > 0 ? r : 1;
+}
+
+function renderFallback() {
+  const lec = st.cur;
+  const head = 'Video not available here (' + st.reason + ')' + (lec ? '. Watch on YouTube and type times by hand: ' : '.');
+  if (!lec) { els.fallback.textContent = head; return; }
+  const a = document.createElement('a');
+  a.href = watchUrl(lec.video);
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.textContent = 'youtube.com/watch?v=' + lec.video;
+  els.fallback.replaceChildren(head, a);
+}
+
+function showFallback(reason) {
+  if (st.ready) return;
+  st.reason = reason;
+  document.body.classList.add('no-player');
+  renderFallback();
+  renderChip();
+}
+
+// Resume position per video id, so a reload or a switch picks up where the user left off.
+const resumeKey = (video) => 'fluid.resume:' + video;
+function readResume(video) {
+  try { return JSON.parse(localStorage.getItem(resumeKey(video))) || {}; } catch { return {}; }
+}
+function saveResume() {
+  if (!st.ready || !st.cur || typeof st.player.getCurrentTime !== 'function') return;
+  // During a switch the player may still report the old video: save only the video it shows.
+  if (typeof st.player.getVideoData === 'function') {
+    const id = (st.player.getVideoData() || {}).video_id;
+    if (id !== st.cur.video) return;
+  }
+  const t = st.player.getCurrentTime();
+  if (t > 0) localStorage.setItem(resumeKey(st.cur.video), JSON.stringify({ t, playing: st.player.getPlayerState() === 1 }));
+}
+setInterval(saveResume, 1000);
+window.addEventListener('pagehide', saveResume);
+
+// True when the player shows the lecture on the page. A switch can leave the old video up for a moment.
+function playerShowsCurrent() {
+  if (!st.ready || !st.player || !st.cur) return false;
+  if (typeof st.player.getVideoData !== 'function') return true;
+  return (st.player.getVideoData() || {}).video_id === st.cur.video;
+}
+
+function playerReady(wasPlaying) {
+  st.ready = true;
+  if (wasPlaying) st.player.playVideo();
+  document.body.classList.remove('no-player');
+  renderChip();
+}
+
+// Player state changes become semantic events: one per play or pause, never per tick.
+// States of the old video during a switch are ignored.
+function onPlayerState(e) {
+  if (!playerShowsCurrent()) return;
+  const t = rawTime();
+  if (e.data === 1 && !st.playing) {
+    st.playing = true;
+    if (t != null) emitEvent('video.play', { at: Math.round(t * 10) / 10 });
+  } else if (e.data === 2 && st.playing) {
+    st.playing = false;
+    if (t != null) {
+      emitEvent('video.pause', { at: Math.round(t * 10) / 10 });
+    }
+  } else if (e.data === 0) {
+    st.playing = false;
+  }
+}
+
+function createPlayer() {
+  const saved = readResume(st.cur.video);
+  try {
+    st.player = new YT.Player('player', {
+      host: 'https://www.youtube-nocookie.com',
+      videoId: st.cur.video,
+      playerVars: { enablejsapi: 1, origin: location.origin, start: Math.floor(saved.t || 0) },
+      events: {
+        onReady: () => playerReady(!!saved.playing),
+        onStateChange: onPlayerState,
+        onError: (e) => {
+          if (st.ready) setStatus('Player error ' + e.data, true);
+          else showFallback('player error ' + e.data);
+        },
+      },
+    });
+  } catch (err) {
+    showFallback(String((err && err.message) || err));
+  }
+}
+
+window.onYouTubeIframeAPIReady = function () {
+  st.apiReady = true;
+  if (st.cur && st.cur.video) createPlayer();
+};
+
+const apiScript = document.createElement('script');
+apiScript.src = 'https://www.youtube.com/iframe_api';
+apiScript.onerror = () => showFallback('API did not load');
+document.head.append(apiScript);
+setTimeout(() => { if (!st.ready) showFallback('no response after 8 s'); }, 8000);
+
+// Detect manual seeks once per second while the player is ready.
+function playbackTick() {
+  if (!st.ready || !playerShowsCurrent()) return;
+  const t = rawTime();
+  if (t == null) return;
+  const wall = performance.now();
+  const playing = st.player.getPlayerState() === 1;
+  const prev = st.track;
+  st.track = { t: t, wall: wall };
+  if (prev) {
+    const expected = prev.t + (playing ? ((wall - prev.wall) / 1000) * playbackRate() : 0);
+    if (Math.abs(t - expected) > JUMP_SECONDS) {
+      emitEvent('video.seek', { from: Math.round(expected * 10) / 10, to: Math.round(t * 10) / 10 });
+    }
+  }
+}
+
+// Chip: live time while idle, frozen once typing starts, editable by hand.
+function renderChip() {
+  const chip = els.chip;
+  if (document.activeElement === chip) return;
+  let text = '--:--';
+  let live = false;
+  const now = currentTime();
+  if (st.draft.sec != null) {
+    text = fmtTime(st.draft.sec);
+  } else if (els.note.value === '' && now != null) {
+    text = fmtTime(now);
+    live = true;
+  }
+  chip.value = text;
+  chip.classList.toggle('live', live);
+}
+
+function commitChip() {
+  if (els.chip.dataset.dirty !== '1') return;
+  els.chip.dataset.dirty = '';
+  const sec = parseTime(els.chip.value);
+  if (sec == null) { setStatus('Time not read. Use mm:ss.', true); return; }
+  st.draft.sec = sec;
+  st.draft.manual = true;
+  setStatus('');
+}
+
+els.chip.addEventListener('focus', () => els.chip.select());
+els.chip.addEventListener('input', () => { els.chip.dataset.dirty = '1'; });
+els.chip.addEventListener('blur', () => { commitChip(); renderChip(); });
+els.chip.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    commitChip();
+    els.note.focus();
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    els.chip.dataset.dirty = '';
+    els.note.focus();
+  }
+});
+
+// Note input: the first keystroke into an empty box takes the time.
+els.note.addEventListener('input', () => {
+  if (els.note.value === '') {
+    if (!st.draft.manual) st.draft.sec = null;
+  } else if (st.draft.sec == null) {
+    const t = currentTime();
+    if (t != null) {
+      st.draft.sec = t;
+      if (els.pause.checked && st.player) st.player.pauseVideo();
+    }
+  }
+  renderChip();
+});
+
+els.note.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.isComposing) {
+    e.preventDefault();
+    saveNote();
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    els.note.value = '';
+    resetDraft();
+    renderChip();
+  }
+});
+
+// "n" focuses the note box, unless the user is typing somewhere.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'n' || e.ctrlKey || e.metaKey || e.altKey) return;
+  const a = document.activeElement;
+  if (a && (a.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(a.tagName) >= 0)) return;
+  e.preventDefault();
+  els.note.focus();
+});
+
+function saveNote() {
+  if (!st.loadOk) { setStatus('Notes file not loaded. Nothing saved.', true); return; }
+  const text = cleanText(els.note.value);
+  if (!text) return;
+  if (st.draft.sec == null) {
+    setStatus('No time yet. Type one in the box at the left.', true);
+    els.chip.focus();
+    return;
+  }
+  const at = st.draft.sec;
+  st.notes.push({ sec: at, text: text });
+  els.note.value = '';
+  resetDraft();
+  setStatus('');
+  renderList();
+  renderChip();
+  persist(() => emitEvent('notes.saved', { at: at, text: text }));
+}
+
+function seek(sec) {
+  if (!st.ready || !st.player) { setStatus('Player not available. Use the YouTube link.', true); return; }
+  st.player.seekTo(sec, true);
+  st.player.playVideo();
+}
+
+// Serializes the notes at call time and writes them to the lecture they belong to.
+// onSaved runs once this write has landed.
+function persist(onSaved) {
+  if (!st.loadOk) return;
+  const lec = st.cur;
+  const path = notesPath(lec);
+  const text = serializeNotes(lec, st.notes);
+  setStatus('Saving…');
+  writes = writes
+    .then(() => fluid.writeFile(path, text))
+    .then(() => { setStatus('Saved'); if (onSaved) onSaved(); })
+    .catch((err) => setStatus('Not saved: ' + ((err && err.message) || err), true));
+}
+
+function editRow(n, txt) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'edit';
+  input.value = n.text;
+  let done = false;
+  const finish = (save) => {
+    if (done) return;
+    done = true;
+    const text = cleanText(input.value);
+    if (save && text && text !== n.text) { n.text = text; persist(); }
+    renderList();
+  };
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+  });
+  input.addEventListener('blur', () => finish(true));
+  txt.replaceWith(input);
+  input.focus();
+  input.select();
+}
+
+function rowFor(n) {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.dataset.item = 'note';
+  row.dataset.id = String(n.sec);
+  row.dataset.title = n.text;
+  row.dataset.lecture = String(st.cur.n);
+
+  const ts = document.createElement('button');
+  ts.type = 'button';
+  ts.className = 'ts';
+  ts.textContent = fmtTime(n.sec);
+  ts.title = 'Play from here';
+  ts.addEventListener('click', () => seek(n.sec));
+
+  const txt = document.createElement('span');
+  txt.className = 'txt';
+  txt.textContent = n.text;
+  txt.title = 'Double-click to edit';
+  txt.addEventListener('dblclick', () => editRow(n, txt));
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'del';
+  del.textContent = '×';
+  del.title = 'Delete note';
+  del.setAttribute('aria-label', 'Delete note');
+  del.addEventListener('click', () => {
+    st.notes = st.notes.filter((x) => x !== n);
+    renderList();
+    persist();
+  });
+
+  row.append(ts, txt, del);
+  return row;
+}
+
+function renderList() {
+  st.notes.sort((a, b) => a.sec - b.sec);
+  els.count.textContent = st.loadOk
+    ? st.notes.length + (st.notes.length === 1 ? ' note' : ' notes')
+    : 'Notes not loaded';
+  els.list.replaceChildren();
+  if (!st.notes.length) {
+    if (st.loadOk) {
+      const d = document.createElement('div');
+      d.className = 'empty';
+      d.textContent = 'No notes yet. Press n to start one.';
+      els.list.append(d);
+    }
+    return;
+  }
+  st.notes.forEach((n) => els.list.append(rowFor(n)));
+}
+
+// gen guards against a slow read landing after the user has switched lectures.
+async function loadNotes(gen) {
+  const path = notesPath(st.cur);
+  let text = '';
+  try {
+    text = await fluid.readFile(path);
+  } catch (err) {
+    const msg = String((err && err.message) || err);
+    if (gen !== st.gen) return;
+    if (!/not found|no such file|404/i.test(msg)) {
+      setStatus('Could not read notes file: ' + msg, true);
+      renderList();
+      return;
+    }
+  }
+  if (gen !== st.gen) return;
+  st.notes = parseNotes(text);
+  st.loadOk = true;
+  els.note.disabled = false;
+  setStatus('');
+  renderList();
+  renderChip();
+}
+
+function renderHeader() {
+  const lec = st.cur;
+  els.date.textContent = lec.date;
+  document.title = lectureLabel(lec) + ' · ' + lec.date;
+  document.body.classList.toggle('recitation', !lec.video);
+  els.recit.textContent = lec.video ? '' : 'No video for this one. The materials take the canvas: click through them at your own pace.';
+}
+
+function renderPicker() {
+  els.picker.textContent = lectureLabel(st.cur);
+}
+
+async function boot() {
+  setStatus('Loading lectures…');
+  let index;
+  try {
+    index = JSON.parse(await fluid.readFile('lectures/index.json'));
+  } catch (err) {
+    showFallback('lectures/index.json: ' + String((err && err.message) || err));
+    setStatus('Lecture list not read.', true);
+    return;
+  }
+  st.lectures = Array.isArray(index.lectures) ? index.lectures : [];
+  st.cur = st.lectures.find((l) => l.n === LECTURE_N);
+  if (!st.cur) { showFallback('no lecture ' + LECTURE_N + ' in lectures/index.json'); setStatus('', false); return; }
+
+  renderPicker();
+  renderHeader();
+  if (!st.cur.video) return;
+  setStatus('Loading notes…');
+  renderList();
+  renderChip();
+  loadNotes(st.gen);
+  if (st.apiReady) createPlayer();
+}
+
+els.pause.checked = false;
+renderList();
+renderChip();
+boot();
+setInterval(renderChip, 500);
+setInterval(playbackTick, 1000);
+</script>
+</body>
+</html>

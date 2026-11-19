@@ -1,0 +1,2498 @@
+{
+  "project": "export:Hamming’s The Art of Doing Science and Engineering",
+  "name": "Hamming’s The Art of Doing Science and Engineering",
+  "views": {
+    "l1-review": {
+      "title": "Lecture 1 review: doubling, half-life and drift",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4849,
+        "y": 40,
+        "w": 480,
+        "h": 360,
+        "z": 223,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l1",
+      "notes": "notes/l1.md",
+      "about": "Review of Lecture 1 by doing: is 17-year doubling consistent with 90% alive, how fast facts expire, and what a steady pull does to a random walk."
+    },
+    "l1-watch": {
+      "title": "Lecture 1: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 40,
+        "w": 741,
+        "h": 1167,
+        "z": 302,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l1",
+      "notes": "lectures/01-intro/notes.md",
+      "about": "The video of Lecture 1 (Intro) and its timestamped notes."
+    },
+    "l10-review": {
+      "title": "Lecture 10 review: Coding theory I",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 10288,
+        "w": 1280,
+        "h": 720,
+        "z": 168,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l10",
+      "notes": "notes/l10.md",
+      "about": "Review Lecture 10 by doing: decode and split bit strings, build a prefix code as a tree, compare average lengths, and prove Kraft's and McMillan's sums."
+    },
+    "l10-watch": {
+      "title": "Lecture 10: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 10288,
+        "w": 720,
+        "h": 820,
+        "z": 252,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l10",
+      "notes": "lectures/10-coding-theory-the-representation-of-information-part-i/notes.md",
+      "about": "The video of Lecture 10 (Coding Theory - The Representation of Information, Part I) and its timestamped notes."
+    },
+    "l11-review": {
+      "title": "Lecture 11 review: Huffman codes, parity, and the weighted check",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 11348,
+        "w": 480,
+        "h": 360,
+        "z": 155,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l11",
+      "notes": "notes/l11.md",
+      "about": "Review by doing: merge a Huffman tree, test the swap argument, compare two spreads, flip bits, and break a mod-37 check."
+    },
+    "l11-watch": {
+      "title": "Lecture 11: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 11348,
+        "w": 720,
+        "h": 820,
+        "z": 253,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l11",
+      "notes": "lectures/11-coding-theory-the-representation-of-information-part-ii/notes.md",
+      "about": "The video of Lecture 11 (Coding Theory - The Representation of Information, Part II) and its timestamped notes."
+    },
+    "l12-codes-steps": {
+      "title": "Square, triangle, cube: step by step",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 13260,
+        "w": 874,
+        "h": 774,
+        "z": 27,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l12",
+      "notes": "notes/l12.md"
+    },
+    "l12-hamming74": {
+      "title": "Hamming (7,4): which check breaks?",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 12408,
+        "w": 720,
+        "h": 560,
+        "z": 22,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l12",
+      "notes": "notes/l12.md"
+    },
+    "l12-min-distance": {
+      "title": "Minimum distance: why 3 corrects one error",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4982,
+        "y": 13260,
+        "w": 751,
+        "h": 587,
+        "z": 38,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l12",
+      "notes": "notes/l12.md"
+    },
+    "l12-ncube-geometry": {
+      "title": "Codes as spheres in the n-cube",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5580,
+        "y": 12408,
+        "w": 994,
+        "h": 637,
+        "z": 39,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l12",
+      "notes": "notes/l12.md"
+    },
+    "l12-watch": {
+      "title": "Lecture 12: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 12408,
+        "w": 720,
+        "h": 820,
+        "z": 254,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l12",
+      "notes": "lectures/12-error-correcting-codes/notes.md",
+      "about": "The video of Lecture 12 (Error-Correcting Codes) and its timestamped notes."
+    },
+    "l13-channel-steps": {
+      "title": "Noisy channel: why random codes work",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "z": 85,
+        "pinned": false,
+        "hidden": false,
+        "x": 4076,
+        "y": 15410,
+        "w": 1280,
+        "h": 1080,
+        "s": 1
+      },
+      "group": "l13",
+      "notes": "notes/l13.md"
+    },
+    "l13-entropy-steps": {
+      "title": "From surprise to cross-entropy loss",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 6507,
+        "y": 14274,
+        "w": 1280,
+        "h": 720,
+        "z": 48,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.317
+      },
+      "group": "l13",
+      "notes": "notes/l13.md"
+    },
+    "l13-shannon-moves": {
+      "title": "You be Shannon: how the problem was modeled",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5388,
+        "y": 15410,
+        "w": 968,
+        "h": 363,
+        "z": 86,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l13",
+      "notes": "notes/l13.md"
+    },
+    "l13-surprise-lab": {
+      "title": "Is surprise information? Test Hamming's claim",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5195,
+        "y": 14274,
+        "w": 1280,
+        "h": 1080,
+        "z": 58,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l13",
+      "notes": "notes/l13.md"
+    },
+    "l13-watch": {
+      "title": "Lecture 13: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 14274,
+        "w": 1087,
+        "h": 1104,
+        "z": 255,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l13",
+      "notes": "lectures/13-information-theory/notes.md",
+      "about": "The video of Lecture 13 (Information Theory) and its timestamped notes."
+    },
+    "l14-hamming-moves": {
+      "title": "You be Hamming: how he modeled it",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5188,
+        "y": 16730,
+        "w": 1280,
+        "h": 720,
+        "z": 109,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l14",
+      "notes": "notes/l14.md"
+    },
+    "l14-sampling-steps": {
+      "title": "Why sinusoids, and what sampling does",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5528,
+        "y": 16730,
+        "w": 1280,
+        "h": 1080,
+        "z": 99,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l14",
+      "notes": "notes/l14.md"
+    },
+    "l14-watch": {
+      "title": "Lecture 14: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 16730,
+        "w": 1080,
+        "h": 820,
+        "z": 110,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l14",
+      "notes": "lectures/14-digital-filters-part-i/notes.md",
+      "about": "The video of Lecture 14 (Digital Filters, Part I) and its timestamped notes."
+    },
+    "l14-window-steps": {
+      "title": "From a least-squares fit to a filter",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 17842,
+        "w": 1280,
+        "h": 1080,
+        "z": 95,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l14",
+      "notes": "notes/l14.md"
+    },
+    "l15-design-steps": {
+      "title": "A filter by demands, and the jump no sum can make",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5528,
+        "y": 19162,
+        "w": 1280,
+        "h": 720,
+        "z": 184,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l15",
+      "notes": "notes/l15.md",
+      "about": "How a two-coefficient filter works, how to spend coefficients, and why the overshoot at a jump never goes away."
+    },
+    "l15-overshoot-steps": {
+      "title": "Taming the overshoot",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5188,
+        "y": 19162,
+        "w": 1280,
+        "h": 720,
+        "z": 187,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l15",
+      "notes": "notes/l15.md",
+      "about": "Lanczos' average over one ripple, the sigma factors it gives, and Hamming's half weights at the ends."
+    },
+    "l15-watch": {
+      "title": "Lecture 15: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 19162,
+        "w": 1080,
+        "h": 820,
+        "z": 188,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l15",
+      "notes": "lectures/15-digital-filters-part-ii/notes.md",
+      "about": "The video of Lecture 15 (Digital Filters, Part II) and its timestamped notes."
+    },
+    "l15-window-steps": {
+      "title": "Windows: multiplying is convolving",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5868,
+        "y": 19162,
+        "w": 1280,
+        "h": 720,
+        "z": 186,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l15",
+      "notes": "notes/l15.md",
+      "about": "Why multiplying convolves, what a finite record does to two lines, and how von Hann's and Hamming's windows trade leakage."
+    },
+    "l16-fft-steps": {
+      "title": "The FFT: fast, accurate, periodic, and blind to phase",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5868,
+        "y": 20222,
+        "w": 1280,
+        "h": 720,
+        "z": 210,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l16",
+      "notes": "notes/l16.md",
+      "about": "Hamming's idea for fewer multiplications, the FFT he refused, why it is also more accurate, what it assumes outside the record, and the phase the power spectrum drops."
+    },
+    "l16-integrate-steps": {
+      "title": "Integration, a filter that must grow",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5188,
+        "y": 20222,
+        "w": 1280,
+        "h": 720,
+        "z": 198,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l16",
+      "notes": "notes/l16.md",
+      "about": "Integration as a filter with unbounded gain at zero frequency, Hamming's new definition of stability, why the error grows like n squared on the moon, and why polynomial growth is acceptable."
+    },
+    "l16-kaiser-steps": {
+      "title": "Kaiser's recipe: two tolerances in, a filter out",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 6208,
+        "y": 20222,
+        "w": 1280,
+        "h": 720,
+        "z": 211,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l16",
+      "notes": "notes/l16.md",
+      "about": "How Kaiser turns a ripple tolerance and a ramp width into the number of weights and the window, how he found the formulas, why they work, and when they miss."
+    },
+    "l16-spectrum-steps": {
+      "title": "Reading a spectrum: processing, noise, and linear tools",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5528,
+        "y": 20222,
+        "w": 1280,
+        "h": 720,
+        "z": 199,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l16",
+      "notes": "notes/l16.md",
+      "about": "What white noise in and a spectrum out tells you about a box, how standard processing makes a false peak, why sampled noise looks white, why oversampling helps, and what a flat spectrum does not prove."
+    },
+    "l16-watch": {
+      "title": "Lecture 16: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 20222,
+        "w": 1080,
+        "h": 820,
+        "z": 206,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l16",
+      "notes": "lectures/16-digital-filters-part-iii/notes.md",
+      "about": "The video of Lecture 16 (Digital Filters, Part III) and its timestamped notes."
+    },
+    "l17-counts-steps": {
+      "title": "The physicist's counts",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5188,
+        "y": 21282,
+        "w": 1280,
+        "h": 720,
+        "z": 222,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l17",
+      "notes": "notes/l17.md",
+      "about": "Hamming's help with a noisy derivative: translating for the expert, a cutoff from the model, honest tuning, and square roots of counts."
+    },
+    "l17-echo-steps": {
+      "title": "A ratio and its echo",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5868,
+        "y": 21282,
+        "w": 1280,
+        "h": 720,
+        "z": 218,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l17",
+      "notes": "notes/l17.md",
+      "about": "What a feedback filter's ratio buys and costs, how sequence models run it two ways, and a feedback filter whose echo stops."
+    },
+    "l17-feedback-steps": {
+      "title": "Feedback filters: the past only, both sides, and delay",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 6208,
+        "y": 21282,
+        "w": 1280,
+        "h": 720,
+        "z": 217,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l17",
+      "notes": "notes/l17.md",
+      "about": "Why a past-only smoother lags, how a two-sided one is solved, and why delay limits how hard a loop may correct."
+    },
+    "l17-median-steps": {
+      "title": "The running median, and what linearity forces",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5528,
+        "y": 21282,
+        "w": 1280,
+        "h": 720,
+        "z": 220,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l17",
+      "notes": "notes/l17.md",
+      "about": "A nonlinear filter that keeps jumps, what it costs on noise, and why every linear theory trades width in time for width in frequency."
+    },
+    "l17-watch": {
+      "title": "Lecture 17: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 21282,
+        "w": 1080,
+        "h": 820,
+        "z": 221,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l17",
+      "notes": "lectures/17-digital-filters-part-iv/notes.md",
+      "about": "The video of Lecture 17 (Digital Filters, Part IV) and its timestamped notes."
+    },
+    "l18-before": {
+      "title": "Before Lecture 18: one step at a time",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4084,
+        "y": 22342,
+        "w": 1295,
+        "h": 766,
+        "z": 270,
+        "pinned": false,
+        "hidden": false
+      },
+      "cues": {
+        "step": [
+          "why",
+          "step",
+          "why-euler",
+          "stability",
+          "why-stable"
+        ]
+      },
+      "group": "l18",
+      "notes": "notes/l18.md",
+      "about": "A short primer on time stepping, Euler updates, and the difference between physical and numerical stability."
+    },
+    "l18-checks": {
+      "title": "After Lecture 18: test what the program means",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5396,
+        "y": 23194,
+        "w": 1280,
+        "h": 720,
+        "z": 272,
+        "pinned": false,
+        "hidden": false
+      },
+      "cues": {
+        "step": [
+          "limiting-pick",
+          "limiting",
+          "relay",
+          "relay-proof",
+          "circle",
+          "circle-proof",
+          "claim"
+        ]
+      },
+      "group": "l18",
+      "notes": "notes/l18.md",
+      "about": "Explore clipping semantics, spatial versus temporal stability, and known-case solver checks, with line-by-line proofs."
+    },
+    "l18-model": {
+      "title": "After Lecture 18: how far can the model go?",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4084,
+        "y": 23194,
+        "w": 1280,
+        "h": 720,
+        "z": 285,
+        "pinned": false,
+        "hidden": false
+      },
+      "cues": {
+        "step": [
+          "perturb",
+          "gap-proof",
+          "local",
+          "local-proof",
+          "expert"
+        ]
+      },
+      "group": "l18",
+      "notes": "notes/l18.md",
+      "about": "Try sensitivity and the failure of local linear approximations; work through the algebra and choose when to ask the domain expert."
+    },
+    "l18-watch": {
+      "title": "Lecture 18: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 5411,
+        "y": 22342,
+        "w": 720,
+        "h": 820,
+        "z": 286,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l18",
+      "notes": "lectures/18-simulation-part-i/notes.md",
+      "about": "The video of Lecture 18 (Simulation, Part I) and its timestamped notes."
+    },
+    "l19-before": {
+      "title": "Before Lecture 19: what makes a simulation believable?",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 24061,
+        "w": 1280,
+        "h": 720,
+        "z": 325,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l19",
+      "notes": "notes/l19.md",
+      "about": "Separate correct computation from relevance to a real decision."
+    },
+    "l19-checks": {
+      "title": "After Lecture 19: test the model from two sides",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5388,
+        "y": 24913,
+        "w": 1280,
+        "h": 720,
+        "z": 304,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l19",
+      "notes": "notes/l19.md",
+      "about": "Test reaction bookkeeping, conserved totals, behavioral feedback, and expert judgment."
+    },
+    "l19-model": {
+      "title": "After Lecture 19: when totals reverse the comparison",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 24913,
+        "w": 1280,
+        "h": 720,
+        "z": 305,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l19",
+      "notes": "notes/l19.md",
+      "about": "Experiment with task mixtures, Simpson’s paradox, and fair model comparisons."
+    },
+    "l19-watch": {
+      "title": "Lecture 19: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 5388,
+        "y": 24061,
+        "w": 720,
+        "h": 820,
+        "z": 303,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l19",
+      "notes": "lectures/19-simulation-part-ii/notes.md",
+      "about": "The video of Lecture 19 (Simulation, Part II) and its timestamped notes."
+    },
+    "l2-review": {
+      "title": "Lecture 2 review: digits, limits and S-curves",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 1447,
+        "w": 1280,
+        "h": 720,
+        "z": 160,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l2",
+      "notes": "notes/l2.md",
+      "about": "Review of Lecture 2 by doing: why digits beat analog, the limited growth curve, and where to bet next."
+    },
+    "l2-watch": {
+      "title": "Lecture 2: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 1447,
+        "w": 720,
+        "h": 820,
+        "z": 231,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l2",
+      "notes": "lectures/02-foundations-of-the-digital-discrete-revolution/notes.md",
+      "about": "The video of Lecture 2 (Foundations of the Digital (Discrete) Revolution) and its timestamped notes."
+    },
+    "l20-before": {
+      "title": "Before Lecture 20: follow the error",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 25966,
+        "w": 1280,
+        "h": 720,
+        "z": 308,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l20",
+      "notes": "notes/l20.md",
+      "about": "Build intuition for shrinking and growing errors before watching."
+    },
+    "l20-checks": {
+      "title": "After Lecture 20: choose what to trust",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5388,
+        "y": 26818,
+        "w": 1280,
+        "h": 720,
+        "z": 310,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l20",
+      "notes": "notes/l20.md",
+      "about": "Practice choosing simulator targets and checking apparent patterns against fresh data."
+    },
+    "l20-model": {
+      "title": "After Lecture 20: error and feedback lab",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 26818,
+        "w": 1280,
+        "h": 720,
+        "z": 311,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l20",
+      "notes": "notes/l20.md",
+      "about": "Explore error amplification, predictor–corrector steps, and negative feedback with derivations."
+    },
+    "l20-watch": {
+      "title": "Lecture 20: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4102,
+        "y": 25753,
+        "w": 1476,
+        "h": 1104,
+        "z": 309,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l20",
+      "notes": "lectures/20-simulation-part-iii/notes.md",
+      "about": "The video of Lecture 20 (Simulation, Part III) and its timestamped notes."
+    },
+    "l21-before": {
+      "title": "Before Lecture 21: guiding light",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4066,
+        "y": 27779,
+        "w": 1280,
+        "h": 720,
+        "z": 312,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l21",
+      "notes": "notes/l21.md",
+      "about": "Explore total internal reflection and derive its critical angle before the lecture."
+    },
+    "l21-model": {
+      "title": "After Lecture 21: follow the bottleneck",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 28630,
+        "w": 1280,
+        "h": 720,
+        "z": 316,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l21",
+      "notes": "notes/l21.md",
+      "about": "Test bit rate, path dispersion, system costs, and Hamming’s engineering decisions."
+    },
+    "l21-soliton": {
+      "title": "Solitons: a pulse that holds its shape",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5388,
+        "y": 28630,
+        "w": 1280,
+        "h": 720,
+        "z": 314,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l21",
+      "notes": "notes/l21.md",
+      "about": "Try how dispersion and light’s nonlinear effect balance to preserve an optical pulse."
+    },
+    "l21-watch": {
+      "title": "Lecture 21: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 5167,
+        "y": 27784,
+        "w": 720,
+        "h": 820,
+        "z": 315,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l21",
+      "notes": "lectures/21-fiber-optics/notes.md",
+      "about": "The video of Lecture 21 (Fiber Optics) and its timestamped notes."
+    },
+    "l22-before": {
+      "title": "Before Lecture 22: choose the ability",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 3924,
+        "y": 29579,
+        "w": 1280,
+        "h": 720,
+        "z": 320,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l22",
+      "notes": "notes/l22.md",
+      "about": "Manual exercises that distinguish assisted output from lasting ability."
+    },
+    "l22-model": {
+      "title": "After Lecture 22: test what the learner can do",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 3929,
+        "y": 30325,
+        "w": 1280,
+        "h": 720,
+        "z": 322,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l22",
+      "notes": "notes/l22.md",
+      "about": "Explore attention controls, learner behavior, pattern transfer, and automation."
+    },
+    "l22-watch": {
+      "title": "Lecture 22: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 5219,
+        "y": 29577,
+        "w": 720,
+        "h": 820,
+        "z": 323,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l22",
+      "notes": "lectures/22-computer-aided-instruction/notes.md",
+      "about": "The video of Lecture 22 (Computer Aided Instruction) and its timestamped notes."
+    },
+    "l23-before": {
+      "title": "Before Lecture 23: choose the operation",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 31402,
+        "w": 1280,
+        "h": 720,
+        "z": 326,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l23",
+      "notes": "notes/l23.md",
+      "about": "Try a bit flip and derive the arithmetic it needs."
+    },
+    "l23-model": {
+      "title": "After Lecture 23: test the assumptions",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 32254,
+        "w": 1280,
+        "h": 720,
+        "z": 277,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l23",
+      "notes": "notes/l23.md",
+      "about": "Compare distances, repair a convergence theorem, and prove a limit on universal checking."
+    },
+    "l23-watch": {
+      "title": "Lecture 23: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 5388,
+        "y": 31402,
+        "w": 720,
+        "h": 820,
+        "z": 327,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l23",
+      "notes": "lectures/23-mathematics/notes.md",
+      "about": "The video of Lecture 23 (Mathematics) and its timestamped notes."
+    },
+    "l24-before": {
+      "title": "Before Lecture 24: amplitudes before probabilities",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 33214,
+        "w": 1280,
+        "h": 720,
+        "z": 282,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l24",
+      "notes": "notes/l24.md",
+      "about": "Manual small-step experiments in quantum amplitudes."
+    },
+    "l24-model": {
+      "title": "After Lecture 24: what a model establishes",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4076,
+        "y": 34066,
+        "w": 1280,
+        "h": 720,
+        "z": 283,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l24",
+      "notes": "notes/l24.md",
+      "about": "Manual small-step experiments in model identification and research judgment."
+    },
+    "l24-watch": {
+      "title": "Lecture 24: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 5388,
+        "y": 33214,
+        "w": 720,
+        "h": 820,
+        "z": 328,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l24",
+      "notes": "lectures/24-quantum-mechanics/notes.md",
+      "about": "The video of Lecture 24 (Quantum Mechanics) and its timestamped notes."
+    },
+    "l25-before": {
+      "title": "Before Lecture 25: novelty and evidence",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2676,
+        "y": 22342,
+        "w": 1288,
+        "h": 738,
+        "z": 329,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l25",
+      "notes": "notes/l25.md",
+      "about": "Manual prediction exercises for useful transfer, analogies, and creative judgment."
+    },
+    "l25-lab": {
+      "title": "After Lecture 25: practice creative judgment",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2676,
+        "y": 23086,
+        "w": 1280,
+        "h": 720,
+        "z": 298,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l25",
+      "notes": "notes/l25.md",
+      "about": "Manual prediction exercises for useful transfer, analogies, and creative judgment."
+    },
+    "l25-watch": {
+      "title": "Lecture 25: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 1932,
+        "y": 22342,
+        "w": 720,
+        "h": 820,
+        "z": 330,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l25",
+      "notes": "lectures/25-creativity/notes.md",
+      "about": "The video of Lecture 25 (Creativity) and its timestamped notes."
+    },
+    "l26-before": {
+      "title": "Before Lecture 26: inspect the claim",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 6796,
+        "y": 22342,
+        "w": 1280,
+        "h": 720,
+        "z": 332,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l26",
+      "notes": "notes/l26.md",
+      "about": "Practice checking problem scope, changed conditions, and bounded tests of unfamiliar ideas."
+    },
+    "l26-model": {
+      "title": "After Lecture 26: keep expertise current",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 6796,
+        "y": 23086,
+        "w": 1280,
+        "h": 720,
+        "z": 334,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l26",
+      "notes": "notes/l26.md",
+      "about": "Practice checking problem scope, changed conditions, and bounded tests of unfamiliar ideas."
+    },
+    "l26-watch": {
+      "title": "Lecture 26: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 8100,
+        "y": 22342,
+        "w": 720,
+        "h": 820,
+        "z": 333,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l26",
+      "notes": "lectures/26-experts/notes.md",
+      "about": "The video of Lecture 26 (Experts) and its timestamped notes."
+    },
+    "l27-before": {
+      "title": "Before Lecture 27: agreement and truth",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 6635,
+        "y": 21282,
+        "w": 1280,
+        "h": 720,
+        "z": 291,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l27",
+      "notes": "notes/l27.md",
+      "about": "Manual experiments in measurement bias, data checks and the process behind a number."
+    },
+    "l27-model": {
+      "title": "After Lecture 27: audit the measurement",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 6635,
+        "y": 20222,
+        "w": 1280,
+        "h": 720,
+        "z": 292,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l27",
+      "notes": "notes/l27.md",
+      "about": "Manual experiments in measurement bias, data checks and the process behind a number."
+    },
+    "l27-watch": {
+      "title": "Lecture 27: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 7939,
+        "y": 20222,
+        "w": 720,
+        "h": 820,
+        "z": 335,
+        "pinned": false,
+        "hidden": false
+      },
+      "group": "l27",
+      "notes": "lectures/27-unreliable-data/notes.md",
+      "about": "The video of Lecture 27 (Unreliable Data) and its timestamped notes."
+    },
+    "l28-watch": {
+      "title": "Lecture 28: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": null,
+      "group": "l28",
+      "notes": "lectures/28-you-get-what-you-measure/notes.md",
+      "about": "You Get What You Measure, with timestamped notes."
+    },
+    "l29-watch": {
+      "title": "Lecture 29: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": null,
+      "group": "l29",
+      "notes": "lectures/29-how-do-we-know-what-we-know/notes.md",
+      "about": "How Do We Know What We Know, with timestamped notes."
+    },
+    "l3-review": {
+      "title": "Lecture 3 review: History of computers, hardware",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 2507,
+        "w": 480,
+        "h": 360,
+        "z": 158,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l3",
+      "notes": "notes/l3.md",
+      "about": "Review Lecture 3 by doing: a slide rule, Babbage's columns, the speed of light per tick, two curves for machine speed, and the fetch-execute cycle."
+    },
+    "l3-watch": {
+      "title": "Lecture 3: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 2507,
+        "w": 720,
+        "h": 820,
+        "z": 144,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l3",
+      "notes": "lectures/03-history-of-computers-hardware/notes.md",
+      "about": "The video of Lecture 3 (History of Computers - Hardware) and its timestamped notes."
+    },
+    "l30-watch": {
+      "title": "Lecture 30: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": null,
+      "group": "l30",
+      "notes": "lectures/30-you-and-your-research/notes.md",
+      "about": "You and Your Research, with timestamped notes."
+    },
+    "l4-review": {
+      "title": "Lecture 4 review: History of computers, software",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 3567,
+        "w": 775,
+        "h": 786,
+        "z": 232,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l4",
+      "notes": "notes/l4.md",
+      "about": "Review by doing: bases, a fixed-point versus floating-point test, redundancy, and three choices Hamming makes about languages."
+    },
+    "l4-watch": {
+      "title": "Lecture 4: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 3567,
+        "w": 720,
+        "h": 820,
+        "z": 233,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l4",
+      "notes": "lectures/04-history-of-computers-software/notes.md",
+      "about": "The video of Lecture 4 (History of Computers - Software) and its timestamped notes."
+    },
+    "l5-review": {
+      "title": "Lecture 5 review: history of computer applications",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 4627,
+        "w": 860,
+        "h": 651,
+        "z": 244,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l5",
+      "notes": "notes/l5.md",
+      "about": "Review Lecture 5 by doing: stacked S-curves, the log axis, why hard problems came first, grids, and when a tool pays back."
+    },
+    "l5-watch": {
+      "title": "Lecture 5: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 4627,
+        "w": 720,
+        "h": 820,
+        "z": 245,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l5",
+      "notes": "lectures/05-history-of-computers-applications/notes.md",
+      "about": "The video of Lecture 5 (History of Computers - Applications) and its timestamped notes."
+    },
+    "l6-review": {
+      "title": "Lecture 6 review: game programs and what thinking means",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 5687,
+        "w": 1280,
+        "h": 720,
+        "z": 166,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l6",
+      "notes": "notes/l6.md",
+      "about": "Review of Lecture 6 by doing: define thinking, count winning lines, and see how a program tunes its score."
+    },
+    "l6-watch": {
+      "title": "Lecture 6: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 5687,
+        "w": 720,
+        "h": 820,
+        "z": 246,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l6",
+      "notes": "lectures/06-artificial-intelligence-part-i/notes.md",
+      "about": "The video of Lecture 6 (Artificial Intelligence - Part I) and its timestamped notes."
+    },
+    "l7-review": {
+      "title": "Lecture 7 review: Artificial Intelligence, Part II",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 6747,
+        "w": 1280,
+        "h": 720,
+        "z": 161,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l7",
+      "notes": "notes/l7.md",
+      "about": "Six review slides for Lecture 7: a note from sines, rules for derivatives, a power series, random typists, and two of Hamming's decisions."
+    },
+    "l7-watch": {
+      "title": "Lecture 7: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 6747,
+        "w": 720,
+        "h": 820,
+        "z": 247,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l7",
+      "notes": "lectures/07-artificial-intelligence-part-ii/notes.md",
+      "about": "The video of Lecture 7 (Artificial Intelligence - Part II) and its timestamped notes."
+    },
+    "l8-review": {
+      "title": "Review: Can machines think?",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 4828,
+        "y": 7807,
+        "w": 480,
+        "h": 360,
+        "z": 154,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l8",
+      "notes": "notes/l8.md",
+      "about": "Eight argument slides on Hamming's nine points: pick agree, disagree or depends, then see his reasoning and the strongest counter from the discussion."
+    },
+    "l8-watch": {
+      "title": "Lecture 8: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 7807,
+        "w": 720,
+        "h": 820,
+        "z": 248,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l8",
+      "notes": "lectures/08-artificial-intelligence-iii/notes.md",
+      "about": "The video of Lecture 8 (Artificial Intelligence III) and its timestamped notes."
+    },
+    "l9-review": {
+      "title": "Lecture 9 review: n-dimensional space",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 5235,
+        "y": 8867,
+        "w": 1280,
+        "h": 720,
+        "z": 178,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.24
+      },
+      "group": "l9",
+      "notes": "notes/l9.md",
+      "about": "Review Lecture 9 by doing: Stirling's formula, the ratio and the gap, the volume of the unit ball, the surface, and two search decisions."
+    },
+    "l9-watch": {
+      "title": "Lecture 9: video and notes",
+      "size": {
+        "w": 720,
+        "h": 820
+      },
+      "board": {
+        "x": 4076,
+        "y": 8867,
+        "w": 1127,
+        "h": 1181,
+        "z": 251,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "l9",
+      "notes": "lectures/09-n-dimensional-space/notes.md",
+      "about": "The video of Lecture 9 (n-Dimensional Space) and its timestamped notes."
+    },
+    "p-complex": {
+      "title": "Primer · Complex numbers",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2394,
+        "y": 3291,
+        "w": 1280,
+        "h": 977,
+        "z": 172,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-complex",
+      "notes": "notes/p-complex.md",
+      "about": "Complex numbers as arrows: what i does, multiplying, Euler's formula, real waves as shadows, sums and derivatives of arrows, each formula with its proof."
+    },
+    "p-derivatives": {
+      "title": "Primer · Limits and derivatives",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -789,
+        "y": 26443,
+        "w": 1280,
+        "h": 792,
+        "z": 129,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-derivatives",
+      "notes": "notes/p-derivatives.md",
+      "about": "Limits, the derivative as a slope, rules, peaks, partial derivatives, tangent lines, and differences of a table; each claim with a proof step."
+    },
+    "p-feedback-1": {
+      "title": "Primer · Feedback: loops that settle, add up, or explode",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -2040,
+        "y": 33324,
+        "w": 1280,
+        "h": 720,
+        "z": 207,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-feedback",
+      "notes": "notes/p-feedback.md",
+      "about": "Primer 0.16 (1 of 3): a difference equation makes each value from the last; a feedback loop turns one clap into 1, a, a^2, ...; a loss curve's moving average settles; with a steady input a loop settles, adds up or explodes; too strong a correction flips the error; why the gap to the resting value sh"
+    },
+    "p-feedback-2": {
+      "title": "Primer · Feedback: roots and swings",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -2040,
+        "y": 34068,
+        "w": 1280,
+        "h": 720,
+        "z": 208,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-feedback",
+      "notes": "notes/p-feedback.md",
+      "about": "Primer 0.16 (2 of 3): a late correction swings (the shower); trying powers lambda^n gives the roots of a loop; every run is a mix of the powers; complex roots swing and shrink by |lambda| per step; a double root at 1 grows like n and n^2 (the moon landing)."
+    },
+    "p-feedback-3": {
+      "title": "Primer · Feedback: recursive filters and amplifiers",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -736,
+        "y": 33324,
+        "w": 1280,
+        "h": 720,
+        "z": 193,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-feedback",
+      "notes": "notes/p-feedback.md",
+      "about": "Primer 0.16 (3 of 3): a recursive filter feeds back its output and remembers forever; its gain H(f) is a ratio; it is stable when its roots lie inside the unit circle; negative feedback makes an amplifier's gain 1/beta (Black); positive feedback amplifies errors and squeals."
+    },
+    "p-fourier": {
+      "title": "Primer · Fourier series",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -2005,
+        "y": -801,
+        "w": 1280,
+        "h": 977,
+        "z": 175,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-fourier",
+      "notes": "notes/p-fourier.md",
+      "about": "Primer 0.11: how waves add up to a shape, coefficients as projections, least squares, smoothness, and the discrete form with the FFT, each claim with a proof slide."
+    },
+    "p-integrals-1": {
+      "title": "Primer · Integrals: accumulated area",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -1829,
+        "y": 1875,
+        "w": 1280,
+        "h": 720,
+        "z": 133,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.21
+      },
+      "group": "p-integrals",
+      "notes": "notes/p-integrals.md",
+      "about": "What an integral is: area under a rate, rectangle sums, antiderivatives, averages, and the log rule, with a proof slide after each."
+    },
+    "p-integrals-2": {
+      "title": "Primer · Integrals: techniques",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -2598,
+        "y": 1136,
+        "w": 1806,
+        "h": 720,
+        "z": 134,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-integrals",
+      "notes": "notes/p-integrals.md",
+      "about": "How integrals are computed: substitution, integration by parts, an integral that defines a new function, why a polar patch is r dr dθ, and the bell-curve integral, with a proof slide for each."
+    },
+    "p-least-squares": {
+      "title": "Primer · Least squares",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2391,
+        "y": 2194,
+        "w": 1280,
+        "h": 977,
+        "z": 174,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-least-squares",
+      "notes": "notes/p-least-squares.md",
+      "about": "Least squares: the best line through points, why squares, the calculus of the fit, and the fit as a projection, each formula with its proof. Prepares Lecture 14."
+    },
+    "p-logs-1": {
+      "title": "Primer · Exponentials",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2980,
+        "y": 1612,
+        "w": 1280,
+        "h": 720,
+        "z": 125,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.211
+      },
+      "group": "p-logs",
+      "notes": "notes/p-logs.md",
+      "about": "Repeated multiplication, doubling time, e from compounding, decay and half-life, why an exponential beats a straight line, and a proof slide after each formula."
+    },
+    "p-logs-2": {
+      "title": "Primer · Logarithms",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2395,
+        "y": 872,
+        "w": 1441,
+        "h": 720,
+        "z": 126,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-logs",
+      "notes": "notes/p-logs.md",
+      "about": "What a logarithm counts (doublings), why it turns products into sums, bases, log axes, decibels, and a proof slide after each formula."
+    },
+    "p-matrices": {
+      "title": "Primer · Matrices and eigenvectors",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 808,
+        "y": 26443,
+        "w": 1280,
+        "h": 977,
+        "z": 173,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-matrices",
+      "notes": "notes/p-matrices.md",
+      "about": "Primer 0.09: a matrix as weighted sums, linearity, solving a small system, eigenvectors, and repeated steps, each claim with a proof slide."
+    },
+    "p-sampling": {
+      "title": "Primer · Sampling and aliasing",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 780,
+        "y": 27540,
+        "w": 1280,
+        "h": 977,
+        "z": 205,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-sampling",
+      "notes": "notes/p-sampling.md",
+      "about": "Primer 0.07: sampling keeps readings, frequency as rotations per sample, how a fast wave can give the same dots as a slow one, samples per cycle, and rounding; each claim followed by its proof."
+    },
+    "p-series": {
+      "title": "Primer · Series: geometric and Taylor",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 908,
+        "y": 2189,
+        "w": 1363,
+        "h": 720,
+        "z": 171,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-series",
+      "notes": "notes/p-series.md",
+      "about": "Ten slides: what an endless sum is worth, the geometric sum in one line, Taylor polynomials, where the ln(1+x) series fails, computing e^x and Bessel's I_0 term by term; after each, a proof slide (the halves reach 2, the geometric sum, the Taylor coefficients, the ln(1+x) error bound, the term recip"
+    },
+    "p-signals-1": {
+      "title": "Primer · Signals: what a filter does",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2394,
+        "y": 4714,
+        "w": 1280,
+        "h": 791,
+        "z": 176,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-signals",
+      "notes": "notes/p-signals.md",
+      "about": "Primer 0.12 (1 of 4): a filter as sliding weights, the same filter as a matrix, the shift test, the echo of one tap, and why the shift test forces one row of weights."
+    },
+    "p-signals-2": {
+      "title": "Primer · Signals: waves through a filter",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2886,
+        "y": 5524,
+        "w": 1280,
+        "h": 720,
+        "z": 177,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.231
+      },
+      "group": "p-signals",
+      "notes": "notes/p-signals.md",
+      "about": "Primer 0.12 (2 of 4): a wave comes out of a filter with the same shape, scaled; the response H(f); a one-sided filter delays; complex waves as the filter's eigenvectors; a filter works wave by wave."
+    },
+    "p-signals-3": {
+      "title": "Primer · Signals: convolution, filters in a row, short records",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -2823,
+        "y": 8820,
+        "w": 1280,
+        "h": 720,
+        "z": 181,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-signals",
+      "notes": "notes/p-signals.md",
+      "about": "Primer 0.12 (3 of 4): the output as a sum of echoes, two filters in a row as one filter (convolution), the product table, gains that multiply, and how a short record smears a tone; von Hann's window."
+    },
+    "p-signals-4": {
+      "title": "Primer · Signals: spectra, phase and noise",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -2823,
+        "y": 9564,
+        "w": 1280,
+        "h": 720,
+        "z": 182,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-signals",
+      "notes": "notes/p-signals.md",
+      "about": "Primer 0.12 (4 of 4): the power spectrum ignores where a record starts, spectra of a sum do not add, white noise has a flat spectrum, and a derivative boosts noise by (2 pi f)^2."
+    },
+    "p-vectors": {
+      "title": "Primer · Vectors",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -801,
+        "y": 25603,
+        "w": 1461,
+        "h": 720,
+        "z": 135,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-vectors",
+      "notes": "notes/p-vectors.md",
+      "about": "Primer 0.05: a vector as a list of numbers, its length, dot product and angle, the cube diagonal, projection, and distances (L1, L2, L-infinity); each claim followed by its proof."
+    },
+    "p-waves": {
+      "title": "Primer · Waves: sine, cosine, frequency, phase",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": 2375,
+        "y": 12,
+        "w": 1280,
+        "h": 720,
+        "z": 130,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "p-waves",
+      "notes": "notes/p-waves.md",
+      "about": "Primer 0.03: what a sine wave is, what amplitude, frequency and phase do, radians, values to know, even and odd, adding waves, and the slope of a sine; each claim followed by its proof."
+    },
+    "r1-out-there": {
+      "title": "Out there: what high dimensions look like",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -229,
+        "y": -1105,
+        "w": 1280,
+        "h": 720,
+        "z": 89,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.231
+      },
+      "group": "r1",
+      "notes": "notes/r1.md"
+    },
+    "r1-recap": {
+      "title": "High dimensions in Hamming so far",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -878,
+        "y": -1915,
+        "w": 1280,
+        "h": 791,
+        "z": 90,
+        "pinned": false,
+        "hidden": false,
+        "s": 1
+      },
+      "group": "r1",
+      "notes": "notes/r1.md"
+    },
+    "r1-spot-use": {
+      "title": "Spot it, use it: high dimensions in your work",
+      "size": {
+        "w": 1280,
+        "h": 720
+      },
+      "board": {
+        "x": -544,
+        "y": -1105,
+        "w": 1280,
+        "h": 720,
+        "z": 91,
+        "pinned": false,
+        "hidden": false,
+        "s": 0.231
+      },
+      "group": "r1",
+      "notes": "notes/r1.md"
+    }
+  },
+  "order": [
+    "l12-watch",
+    "l12-hamming74",
+    "l12-ncube-geometry",
+    "l12-codes-steps",
+    "l12-min-distance",
+    "l13-watch",
+    "l13-surprise-lab",
+    "l13-entropy-steps",
+    "l13-channel-steps",
+    "l13-shannon-moves",
+    "r1-spot-use",
+    "r1-recap",
+    "r1-out-there",
+    "l14-hamming-moves",
+    "l14-sampling-steps",
+    "l14-window-steps",
+    "l14-watch",
+    "p-fourier",
+    "p-series",
+    "p-integrals-1",
+    "p-vectors",
+    "p-waves",
+    "p-logs-1",
+    "p-least-squares",
+    "p-complex",
+    "p-matrices",
+    "p-derivatives",
+    "p-logs-2",
+    "p-integrals-2",
+    "p-sampling",
+    "p-signals-1",
+    "p-signals-2",
+    "l15-watch",
+    "l15-overshoot-steps",
+    "l15-design-steps",
+    "l15-window-steps",
+    "l1-watch",
+    "l2-watch",
+    "l3-watch",
+    "l4-watch",
+    "l10-watch",
+    "l11-watch",
+    "l5-watch",
+    "l6-watch",
+    "l7-watch",
+    "l8-watch",
+    "l9-watch",
+    "l8-review",
+    "l11-review",
+    "l4-review",
+    "l3-review",
+    "l2-review",
+    "l7-review",
+    "l1-review",
+    "l5-review",
+    "l6-review",
+    "l9-review",
+    "l10-review",
+    "p-signals-3",
+    "p-signals-4",
+    "l16-watch",
+    "l17-watch",
+    "p-feedback-1",
+    "p-feedback-2",
+    "p-feedback-3",
+    "l17-counts-steps",
+    "l17-median-steps",
+    "l17-echo-steps",
+    "l17-feedback-steps",
+    "l16-integrate-steps",
+    "l16-spectrum-steps",
+    "l16-fft-steps",
+    "l16-kaiser-steps",
+    "l18-before",
+    "l18-watch",
+    "l18-checks",
+    "l18-model",
+    "l21-before",
+    "l21-watch",
+    "l19-before",
+    "l19-watch",
+    "l19-checks",
+    "l19-model",
+    "l20-before",
+    "l20-watch",
+    "l20-checks",
+    "l20-model",
+    "l21-model",
+    "l22-before",
+    "l22-watch",
+    "l23-before",
+    "l23-watch",
+    "l23-model",
+    "l22-model",
+    "l24-before",
+    "l24-watch",
+    "l24-model",
+    "l27-before",
+    "l27-watch",
+    "l27-model",
+    "l26-before",
+    "l26-watch",
+    "l26-model",
+    "l25-before",
+    "l25-watch",
+    "l25-lab",
+    "l21-soliton",
+    "l28-watch",
+    "l29-watch",
+    "l30-watch"
+  ],
+  "groups": {
+    "p-logs": {
+      "title": "Primer 1: Logarithms and exponentials",
+      "folded": true,
+      "short": "P1"
+    },
+    "p-derivatives": {
+      "title": "Primer 2: Limits and derivatives",
+      "folded": true,
+      "short": "P2"
+    },
+    "p-waves": {
+      "title": "Primer 3: Waves: sine, cosine, frequency, phase",
+      "folded": true,
+      "short": "P3"
+    },
+    "p-integrals": {
+      "title": "Primer 4: Integrals",
+      "folded": true,
+      "short": "P4"
+    },
+    "p-vectors": {
+      "title": "Primer 5: Vectors, dot products, distances",
+      "folded": true,
+      "short": "P5"
+    },
+    "p-series": {
+      "title": "Primer 6: Series: geometric and Taylor",
+      "folded": true,
+      "short": "P6"
+    },
+    "p-sampling": {
+      "title": "Primer 7: Sampling and aliasing",
+      "folded": true,
+      "short": "P7"
+    },
+    "p-complex": {
+      "title": "Primer 8: Complex numbers",
+      "folded": true,
+      "short": "P8"
+    },
+    "p-matrices": {
+      "title": "Primer 9: Matrices and eigenvectors",
+      "folded": true,
+      "short": "P9"
+    },
+    "p-least-squares": {
+      "title": "Primer 10: Least squares",
+      "folded": true,
+      "short": "P10"
+    },
+    "p-fourier": {
+      "title": "Primer 11: Fourier series",
+      "folded": true,
+      "short": "P11"
+    },
+    "p-signals": {
+      "title": "Primer 12: Signals as vectors",
+      "folded": true,
+      "short": "P12"
+    },
+    "p-feedback": {
+      "title": "Primer 16: Difference equations and feedback",
+      "folded": true,
+      "short": "P16"
+    },
+    "l1": {
+      "title": "Lecture 1: Intro",
+      "folded": false,
+      "short": "L1"
+    },
+    "l2": {
+      "title": "Lecture 2: Foundations of the Digital (Discrete) Revolution",
+      "folded": true,
+      "short": "L2"
+    },
+    "l3": {
+      "title": "Lecture 3: History of Computers - Hardware",
+      "folded": true,
+      "short": "L3"
+    },
+    "l4": {
+      "title": "Lecture 4: History of Computers - Software",
+      "folded": true,
+      "short": "L4"
+    },
+    "l5": {
+      "title": "Lecture 5: History of Computers - Applications",
+      "folded": true,
+      "short": "L5"
+    },
+    "l6": {
+      "title": "Lecture 6: Artificial Intelligence - Part I",
+      "folded": true,
+      "short": "L6"
+    },
+    "l7": {
+      "title": "Lecture 7: Artificial Intelligence - Part II",
+      "folded": true,
+      "short": "L7"
+    },
+    "l8": {
+      "title": "Lecture 8: Artificial Intelligence III",
+      "folded": true,
+      "short": "L8"
+    },
+    "l9": {
+      "title": "Lecture 9: n-Dimensional Space",
+      "folded": true,
+      "short": "L9"
+    },
+    "l10": {
+      "title": "Lecture 10: Coding Theory - The Representation of Information, Part I",
+      "folded": true,
+      "short": "L10"
+    },
+    "l11": {
+      "title": "Lecture 11: Coding Theory - The Representation of Information, Part II",
+      "folded": true,
+      "short": "L11"
+    },
+    "l12": {
+      "title": "Lecture 12: Error-Correcting Codes",
+      "folded": true,
+      "short": "L12"
+    },
+    "l13": {
+      "title": "Lecture 13: Information Theory",
+      "folded": true,
+      "short": "L13"
+    },
+    "r1": {
+      "title": "Recitation 1: High-Dimensional Space",
+      "folded": true,
+      "short": "R1"
+    },
+    "l14": {
+      "title": "Lecture 14: Digital Filters, Part I",
+      "folded": true,
+      "short": "L14"
+    },
+    "l15": {
+      "title": "Lecture 15: Digital Filters, Part II",
+      "folded": true,
+      "short": "L15"
+    },
+    "l16": {
+      "title": "Lecture 16: Digital Filters, Part III",
+      "folded": true,
+      "short": "L16"
+    },
+    "l17": {
+      "title": "Lecture 17: Digital Filters, Part IV",
+      "folded": true,
+      "short": "L17"
+    },
+    "l18": {
+      "title": "Lecture 18: Simulation, Part I",
+      "folded": true,
+      "short": "L18"
+    },
+    "l19": {
+      "title": "Lecture 19: Simulation, Part II",
+      "folded": true,
+      "short": "L19"
+    },
+    "l20": {
+      "title": "Lecture 20: Simulation, Part III",
+      "folded": true,
+      "short": "L20"
+    },
+    "l21": {
+      "title": "Lecture 21: Fiber Optics",
+      "folded": true,
+      "short": "L21"
+    },
+    "l22": {
+      "title": "Lecture 22: Computer Aided Instruction",
+      "folded": true,
+      "short": "L22"
+    },
+    "l23": {
+      "title": "Lecture 23: Mathematics",
+      "folded": true,
+      "short": "L23"
+    },
+    "l24": {
+      "title": "Lecture 24: Quantum Mechanics",
+      "folded": true,
+      "short": "L24"
+    },
+    "l25": {
+      "title": "Lecture 25: Creativity",
+      "folded": true,
+      "short": "L25"
+    },
+    "l26": {
+      "title": "Lecture 26: Experts",
+      "folded": true,
+      "short": "L26"
+    },
+    "l27": {
+      "title": "Lecture 27: Unreliable Data",
+      "folded": true,
+      "short": "L27"
+    },
+    "l28": {
+      "title": "Lecture 28: You Get What You Measure",
+      "folded": true,
+      "short": "L28"
+    },
+    "l29": {
+      "title": "Lecture 29: How Do We Know What We Know",
+      "folded": true,
+      "short": "L29"
+    },
+    "l30": {
+      "title": "Lecture 30: You and Your Research",
+      "folded": true,
+      "short": "L30"
+    }
+  },
+  "version": "0.9.5",
+  "readonly": true,
+  "static": true
+}

@@ -1,0 +1,7 @@
+{
+  "title": "Kaiser's recipe: two tolerances in, a filter out",
+  "group": "l16",
+  "about": "How Kaiser turns a ripple tolerance and a ramp width into the number of weights and the window, how he found the formulas, why they work, and when they miss.",
+  "w": 1280,
+  "h": 720
+}

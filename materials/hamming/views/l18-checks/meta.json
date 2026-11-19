@@ -1,0 +1,18 @@
+{
+  "title": "After Lecture 18: test what the program means",
+  "group": "l18",
+  "about": "Explore clipping semantics, spatial versus temporal stability, and known-case solver checks, with line-by-line proofs.",
+  "w": 1280,
+  "h": 720,
+  "cues": {
+    "step": [
+      "limiting-pick",
+      "limiting",
+      "relay",
+      "relay-proof",
+      "circle",
+      "circle-proof",
+      "claim"
+    ]
+  }
+}

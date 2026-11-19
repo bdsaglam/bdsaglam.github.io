@@ -1,0 +1,7 @@
+{
+  "title": "Primer · Series: geometric and Taylor",
+  "group": "p-series",
+  "about": "Ten slides: what an endless sum is worth, the geometric sum in one line, Taylor polynomials, where the ln(1+x) series fails, computing e^x and Bessel's I_0 term by term; after each, a proof slide (the halves reach 2, the geometric sum, the Taylor coefficients, the ln(1+x) error bound, the term recipe).",
+  "w": 1280,
+  "h": 720
+}

@@ -1,0 +1,7 @@
+{
+  "title": "The FFT: fast, accurate, periodic, and blind to phase",
+  "group": "l16",
+  "about": "Hamming's idea for fewer multiplications, the FFT he refused, why it is also more accurate, what it assumes outside the record, and the phase the power spectrum drops.",
+  "w": 1280,
+  "h": 720
+}

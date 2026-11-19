@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hamming (7,4): which check breaks?</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: white page, one accent (blue), red only for a failing check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line); --surface:var(--pal-soft);
+  --accent:var(--pal-accent); --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:10px 28px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(8px,1.2vh,16px) 28px}
+
+/* Slide frame: widget on the left (60%), text on the right (40%). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(20px,2.6vw,44px)}
+.widget{min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.side{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(10px,1.8vh,18px)}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(22px,2.3vw,34px);line-height:1.2;margin:0;font-weight:650}
+.formula{font-size:clamp(22px,2.4vw,34px)}
+.line-txt{margin:0}
+
+/* Controls */
+button{font:inherit;color:var(--fg)}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:40px}
+.lbl{color:var(--muted)}
+.tog{padding:5px 14px;border:1px solid var(--line);border-radius:999px;background:var(--pal-panel);cursor:pointer}
+.btn{padding:6px 14px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer}
+.count{margin-left:auto;color:var(--muted);white-space:nowrap}
+.count.warn{color:var(--red)}
+
+/* Venn diagram (SVG, labels as KaTeX inside foreignObject) */
+.venn{display:block;width:100%;height:auto}
+.venn .fo{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--fg);white-space:nowrap;pointer-events:none}
+.venn .fo.left{justify-content:flex-start}
+.venn .fo.right{justify-content:flex-end}
+.venn .fo.mute{color:var(--muted)}
+.venn .check.odd .lab{color:var(--red);font-weight:600}
+.venn .v{font:700 20px ui-monospace,Menlo,monospace;fill:var(--fg);text-anchor:middle;dominant-baseline:central}
+.venn .pn{font:13px ui-monospace,Menlo,monospace;fill:var(--muted);text-anchor:middle;dominant-baseline:central}
+.venn .bg{fill:var(--pal-panel);stroke:var(--muted);stroke-width:1.5}
+.venn .node{cursor:pointer;outline:none}
+.venn .node:hover .bg{stroke:var(--accent)}
+.venn .node.par .bg{fill:var(--surface);stroke-dasharray:4 3}
+.venn .node.par .v{fill:var(--muted)}
+.venn .node.par .pn{fill:var(--muted)}
+.venn .node.flip .bg{fill:var(--pal-red-tint-2);stroke:var(--red);stroke-width:2.5;stroke-dasharray:none}
+.venn .node.flip .v{fill:var(--red)}
+.venn .node.flip .pn{fill:var(--red)}
+.venn .ring{fill-opacity:.12;stroke-width:2}
+:root[data-fluid-theme="dark"] .venn .ring{fill:var(--pal-ink)}
+.venn .check.odd .ring{fill:var(--red);stroke:var(--red);fill-opacity:.2}
+
+.readout{font-size:18px;line-height:1.4;padding:10px 14px;min-height:56px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.readout.bad{border-color:var(--red);background:var(--redbg);color:var(--red)}
+
+/* Word row: the seven bits */
+.word{display:flex;align-items:center;gap:6px}
+.word .lbl{width:120px;flex:none}
+.wc{width:62px;height:66px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:var(--pal-panel)}
+.wc .p{font:13px/1 ui-monospace,Menlo,monospace;color:var(--muted)}
+.wc .v{font:700 22px/1.1 ui-monospace,Menlo,monospace}
+.wc .b{font:12px/1 ui-monospace,Menlo,monospace;color:var(--muted)}
+.wc.par{border-style:dashed;background:var(--surface)}
+.wc.par .v{color:var(--muted)}
+.wc.flip{background:var(--pal-red-tint-2);border-color:var(--red)}
+.wc.flip .v{color:var(--red)}
+</style>
+</head>
+<body>
+<header>Lecture 12: error-correcting codes</header>
+<main id="stage">
+  <section class="slide">
+    <div class="widget" id="app">Loading...</div>
+    <div class="side">
+      <div class="tag">Lecture 13:16</div>
+      <h2>Hamming (7,4): which check breaks?</h2>
+      <div class="formula">$$s = 4\,c_4 + 2\,c_2 + c_1$$</div>
+      <p class="line-txt">Each circle must hold an even number of 1s.</p>
+      <p class="line-txt">Click a bit to flip it.</p>
+      <p class="line-txt">The odd circles, read as binary, name the wrong position.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+'use strict';
+
+// Math: $...$ and $$...$$ are rendered by KaTeX auto-render. TEX() gives KaTeX HTML for SVG labels.
+var MATH={delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false};
+function tex(n){ if(n && typeof renderMathInElement==='function') renderMathInElement(n,MATH); }
+function TEX(s){ return window.katex ? katex.renderToString(s,{throwOnError:false}) : s; }
+function fo(x,y,w,h,cls,html){
+  return '<foreignObject x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'"><div xmlns="http://www.w3.org/1999/xhtml" class="fo '+cls+'">'+html+'</div></foreignObject>';
+}
+
+/*LOGIC*/
+// Positions 1..7 are the Hamming code. Each check is the XOR of the positions it covers.
+var COVER = {1:[1,3,5,7], 2:[2,3,6,7], 4:[4,5,6,7]};
+
+// msg = [d3, d5, d6, d7]. Returns bits indexed 1..7 (index 0 unused).
+function encode(msg){
+  var d3=msg[0], d5=msg[1], d6=msg[2], d7=msg[3];
+  var b=[0,0,0,0,0,0,0,0];
+  b[1]=d3^d5^d7; b[2]=d3^d6^d7; b[3]=d3; b[4]=d5^d6^d7; b[5]=d5; b[6]=d6; b[7]=d7;
+  return b;
+}
+function xorAt(bits, idx){ var x=0; for(var k=0;k<idx.length;k++) x^=bits[idx[k]]; return x; }
+
+// flips: positions (1..7) flipped in the sent word.
+// c[k] is the parity of check k (1 = odd). s is the position the checks name.
+function analyze(msg, flips){
+  var sent=encode(msg);
+  var recv=sent.map(function(v,i){ return flips.indexOf(i)>=0 ? v^1 : v; });
+  var c={1:xorAt(recv,COVER[1]), 2:xorAt(recv,COVER[2]), 4:xorAt(recv,COVER[4])};
+  var s=c[4]*4+c[2]*2+c[1];
+  var fixed=recv.slice();
+  if(s) fixed[s]^=1;
+  var wrong=0;
+  for(var i=1;i<=7;i++) if(fixed[i]!==sent[i]) wrong++;
+  return {sent:sent, recv:recv, c:c, s:s, wrong:wrong, flips:flips};
+}
+/*END LOGIC*/
+
+var PAR=[0,1,1,0,1,0,0,0];            // check bits: positions 1, 2, 4
+// Circle geometry in a 720 x 420 box. box = label area [x, y, w, h, alignment].
+var CIRC={
+  1:{cx:265,cy:130,r:125,box:[8,6,150,28,'left']},
+  2:{cx:455,cy:130,r:125,box:[562,6,150,28,'right']},
+  4:{cx:360,cy:275,r:125,box:[480,362,230,28,'left']}
+};
+var NODE={1:{x:170,y:120}, 2:{x:550,y:120}, 3:{x:360,y:100}, 4:{x:360,y:345},
+          5:{x:300,y:220}, 6:{x:420,y:220}, 7:{x:360,y:200}};
+var NUM=['zero','one','two','three','four'];
+
+var st={msg:[1,0,0,1], flips:[], note:''};
+var app=document.getElementById('app');
+
+function bin3(n){ return ('00'+n.toString(2)).slice(-3); }
+
+function readout(a){
+  var odd=[4,2,1].filter(function(k){ return a.c[k]===1; });
+  if(!odd.length) return {bad:false, html:'All circles even, so $c_4 c_2 c_1 = 000$: no error.'};
+  var names = odd.length===1 ? '$c_'+odd[0]+'$' : odd.slice(0,-1).map(function(k){ return '$c_'+k+'$'; }).join(', ')+' and $c_'+odd[odd.length-1]+'$';
+  var text='Odd circles: '+names+'. $c_4 c_2 c_1 = '+a.c[4]+a.c[2]+a.c[1]+'$, so position '+a.s+' is wrong.';
+  if(a.flips.length===1) return {bad:false, html:text+' Flip it back.'};
+  return {bad:true, html:text+' But two bits are wrong: "fixing" '+a.s+' makes '+NUM[a.wrong]+
+    ' wrong. One extra parity bit over the whole word (SEC-DED) would catch this.'};
+}
+
+function picture(a){
+  var rings=[1,2,4].map(function(k){
+    var c=CIRC[k], odd=a.c[k]===1;
+    var lab=TEX('c_'+k+'\\;\\mathrm{'+(odd?'odd':'even')+'}');
+    return '<g class="check'+(odd?' odd':'')+'" data-item="check" data-id="check-'+k+'">'+
+      '<circle class="ring" cx="'+c.cx+'" cy="'+c.cy+'" r="'+c.r+'"/>'+
+      fo(c.box[0],c.box[1],c.box[2],c.box[3],'lab '+c.box[4],lab)+
+      '</g>';
+  }).join('');
+  var nodes=[1,2,3,4,5,6,7].map(function(i){
+    var p=NODE[i], v=a.recv[i], fl=a.flips.indexOf(i)>=0;
+    var cls='node'+(PAR[i]?' par':'')+(fl?' flip':'');
+    var label='Position '+i+', bit '+v+(fl?', flipped':'')+'. Press to flip.';
+    return '<g class="'+cls+'" data-item="bit" data-id="pos-'+i+'" data-act="flip" data-pos="'+i+'" tabindex="0" role="button" aria-label="'+label+'">'+
+      '<circle class="bg" cx="'+p.x+'" cy="'+p.y+'" r="24"/>'+
+      '<text class="pn" x="'+p.x+'" y="'+(p.y-11)+'">'+i+'</text>'+
+      '<text class="v" x="'+p.x+'" y="'+(p.y+9)+'">'+v+'</text>'+
+      '</g>';
+  }).join('');
+  return '<svg class="venn" viewBox="0 0 720 420" role="group" aria-label="Venn diagram: three parity checks and seven bits">'+rings+nodes+'</svg>';
+}
+
+function wordRow(a){
+  var cells=[1,2,3,4,5,6,7].map(function(i){
+    var fl=a.flips.indexOf(i)>=0;
+    return '<div class="wc'+(PAR[i]?' par':'')+(fl?' flip':'')+'" data-item="word" data-id="word-pos-'+i+'">'+
+      '<span class="p">'+i+'</span><span class="v">'+a.recv[i]+'</span><span class="b">'+bin3(i)+'</span></div>';
+  }).join('');
+  return '<div class="word"><span class="lbl">'+String.raw`$b_1 \dots b_7$`+'</span>'+cells+'</div>';
+}
+
+function controls(){
+  var tg=[0,1,2,3].map(function(k){
+    var pos=[3,5,6,7][k];
+    return '<button type="button" class="tog" data-act="msg" data-k="'+k+'" data-item="message" data-id="msg-pos-'+pos+'">$d_{'+pos+'} = '+st.msg[k]+'$</button>';
+  }).join('');
+  var count = st.note ? '<span class="count warn">'+st.note+'</span>'
+                      : '<span class="count">Flips: '+st.flips.length+' of 2</span>';
+  return '<div class="toolbar"><span class="lbl">Message</span>'+tg+
+    '<button type="button" class="btn" data-act="reset" data-id="reset">Reset flips</button>'+count+'</div>';
+}
+
+function keyOf(el){
+  if(!el || !el.getAttribute || !el.getAttribute('data-act')) return null;
+  return el.getAttribute('data-act')+'|'+(el.getAttribute('data-id')||'');
+}
+
+function draw(){
+  var fk=keyOf(document.activeElement);
+  var a=analyze(st.msg, st.flips);
+  var r=readout(a);
+  app.innerHTML=
+    controls()+
+    picture(a)+
+    '<div class="readout'+(r.bad?' bad':'')+'" role="status" aria-live="polite">'+r.html+'</div>'+
+    wordRow(a);
+  tex(app);
+  if(fk){
+    var all=app.querySelectorAll('[data-act]');
+    for(var j=0;j<all.length;j++){
+      if(keyOf(all[j])===fk){ all[j].focus(); break; }
+    }
+  }
+}
+
+function safeDraw(){
+  try{ draw(); }
+  catch(err){ app.textContent='Could not draw this view: '+err.message; }
+}
+
+function act(t){
+  var kind=t.getAttribute('data-act');
+  if(kind==='msg'){ st.msg[+t.getAttribute('data-k')]^=1; st.flips=[]; st.note=''; }
+  else if(kind==='reset'){ st.flips=[]; st.note=''; }
+  else if(kind==='flip'){
+    var p=+t.getAttribute('data-pos'), idx=st.flips.indexOf(p);
+    if(idx>=0){ st.flips.splice(idx,1); st.note=''; }
+    else if(st.flips.length>=2){ st.note='Max 2 flips. Click a red bit to undo one.'; }
+    else { st.flips.push(p); st.note=''; }
+  }
+  safeDraw();
+}
+
+app.addEventListener('click', function(e){
+  var t=e.target.closest ? e.target.closest('[data-act]') : null;
+  if(t) act(t);
+});
+
+// Buttons already turn Enter and Space into a click. SVG bits need this.
+app.addEventListener('keydown', function(e){
+  if(e.key!=='Enter' && e.key!==' ') return;
+  var t=e.target.closest ? e.target.closest('[data-act]') : null;
+  if(!t || t.tagName.toUpperCase()==='BUTTON') return;
+  e.preventDefault();
+  act(t);
+});
+
+tex(document.querySelector('.side'));
+safeDraw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "title": "After Lecture 18: how far can the model go?",
+  "group": "l18",
+  "about": "Try sensitivity and the failure of local linear approximations; work through the algebra and choose when to ask the domain expert.",
+  "w": 1280,
+  "h": 720,
+  "cues": {
+    "step": [
+      "perturb",
+      "gap-proof",
+      "local",
+      "local-proof",
+      "expert"
+    ]
+  }
+}

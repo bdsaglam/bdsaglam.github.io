@@ -13,6 +13,8 @@ project:
     - papers/**
     - slides/**
     - fluid/**
+    - materials/index.html
+    - materials/hamming/**
 
 website:
   title: "Barış Deniz Sağlam"

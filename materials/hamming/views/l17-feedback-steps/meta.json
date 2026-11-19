@@ -1,0 +1,7 @@
+{
+  "title": "Feedback filters: the past only, both sides, and delay",
+  "group": "l17",
+  "about": "Why a past-only smoother lags, how a two-sided one is solved, and why delay limits how hard a loop may correct.",
+  "w": 1280,
+  "h": 720
+}

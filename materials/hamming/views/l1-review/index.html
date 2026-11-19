@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Doubling, half-life and drift: what Hamming says, by doing</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: grey for exact values and inputs, blue for outputs and the reader's choice,
+   amber for what the newest proof line is about, red only for a failed check. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft); --red:var(--pal-red);
+  /* Off-palette light values, kept so light is unchanged; dark is set below. */
+  --faint:#f9fafb; --note-line:#eceef2; --ask-line:#f5d48a; --tint-pct:14%;
+  --u:clamp(16px,1.35vw,20px);
+}
+:root[data-fluid-theme="dark"]{ --faint:var(--pal-soft); --note-line:var(--pal-line); --ask-line:var(--pal-amber-bg); --tint-pct:30%; }
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px;overflow:hidden}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Content slide: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(5px,0.9vh,9px);overflow:hidden}
+.widget>*{max-width:100%;min-width:0}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:14px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(17px,1.5vw,22px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.where{margin:0;font-size:16px}
+.where b{color:var(--accent)}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px;transition:opacity .2s}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 22px;flex-wrap:wrap;width:100%;align-items:center}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(110px,10vw,160px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:50px;white-space:nowrap}
+.btn{font:inherit;padding:5px 11px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px;line-height:1.3}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{color:var(--muted);cursor:default;opacity:.6}
+.btnrow{display:flex;gap:6px 8px;align-items:center;flex-wrap:wrap}
+.btnrow .lab{font-size:16px;color:var(--muted);margin-right:2px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 120px;min-width:0;padding:3px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.legend{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.note{min-height:34px;display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;font-size:16px;padding:2px 10px;border-radius:8px;background:var(--faint);border:1px solid var(--note-line)}
+.note.ask{background:var(--pal-amber-row);border-color:var(--ask-line)}
+.note .good{color:var(--accent);font-weight:600}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(18px,2.2vw,34px)}
+.slide.proof-slide h2{font-size:clamp(20px,1.75vw,26px)}
+.slide.proof-slide .side{gap:clamp(4px,0.8vh,9px)}
+.slide.proof-slide .side{justify-content:flex-start}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,8vw,130px)}
+.slide.proof-slide .slide-ctl .val{min-width:40px}
+.slide.proof-slide .sliders{gap:6px 14px}
+.slide.proof-slide .fill{min-height:180px}
+.readouts.inline .readout{display:flex;gap:4px 8px;align-items:baseline;flex-wrap:wrap}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px;font-size:16px}
+.test .tries{gap:3px}
+.model{margin:0;padding:7px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+
+/* Decision slides: the problem, three cards and the reveal on the left; question, try-steps,
+   AI echo and takeaway on the right. */
+.slide.decision{grid-template-columns:minmax(0,2.05fr) minmax(0,1fr);gap:clamp(20px,2.6vw,40px)}
+.decision .widget{gap:6px}
+.decision .side{justify-content:space-evenly;gap:clamp(8px,1.8vh,18px)}
+.decision h2{font-size:clamp(23px,2.3vw,32px)}
+.decision .q{margin:0;font-size:clamp(17px,1.55vw,21px);font-weight:600;line-height:1.35}
+.decision .fx{margin:0;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--faint);font-size:clamp(17px,1.6vw,22px);line-height:1.4}
+.decision .kicker{font-size:14px;color:var(--muted);margin:0 0 3px}
+.decision .blk{display:flex;flex-direction:column;gap:3px}
+.decision .ai{margin:0;font-size:16px;line-height:1.4}
+.decision .ai .src{color:var(--muted);font-size:14px}
+.decision .takeaway{padding:11px 14px;line-height:1.4}
+.decision .tries{gap:6px;font-size:clamp(16px,1.35vw,18px);line-height:1.4}
+.decision .hold{color:var(--muted);font-style:italic;background:var(--faint);border:1px dashed var(--line);border-radius:6px;padding:9px 12px;margin:0;font-size:16px;line-height:1.4}
+.prob{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:6px 14px;background:var(--faint);font-size:16px;line-height:1.4}
+.prob .lead{font-weight:650;color:var(--muted)}
+.prob p{margin:0}
+.opts{flex:0 0 auto;display:flex;flex-direction:column;gap:clamp(4px,0.5vw,8px)}
+.opt{display:grid;grid-template-columns:minmax(0,0.78fr) minmax(0,1.22fr);gap:0 14px;padding:clamp(6px,0.7vw,10px) 12px;border:1px solid var(--line);border-radius:10px;background:var(--pal-panel);color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.opt .lhs{display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt .rhs{display:flex;flex-direction:column;gap:3px;min-width:0;border-left:1px solid var(--pal-soft-2);padding-left:14px}
+.opt:not([aria-disabled="true"]):hover{border-color:var(--accent)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt .top{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:16px}
+.opt .letter{font-weight:700;color:var(--accent)}
+.opt .who{font-size:14px;color:var(--muted);text-align:right}
+.opt .body{font-size:clamp(16px,1.4vw,19px);line-height:1.3}
+.opt .asm{margin:0;font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--muted)}
+.opt .verdict{font-size:clamp(16px,1.3vw,18px);line-height:1.33;color:var(--fg)}
+.opt .verdict.idle{color:var(--muted);font-style:italic}
+.opt.on{box-shadow:inset 0 0 0 2px var(--pal-ink)}
+.opt.chooser{background:var(--chip);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.opt.chooser .who{color:var(--pal-accent-deep);font-weight:600}
+.reveal{flex:1 1 auto;min-height:0;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:clamp(16px,1.25vw,18px);display:flex;flex-direction:column;justify-content:center;gap:6px}
+.reveal.idle{background:var(--faint);color:var(--muted)}
+.rv{margin:0;line-height:1.38}
+.rv .k{font-weight:650;color:var(--accent)}
+.rv .t{color:var(--muted);font-size:14px;white-space:nowrap}
+.rv.hold{color:var(--muted)}
+.decision .actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.decision .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--pal-on-accent);padding:6px 16px}
+
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:4px}
+  .side{gap:4px}
+  .tries{gap:2px}
+  .sym,.where,.tries,.test,.model{line-height:1.22}
+  .readout{padding:2px 8px}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:18px}
+  h2{font-size:20px}
+  .fill{min-height:100px}
+  .note{min-height:30px;padding:1px 8px}
+  .model{padding:5px 10px}
+  .btn{padding:3px 9px}
+  .slide-ctl input{width:100px}
+  .slide.proof-slide .slide-ctl input{width:64px}
+  .slide.proof-slide .slide-ctl .val{min-width:30px}
+  .slide.proof-slide .sliders{gap:4px 10px}
+  .slide.proof-slide .fill{min-height:165px}
+  .decision h2{font-size:23px}
+  .decision .side{gap:7px}
+  .decision .tries{gap:2px;line-height:1.3}
+  .decision .takeaway{padding:7px 12px}
+  .reveal{gap:3px;padding:5px 12px}
+  .rv{line-height:1.28}
+  .opts{gap:3px}
+  .opt{padding:4px 12px}
+  .opt .body,.opt .asm,.opt .verdict{line-height:1.25}
+  .prob{padding:4px 12px;line-height:1.3}
+}
+</style>
+</head>
+<body>
+<header id="head">Lecture 1 review · Doubling, half-life and drift: what Hamming says, by doing</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// ---------- palette ----------
+// COL holds the palette for the SVG being drawn. fillPlot reads it at every paint, so a draw always
+// uses the current theme. Plots register in PLOTS and redraw on a theme switch.
+let COL = {};
+const PAL_NAMES = ['ink', 'text-2', 'muted', 'grey', 'accent', 'panel', 'line', 'bg'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+
+// ---------- DOM and drawing helpers ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted, 'font-size': 14 }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula. o.bg paints a background.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = o.ht || 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || 'var(--pal-text-2)') + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 5px');
+  if (o.halo) span.setAttribute('style', 'text-shadow:0 0 3px var(--pal-bg),0 0 3px var(--pal-bg),0 0 2px var(--pal-bg)');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+const haloTex = (parent, x, y, s, o) => svgTex(parent, x, y, s, Object.assign({ halo: true }, o || {}));
+function path(svg, pts, attrs, close) {
+  const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + (close ? 'Z' : '');
+  return svgNode('path', Object.assign({ d: d, fill: 'none' }, attrs), svg);
+}
+function dot(svg, x, y, color, r) {
+  return svgNode('circle', { cx: x, cy: y, r: r || 5, fill: color, stroke: COL.panel, 'stroke-width': 1.5 }, svg);
+}
+// Tick label: KaTeX if it has $, plain text otherwise.
+function tick(svg, x, y, s, anchor) {
+  return s.indexOf('$') >= 0 ? svgTex(svg, x, y, s, { w: 80, size: 14, anchor: anchor || 'middle', fill: 'var(--pal-muted)' }) :
+    svgText(svg, x, y + 5, s, { 'text-anchor': anchor || 'middle' });
+}
+// A labelled range input. label and the value text are LaTeX-ready.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmtv = o.fmt || String;
+  const api = {
+    el: wrap, input: inp,
+    get value() { return +inp.value; },
+    set(v) { inp.value = v; api.show(); },
+    show() { setTex(val, fmtv(+inp.value)); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text) { setTex(v, text); }, label(text) { setTex(k, text); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) { sw.style.background = it.color; if (it.ring) { sw.style.background = 'var(--pal-panel)'; sw.style.border = '2px solid ' + it.color; sw.style.borderRadius = '50%'; sw.style.width = '13px'; sw.style.height = '13px'; } }
+    else sw.style.borderTop = (it.width || 2) + 'px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize and may
+// return a geometry object (wrap._geo) that the pointer handlers use.
+function fillPlot(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    const svg = svgRoot(w, ht);
+    COL = readPalette();
+    wrap._geo = draw(svg, w, ht) || null;
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+function noticeLine(text) { const p = h('p', 'where'); p.append(h('b', '', 'Notice: ')); p.append(setTex(h('span'), text)); return p; }
+// Session events. With no bridge, nothing is sent and the view still works.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* no bridge */ }
+}
+
+// ---------- numbers (each formula checked with node: /tmp/review-l1/numbers.js) ----------
+const PI = Math.PI;
+const fixed = (v, d) => (Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v).toFixed(d);
+const DOUB = 17, HALF = 15;
+const shareAlive = (L, D) => 1 - Math.pow(2, -L / (D || DOUB));   // share of all ever born who were born in the last L years
+const factorAt = n => Math.pow(2, n / DOUB);                         // knowledge after n years, today = 1
+const usefulAt = t => Math.pow(2, -t / HALF);                        // share of school facts still useful after t years
+const rmsWalk = (p, n) => Math.sqrt(n * (1 - p * p) + p * p * n * n); // exact root-mean-square distance after n steps
+const pctTxt = v => { const x = Math.round(1000 * v) / 10; return (Number.isInteger(x) ? String(x) : x.toFixed(1)) + '%'; };
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// Simulated walks: each step is +1 with chance (1+p)/2, else -1, so the mean step is p.
+function simRms(p, n, walks, seed) {
+  const r = mulberry32(seed); let s = 0;
+  for (let w = 0; w < walks; w++) { let x = 0; for (let i = 0; i < n; i++) x += r() < (1 + p) / 2 ? 1 : -1; s += x * x; }
+  return Math.sqrt(s / walks);
+}
+// Least squares line through (xs, ys): y = a + b x.
+function fitLine(xs, ys) {
+  const n = xs.length; let sx = 0, sy = 0, sxx = 0, sxy = 0;
+  for (let i = 0; i < n; i++) { sx += xs[i]; sy += ys[i]; sxx += xs[i] * xs[i]; sxy += xs[i] * ys[i]; }
+  const b = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+  return { a: (sy - b * sx) / n, b: b };
+}
+// Made-up yearly data for years 0 to 30: doubling every 17 years, each value off by up to 10%.
+const DATA_RNG = mulberry32(17);
+const DATA = Array.from({ length: 31 }, (_, t) => Math.pow(2, t / DOUB) * (1 + 0.1 * (2 * DATA_RNG() - 1)));
+// Forecast for year T from the last W years: a straight line in the value, and one in the log.
+function forecasts(W, T) {
+  const ts = [], vs = [];
+  for (let t = 31 - W; t <= 30; t++) { ts.push(t); vs.push(DATA[t]); }
+  const lin = fitLine(ts, vs), lg = fitLine(ts, vs.map(Math.log));
+  return { lin: lin.a + lin.b * T, log: Math.exp(lg.a + lg.b * T), linAB: lin, logAB: lg };
+}
+const sci = v => { const e = Math.floor(Math.log10(v)), m = v / Math.pow(10, e); return '$' + m.toFixed(2) + '\\times10^{' + e + '}$'; };
+// Plot margins and a shared axis frame.
+const PM = { l: 62, r: 22, t: 16, b: 46 };
+function axisFrame(svg, W, H) {
+  svgNode('line', { x1: PM.l, y1: H - PM.b, x2: W - PM.r, y2: H - PM.b, stroke: COL.grey }, svg);
+  svgNode('line', { x1: PM.l, y1: PM.t, x2: PM.l, y2: H - PM.b, stroke: COL.grey }, svg);
+}
+function linePts(svg, pts, attrs) { return path(svg, pts, Object.assign({ stroke: COL.accent, 'stroke-width': 3, 'stroke-linejoin': 'round' }, attrs || {})); }
+// A btn group for presets: items [[label, id, onClick]]. Returns the buttons and a set(on) call.
+function presetGroup(items, onPick) {
+  const bs = items.map(([label, id, val]) => {
+    const b = mark(h('button', 'btn'), 'preset', id);
+    setTex(b, label);
+    b.addEventListener('click', () => onPick(val, bs));
+    return b;
+  });
+  return bs;
+}
+
+// ---------- slide 1: doubling-check ----------
+function slideDoubling(widget, side) {
+  let L = 30;
+  const sL = slider(String.raw`working life $L$`, { id: 'working-life', name: 'working life L in years', min: 0, max: 80, step: 1, value: L,
+    fmt: v => '$' + v + '$ years', onInput: v => { L = v; update(); } });
+  const rS = readout('share', String.raw`share alive now, $1-2^{-L/17}$`);
+  widget.append(hh('div', 'sliders', sL.el), hh('div', 'readouts', rS.el));
+  const legendEl = legend([
+    { color: 'var(--pal-accent)', width: 3, text: String.raw`blue curve: share alive for working life $L$` },
+    { color: 'var(--pal-muted)', dash: true, width: 2, text: String.raw`grey dashed: $90\%$, the claim` },
+    { chip: true, color: 'var(--pal-accent)', text: String.raw`blue dot: your $L$` }]);
+  const plot = fillPlot(widget, (svg, W, H) => {
+    axisFrame(svg, W, H);
+    const X = x => PM.l + x / 80 * (W - PM.l - PM.r), Y = y => H - PM.b - y * (H - PM.t - PM.b);
+    for (const v of [0, 20, 40, 60, 80]) tick(svg, X(v), H - PM.b + 14, String(v));
+    for (const v of [0, 0.5, 1]) tick(svg, PM.l - 6, Y(v), pctTxt(v), 'end');
+    svgTex(svg, W / 2, H - 12, String.raw`working life $L$ (years)`, { w: 260, size: 14 });
+    svgNode('line', { x1: PM.l, y1: Y(0.9), x2: W - PM.r, y2: Y(0.9), stroke: COL.muted, 'stroke-dasharray': '5 4' }, svg);
+    const pts = []; for (let v = 0; v <= 80; v++) pts.push([X(v), Y(shareAlive(v))]);
+    linePts(svg, pts);
+    svgNode('line', { x1: X(L), y1: PM.t, x2: X(L), y2: H - PM.b, stroke: COL.accent, 'stroke-dasharray': '2 3' }, svg);
+    dot(svg, X(L), Y(shareAlive(L)), COL.accent, 6);
+    svgTex(svg, X(3), Y(0.9) - 14, String.raw`$90\%$ alive: Hamming's claim`, { w: 230, size: 14, fill: 'var(--pal-text-2)', anchor: 'start' });
+  });
+  const update = () => { rS.set(String.raw`$` + (100 * shareAlive(L)).toFixed(1) + String.raw`\%$`); plot.redraw(); };
+  update();
+  widget.append(legendEl, plot.wrap);
+  side.append(setTex(h('p', 'formula'), String.raw`share alive $=1-2^{-L/D}$, with $D=17$ years per doubling`));
+  side.append(triesList([
+    String.raw`Guess the working life $L$ that makes $90\%$ alive. Write it down.`,
+    'Move the slider to your guess. Read the share.',
+    String.raw`Move the dot onto the grey dashed line. Is $L$ near the number Hamming used, 55 years?`]));
+  side.append(setTex(h('p', 'where'), 'Why $L=D\\log_2 10$: Primer · Logarithms, step 2.'));
+  side.append(takeLine('With a 17-year doubling, a working life of about 56 years makes both claims true.'));
+}
+
+// ---------- slide 2: most-is-recent ----------
+function slideMostRecent(widget, side) {
+  let K = 1;
+  const rS = readout('share', 'share of all knowledge so far in the shaded years');
+  const bs = presetGroup([[String.raw`last $17$ years`, 'k-1', 1], [String.raw`last $34$ years`, 'k-2', 2], [String.raw`last $51$ years`, 'k-3', 3]], (v) => { K = v; update(); });
+  const btnRow = hh('div', 'btnrow', setTex(h('span', 'lab'), 'Shade:'), ...bs);
+  widget.append(btnRow, hh('div', 'readouts', rS.el));
+  const legendEl = legend([
+    { chip: true, color: 'var(--pal-accent)', text: 'blue bars: the shaded years' },
+    { chip: true, color: 'var(--pal-line)', text: 'grey bars: older years' }]);
+  const SPAN = 85;
+  const plot = fillPlot(widget, (svg, W, H) => {
+    axisFrame(svg, W, H);
+    const X = s => PM.l + (s + SPAN) / SPAN * (W - PM.l - PM.r), Y = y => H - PM.b - y * (H - PM.t - PM.b);
+    const bw = (W - PM.l - PM.r) / SPAN * 0.8;
+    for (let s = -SPAN + 1; s <= 0; s++) {
+      const v = factorAt(s);   // rate of new knowledge that year, today = 1
+      const shaded = s > -17 * K;
+      svgNode('rect', { x: X(s) - bw / 2, y: Y(v), width: bw, height: Y(0) - Y(v), fill: shaded ? COL.accent : COL.line }, svg);
+    }
+    for (const s of [-68, -51, -34, -17, 0]) tick(svg, X(s), H - PM.b + 14, s === 0 ? 'today' : String(s));
+    svgTex(svg, W / 2, H - 12, String.raw`years from today`, { w: 200, size: 14 });
+    tick(svg, PM.l - 6, Y(1), '1', 'end');
+    tick(svg, PM.l - 6, Y(0.5), '0.5', 'end');
+    svgTex(svg, PM.l + 4, PM.t + 10, String.raw`height: new knowledge that year (today $=1$)`, { w: 330, size: 14, anchor: 'start' });
+  });
+  const update = () => {
+    rS.set(pctTxt(1 - Math.pow(2, -K)));
+    bs.forEach((b, k) => b.classList.toggle('on', k + 1 === K));
+    plot.redraw();
+  };
+  update();
+  widget.append(legendEl, plot.wrap);
+  side.append(setTex(h('p', 'formula'), String.raw`total so far $\propto e^{bt}$; share in the last $17k$ years $=1-2^{-k}$`));
+  side.append(triesList([
+    'Press last 17 years. Read the share.',
+    'Press last 34 years, then last 51. Does each extra 17 years add as much as the one before?',
+    String.raw`At 51 years back, the grey bars hold what share? Check it with $1-2^{-3}$.`]));
+  side.append(setTex(h('p', 'where'), String.raw`Why the total is $e^{bt}/b$: Primer · Integrals: area, step 5.`));
+  side.append(takeLine('The total so far is proportional to today\'s rate, so the far past adds little.'));
+}
+
+// ---------- slide 3: millionfold ----------
+function slideMillion(widget, side) {
+  let n = 100;
+  const sN = slider(String.raw`years $n$`, { id: 'years', name: 'years from now', min: 0, max: 400, step: 1, value: n,
+    fmt: v => '$' + v + '$ years', onInput: v => { n = v; update(); } });
+  const rD = readout('doublings', String.raw`doublings, $n/17$`);
+  const rF = readout('factor', String.raw`factor, $2^{n/17}$`);
+  widget.append(hh('div', 'sliders', sN.el), hh('div', 'readouts', rD.el, rF.el));
+  const legendEl = legend([
+    { color: 'var(--pal-accent)', width: 3, text: String.raw`blue line: $\log_{10}$ of the factor, straight in $n$` },
+    { color: 'var(--pal-muted)', dash: true, width: 2, text: String.raw`grey dashed: a million, $10^{6}$` },
+    { chip: true, color: 'var(--pal-accent)', text: String.raw`blue dot: your $n$` }]);
+  const YMAX = 7;
+  const plot = fillPlot(widget, (svg, W, H) => {
+    axisFrame(svg, W, H);
+    const X = x => PM.l + x / 400 * (W - PM.l - PM.r), Y = y => H - PM.b - y / YMAX * (H - PM.t - PM.b);
+    for (const v of [0, 100, 200, 300, 400]) tick(svg, X(v), H - PM.b + 14, String(v));
+    for (const e of [0, 3, 6]) tick(svg, PM.l - 6, Y(e), '$10^{' + e + '}$', 'end');
+    svgTex(svg, W / 2, H - 12, String.raw`years from now, $n$`, { w: 200, size: 14 });
+    svgNode('line', { x1: PM.l, y1: Y(6), x2: W - PM.r, y2: Y(6), stroke: COL.muted, 'stroke-dasharray': '5 4' }, svg);
+    const pts = []; for (let x = 0; x <= 400; x += 2) pts.push([X(x), Y(x / DOUB * Math.log10(2))]);
+    linePts(svg, pts);
+    dot(svg, X(n), Y(n / DOUB * Math.log10(2)), COL.accent, 6);
+  });
+  const update = () => {
+    rD.set(fixed(n / DOUB, 1));
+    rF.set(sci(factorAt(n)));
+    plot.redraw();
+  };
+  update();
+  widget.append(legendEl, plot.wrap);
+  side.append(setTex(h('p', 'formula'), String.raw`factor $=2^{n/17}$, and $2^{20}=1{,}048{,}576\approx10^{6}$`));
+  side.append(triesList([
+    'Before you move the slider, guess the years for a millionfold. Write the number down.',
+    'Move the slider to your guess. Read the factor.',
+    String.raw`Move it to $340$ years. How many doublings is that? Why does $2^{20}$ look like $10^6$?`]));
+  side.append(setTex(h('p', 'where'), 'Why the log axis is straight: Primer · Logarithms, step 7.'));
+  side.append(takeLine('A millionfold is twenty doublings, so 340 years at a 17-year doubling.'));
+}
+
+// ---------- decision: what should a school teach ----------
+const D_TRIES = ['Read the problem.', 'Pick what you would do before he says it.', 'Read every verdict, not only yours.'];
+const DECISIONS = {
+  'what-to-teach': {
+    problem: String.raw`Knowledge keeps doubling, and most facts you learn in school will not last. Hamming asks what a course should give you for the years after it (18:16).`,
+    formula: String.raw`share still useful after $t$ years $=2^{-t/15}$`,
+    chooser: 2, who: 'Hamming',
+    options: [
+      { text: 'More facts, taught in more depth.',
+        assumes: 'the facts you learn now are the ones you will keep.',
+        verdict: 'Half of them are gone in 15 years, so the depth expires too.' },
+      { text: 'The latest facts, from this year\'s journals.',
+        assumes: 'the newest facts are the most useful.',
+        verdict: 'The newest facts expire too, and a course cannot keep up with them.' },
+      { text: 'How to learn: a way to pick up new facts after school.',
+        assumes: 'a way of learning outlasts the facts it was used on.',
+        verdict: 'This is Hamming\'s choice. The reveal says why.' }],
+    reveal: [
+      { k: "Hamming's answer", v: 'Learning to learn. Things become obsolete, so the skill of picking up new things is what lasts.', t: '18:48' },
+      { k: 'The number', v: 'Something like half of what we taught in other courses will be obsolete in 15 years.', t: '18:48' },
+      { k: 'His own start', v: 'He came to Bell Labs in 1946, when they ran vacuum tubes. Then came the transistor.', t: '19:20 to 19:50' }],
+    takeaway: 'Teach the way to learn, because the facts expire.' },
+  'sailor-decision': {
+    problem: String.raw`Each step of the sailor is a random stagger, one way or the other. Hamming asks how far he gets after many steps (30:44).`,
+    formula: String.raw`$d$: distance from the start after $n$ steps; $d\sim\sqrt n$ or $d\sim n$`,
+    chooser: 1, who: 'Hamming',
+    options: [
+      { text: 'About n: each step adds its full length to the distance.',
+        assumes: 'every step goes the same way.',
+        verdict: 'Only when every step goes the same way. A random stagger does not.' },
+      { text: 'About √n: the steps partly cancel, since they go both ways.',
+        assumes: 'random steps partly cancel.',
+        verdict: 'Yes. 100 steps give about 10, and 10,000 steps give about 100.' },
+      { text: 'About 0: he walks in circles and ends up near the start.',
+        assumes: 'a random walk returns to its start.',
+        verdict: 'He does not return: a walk usually ends some distance away.' }],
+    reveal: [
+      { k: "Hamming's answer", v: 'In n steps, typically the square root of n. In 100 steps, about 10.', t: '30:44' },
+      { k: 'With a steady pull', v: 'If each step leans one way, the distance grows with n, not with the root of n.', t: '31:15' },
+      { k: "Hamming's move", v: 'A vision gives the pull: progress proportional to n. Without one, you wander.', t: '31:15' }],
+    takeaway: 'Random steps grow like √n. A steady direction grows like n.' }
+};
+const DSTATE = {};
+Object.keys(DECISIONS).forEach(id => { DSTATE[id] = { pick: null, open: false }; });
+
+// ---------- slide 4: drunken sailor, with a pull ----------
+function slideDrunken(widget, side) {
+  let p = 0;
+  const sP = slider(String.raw`pull $p$`, { id: 'pull', name: 'pull p: average forward step', min: 0, max: 0.1, step: 0.005, value: p,
+    fmt: v => '$p=' + v.toFixed(3) + '$', onInput: v => { p = v; update(); } });
+  const rA = readout('d100', String.raw`exact distance after $100$ steps`);
+  const rB = readout('d10k', String.raw`exact distance after $10{,}000$ steps`);
+  const rC = readout('sim', String.raw`200 simulated walks, $10{,}000$ steps`);
+  widget.append(hh('div', 'sliders', sP.el), hh('div', 'readouts', rA.el, rB.el, rC.el));
+  const legendEl = legend([
+    { color: 'var(--pal-accent)', width: 3, text: String.raw`blue: distance $d$ with your $p$` },
+    { color: 'var(--pal-muted)', dash: true, width: 2, text: String.raw`grey dotted: $\sqrt n$, pure stagger` },
+    { color: 'var(--pal-grey)', dash: true, width: 2, text: String.raw`grey dashed: $pn$, the pull alone` }]);
+  const LM = 4;   // both axes run from 10^0 to 10^4
+  let simVal = 0, simKey = '';
+  const plot = fillPlot(widget, (svg, W, H) => {
+    axisFrame(svg, W, H);
+    const X = x => PM.l + x / LM * (W - PM.l - PM.r), Y = y => H - PM.b - y / LM * (H - PM.t - PM.b);
+    for (const e of [0, 1, 2, 3, 4]) { tick(svg, X(e), H - PM.b + 14, '$10^{' + e + '}$'); tick(svg, PM.l - 6, Y(e), '$10^{' + e + '}$', 'end'); }
+    svgTex(svg, W / 2, H - 12, String.raw`steps $n$ (log scale)`, { w: 220, size: 14 });
+    svgTex(svg, PM.l + 10, PM.t + 34, String.raw`distance $d$`, { w: 120, size: 14, anchor: 'start' });
+    const sq = []; for (let e = 0; e <= LM; e += 0.1) sq.push([X(e), Y(e / 2)]);
+    path(svg, sq, { stroke: COL.muted, 'stroke-width': 2, 'stroke-dasharray': '3 4' });
+    if (p > 0) { const pl = []; for (let e = Math.max(0, -Math.log10(p)); e <= LM; e += 0.1) pl.push([X(e), Y(Math.log10(p) + e)]); path(svg, pl, { stroke: COL.grey, 'stroke-width': 2, 'stroke-dasharray': '7 4' }); }
+    const pts = []; for (let e = 0; e <= LM; e += 0.05) pts.push([X(e), Y(Math.log10(rmsWalk(p, Math.pow(10, e))))]);
+    linePts(svg, pts);
+    dot(svg, X(2), Y(Math.log10(rmsWalk(p, 100))), COL.accent, 6);
+    dot(svg, X(4), Y(Math.log10(rmsWalk(p, 10000))), COL.accent, 6);
+  });
+  const update = () => {
+    rA.set(fixed(rmsWalk(p, 100), 1));
+    rB.set(fixed(rmsWalk(p, 10000), 1));
+    const key = p.toFixed(3);
+    if (key !== simKey) { simVal = simRms(p, 10000, 200, 7); simKey = key; }
+    rC.set(fixed(simVal, 1));
+    plot.redraw();
+  };
+  update();
+  widget.append(legendEl, plot.wrap);
+  side.append(setTex(h('p', 'formula'), String.raw`$d^2=n(1-p^2)+p^2n^2$, so $d\approx\sqrt n$ at $p=0$`));
+  side.append(setTex(h('p', 'sym'), String.raw`$p$: average forward step, from $0$ (pure stagger) to $1$ (straight line). The simulated walks check the formula.`));
+  side.append(triesList([
+    String.raw`Keep $p=0$. Read the distance after $10{,}000$ steps: about $100$.`,
+    String.raw`Raise $p$ to $0.01$. Is the distance after $10{,}000$ steps still near $100$?`,
+    String.raw`Raise $p$ to $0.1$. Where does the blue line leave the grey dotted line?`]));
+  side.append(takeLine(String.raw`Random steps grow like $\sqrt n$. A steady pull grows like $n$, and it wins after about $1/p^2$ steps.`));
+}
+
+// ---------- slide 5: how fast facts expire ----------
+function slideHalfLife(widget, side) {
+  let t = 0;
+  const sT = slider(String.raw`years since school, $t$`, { id: 'years-after', name: 'years after school', min: 0, max: 45, step: 1, value: t,
+    fmt: v => '$' + v + '$ years', onInput: v => { t = v; update(); } });
+  const rS = readout('share', String.raw`share still useful, $2^{-t/15}$`);
+  widget.append(hh('div', 'sliders', sT.el), hh('div', 'readouts', rS.el));
+  const legendEl = legend([
+    { color: 'var(--pal-accent)', width: 3, text: String.raw`blue curve: share still useful after $t$ years` },
+    { color: 'var(--pal-muted)', dash: true, width: 2, text: 'grey dashed: half and a quarter left' },
+    { chip: true, color: 'var(--pal-accent)', text: String.raw`blue dot: your $t$` }]);
+  const plot = fillPlot(widget, (svg, W, H) => {
+    axisFrame(svg, W, H);
+    const X = x => PM.l + x / 45 * (W - PM.l - PM.r), Y = y => H - PM.b - y * (H - PM.t - PM.b);
+    for (const v of [0, 15, 30, 45]) tick(svg, X(v), H - PM.b + 14, String(v));
+    for (const v of [0, 0.5, 1]) tick(svg, PM.l - 6, Y(v), pctTxt(v), 'end');
+    svgTex(svg, W / 2, H - 12, String.raw`years since school, $t$`, { w: 220, size: 14 });
+    for (const v of [0.5, 0.25]) svgNode('line', { x1: PM.l, y1: Y(v), x2: W - PM.r, y2: Y(v), stroke: COL.muted, 'stroke-dasharray': '5 4' }, svg);
+    const pts = []; for (let x = 0; x <= 45; x += 0.5) pts.push([X(x), Y(usefulAt(x))]);
+    linePts(svg, pts);
+    svgNode('line', { x1: X(t), y1: PM.t, x2: X(t), y2: H - PM.b, stroke: COL.accent, 'stroke-dasharray': '2 3' }, svg);
+    dot(svg, X(t), Y(usefulAt(t)), COL.accent, 6);
+  });
+  const update = () => { rS.set(pctTxt(usefulAt(t))); plot.redraw(); };
+  update();
+  widget.append(legendEl, plot.wrap);
+  side.append(setTex(h('p', 'formula'), String.raw`share still useful $=2^{-t/15}$: each $15$ years halves it`));
+  side.append(triesList([
+    String.raw`Set $t=15$ years. What share is left?`,
+    String.raw`Set $t=30$ years. Is it a quarter?`,
+    String.raw`Set $t=45$ years. Is it zero, or what?`]));
+  side.append(setTex(h('p', 'where'), 'Half-lives: Primer · Exponentials, step 7.'));
+  side.append(takeLine('Half of the facts are gone in 15 years, and a quarter in 30. None is ever zero.'));
+}
+
+// ---------- slide 6: straight in the value, or straight in the log ----------
+function slideLinear(widget, side) {
+  let W = 10;
+  const sW = slider(String.raw`years of data used, $W$`, { id: 'window', name: 'years of data used for the fit', min: 6, max: 31, step: 1, value: W,
+    fmt: v => '$' + v + '$ years', onInput: v => { W = v; update(); } });
+  const rL = readout('lin', String.raw`year 40, straight in the value`);
+  const rG = readout('log', String.raw`year 40, straight in the log`);
+  const rT = readout('rule', String.raw`year 40, rule behind the data`);
+  widget.append(hh('div', 'sliders', sW.el), hh('div', 'readouts', rL.el, rG.el, rT.el));
+  const legendEl = legend([
+    { color: 'var(--pal-muted)', dash: true, width: 2, text: 'grey dashed: a straight line through the values' },
+    { color: 'var(--pal-accent)', width: 3, text: 'blue: a straight line through the logs, a curve in value' },
+    { chip: true, color: 'var(--pal-grey)', text: 'grey dots: made-up yearly data' },
+    { chip: true, color: 'color-mix(in srgb, var(--pal-accent) var(--tint-pct), transparent)', text: 'shaded: the years used' }]);
+  const YM = 8, TX = 40;
+  const plot = fillPlot(widget, (svg, Wd, H) => {
+    axisFrame(svg, Wd, H);
+    const X = x => PM.l + x / TX * (Wd - PM.l - PM.r), Y = y => H - PM.b - y / YM * (H - PM.t - PM.b);
+    for (const v of [0, 10, 20, 30, 40]) tick(svg, X(v), H - PM.b + 14, String(v));
+    for (const v of [0, 2, 4, 6, 8]) tick(svg, PM.l - 6, Y(v), String(v), 'end');
+    svgTex(svg, Wd / 2, H - 12, String.raw`year $t$`, { w: 120, size: 14 });
+    const f = forecasts(W, TX);
+    svgNode('rect', { x: X(31 - W), y: PM.t, width: X(30) - X(31 - W), height: H - PM.b - PM.t, fill: COL.accent, 'fill-opacity': FluidTheme.isDark() ? 0.3 : 0.14 }, svg);
+    const lp = []; for (let x = 0; x <= TX; x += 0.5) lp.push([X(x), Y(f.linAB.a + f.linAB.b * x)]);
+    path(svg, lp, { stroke: COL.muted, 'stroke-width': 2.5, 'stroke-dasharray': '7 4' });
+    const gp = []; for (let x = 0; x <= TX; x += 0.5) gp.push([X(x), Y(Math.exp(f.logAB.a + f.logAB.b * x))]);
+    linePts(svg, gp);
+    DATA.forEach((v, t) => dot(svg, X(t), Y(v), COL.grey, 3.5));
+  });
+  const update = () => {
+    const f = forecasts(W, 40);
+    rL.set(fixed(f.lin, 2));
+    rG.set(fixed(f.log, 2));
+    rT.set(fixed(Math.pow(2, 40 / DOUB), 2));
+    plot.redraw();
+  };
+  update();
+  widget.append(legendEl, plot.wrap);
+  side.append(setTex(h('p', 'sym'), String.raw`$v_t$: the value in year $t$. Straight in the value: $v=a+bt$. Straight in the log: $\ln v=a+bt$.`));
+  side.append(triesList([
+    'Before you move anything, guess which line is higher at year 40.',
+    'Set the window to 10 years. Check your guess.',
+    'Move the window from 10 years to 30. Which forecast moves more?']));
+  side.append(takeLine('Making the value straight and making the log straight give different forecasts.'));
+}
+
+function revealDecision(id, by) {
+  const st = DSTATE[id];
+  if (!st || st.open) return false;
+  st.open = true;
+  emit('view.action', { action: 'reveal', step: id, by: by });
+  return true;
+}
+function mountDecision(s, widget, side, sec) {
+  const D = DECISIONS[s.id], st = DSTATE[s.id], open = st.open;
+  const redraw = () => goTo(cur, true);
+  const prob = mark(h('div', 'prob'), 'problem', s.id);
+  prob.append(hh('p', '', h('span', 'lead', 'The problem.'), document.createTextNode(' '), setTex(h('span'), D.problem)));
+  const opts = h('div', 'opts');
+  D.options.forEach((o, k) => {
+    const L = 'ABC'[k];
+    const card = mark(h('div', 'opt'), 'card', L, o.text.replace(/\$/g, ''));
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-disabled', open ? 'true' : 'false');
+    card.tabIndex = open ? -1 : 0;
+    card.classList.toggle('on', st.pick === L);
+    card.classList.toggle('chooser', open && k === D.chooser);
+    const who = [];
+    if (st.pick === L) who.push('Your pick');
+    if (open && k === D.chooser) who.push(D.who);
+    const top = hh('div', 'top', h('span', 'letter', L), h('span', 'who', who.join(', ')));
+    const asm = setTex(h('p', 'asm'), 'Assumes: ' + o.assumes);
+    const verdict = open ? setTex(h('div', 'verdict'), o.verdict) : h('div', 'verdict idle', 'Verdict after your pick.');
+    card.append(hh('div', 'lhs', top, setTex(h('div', 'body'), o.text)), hh('div', 'rhs', asm, verdict));
+    card.addEventListener('click', () => {
+      if (DSTATE[s.id].open) return;
+      st.pick = L;
+      emit('view.action', { action: 'pick', step: s.id, option: L, correct: k === D.chooser });
+      revealDecision(s.id, 'user');
+      redraw();
+    });
+    opts.append(card);
+  });
+  const rev = mark(h('div', 'reveal'), 'reveal', s.id);
+  if (!open) {
+    rev.classList.add('idle');
+    for (const r of D.reveal) rev.append(hh('p', 'rv hold', h('span', 'k', r.k + '. '), h('span', '', 'Shown after your pick.')));
+    const btn = mark(h('button', 'btn primary', 'Show answer'), 'control', 'show-answer');
+    btn.addEventListener('click', () => { if (revealDecision(s.id, 'user')) redraw(); });
+    rev.append(hh('div', 'actions', btn));
+  } else {
+    for (const r of D.reveal) {
+      const p = hh('p', 'rv', h('span', 'k', r.k + '. '));
+      p.append(setTex(h('span'), r.v), h('span', 't', ' (' + r.t + ')'));
+      rev.append(p);
+    }
+  }
+  widget.append(prob, opts, rev);
+  side.append(setTex(h('p', 'fx'), D.formula));
+  if (D.symbols) side.append(sym(D.symbols));
+  side.append(hh('div', 'blk', h('div', 'kicker', 'Try it'), hh('ol', 'tries', ...D_TRIES.map(t => h('li', '', t)))));
+  if (D.ai) {
+    if (open) {
+      const p = setTex(h('p', 'ai'), D.ai);
+      p.append(' ', h('span', 'src', '(' + D.src + ')'));
+      side.append(hh('div', 'blk', h('div', 'kicker', 'Same move in AI research'), p));
+    } else side.append(hh('div', 'blk', h('div', 'kicker', 'Same move in AI research'), h('p', 'hold ai', 'Shown after your pick.')));
+  }
+  side.append(open ? takeLine(D.takeaway) : h('p', 'hold', 'Takeaway: shown after your pick.'));
+}
+
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'doubling-check', kind: 'content', tag: 'Lecture 11:59 to 14:02', title: 'Can both claims be true?',
+    question: String.raw`Knowledge doubles every 17 years, and 90% of all scientists who ever lived are alive now. Are both true?`,
+    symbols: String.raw`$D=17$: years per doubling. $L$: working life, the years a scientist counts as alive. Share alive: the part of all scientists ever born who were born in the last $L$ years.`,
+    mount: slideDoubling },
+  { id: 'most-is-recent', kind: 'content', tag: 'Lecture 12:29 to 13:00', title: 'Why the recent years hold most of the knowledge',
+    question: String.raw`If knowledge doubles every 17 years, how much of all knowledge so far came in the last 17 years? In the last 51?`,
+    symbols: String.raw`Each bar is one year's new knowledge, growing as $e^{bt}$ with $b=\ln 2/17$. The total so far is the area of all the bars.`,
+    mount: slideMostRecent },
+  { id: 'millionfold', kind: 'content', tag: 'Lecture 14:34', title: 'How many years make a millionfold?',
+    question: String.raw`Knowledge doubles every 17 years. How many years until it is a million times bigger?`,
+    symbols: String.raw`$n$: years from now. Factor: how many times bigger it is then. $2^{20}=1{,}048{,}576$, so twenty doublings make about a million.`,
+    mount: slideMillion },
+  { id: 'what-to-teach', kind: 'decision', tag: 'Lecture 18:16, answer 18:48', title: 'What should a course teach when facts expire?',
+    question: 'If the facts you learn in school become obsolete, what should the course give you?' },
+  { id: 'half-life', kind: 'content', tag: 'Lecture 18:48', title: 'How fast do facts expire?',
+    question: String.raw`If half of what you learn is obsolete in 15 years, how much is still useful after 30 years?`,
+    symbols: String.raw`$t$: years since school. Share still useful: $2^{-t/15}$, so half is left after each 15 years.`,
+    mount: slideHalfLife },
+  { id: 'linear-vs-exponent', kind: 'content', tag: 'Lecture 24:30 to 25:33', title: 'Two ways to extend a trend',
+    question: String.raw`The data double every 17 years. Which straight line gives the better forecast for year 40?`,
+    symbols: String.raw`The data are made up, for practice. The fit uses the last $W$ years.`,
+    mount: slideLinear },
+  { id: 'sailor-decision', kind: 'decision', tag: 'Lecture 30:44, answer 31:15', title: 'How far does a random walker get?',
+    question: String.raw`A sailor takes $n$ random steps. About how far from the start is he?` },
+  { id: 'drunken-sailor', kind: 'content', tag: 'Lecture 30:44 to 31:46', title: 'Random steps, and a steady pull',
+    question: 'Give each step a small pull in one direction. After how many steps does the pull matter more than the stagger?',
+    symbols: String.raw`$d$: root-mean-square distance from the start after $n$ steps. Each step has mean $p$ and variance $1-p^2$.`,
+    mount: slideDrunken }
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i, same) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const side = h('div', 'side');
+  side.append(h('div', 'tag', s.tag), setTex(h('h2'), s.title));
+  side.append(setTex(h('p', s.kind === 'decision' ? 'q' : 'question'), s.question));
+  if (s.symbols) side.append(sym(s.symbols));
+  const cls = 'slide' + (s.kind === 'proof' ? ' proof-slide' : s.kind === 'decision' ? ' decision' : '');
+  const sec = mark(h('section', cls), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  if (s.kind === 'decision') mountDecision(s, widget, side, sec);
+  else s.mount(widget, side);
+  // On a content slide the takeaway is dimmed until the user has tried a control.
+  const tk = s.kind === 'content' ? side.querySelector('.takeaway') : null;
+  if (tk) {
+    tk.classList.add('dim');
+    const openTk = () => tk.classList.remove('dim');
+    sec.addEventListener('input', openTk);
+    sec.addEventListener('click', e => { if (e.target.closest('[data-item="control"],[data-item="preset"]')) openTk(); });
+    sec.addEventListener('pointerdown', e => { if (e.target.closest('[data-item="control"]')) openTk(); });
+  }
+  tex(sec);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, k) => d.classList.toggle('on', k === cur));
+}
+// A cue is a state. {step} goes to the step and does nothing if it is shown. {step, reveal: true}
+// also reveals that decision, once; a revealed decision stays revealed.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i < 0) return;
+  const changed = msg.reveal === true && SLIDES[i].kind === 'decision' && revealDecision(SLIDES[i].id, 'cue');
+  if (i !== cur || changed) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.target && e.target.classList && e.target.classList.contains('opt') && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault(); e.target.click(); return;
+    }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

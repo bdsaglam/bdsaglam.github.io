@@ -1,0 +1,1978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Out there: what high dimensions look like</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+/* Colors: white page, one accent (blue), red only for a failing check or the cube limit. */
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(6px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(18px,1.8vw,26px)}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.where{margin:0;font-size:16px}
+.where b{color:var(--accent)}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.closing{margin:0;font-size:17px;font-weight:600}
+.next{margin:0;font-size:16px;color:var(--muted)}
+
+/* Controls and readouts */
+.sliders{display:flex;gap:8px 24px;flex-wrap:wrap;width:100%}
+.sliders.tight{gap:6px 16px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(120px,11vw,170px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:52px}
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--accent)}
+.guess{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;width:100%}
+.guess .btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.guess .verdict{margin:0;font-size:16px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.readout.bad{background:var(--redbg);color:var(--red)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+/* Plots fill the space left in the widget column */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plot-static svg{display:block;width:100%;height:auto}
+.row{display:flex;gap:12px;align-items:stretch;width:100%;min-height:200px;flex:1 1 0}
+.diagram{flex:0 0 auto;display:flex;align-items:stretch}
+.diagram svg{display:block;height:100%;width:auto;aspect-ratio:250/252}
+.panel{display:flex;flex-direction:column;gap:0;padding:2px 0 2px 10px;border-left:3px solid var(--line)}
+.panel .pl{font-weight:650;color:var(--accent);font-size:16px}
+.panel p{margin:0;font-size:16px;line-height:1.2}
+.panel.seen{border-left:none;background:var(--chip);border-radius:8px;padding:8px 10px}
+.panel.seen .pl{color:var(--fg)}
+.strip-row{display:flex;align-items:center;gap:10px;width:100%}
+.strip-lab{flex:0 0 170px;font-size:15px;color:var(--muted)}
+.strip-row svg{flex:1 1 auto;width:100%;height:26px;display:block}
+.row-line{display:flex;align-items:center;gap:8px;width:100%}
+.row-line svg{flex:1 1 auto;width:100%;height:14px;display:block}
+.row-k{flex:0 0 60px;font-size:15px;color:var(--muted)}
+.why{margin:0;font-size:16px;line-height:1.3}
+.tbox{display:flex;flex-direction:column;gap:4px;width:100%}
+.triple{display:grid;grid-template-columns:max-content repeat(10,28px);gap:3px 4px;align-items:center}
+.triple .tn{font-size:13px;color:var(--muted);text-align:center}
+.triple .tl{font-size:15px;padding-right:8px;white-space:nowrap}
+.triple .tc{height:22px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:var(--pal-soft-2);font:16px ui-monospace,Menlo,monospace}
+.triple .tc.flip{background:var(--red);color:var(--pal-on-accent);font-weight:700}
+.rows{display:flex;flex-direction:column;gap:3px;width:100%}
+.proof-line{display:grid;grid-template-columns:30px minmax(0,1fr);gap:0 8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--pal-soft-3)}
+.proof-num{font:15px ui-monospace,Menlo,monospace;color:var(--muted)}
+.proof-eq{font-size:17px;min-width:0}
+.proof-why{grid-column:2;margin:0;color:var(--muted);font-size:16px;line-height:1.2}
+.proof{display:flex;flex-direction:column;width:100%}
+.panel p.cite{font-size:14px;color:var(--muted);line-height:1.15}
+.pgrid{display:grid;grid-template-columns:max-content repeat(10,30px);gap:4px;align-items:center;justify-content:start}
+.pgrid .ax{font-size:13px;color:var(--muted);text-align:center}
+.pc{width:30px;height:30px;padding:0;border:0;border-radius:4px;background:var(--pal-accent-tint);cursor:pointer}
+.pc.on{background:var(--accent);box-shadow:0 0 0 2px var(--pal-ink)}
+.steps{position:absolute;inset:0;z-index:3;background:var(--pal-panel);display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.widget{position:relative}
+/* Short windows (1100x620 and similar): tighter spacing, body text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:5px}
+  .side{gap:6px}
+  .tries{gap:3px}
+  .sym,.where,.tries{line-height:1.2}
+  .panel p{line-height:1.15}
+  .side{gap:4px}
+  .proof-line{padding:1px 0}
+  .guess{gap:3px;padding:6px 8px}
+  .fill{min-height:110px}
+  .readout{padding:3px 8px}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:20px}
+  .pc{width:20px;height:20px}
+  .pgrid{grid-template-columns:max-content repeat(10,20px)}
+  h2{font-size:20px}
+}
+</style>
+</head>
+<body>
+<header>Out there: what high dimensions look like</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script>
+// ---------- math (exact formulas, seeded sampling) ----------
+const NS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];   // dimensions, slides 1 and 3
+const NS_ANG = [3, 5, 10, 20, 50, 100, 200, 500, 1000];  // dimensions, slide 4 (angles need n >= 3)
+const NS_BOX = [10, 20, 50, 100, 200, 500, 1000];        // block lengths, slide 7
+const log2 = Math.log2;
+// log of the gamma function (Lanczos), natural log.
+function lgamma(z) {
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+    -176.61503916999385, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (z < 0.5) return Math.log(Math.PI / Math.abs(Math.sin(Math.PI * z))) - lgamma(1 - z);
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < 9; i++) x += c[i] / (z + i);
+  const t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+// log2 C(n,k)
+function lnBinom(n, k) { return (lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1)) / Math.LN2; }
+// log2 of a sum of 2^x
+function lse2(xs) {
+  let m = -Infinity;
+  for (const x of xs) if (x > m) m = x;
+  if (m === -Infinity) return -Infinity;
+  let s = 0;
+  for (const x of xs) s += Math.pow(2, x - m);
+  return m + log2(s);
+}
+// Binary entropy H(x) in bits.
+function Hb(x) { if (x <= 0 || x >= 1) return 0; return -x * log2(x) - (1 - x) * log2(1 - x); }
+// Mean and sd of |x| for x standard Gaussian in n dimensions (chi with n degrees of freedom).
+function chiMean(n) { return Math.SQRT2 * Math.exp(lgamma((n + 1) / 2) - lgamma(n / 2)); }
+function chiSd(n) { const m = chiMean(n); return Math.sqrt(Math.max(0, n - m * m)); }
+// Density of |x| at r.
+function chiDens(r, n) {
+  if (r <= 0) return 0;
+  return Math.exp((n - 1) * Math.log(r) - r * r / 2 - ((n / 2 - 1) * Math.LN2 + lgamma(n / 2)));
+}
+// Density of the cosine of the angle between two random unit vectors in n dimensions.
+function cosDens(c, n) {
+  return Math.exp(lgamma(n / 2) - 0.5 * Math.log(Math.PI) - lgamma((n - 1) / 2)) * Math.pow(1 - c * c, (n - 3) / 2);
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+// One standard Gaussian draw (Box-Muller).
+function gauss(rnd) { let u = 0; while (u === 0) u = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); }
+function gaussVec(rnd, n, out) { for (let i = 0; i < n; i++) out[i] = gauss(rnd); return out; }
+// Samples per update: at most ~200k Gaussian draws.
+function sampleCount(n, per) { return Math.min(2000, Math.max(20, Math.floor(200000 / (n * per)))); }
+// Lengths |x| of S random Gaussian points in n dimensions.
+function randLengths(n, S, seed) {
+  const rnd = mulberry32(seed), out = new Float64Array(S), x = new Float64Array(n);
+  for (let s = 0; s < S; s++) {
+    gaussVec(rnd, n, x);
+    let q = 0;
+    for (let i = 0; i < n; i++) q += x[i] * x[i];
+    out[s] = Math.sqrt(q);
+  }
+  return out;
+}
+// Angles in degrees between S pairs of random directions in n dimensions.
+function randAngles(n, S, seed) {
+  const rnd = mulberry32(seed), u = new Float64Array(n), v = new Float64Array(n), out = new Float64Array(S);
+  for (let s = 0; s < S; s++) {
+    gaussVec(rnd, n, u); gaussVec(rnd, n, v);
+    let d = 0, nu = 0, nv = 0;
+    for (let i = 0; i < n; i++) { d += u[i] * v[i]; nu += u[i] * u[i]; nv += v[i] * v[i]; }
+    let c = d / Math.sqrt(nu * nv);
+    c = Math.max(-1, Math.min(1, c));
+    out[s] = Math.acos(c) * 180 / Math.PI;
+  }
+  return out;
+}
+// Distances from one random query point to M = 100 random points, n dimensions. Cached per n.
+const distCache = {};
+function distsFor(n) {
+  if (distCache[n]) return distCache[n];
+  const rnd = mulberry32(5000 + n), q = new Float64Array(n), x = new Float64Array(n), M = 100, d = new Float64Array(M);
+  gaussVec(rnd, n, q);
+  for (let m = 0; m < M; m++) {
+    gaussVec(rnd, n, x);
+    let s = 0;
+    for (let i = 0; i < n; i++) { const t = x[i] - q[i]; s += t * t; }
+    d[m] = Math.sqrt(s);
+  }
+  distCache[n] = d;
+  return d;
+}
+function mean(a) { let s = 0; for (const x of a) s += x; return s / a.length; }
+function sdOf(a) { const m = mean(a); let s = 0; for (const x of a) s += (x - m) * (x - m); return Math.sqrt(s / a.length); }
+function binCounts(vals, x0, x1, bins) {
+  const c = new Array(bins).fill(0), w = (x1 - x0) / bins;
+  for (const v of vals) {
+    if (v < x0 || v >= x1) continue;
+    c[Math.min(bins - 1, Math.floor((v - x0) / w))]++;
+  }
+  return c;
+}
+
+// ---------- palette and redraw ----------
+// COL holds the palette colors for the SVG being drawn. fillPlot reads it at every paint, so a draw always
+// uses the current theme. Light values are the old literals, so the light theme is unchanged.
+let COL = {};
+const PAL_NAMES = ['ink', 'text-2', 'muted', 'grey', 'accent', 'accent-2', 'accent-3', 'accent-deep', 'accent-tint',
+  'on-accent', 'bg', 'red', 'red-bg', 'soft-2'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];   // the plots on the current slide; a theme switch redraws them, and keeps every control's state
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+
+// ---------- DOM and drawing helpers ----------
+let epoch = 0;
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || COL.text2) + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// Same label with a white halo, so it reads over a curve or bars.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px ' + COL.bg + ', 0 0 3px ' + COL.bg + ', 0 0 2px ' + COL.bg;
+  return fo;
+}
+// A small number for a readout: plain decimals, or a LaTeX power of ten for tiny values.
+function sci(x) {
+  if (x === 0) return '0';
+  if (Math.abs(x) >= 0.01) return x.toFixed(4);
+  const parts = x.toExponential(2).split('e');
+  return '$' + parts[0] + '\\times 10^{' + parseInt(parts[1], 10) + '}$';
+}
+// A labelled range input. label is LaTeX-ready text; fmt gives the value text.
+function slider(label, o) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = tex(h('span', '', label));
+  const val = h('span', 'val', '');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = o.min; inp.max = o.max; inp.step = o.step; inp.value = o.value;
+  mark(inp, 'control', o.id, o.name || o.id);
+  wrap.append(lab, inp, val);
+  const fmt = o.fmt || String;
+  const api = {
+    el: wrap,
+    input: inp,
+    get value() { return +inp.value; },
+    show() { setTex(val, fmt(+inp.value)); },
+  };
+  inp.addEventListener('input', () => { api.show(); if (o.onInput) o.onInput(+inp.value); });
+  api.show();
+  return api;
+}
+// A readout box: label and value are LaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return { el: box, set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); } };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) sw.style.background = it.color;
+    else sw.style.borderTop = '2px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize.
+function fillPlot(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    COL = readPalette();
+    const svg = svgRoot(w, ht);
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// A histogram with an optional exact curve, marks (dashed lines with labels) and x ticks.
+// o: {x0, x1, S, counts, curve(x) -> density, marks: [{x, label, y}], xlabel}
+function histPlot(svg, W, H, o) {
+  const L = 46, R = 14, T = 16, B = 52, base = H - B, pw = W - L - R;
+  const bins = o.counts.length, bw = (o.x1 - o.x0) / bins;
+  const X = x => L + (x - o.x0) / (o.x1 - o.x0) * pw;
+  const bars = o.counts.map(c => c / (o.S * bw));
+  const cur = [];
+  for (let i = 0; i <= 200; i++) cur.push(o.curve ? o.curve(o.x0 + (o.x1 - o.x0) * i / 200) : 0);
+  let ymax = 0;
+  for (const v of bars) if (v > ymax) ymax = v;
+  for (const v of cur) if (isFinite(v) && v > ymax) ymax = v;
+  ymax = ymax > 0 ? ymax * 1.15 : 1;
+  const Y = v => base - v / ymax * (base - T);
+  svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+  svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+  const bwPx = pw / bins;
+  bars.forEach((dv, i) => {
+    const x = L + i * bwPx, y = Y(dv);
+    svgNode('rect', { x: x.toFixed(2), y: y.toFixed(2), width: Math.max(0.5, bwPx - 1).toFixed(2),
+      height: Math.max(0, base - y).toFixed(2), fill: COL.grey, 'data-item': 'mark', 'data-id': 'bars' }, svg);
+  });
+  if (o.curve) {
+    let d = '';
+    for (let i = 0; i <= 200; i++) {
+      const x = o.x0 + (o.x1 - o.x0) * i / 200;
+      d += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(isFinite(cur[i]) ? cur[i] : 0).toFixed(1);
+    }
+    svgNode('path', { d: d, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'curve' }, svg);
+  }
+  for (let i = 0; i <= 4; i++) {
+    const v = o.x0 + (o.x1 - o.x0) * i / 4;
+    svgText(svg, X(v), base + 18, String(Math.round(v * 100) / 100), { 'text-anchor': 'middle', 'font-size': 15 });
+  }
+  for (const m of (o.marks || [])) {
+    if (m.x < o.x0 || m.x > o.x1) continue;
+    svgNode('line', { x1: X(m.x).toFixed(1), y1: T, x2: X(m.x).toFixed(1), y2: base, stroke: COL.ink, 'stroke-dasharray': '4 3', 'data-item': 'mark', 'data-id': m.id || 'mark' }, svg);
+    haloTex(svg, X(m.x), m.y || T + 8, m.label, { w: 130, size: 15, fill: COL.ink });
+  }
+  svgTex(svg, (L + W - R) / 2, H - 12, o.xlabel, { w: 340, size: 15 });
+  return svg;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+function whereLine(text) {
+  const p = h('p', 'where');
+  const s = h('span');
+  setTex(s, text);
+  p.append(h('b', '', 'Where you meet it: '), s);
+  return p;
+}
+function takeLine(text) { return setTex(h('p', 'takeaway'), text); }
+// A prediction box: the user commits to one guess and sees the verdict and the answer at once;
+// the slider is there to watch it happen. A wrong answer key fails loudly instead of marking every guess wrong.
+function guessBox(prompt, choices, answer, reveal) {
+  if (!choices.some(([id]) => id === answer)) throw new Error('guessBox: answer ' + answer + ' is not a choice');
+  let chosen = null;
+  const el = h('div', 'guess');
+  const row = h('div', 'btnrow');
+  const out = h('p', 'verdict');
+  const btns = choices.map(([id, label]) => {
+    const b = mark(h('button', 'btn'), 'control', 'guess-' + id);
+    setTex(b, label);
+    b.addEventListener('click', () => {
+      chosen = id;
+      emit('view.action', { action: 'guess', guess: id, correct: id === answer });
+      refresh();
+    });
+    row.append(b);
+    return [id, b, label];
+  });
+  function refresh() {
+    btns.forEach(([id, b]) => b.classList.toggle('on', id === chosen));
+    if (chosen === null) setTex(out, 'Commit to one guess first.');
+    else setTex(out, (chosen === answer ? 'Right. ' : 'Not this one. ') + 'The answer: ' + reveal + ' Move the slider to see it.');
+  }
+  el.append(setTex(h('p', 'verdict'), prompt), row, out);
+  refresh();
+  return { el: el, moved() {} };
+}
+// Session events. Optional: with no bridge, nothing is sent.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* the view works without the bridge */ }
+}
+
+// ---------- slide 1: the one mechanism, seen in the length of a Gaussian point ----------
+function slideMech(widget, side) {
+  let ni = 0, plot = null, data = null;
+  const g = guessBox(String.raw`Guess first: at $n = 100$, where is a typical sample's distance from the center?`,
+    [['zero', 'near 0'], ['one', 'near 1'], ['ten', 'near 10']], 'ten',
+    String.raw`near 10. The mean distance is $9.975$, and $\sqrt{100}=10$.`);
+  const sl = slider(String.raw`$n$, dimension`, { id: 'n', name: 'dimension', min: 0, max: NS.length - 1, step: 1, value: ni,
+    fmt: v => String(NS[v]), onInput: v => { ni = v; g.moved(); update(); } });
+  const rM = readout('mean', String.raw`sample mean of $\|x\|$`);
+  const rR = readout('root', String.raw`$\sqrt{n}$`);
+  const rS = readout('sd', String.raw`wobble: exact $\sigma$ of $\|x\|$`);
+  const rRel = readout('rel', String.raw`relative wobble $\sigma/\mu$`);
+  const rA = readout('formula', String.raw`$1/\sqrt{2n}$`);
+  widget.append(g.el, hh('div', 'sliders', sl.el), legend([
+    { color: 'var(--pal-grey)', text: String.raw`bars: samples of $\|x\|$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue: exact density of $\|x\|$` },
+    { color: 'var(--pal-ink)', text: String.raw`dashed: $\sqrt{n}$`, dash: true }]));
+  plot = fillPlot(widget, drawNorm);
+  widget.append(hh('div', 'readouts', rM.el, rR.el, rS.el, rRel.el, rA.el));
+  function update() {
+    const n = NS[ni], S = sampleCount(n, 1);
+    const vals = randLengths(n, S, 3000 + n);
+    const mu = chiMean(n), sd = chiSd(n);
+    data = { n, S, vals, x1: Math.sqrt(n) + 4 };
+    rM.set(mean(vals).toFixed(3));
+    rR.set(Math.sqrt(n).toFixed(3));
+    rS.set(sd.toFixed(3));
+    rRel.set((sd / mu).toFixed(4));
+    rA.set((1 / Math.sqrt(2 * n)).toFixed(4));
+    plot.redraw();
+  }
+  function drawNorm(svg, W, H) {
+    if (!data) return;
+    const d = data;
+    histPlot(svg, W, H, {
+      x0: 0, x1: d.x1, S: d.S, counts: binCounts(d.vals, 0, d.x1, 50),
+      curve: r => chiDens(r, d.n),
+      marks: [{ x: Math.sqrt(d.n), label: String.raw`$\sqrt{n}$`, y: 16, id: 'shell-radius' }],
+      xlabel: String.raw`$\|x\|$, distance from the center`,
+    });
+  }
+  side.append(
+    sym(String.raw`$x$: a random point, $n$ standard Gaussian coordinates. $\|x\|$: its distance from the center. Example, $n=3$: $x=(0.3,\,-1.2,\,0.8)$, $\|x\|^2=2.17$.`),
+    triesList([
+      String.raw`Move $n$ from $2$ to $100$. The lengths move out to $\sqrt{100}=10$; none stay near $0$, where the density peaks.`,
+      String.raw`Read the wobble: about $0.7$ at every $n$, so the relative wobble shrinks like $1/\sqrt{2n}$.`]),
+    whereLine(String.raw`attention scores and latent interpolation, next.`),
+    takeLine(String.raw`A sum of $n$ pieces grows like $n$, wobbles like $\sqrt{n}$: a random point sits on a thin shell of radius $\sqrt{n}$.`));
+  update();
+}
+
+// ---------- slide 2: volume in a thin shell ----------
+function slideShell(widget, side) {
+  let eps = 0.05, ex = 1, plot = null;
+  const g = guessBox(String.raw`Guess first: at $n = 100$ and $\varepsilon = 0.05$, what share of the ball's volume lies in the shell?`,
+    [['5', 'about 5%'], ['50', 'about 50%'], ['99', 'over 99%']], '99',
+    String.raw`over 99%. Check: $1-0.95^{100}=0.9941$.`);
+  const sE = slider(String.raw`$\varepsilon$, shell thickness`, { id: 'eps', name: 'shell thickness', min: 0.01, max: 0.5, step: 0.01, value: eps,
+    fmt: v => v.toFixed(2), onInput: v => { eps = v; g.moved(); update(); } });
+  const sN = slider(String.raw`$n$, dimension`, { id: 'n', name: 'dimension', min: 0, max: 3, step: 0.01, value: ex,
+    fmt: v => String(Math.round(Math.pow(10, v))), onInput: v => { ex = v; g.moved(); update(); } });
+  const rShell = readout('shell', String.raw`share in shell: $1-(1-\varepsilon)^n$`);
+  const rInner = readout('inner', String.raw`inner ball: $(1-\varepsilon)^n$`);
+  widget.append(g.el, hh('div', 'sliders', sE.el, sN.el), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue: share of volume in the shell` },
+    { color: 'var(--pal-ink)', text: String.raw`dot: your $n$` }]));
+  plot = fillPlot(widget, drawShell);
+  widget.append(hh('div', 'readouts', rShell.el, rInner.el));
+  function update() {
+    const n = Math.round(Math.pow(10, ex));
+    rShell.set((1 - Math.pow(1 - eps, n)).toFixed(4));
+    rInner.set(sci(Math.pow(1 - eps, n)));
+    plot.redraw();
+  }
+  function drawShell(svg, W, H) {
+    const L = 46, R = 14, T = 14, B = 44, base = H - B, pw = W - L - R;
+    const X = e => L + e / 3 * pw, Y = v => base - v * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 0.5, 1]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end' });
+    for (const e of [0, 1, 2, 3]) svgTex(svg, X(e), base + 18, '$' + Math.pow(10, e) + '$', { w: 80, size: 15 });
+    let d = '';
+    for (let i = 0; i <= 150; i++) {
+      const e = 3 * i / 150, n = Math.pow(10, e);
+      d += (i ? 'L' : 'M') + X(e).toFixed(1) + ' ' + Y(1 - Math.pow(1 - eps, n)).toFixed(1);
+    }
+    svgNode('path', { d: d, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'shell-curve' }, svg);
+    const ne = Math.round(Math.pow(10, ex)), e2 = Math.log10(ne), sh = 1 - Math.pow(1 - eps, ne);
+    svgNode('circle', { cx: X(e2).toFixed(1), cy: Y(sh).toFixed(1), r: 5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'n-dot' }, svg);
+    const left = e2 > 1.8;
+    haloTex(svg, left ? X(e2) - 10 : X(e2) + 10, Y(sh) + 22, '$n=' + ne + '$: $' + sh.toFixed(4) + '$',
+      { w: 190, anchor: left ? 'end' : 'start', size: 15, fill: COL.ink });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`$n$, dimension (log scale)`, { w: 260, size: 15 });
+    svgTex(svg, L + 6, T + 8, String.raw`$1-(1-\varepsilon)^n$`, { w: 200, anchor: 'start', size: 15, fill: COL.accent });
+  }
+  side.append(
+    sym(String.raw`$\varepsilon$: shell thickness, as a fraction of the radius. Example: $n=3$, $\varepsilon=0.5$ gives $1-0.5^3=\tfrac78$.`),
+    triesList([
+      String.raw`Keep $\varepsilon = 0.05$ and set $n = 100$. Read the shell's share.`,
+      String.raw`Lower $n$ to $10$. The share falls to about $0.40$.`,
+      String.raw`Why: the inner ball of radius $1-\varepsilon$ keeps $(1-\varepsilon)^n$ of the volume. Its log is $n\ln(1-\varepsilon)$, a sum of $n$ equal pieces.`]),
+    whereLine(String.raw`Hamming's design rule (Lecture 9, 20:46): the best design sits on the edge of what is allowed, so search the edge and keep a margin. Sampling a ball, on the next step.`),
+    takeLine(String.raw`In high dimensions, almost all of a ball's volume sits in a thin layer near its surface.`));
+  update();
+}
+
+// ---------- slide 4: random directions are nearly perpendicular ----------
+function slidePerp(widget, side) {
+  let ni = 2, plot = null, data = null;
+  const g = guessBox(String.raw`Guess first: at $n = 100$, how far from $90^\circ$ does one random angle typically land?`,
+    [['1', String.raw`about $1^\circ$`], ['6', String.raw`about $6^\circ$`], ['30', String.raw`about $30^\circ$`]], '6',
+    String.raw`about $6^\circ$. One standard deviation of $\cos\theta$ is $0.1$, which is about $5.7^\circ$ near $90^\circ$.`);
+  const sl = slider(String.raw`$n$, dimension`, { id: 'n', name: 'dimension', min: 0, max: NS_ANG.length - 1, step: 1, value: ni,
+    fmt: v => String(NS_ANG[v]), onInput: v => { ni = v; g.moved(); update(); } });
+  const rC = readout('sd-cos', String.raw`sample $\sigma$ of $\cos\theta$`);
+  const rT = readout('sd-formula', String.raw`$1/\sqrt{n}$`);
+  const rN = readout('samples', 'pairs drawn');
+  widget.append(g.el, hh('div', 'sliders', sl.el), legend([
+    { color: 'var(--pal-grey)', text: String.raw`bars: angles between random pairs` },
+    { color: 'var(--pal-accent)', text: 'blue: exact density' },
+    { color: 'var(--pal-ink)', text: String.raw`dashed: $90^\circ$`, dash: true }]));
+  plot = fillPlot(widget, drawPerp);
+  widget.append(hh('div', 'readouts', rC.el, rT.el, rN.el));
+  function update() {
+    const n = NS_ANG[ni], S = sampleCount(n, 2);
+    const ang = randAngles(n, S, 7000 + n);
+    const cs = new Float64Array(S);
+    for (let s = 0; s < S; s++) cs[s] = Math.cos(ang[s] * Math.PI / 180);
+    const sdDeg = 57.2958 / Math.sqrt(n);
+    data = { n, S, ang, x0: Math.floor(Math.max(0, 90 - 4 * sdDeg)), x1: Math.ceil(Math.min(180, 90 + 4 * sdDeg)) };
+    rC.set(sdOf(cs).toFixed(4));
+    rT.set((1 / Math.sqrt(n)).toFixed(4));
+    rN.set(String(S));
+    plot.redraw();
+  }
+  function drawPerp(svg, W, H) {
+    if (!data) return;
+    const d = data;
+    histPlot(svg, W, H, {
+      x0: d.x0, x1: d.x1, S: d.S, counts: binCounts(d.ang, d.x0, d.x1, 50),
+      curve: t => { const th = t * Math.PI / 180; return cosDens(Math.cos(th), d.n) * Math.sin(th) * Math.PI / 180; },
+      marks: [{ x: 90, label: String.raw`$90^\circ$`, y: 16, id: 'right-angle' }],
+      xlabel: String.raw`$\theta$, angle in degrees`,
+    });
+  }
+  side.append(
+    sym(String.raw`$\theta$: angle between random unit vectors; $\cos\theta=u\cdot v$. Example: $u=(1,0,0)$, $v=(0.6,\,0.8,\,0)$ give $\cos\theta=0.6$.`),
+    triesList([
+      String.raw`Set $n = 3$. The angles spread across the whole range, from $0^\circ$ to $180^\circ$.`,
+      String.raw`Set $n = 1000$. Most angles lie within about $2^\circ$ of $90^\circ$.`,
+      String.raw`Why: $\cos\theta$ is a sum of $n$ products, so it shrinks like $1/\sqrt{n}$.`]),
+    whereLine(String.raw`unrelated vectors in a model, with papers, on the next step.`),
+    takeLine(String.raw`Random directions are almost perpendicular; a small window around $90^\circ$ still holds exponentially many.`));
+  update();
+}
+
+// ---------- slide 5: distances bunch together ----------
+function slideBunch(widget, side) {
+  let ni = 0, plot = null;
+  const g = guessBox(String.raw`Guess first: as $n$ grows, does the gap between nearest and farthest grow, stay the same, or shrink?`,
+    [['grow', 'grows'], ['same', 'stays the same'], ['shrink', 'shrinks toward 0']], 'shrink',
+    String.raw`it shrinks toward $0$. Each squared distance is a sum of $n$ pieces, so the distances bunch together.`);
+  const sl = slider(String.raw`$n$, dimension`, { id: 'n', name: 'dimension', min: 0, max: NS.length - 1, step: 1, value: ni,
+    fmt: v => String(NS[v]), onInput: v => { ni = v; g.moved(); update(); } });
+  const rMin = readout('min', String.raw`nearest $d_{\min}$`);
+  const rMax = readout('max', String.raw`farthest $d_{\max}$`);
+  const rGap = readout('gap', String.raw`gap ratio, over $d_{\min}$`);
+  const GAP = NS.map(n => gapOf(distsFor(n)).gap);
+  const ratioBox = h('div', 'plot-static');
+  widget.append(g.el, hh('div', 'sliders', sl.el), legend([
+    { color: 'var(--pal-grey)', text: String.raw`dots: distances from a query, over $\sqrt{n}$` }]));
+  plot = fillPlot(widget, drawStrip);
+  widget.append(ratioBox, hh('div', 'readouts', rMin.el, rMax.el, rGap.el));
+  function gapOf(d) {
+    let mn = Infinity, mx = 0;
+    for (const v of d) { if (v < mn) mn = v; if (v > mx) mx = v; }
+    return { mn, mx, gap: (mx - mn) / mn };
+  }
+  function update() {
+    const n = NS[ni], g2 = gapOf(distsFor(n));
+    rMin.set(g2.mn.toFixed(3));
+    rMax.set(g2.mx.toFixed(3));
+    rGap.set(g2.gap.toFixed(4));
+    ratioBox.replaceChildren(ratioSvg());
+    plot.redraw();
+  }
+  function drawStrip(svg, W, H) {
+    const d = distsFor(NS[ni]), n = NS[ni], sq = Math.sqrt(n);
+    const L = 70, R = 70, pw = W - L - R, cy = H / 2 - 10, base = H - 34;
+    const X = v => L + (v / sq) / 4 * pw;   // distance over sqrt(n), axis 0 to 4
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    for (let t = 0; t <= 4; t++) svgText(svg, X(t * sq), base + 18, String(t), { 'text-anchor': 'middle', 'font-size': 15 });
+    const g2 = gapOf(d);
+    d.forEach((v, i) => {
+      const isMin = v === g2.mn, isMax = v === g2.mx;
+      const y = cy + ((i * 37) % 9 - 4) * 6;
+      svgNode('circle', { cx: X(v).toFixed(1), cy: y.toFixed(1), r: isMin || isMax ? 6 : 4,
+        fill: isMin ? COL.accent : isMax ? COL.ink : COL.grey, 'data-item': 'mark', 'data-id': isMin ? 'nearest' : isMax ? 'farthest' : 'point-' + i }, svg);
+    });
+    svgTex(svg, X(g2.mn), cy - 40, 'nearest', { w: 110, size: 15, fill: COL.accent });
+    svgTex(svg, X(g2.mx), cy + 44, 'farthest', { w: 110, size: 15, fill: COL.ink });
+  }
+  function ratioSvg() {
+    const W = 600, Hh = 112, L = 46, R = 30, T = 12, B = 26, base = Hh - B, pw = W - L - R;
+    const hi = Math.ceil(Math.log10(Math.max(...GAP)) + 0.1), lo = -1;   // log axis: 0.1 to 10^hi
+    const X = n => L + Math.log10(n) / 3 * pw;
+    const Y = v => base - (Math.log10(v) - lo) / (hi - lo) * (base - T);
+    const svg = svgRoot(W, Hh);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (let e = lo; e <= hi; e++) {
+      svgText(svg, L - 6, Y(Math.pow(10, e)) + 5, String(Math.pow(10, e)), { 'text-anchor': 'end', 'font-size': 13 });
+    }
+    const pts = NS.map((n, i) => X(n).toFixed(1) + ',' + Y(GAP[i]).toFixed(1)).join(' ');
+    svgNode('polyline', { points: pts, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'gap-curve' }, svg);
+    for (const n of [1, 10, 100, 1000]) svgTex(svg, X(n), base + 14, '$' + n + '$', { w: 60, size: 14 });
+    haloTex(svg, W - R, T + 10, String.raw`$(d_{\max}-d_{\min})/d_{\min}$ against $n$, log scale`, { w: 360, anchor: 'end', size: 14, fill: COL.accent });
+    const cur = NS[ni];
+    svgNode('circle', { cx: X(cur).toFixed(1), cy: Y(GAP[ni]).toFixed(1), r: 5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'n-dot' }, svg);
+    return svg;
+  }
+  side.append(
+    sym(String.raw`$d_{\min}$, $d_{\max}$: the nearest and the farthest of $100$ random points from one random query point. Example: in $2$ dimensions, $(0,0)$ and $(3,4)$ are $\sqrt{3^2+4^2}=5$ apart.`),
+    triesList([
+      String.raw`Set $n = 2$. The dots spread across a wide strip.`,
+      String.raw`Set $n = 1000$. The dots pile into a thin band, and the gap falls.`,
+      String.raw`Why it hurts search: the nearest point is hardly nearer than the rest.`]),
+    whereLine(String.raw`nearest-neighbor search and intrinsic dimension, on the next step.`),
+    takeLine(String.raw`Distances bunch together, so "nearest" means less as the dimension grows.`));
+  update();
+}
+
+// ---------- slide 6: Hamming's sphere in the cube (Lecture 9) ----------
+function cubeDiagram() {
+  const W = 250, Hh = 252, s = svgRoot(W, Hh);
+  const px = u => 22 + u * 52, py = u => 12 + u * 52;   // the cube's side 4 is 208 px
+  svgNode('rect', { x: px(0), y: py(0), width: 208, height: 208, fill: 'none', stroke: COL.muted, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'cube' }, s);
+  for (const [a, b] of [[1, 1], [1, 3], [3, 1], [3, 3]]) {
+    svgNode('circle', { cx: px(a), cy: py(b), r: 52, fill: 'none', stroke: COL.accent, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'corner-ball' }, s);
+  }
+  svgNode('circle', { cx: px(2), cy: py(2), r: (Math.SQRT2 - 1) * 52, fill: COL.redBg, stroke: COL.red, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'centre-ball' }, s);
+  svgTex(s, px(1), py(1), String.raw`$r=1$`, { w: 70, size: 14, fill: COL.accent });
+  svgTex(s, px(2), py(2) + 46, String.raw`$r\approx 0.41$`, { w: 180, size: 14, fill: COL.red });
+  svgTex(s, px(2), Hh - 8, String.raw`side $4$`, { w: 100, size: 14 });
+  const box = h('div', 'diagram');
+  box.append(s);
+  return box;
+}
+function slideSphereCube(widget, side) {
+  let n = 2, plot = null;
+  const g = guessBox(String.raw`Guess first: in how many dimensions does the centre ball first reach outside the cube?`,
+    [['3', String.raw`$n = 3$`], ['5', String.raw`$n = 5$`], ['10', String.raw`$n = 10$`]], '10',
+    String.raw`$n = 10$. At $n = 9$, $r = 2$ exactly, so the ball only touches the face. At $n = 10$, $r = \sqrt{10}-1 \approx 2.16 > 2$.`);
+  const sl = slider(String.raw`$n$, dimension`, { id: 'n', name: 'dimension', min: 1, max: 12, step: 1, value: n,
+    fmt: v => String(v), onInput: v => { n = v; g.moved(); update(); } });
+  const rR = readout('r', String.raw`centre radius $r_n=\sqrt{n}-1$`);
+  const rH = readout('half', String.raw`cube half side`);
+  const rV = readout('verdict', 'centre ball');
+  const row = h('div', 'row');
+  row.append(cubeDiagram());
+  widget.append(g.el, hh('div', 'sliders', sl.el), row);
+  plot = fillPlot(row, drawBars);
+  widget.append(hh('div', 'readouts', rR.el, rH.el, rV.el));
+  rH.set('$2$');
+  function update() {
+    const r = Math.sqrt(n) - 1;
+    rR.set(r.toFixed(4), r > 2);
+    rV.set(r > 2 ? 'outside the cube' : r === 2 ? 'touches the face' : 'inside the cube', r > 2);
+    plot.redraw();
+  }
+  function drawBars(svg, W, H) {
+    const L = 40, R = 14, T = 16, B = 44, base = H - B, pw = W - L - R;
+    const X = k => L + (k - 0.5) / 12 * pw, Y = v => base - v / 3 * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 1, 2, 3]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end' });
+    const bw = 0.6 * pw / 12;
+    for (let k = 1; k <= 12; k++) {
+      const r = Math.sqrt(k) - 1, y = Y(r);
+      svgNode('rect', { x: (X(k) - bw / 2).toFixed(1), y: y.toFixed(1), width: bw.toFixed(1), height: Math.max(0, base - y).toFixed(1),
+        fill: r > 2 ? COL.red : COL.accent, stroke: k === n ? COL.ink : 'none', 'stroke-width': 2,
+        'data-item': 'mark', 'data-id': 'bar-' + k }, svg);
+      svgText(svg, X(k), base + 18, String(k), { 'text-anchor': 'middle', 'font-size': 15 });
+    }
+    svgNode('line', { x1: L, y1: Y(2), x2: W - R, y2: Y(2), stroke: COL.ink, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'half-side' }, svg);
+    haloTex(svg, L + 6, Y(2) - 14, String.raw`cube half side $2$`, { w: 200, anchor: 'start', size: 15, fill: COL.ink });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`$n$, dimension`, { w: 160, size: 15 });
+    svgTex(svg, L + 8, T + 8, String.raw`bars: $r_n$, blue inside, red outside`, { w: 300, anchor: 'start', size: 14, fill: COL.text2 });
+  }
+  side.append(
+    sym(String.raw`$n$: dimension. The cube has side $4$, half side $2$. Corner balls have radius $1$; $r_n$ is the centre ball's radius.`),
+    triesList([
+      String.raw`Set $n = 2$. The centre ball fits in the gap, with radius $\sqrt2-1\approx 0.41$.`,
+      String.raw`Set $n = 10$. The radius passes $2$: the centre ball reaches past the cube's face.`,
+      String.raw`Why: the diagonal from the centre to a corner ball's centre is $\sqrt{n}$, a sum of $n$ unit pieces. Subtract the corner radius $1$.`]),
+    whereLine(String.raw`adversarial inputs and small changes, with the paper, on the next step.`),
+    takeLine(String.raw`Your $2$D picture misleads at $n = 10$: the centre ball leaves the cube.`));
+  update();
+}
+
+// ---------- helpers for the companion slides ----------
+function panel(label, parts, seen) {
+  const d = h('div', seen ? 'panel seen' : 'panel');
+  d.append(mark(h('div', 'pl', label), 'panel', label));
+  for (const t of parts) {
+    if (typeof t === 'object') d.append(setTex(h('p', 'cite'), t.cite));
+    else d.append(setTex(h('p'), t));
+  }
+  return d;
+}
+// The left column keeps the widget and the "Seen in practice" panel; the right column keeps the rest.
+function practiceParts(widget, side, o) {
+  const helps = panel('Where it helps', o.helps);
+  if (o.expand) {
+    const btn = mark(h('button', 'btn', 'Show the steps'), 'control', 'expand-steps');
+    // The steps open as an overlay over the widget column, so nothing pushes the layout.
+    const box = h('div', 'steps');
+    box.hidden = true;
+    const close = mark(h('button', 'btn', 'Close the steps'), 'control', 'close-steps');
+    box.append(close);
+    for (const t of o.expand.steps) box.append(setTex(h('p'), t));
+    box.append(setTex(h('p', 'cite'), o.expand.cite));
+    const toggle = open => { box.hidden = !open; btn.textContent = open ? 'Hide the steps' : 'Show the steps'; };
+    btn.addEventListener('click', () => toggle(box.hidden));
+    close.addEventListener('click', () => toggle(false));
+    helps.append(btn, box);
+  }
+  widget.append(panel('Seen in practice', o.seen, true), helps);
+  side.append(panel('Where it bites', o.bites), panel('Where the picture fails', o.fails),
+    triesList(o.tries), takeLine(o.take));
+}
+function softmax(xs) {
+  let m = -Infinity;
+  for (const x of xs) if (x > m) m = x;
+  const e = xs.map(x => Math.exp(x - m));
+  const s = e.reduce((a, b) => a + b, 0);
+  return e.map(v => v / s);
+}
+// A number as a LaTeX power of ten, for any size.
+function texExp(x) {
+  const p = x.toExponential(2).split('e');
+  return '$' + p[0] + '\\times 10^{' + parseInt(p[1], 10) + '}$';
+}
+// Natural log of the volume of the unit ball in n dimensions.
+function lnBall(n) { return (n / 2) * Math.log(Math.PI) - lgamma(n / 2 + 1); }
+// Probability that k = Binomial(n, Q) lies in [n(Q-eps), n(Q+eps)].
+function bandProb(n, Q, eps) {
+  const lo = Math.ceil(n * (Q - eps) - 1e-9), hi = Math.floor(n * (Q + eps) + 1e-9);
+  const lp = [];
+  for (let k = lo; k <= hi; k++) lp.push(lnBinom(n, k) + k * log2(Q) + (n - k) * log2(1 - Q));
+  return Math.pow(2, lse2(lp));
+}
+// The band: noise rows whose flip share k/n is within EPS of Q. At n = 100, Q = 0.1: 5 to 15 flips.
+const EPS = 0.05;
+function bandRange(n, Q, eps) {
+  return [Math.max(0, Math.ceil(n * (Q - eps) - 1e-9)), Math.min(n, Math.floor(n * (Q + eps) + 1e-9))];
+}
+// log2 of the number of words in the band (-Infinity if empty).
+function bandLog2Count(n, Q, eps) {
+  const [lo, hi] = bandRange(n, Q, eps), lw = [];
+  for (let k = lo; k <= hi; k++) lw.push(lnBinom(n, k));
+  return lw.length ? lse2(lw) : -Infinity;
+}
+// Chance that Binomial(n, Q) leaves the band, summed in log space over the two tails (40 wobbles is enough).
+function leaveProb(n, Q, eps) {
+  const [lo, hi] = bandRange(n, Q, eps), w = 40 * Math.sqrt(n * Q * (1 - Q)) + 5, lp = [];
+  for (let k = Math.max(0, Math.floor(n * Q - w)); k < lo; k++) lp.push(lnBinom(n, k) + k * log2(Q) + (n - k) * log2(1 - Q));
+  for (let k = hi + 1; k <= Math.min(n, Math.ceil(n * Q + w)); k++) lp.push(lnBinom(n, k) + k * log2(Q) + (n - k) * log2(1 - Q));
+  return lp.length ? Math.pow(2, lse2(lp)) : 0;
+}
+// A band that shrinks as n grows, slower than the wobble 0.3/sqrt(n): 0.05 at n = 100.
+function epsAt(n) { return EPS * Math.cbrt(100 / n); }
+// log2 of a count as LaTeX: $2^{58.1}$.
+function pow2(lg) { return isFinite(lg) ? '$2^{' + lg.toFixed(1) + '}$' : '0'; }
+
+// ---------- slide 7: typical patterns on the binary cube (Lecture 13) ----------
+// ---------- slide 7a: what does typical mean? (experience first) ----------
+// One example: a sent word, the received word, and the noise between them. A 1 in the noise is a flip, either way.
+function noiseTriple() {
+  const sent = [0, 1, 1, 0, 1, 0, 0, 1, 0, 1], recv = [0, 1, 0, 0, 1, 1, 0, 1, 0, 1];
+  const noise = sent.map((b, i) => b ^ recv[i]);
+  const grid = h('div', 'triple');
+  grid.append(h('span', 'tl', ''));
+  for (let i = 1; i <= 10; i++) grid.append(h('span', 'tn', String(i)));
+  const line = (label, bits) => {
+    grid.append(setTex(h('span', 'tl'), label));
+    bits.forEach((b, i) => grid.append(h('span', 'tc' + (noise[i] ? ' flip' : ''), String(b))));
+  };
+  line(String.raw`sent $x$`, sent);
+  line(String.raw`received $y$`, recv);
+  line(String.raw`noise $e=x\oplus y$`, noise);
+  return hh('div', 'tbox',
+    setTex(h('p', 'why'), String.raw`A noise row is not a message: $e=x\oplus y$, sent XOR received. A $1$ marks a bit that flipped, either way.`),
+    grid,
+    setTex(h('p', 'why'), String.raw`Bit $3$ goes $1$ to $0$, bit $6$ goes $0$ to $1$. Two $1$s in $e$: two flips, $k=2$.`));
+}
+function slideTypicalA(widget, side) {
+  const Q = 0.1, NSA = [10, 100, 1000];
+  let n = 100, rnd = mulberry32(31), sent = [], plot = null;
+  const sendBtn = mark(h('button', 'btn primary', 'Send'), 'control', 'send');
+  const send20 = mark(h('button', 'btn', 'Send 20'), 'control', 'send-20');
+  const nBtns = NSA.map(v => { const b = mark(h('button', 'btn'), 'control', 'n-' + v); setTex(b, '$n = ' + v + '$'); return [v, b]; });
+  const rowsBox = h('div', 'rows');
+  const rLast = readout('last', String.raw`latest row: flip share $k/n$`);
+  const rIn = readout('in-band', String.raw`rows in the band, $|k/n-Q|\le 0.05$`);
+  const rCount = readout('sent', 'rows sent');
+  function sendOne() {
+    const bits = new Uint8Array(n); let k = 0;
+    for (let i = 0; i < n; i++) if (rnd() < Q) { bits[i] = 1; k++; }
+    sent.push({ bits, k });
+  }
+  function bitRow(r) {
+    const svg = svgRoot(600, 14), cw = 600 / n;
+    for (let i = 0; i < n; i++) svgNode('rect', { x: (i * cw).toFixed(2), y: 0, width: Math.max(0.5, cw - 0.6).toFixed(2), height: 14, fill: r.bits[i] ? COL.red : COL.soft2 }, svg);
+    const row = hh('div', 'row-line', svg, setTex(h('span', 'row-k'), String.raw`$k=${r.k}$`));
+    return row;
+  }
+  function paintRows() {
+    const shown = sent.slice(-4);
+    rowsBox.replaceChildren(...shown.map(r => bitRow(r)));
+    rCount.set(String(sent.length));
+    const last = sent[sent.length - 1];
+    rLast.set(last ? (last.k / n).toFixed(3) : '–');
+    const [lo, hi] = bandRange(n, Q, EPS), inside = sent.filter(r => r.k >= lo && r.k <= hi).length;
+    rIn.set(sent.length ? inside + ' of ' + sent.length : '–');
+    plot.redraw();
+  }
+  function reset(nn) { n = nn; sent = []; rnd = mulberry32(31 + nn); paintNB(); paintRows(); }
+  function paintNB() { nBtns.forEach(([v, b]) => b.classList.toggle('on', v === n)); }
+  sendBtn.addEventListener('click', () => { sendOne(); paintRows(); emit('view.action', { action: 'send', n }); });
+  send20.addEventListener('click', () => { for (let i = 0; i < 20; i++) sendOne(); paintRows(); emit('view.action', { action: 'send', n, count: 20 }); });
+  nBtns.forEach(([v, b]) => b.addEventListener('click', () => reset(v)));
+  widget.append(noiseTriple(), hh('div', 'actions', sendBtn, send20, ...nBtns.map(([, b]) => b)),
+    legend([{ chip: true, color: 'var(--pal-red)', text: 'red: a 1, a flipped bit' },
+      { chip: true, color: 'var(--pal-soft-2)', text: 'grey: a 0, no flip' }]), rowsBox);
+  plot = fillPlot(widget, drawH);
+  widget.append(hh('div', 'readouts', rCount.el, rLast.el, rIn.el));
+  function drawH(svg, W, H) {
+    const L = 40, R = 14, T = 16, B = 46, base = H - B, pw = W - L - R, nb = 30;
+    const X = x => L + x / 0.3 * pw;
+    const bins = new Array(nb).fill(0);
+    for (const r of sent) { const b = Math.min(nb - 1, Math.floor(r.k / n / 0.01)); bins[b]++; }
+    const ymax = Math.max(1, ...bins) * 1.15;
+    const Y = v => base - v / ymax * (base - T);
+    svgNode('rect', { x: X(0.05).toFixed(1), y: T, width: (X(0.15) - X(0.05)).toFixed(1), height: base - T, fill: COL.accentTint, 'data-item': 'mark', 'data-id': 'typical-band' }, svg);
+    bins.forEach((c, j) => {
+      svgNode('rect', { x: (X(j * 0.01) + 1).toFixed(1), y: Y(c).toFixed(1), width: (pw / nb * 0.8 / 0.3 * 0.3 - 1).toFixed(1), height: Math.max(0, base - Y(c)).toFixed(1), fill: COL.grey }, svg);
+    });
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const t of [0, 0.1, 0.2, 0.3]) svgText(svg, X(t), base + 18, String(t), { 'text-anchor': 'middle', 'font-size': 15 });
+    haloTex(svg, (X(0.05) + X(0.15)) / 2, T + 12, String.raw`band: $k/n$ within $0.05$ of $Q$`, { w: 320, size: 14, fill: COL.accentDeep });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`flip share $k/n$ of a noise row (bars: number of noise rows)`, { w: 480, size: 14 });
+  }
+  side.append(
+    triesList([
+      String.raw`Press Send 20. Most noise rows have $5$ to $15$ red cells.`,
+      String.raw`Look for the all-zero row: no flips, the single most likely row. It almost never shows up: its chance is $2.7\times10^{-5}$.`,
+      String.raw`Choose $n = 1000$ and Send 20 a few times. Every row lands in the band, and the shares crowd closer to $Q = 0.1$.`]),
+    panel('What typical means, in plain words', [
+      String.raw`Typical: what the channel usually produces, a flip share $k/n$ near $Q$. Not the most likely row.`,
+      String.raw`The band: rows with $k/n$ within $\varepsilon = 0.05$ of $Q$, so $5$ to $15$ flips at $n = 100$. It holds $2^{58.1}$ rows, about $3\times10^{17}$, and $0.94$ of all the chance. The all-zero row is one row.`]),
+    takeLine(String.raw`You will almost surely see a typical row, with about $nQ$ flips. The single most likely row, no flips at all, almost never shows up.`));
+  paintRows();
+}
+
+// ---------- slide 7b: typical patterns are a tiny sliver of all patterns ----------
+// ---------- slide 7b-1: the count is a choice of positions (Q1) ----------
+// Fixed grid: every placement of 2 flips among 10 bits. The sliders drive the readouts.
+function binomStr(n, k) { const v = Math.pow(2, lnBinom(n, k)); return v < 1e6 ? String(Math.round(v)) : texExp(v); }
+function slidePositions(widget, side) {
+  const N10 = 10;
+  let n = 100, k = 10, sel = [1, 4];          // sel: 0-based positions of the shown noise row (flips at 2 and 5)
+  const pgrid = h('div', 'pgrid'), rowBox = h('div', 'triple'), cells = [];
+  pgrid.append(h('span', 'ax', ''));
+  for (let j = 1; j <= N10; j++) pgrid.append(h('span', 'ax', String(j)));
+  for (let i = 0; i < N10; i++) {
+    pgrid.append(h('span', 'ax', String(i + 1)));
+    for (let j = 0; j < N10; j++) {
+      if (j <= i) { pgrid.append(h('span')); continue; }
+      const b = mark(h('button', 'pc'), 'mark', (i + 1) + '-' + (j + 1));
+      b.title = 'flips at ' + (i + 1) + ' and ' + (j + 1);
+      b.addEventListener('click', () => { sel = [i, j]; paint(); });
+      cells.push({ b, i, j });
+      pgrid.append(b);
+    }
+  }
+  const rExact = readout('exact', String.raw`$\binom{n}{k}$ placements`);
+  const rLog = readout('logC', String.raw`$\log_2\binom{n}{k}$, bits to name them`);
+  const rPow = readout('pow', String.raw`$\log_2 2^{k}=k$, from $2^{k}$`);
+  const rNH = readout('nH', String.raw`$nH(k/n)$, bits at $Q=k/n$`);
+  const sN = slider(String.raw`$n$, bits in a row`, { id: 'n', name: 'bits in a row', min: 10, max: 200, step: 1, value: n,
+    fmt: v => String(v), onInput: v => { n = v; if (k > n) { k = n; sK.input.value = k; sK.show(); } sK.input.max = n; update(); } });
+  const sK = slider(String.raw`$k$, flips`, { id: 'k', name: 'flips', min: 0, max: 200, step: 1, value: k,
+    fmt: v => String(v), onInput: v => { k = v; update(); } });
+  sK.input.max = n;
+  function paint() {
+    cells.forEach(c => c.b.classList.toggle('on', c.i === sel[0] && c.j === sel[1]));
+    rowBox.replaceChildren(h('span', 'tl'));
+    for (let j = 1; j <= N10; j++) rowBox.append(h('span', 'tn', String(j)));
+    rowBox.append(setTex(h('span', 'tl'), String.raw`noise $e$`));
+    for (let j = 0; j < N10; j++) {
+      const on = j === sel[0] || j === sel[1];
+      rowBox.append(h('span', 'tc' + (on ? ' flip' : ''), on ? '1' : '0'));
+    }
+  }
+  function update() {
+    rExact.set(binomStr(n, k));
+    rLog.set(lnBinom(n, k).toFixed(1));
+    rPow.set(String(k));
+    rNH.set((n * Hb(k / n)).toFixed(1));
+  }
+  widget.append(hh('div', 'sliders', sN.el, sK.el), legend([
+    { chip: true, color: 'var(--pal-accent-tint)', text: 'shaded: one placement' },
+    { chip: true, color: 'var(--pal-accent)', text: 'blue: shown below' },
+    { chip: true, color: 'var(--pal-red)', text: 'red: a flipped bit' }]),
+    pgrid,
+    setTex(h('p', 'why'), String.raw`Grid fixed at $n=10$, $k=2$. Sent word all zeros, so the received word is the noise row $e$ below.`),
+    rowBox,
+    hh('div', 'readouts', rExact.el, rLog.el, rPow.el, rNH.el));
+  side.append(
+    sym(String.raw`$\binom{n}{k}$: ways to choose which $k$ of $n$ bits flip. Example: $\binom{10}{2}=45$.`),
+    proofLines([
+      [String.raw`$\log_2\binom{n}{k}=\log_2 n!-\log_2 k!-\log_2(n-k)!$`, String.raw`choose $k$ of $n$: $\binom{n}{k}=\frac{n!}{k!\,(n-k)!}$`],
+      [String.raw`$\approx n\log_2 n-k\log_2 k-(n-k)\log_2(n-k)$`, String.raw`Stirling; the $\log_2 e$ terms cancel`],
+      [String.raw`with $k=nQ$: $\;=nH(Q)$`, String.raw`the $n\log_2 n$ terms cancel; $H(Q)$ is left`],
+    ]),
+    triesList([
+      String.raw`Click a shaded cell. Count them: $45$ cells, not $2^{2}=4$ cells.`,
+      String.raw`Set $n=100$, $k=10$: $44.0$ bits, while $nH$ gives $46.9$ bits. Stirling drops a $2.9$-bit term; per bit it vanishes.`]),
+    takeLine(String.raw`Being $nQ$ flips away fixes how many bits flip, not which. Choosing which takes about $nH(Q)$ bits.`));
+  paint();
+  update();
+}
+
+// ---------- slide 7b: why the typical count grows like 2^{nH(Q)} ----------
+// Every line stays on the slide. Unrevealed lines are dimmed, not hidden, so the column never has a blank band.
+function proofLines(steps) {
+  let shown = 0;
+  const rows = steps.map(([eq, why], i) => mark(hh('div', 'proof-line', h('span', 'proof-num', (i + 1) + '.'),
+    setTex(h('div', 'proof-eq'), eq), setTex(h('p', 'proof-why'), why)), 'line', 'line-' + (i + 1)));
+  const next = mark(h('button', 'btn primary', 'Next line'), 'control', 'next-line');
+  next.addEventListener('click', () => { shown = Math.min(steps.length, shown + 1); emit('view.action', { action: 'reveal', line: shown }); render(); });
+  function render() {
+    rows.forEach((r, i) => r.classList.toggle('dim', i >= shown));
+    next.disabled = shown >= steps.length;
+    next.textContent = shown >= steps.length ? 'Derivation done' : 'Next line';
+  }
+  render();
+  return hh('div', 'proof', ...rows, hh('div', 'actions', next));
+}
+function lnFact(n) { return lgamma(n + 1); }
+// ---------- slide 7c: every typical row is about equally likely ----------
+// Each flip count k is drawn as a bar at its surprise per bit s(k); its height is the chance of that k.
+function slideTypicalSurprise(widget, side) {
+  const Q = 0.1, Hq = Hb(Q), NSU = [10, 30, 100, 300, 1000], slope = log2((1 - Q) / Q);
+  let ni = 2, plot = null;
+  const sOf = (k, n) => -(k * log2(Q) + (n - k) * log2(1 - Q)) / n;
+  const sl = slider(String.raw`$n$, bits per row`, { id: 'n', name: 'bits per row', min: 0, max: NSU.length - 1, step: 1, value: ni,
+    fmt: v => String(NSU[v]), onInput: v => { ni = v; update(); } });
+  const rP = readout('band', String.raw`chance in the band`);
+  const rW = readout('wobble', String.raw`wobble of $s$: $3.17\sqrt{Q(1-Q)/n}$`);
+  const rE = readout('edges', String.raw`band edges: $H(Q)\pm 0.16$`);
+  rE.set(String.raw`$0.311$ to $0.627$`);
+  widget.append(hh('div', 'sliders', sl.el), legend([
+    { chip: true, color: 'var(--pal-grey)', text: String.raw`grey bar: the chance of $k$ flips, placed at its $s$` },
+    { chip: true, color: 'var(--pal-accent-tint)', text: 'shaded: the band' },
+    { color: 'var(--pal-ink)', text: String.raw`dashed: $H(Q)$`, dash: true }]));
+  plot = fillPlot(widget, drawS);
+  widget.append(hh('div', 'readouts', rP.el, rW.el, rE.el));
+  function update() {
+    const n = NSU[ni];
+    rP.set(bandProb(n, Q, EPS).toFixed(3));
+    rW.set((slope * Math.sqrt(Q * (1 - Q) / n)).toFixed(3));
+    plot.redraw();
+  }
+  function drawS(svg, W, H) {
+    const n = NSU[ni], L = 46, R = 14, T = 16, B = 50, base = H - B, pw = W - L - R, x0 = 0.1, x1 = 1.0;
+    const X = v => L + (v - x0) / (x1 - x0) * pw;
+    const pk = [];
+    let ymax = 0;
+    for (let k = 0; k <= n; k++) {
+      const s = sOf(k, n);
+      if (s > x1) break;
+      const p = Math.pow(2, lnBinom(n, k) + k * log2(Q) + (n - k) * log2(1 - Q));
+      pk.push([s, p]);
+      ymax = Math.max(ymax, p);
+    }
+    const Y = v => base - v / (ymax * 1.15) * (base - T);
+    const [lo, hi] = bandRange(n, Q, EPS);
+    svgNode('rect', { x: X(sOf(lo, n)).toFixed(1), y: T, width: (X(sOf(hi, n)) - X(sOf(lo, n))).toFixed(1), height: base - T, fill: COL.accentTint, 'data-item': 'mark', 'data-id': 'band' }, svg);
+    const bw = Math.max(1, Math.min(18, slope / n / (x1 - x0) * pw * 0.7));
+    pk.forEach(([s, p], k) => svgNode('rect', { x: (X(s) - bw / 2).toFixed(1), y: Y(p).toFixed(1), width: bw.toFixed(1), height: Math.max(0, base - Y(p)).toFixed(1), fill: COL.grey, 'data-item': 'mark', 'data-id': 'k-' + k }, svg));
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0.2, 0.4, 0.6, 0.8, 1.0]) svgText(svg, X(v), base + 18, v.toFixed(1), { 'text-anchor': 'middle', 'font-size': 15 });
+    svgNode('line', { x1: X(Hq).toFixed(1), y1: T, x2: X(Hq).toFixed(1), y2: base, stroke: COL.ink, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'H' }, svg);
+    haloTex(svg, X(Hq) + 6, T + 10, String.raw`$H(Q)=0.469$`, { w: 160, anchor: 'start', size: 15, fill: COL.ink });
+    haloTex(svg, X(sOf(0, n)) + 2, base - 14, String.raw`$k=0$`, { w: 60, anchor: 'start', size: 14, fill: COL.text2 });
+    const mid = ((T + base) / 2).toFixed(1);
+    svgText(svg, 14, mid, 'chance', { 'text-anchor': 'middle', 'font-size': 14, transform: 'rotate(-90 14 ' + mid + ')' });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`$s$, surprise per bit of a noise row (bits)`, { w: 380, size: 15 });
+  }
+  widget.append(proofLines([
+      [String.raw`$p(e)=Q^{k}(1-Q)^{\,n-k}$`, String.raw`each bit flips alone, with chance $Q$; $e$ has $k$ flips`],
+      [String.raw`$s=\frac{k}{n}\log_2\frac{1}{Q}+\Big(1-\frac{k}{n}\Big)\log_2\frac{1}{1-Q}$`, String.raw`take $-\log_2$, divide by $n$: a straight line in $k/n$`],
+      [String.raw`at $k/n=Q$: $\;s=H(Q)=0.469$`, 'the entropy of Lecture 13'],
+      [String.raw`in the band: $|s-H(Q)|\le\varepsilon\log_2\frac{1-Q}{Q}=0.16$`, String.raw`slope $\log_2 9=3.17$ times $\varepsilon=0.05$`],
+    ]));
+  side.append(
+    sym(String.raw`$s=-\frac1n\log_2 p(e)$: the surprise of one noise row $e$, shared over its $n$ bits. Example: $n=10$, one flip: $p=0.1\cdot0.9^{9}=0.039$, so $s=0.469$.`),
+    triesList([
+      String.raw`Set $n = 10$. The bars spread wide, and the band holds only $0.39$ of the chance.`,
+      String.raw`Set $n = 1000$. Almost all the chance sits in the band, piled at the dashed line.`]),
+    takeLine(String.raw`Every typical row has about the same chance, $2^{-nH(Q)}$. So the band holds about $1/p=2^{nH(Q)}$ rows once it is thin: the same count as choosing the flip positions.`));
+  update();
+}
+
+// ---------- slide 7d: typical rows are a sliver, and what that buys ----------
+function slideTypicalShare(widget, side) {
+  const N = 100;
+  let Q = 0.1, plot = null;
+  const info = q => {
+    const lw = bandLog2Count(N, q, EPS);
+    return { nH: N * Hb(q), bound: N * Hb(q + EPS), lw, P: bandProb(N, q, EPS) };
+  };
+  const sQ = slider(String.raw`$Q$, flip chance ($n = 100$, $\varepsilon = 0.05$)`, { id: 'Q', name: 'flip chance', min: 0.01, max: 0.45, step: 0.01, value: Q, fmt: v => v.toFixed(2), onInput: v => { Q = v; update(); } });
+  const rH = readout('H', String.raw`$H(Q)$, bits per bit`);
+  const rP = readout('P', 'chance in the band');
+  const rShare = readout('share', String.raw`band share of all $2^{n}$ rows`);
+  const rB = readout('bound', String.raw`its bound $2^{-n(1-H(Q+\varepsilon))}$`);
+  widget.append(hh('div', 'sliders', sQ.el), legend([
+    { chip: true, color: 'var(--pal-grey)', text: String.raw`bar length: $\log_2$ of a number of rows` }]));
+  plot = fillPlot(widget, drawP);
+  widget.append(hh('div', 'readouts', rH.el, rP.el, rShare.el, rB.el),
+    panel(String.raw`The band can shrink as $n$ grows ($Q = 0.1$)`, [
+      String.raw`Take $\varepsilon_n=0.05\,(100/n)^{1/3}$: it shrinks slower than the wobble $0.3/\sqrt{n}$, so it holds more of the chance. Per bit, the count falls to $H(Q)$:`,
+      String.raw`$n=100$: chance $0.936$, $\frac1n\log_2(\text{count})=0.581$. $\;n=10^{4}$: $0.9997$, $0.501$. $\;n=10^{6}$: $1.000$, $0.476$.`]));
+  function update() {
+    const f = info(Q);
+    rH.set(Hb(Q).toFixed(3));
+    rP.set(f.P.toFixed(3));
+    rShare.set(pow2(f.lw - N));
+    rB.set(Q + EPS <= 0.5 ? pow2(f.bound - N) : '–');
+    plot.redraw();
+  }
+  function drawP(svg, W, H) {
+    const f = info(Q);
+    const L = 20, R = 20, T = 6, B = 50, pw = W - L - R, base = H - B;
+    const X = b => L + b / N * pw;
+    const rows = [
+      ['all-rows', String.raw`all rows: $2^{100}$`, N, COL.soft2],
+      ['bound', String.raw`the bound $2^{nH(Q+\varepsilon)}$: $2^{${f.bound.toFixed(1)}}$`, f.bound, COL.muted],
+      ['band', String.raw`the band, counted: $2^{${f.lw.toFixed(1)}}$`, f.lw, COL.accent],
+      ['limit', String.raw`the limit $2^{nH(Q)}$: $2^{${f.nH.toFixed(1)}}$`, f.nH, COL.accent3]];
+    const slot = (base - T) / rows.length, bh = Math.min(30, slot * 0.45);
+    rows.forEach(([id, lab, v, col], j) => {
+      const y = T + j * slot + slot - bh - 4;
+      svgNode('rect', { x: L, y: y.toFixed(1), width: Math.max(0, X(v) - L).toFixed(1), height: bh.toFixed(1), fill: col, 'data-item': 'mark', 'data-id': id }, svg);
+      svgTex(svg, L, y - 12, lab, { w: 420, anchor: 'start', size: 15, fill: COL.ink });
+    });
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    for (const b of [0, 25, 50, 75, 100]) svgTex(svg, X(b), base + 14, '$2^{' + b + '}$', { w: 60, anchor: b === 0 ? 'start' : b === 100 ? 'end' : 'middle', size: 14 });
+    svgTex(svg, (L + W - R) / 2, H - 10, String.raw`number of rows, $\log_2$ scale`, { w: 300, size: 15 });
+  }
+  side.append(
+    panel('Short names (compression)', [
+      String.raw`Name only band rows: $58.1$ bits each at $n=100$, not $100$. As $n$ grows, rows outside carry almost no chance, and the cost per bit falls to $H(Q)$.`]),
+    panel('Room for code words (capacity)', [
+      String.raw`Each sent word's noise fills its own band; bands must not overlap. So about $2^{100}/2^{58.1}=2^{41.9}$ words fit, rate $1-H(Q)=0.531$ in the limit. Hamming's code: $2^{7}/8=16$ words.`]),
+    triesList([
+      String.raw`Keep $Q = 0.1$: a share $2^{-41.9}$ of all rows holds $0.94$ of the chance.`,
+      String.raw`Set $Q = 0.45$: the band nears all $2^{100}$ rows. Little to compress, little room.`,
+      String.raw`Set $Q = 0.01$: band $2^{30.2}$, limit $2^{8.1}$. At $n=100$ the band is far wider than the limit.`]),
+    takeLine(String.raw`Typical rows are a sliver: per bit, $H(Q)$ of the $1$ bit that all rows take. Name only them to compress; give each code word its own band to send.`));
+  update();
+}
+
+
+// ---------- slide 7e-1: why random code words stay apart: two distances ----------
+function slideRandomWhy(widget, side) {
+  const NR = [20, 50, 100, 200, 500, 1000, 2000];
+  let ni = 5, Q = 0.1, plot = null;
+  const dists = () => {
+    const n = NR[ni], sT = Math.sqrt(n * Q * (1 - Q)), sW = Math.sqrt(n) / 2;
+    return { n, cT: n * Q, sT, cW: n / 2, sW, gap: (n / 2 - n * Q) / (sT + sW) };
+  };
+  const sN = slider(String.raw`$n$, dimension`, { id: 'n', name: 'dimension', min: 0, max: NR.length - 1, step: 1, value: ni,
+    fmt: v => String(NR[v]), onInput: v => { ni = v; update(); } });
+  const sQ = slider(String.raw`$Q$, flip chance`, { id: 'Q', name: 'flip chance', min: 0.01, max: 0.4, step: 0.01, value: Q,
+    fmt: v => v.toFixed(2), onInput: v => { Q = v; update(); } });
+  const rTc = readout('true-centre', String.raw`true word, centre $nQ$`);
+  const rTs = readout('true-wobble', String.raw`true wobble $\sigma_1=\sqrt{nQ(1-Q)}$`);
+  const rWc = readout('wrong-centre', String.raw`wrong word, centre $n/2$`);
+  const rWs = readout('wrong-wobble', String.raw`wrong wobble $\sigma_2=\sqrt{n}/2$`);
+  const rGap = readout('gap', String.raw`gap in wobbles $(n/2-nQ)/(\sigma_1+\sigma_2)$`);
+  widget.append(hh('div', 'sliders', sN.el, sQ.el), legend([
+    { chip: true, color: 'var(--pal-accent)', text: String.raw`blue: true word, centre $nQ$` },
+    { chip: true, color: 'var(--pal-grey)', text: String.raw`grey: random wrong word, centre $n/2$` },
+    { color: 'var(--pal-ink)', text: String.raw`dashed: decoder, accept near $nQ$`, dash: true }]));
+  plot = fillPlot(widget, drawTwo);
+  widget.append(hh('div', 'readouts', rTc.el, rTs.el, rWc.el, rWs.el, rGap.el));
+  function update() {
+    const f = dists();
+    rTc.set(f.cT.toFixed(1)); rTs.set(f.sT.toFixed(1)); rWc.set(f.cW.toFixed(1)); rWs.set(f.sW.toFixed(1));
+    rGap.set(f.gap.toFixed(1));
+    plot.redraw();
+  }
+  // Exact binomial curves: distance to the true word is Binomial(n, Q); to a random wrong word, Binomial(n, 1/2).
+  function drawTwo(svg, W, H) {
+    const f = dists(), n = f.n;
+    const L = 46, R = 26, T = 14, B = 50, base = H - B, pw = W - L - R;
+    const X = k => L + k / n * pw;
+    const pmf = (k, p) => Math.pow(2, lnBinom(n, k) + k * log2(p) + (n - k) * log2(1 - p));
+    const pts = [];
+    let ymax = 0;
+    for (let k = 0; k <= n; k++) {
+      const a = pmf(k, Q), b = pmf(k, 0.5);
+      pts.push([k, a, b]);
+      ymax = Math.max(ymax, a, b);
+    }
+    const Y = v => base - v / (ymax * 1.15) * (base - T);
+    const curve = col => pts.map(([k, a, b], i) => (i ? 'L' : 'M') + X(k).toFixed(1) + ' ' + Y(col === 1 ? a : b).toFixed(1)).join('');
+    const area = col => curve(col) + 'L' + X(n).toFixed(1) + ' ' + base + 'L' + X(0).toFixed(1) + ' ' + base + 'Z';
+    svgNode('path', { d: area(2), fill: COL.grey, 'fill-opacity': 0.35, stroke: 'none' }, svg);
+    svgNode('path', { d: curve(2), fill: 'none', stroke: COL.muted, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'wrong-curve' }, svg);
+    svgNode('path', { d: area(1), fill: COL.accent, 'fill-opacity': 0.25, stroke: 'none' }, svg);
+    svgNode('path', { d: curve(1), fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'true-curve' }, svg);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const k of [0, n / 4, n / 2, 3 * n / 4, n]) svgText(svg, X(k), base + 18, String(Math.round(k)), { 'text-anchor': 'middle', 'font-size': 15 });
+    const mid = ((T + base) / 2).toFixed(1);
+    svgText(svg, 14, mid, 'chance', { 'text-anchor': 'middle', 'font-size': 14, transform: 'rotate(-90 14 ' + mid + ')' });
+    const xd = X(f.cT).toFixed(1);
+    svgNode('line', { x1: xd, y1: T, x2: xd, y2: base, stroke: COL.ink, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'decoder' }, svg);
+    haloTex(svg, X(f.cT) + 6, T + 10, String.raw`decoder: accept near $nQ$`, { w: 260, anchor: 'start', size: 15, fill: COL.ink });
+    haloTex(svg, X(f.cT) - 6, base - 12, 'true word', { w: 120, anchor: 'end', size: 15, fill: COL.accentDeep });
+    haloTex(svg, X(f.cW) + 6, base - 12, 'random wrong word', { w: 180, anchor: 'start', size: 15, fill: COL.text2 });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`distance: bits where two words differ, from $0$ to $n$`, { w: 500, size: 15 });
+  }
+  side.append(
+    sym(String.raw`$d$: bits where two words differ. $1011$ vs $1101$: $d=2$.`),
+    setTex(h('p', 'why'), String.raw`Each flip is random, but the total is predictable (concentration): it sits near $nQ$.`),
+    setTex(h('p', 'why'), String.raw`The true word sits about $nQ$ away.`),
+    setTex(h('p', 'why'), String.raw`A random word agrees with the received word on each bit by a coin toss, so it sits about $n/2$ away.`),
+    setTex(h('p', 'why'), String.raw`The gap grows like $n$, the wobbles like $\sqrt{n}$, so the piles separate as $n$ grows.`),
+    setTex(h('p', 'why'), 'Nobody has to design the code.'),
+    triesList([
+      String.raw`Move $n$ from $20$ to $1000$. Watch the piles separate.`,
+      String.raw`Set $n = 20$, raise $Q$ to $0.4$: the piles overlap. At $Q = 0.5$ the centers meet: capacity $0$.`]),
+    takeLine(String.raw`In high dimensions noise is random per bit but predictable in total, and random words are almost all far apart; so random code words stay apart.`),
+    setTex(h('p', 'next'), String.raw`A book of rate $R$ has $2^{nR}$ words. Next: how many you can afford.`));
+  update();
+}
+
+// ---------- slide 7e-2: same received word, two chances (Q2) ----------
+// Both chances count the same words in the band. A weighs each word by the noise, a random word by 2^{-n}.
+function slideChance(widget, side) {
+  let n = 100, Q = 0.1, k = 10, plot = null;
+  const sN = slider(String.raw`$n$`, { id: 'n', name: 'bits', min: 10, max: 200, step: 1, value: n,
+    fmt: v => String(v), onInput: v => { n = v; if (k > n) { k = n; sK.input.value = k; sK.show(); } sK.input.max = n; update(); } });
+  const sQ = slider(String.raw`$Q$`, { id: 'Q', name: 'flip chance', min: 0.01, max: 0.45, step: 0.01, value: Q,
+    fmt: v => v.toFixed(2), onInput: v => { Q = v; update(); } });
+  const sK = slider(String.raw`$k$`, { id: 'k', name: 'distance from y', min: 0, max: 200, step: 1, value: k,
+    fmt: v => String(v), onInput: v => { k = v; update(); } });
+  sK.input.max = n;
+  const rPA = readout('pa', String.raw`$P(A\text{ in band})$`);
+  const rPB = readout('pb', String.raw`$P(B\text{ in band})$`);
+  const rBd = readout('bound', String.raw`its bound $2^{-n(1-H(Q+\varepsilon))}$`);
+  const rW = readout('words', String.raw`words in band`);
+  const rKA = readout('ka', String.raw`at $k$: $A$, chance per word`);
+  const rKB = readout('kb', String.raw`at $k$: $B$, chance per word`);
+  widget.append(hh('div', 'sliders', sN.el, sQ.el, sK.el), legend([
+    { chip: true, color: 'var(--pal-accent)', text: String.raw`blue: $A$, chance at distance $k$` },
+    { chip: true, color: 'var(--pal-grey)', text: String.raw`grey: random word, chance at $k$` },
+    { chip: true, color: 'var(--pal-accent-tint)', text: String.raw`shaded: the band $\mathcal T$, $|k/n-Q|\le 0.05$` }]));
+  plot = fillPlot(widget, drawC);
+  widget.append(hh('div', 'readouts', rPA.el, rPB.el, rBd.el, rW.el, rKA.el, rKB.el));
+  function update() {
+    const log2W = bandLog2Count(n, Q, EPS);
+    rPA.set(bandProb(n, Q, EPS).toFixed(3));
+    rPB.set(pow2(log2W - n));
+    rBd.set(pow2(-n * (1 - Hb(Q + EPS))));
+    rW.set(pow2(log2W));
+    rKA.set(texExp(Math.pow(2, k * log2(Q) + (n - k) * log2(1 - Q))));
+    rKB.set(texExp(Math.pow(2, -n)));
+    plot.redraw();
+  }
+  function drawC(svg, W, H) {
+    const L = 46, R = 14, T = 14, B = 46, base = H - B, pw = W - L - R;
+    const [lo, hi] = bandRange(n, Q, EPS);
+    const A = [], Bw = [];
+    let ymax = 0;
+    for (let kk = 0; kk <= n; kk++) {
+      const a = Math.pow(2, lnBinom(n, kk) + kk * log2(Q) + (n - kk) * log2(1 - Q));
+      const b = Math.pow(2, lnBinom(n, kk) - n);
+      A.push(a); Bw.push(b);
+      ymax = Math.max(ymax, a, b);
+    }
+    const bw = pw / (n + 1), X = kk => L + kk * bw, Y = v => base - v / (ymax * 1.1) * (base - T);
+    if (hi >= lo) svgNode('rect', { x: X(lo).toFixed(1), y: T, width: ((hi - lo + 1) * bw).toFixed(1), height: base - T, fill: COL.accentTint, 'data-item': 'mark', 'data-id': 'band' }, svg);
+    A.forEach((a, kk) => svgNode('rect', { x: X(kk).toFixed(2), y: Y(a).toFixed(1), width: (bw * 0.45).toFixed(2), height: (base - Y(a)).toFixed(1), fill: COL.accent, 'data-item': 'mark', 'data-id': 'A-' + kk }, svg));
+    Bw.forEach((b, kk) => svgNode('rect', { x: (X(kk) + bw * 0.5).toFixed(2), y: Y(b).toFixed(1), width: (bw * 0.45).toFixed(2), height: (base - Y(b)).toFixed(1), fill: COL.grey, 'data-item': 'mark', 'data-id': 'B-' + kk }, svg));
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const kk of [0, Math.round(n / 2), n]) svgText(svg, X(kk) + bw / 2, base + 16, String(kk), { 'text-anchor': 'middle', 'font-size': 15 });
+    svgText(svg, L - 8, Y(ymax / 2) + 5, (ymax / 2).toFixed(2), { 'text-anchor': 'end' });
+    const xk = (X(k) + bw / 2).toFixed(1), left = X(k) > W * 0.6;
+    svgNode('line', { x1: xk, y1: T, x2: xk, y2: base, stroke: COL.ink, 'stroke-dasharray': '4 3', 'data-item': 'mark', 'data-id': 'k-line' }, svg);
+    haloTex(svg, left ? xk - 6 : xk + 6, T + 34, String.raw`$k$, your distance`, { w: 200, anchor: left ? 'end' : 'start', size: 15, fill: COL.ink });
+    if (hi >= lo) haloTex(svg, X(hi) + bw + 6, T + 12, String.raw`band $\mathcal T$: $k$ from ` + lo + ' to ' + hi, { w: 260, anchor: 'start', size: 14, fill: COL.accentDeep });
+    svgTex(svg, (L + W - R) / 2, H - 8, String.raw`$k$, distance of a word from $y$ (bits)`, { w: 380, size: 15 });
+  }
+  side.append(
+    sym(String.raw`$y$: received word. $A$: the sent word. $B$: a random wrong word. $k$: bits where a word differs from $y$. $\mathcal T$: the band, $|k/n-Q|\le 0.05$.`),
+    proofLines([
+      [String.raw`$P(A\in\mathcal T)=\sum_{k\in\mathcal T}\binom{n}{k}Q^{k}(1-Q)^{n-k}$`, 'rows at distance $k$, times the chance of each'],
+      [String.raw`$P(B\in\mathcal T)=\sum_{k\in\mathcal T}\binom{n}{k}2^{-n}=\#\mathcal T/2^{n}$`, 'every word is equally likely: $2^{-n}$ each'],
+      [String.raw`$P(B\in\mathcal T)\le 2^{nH(Q+\varepsilon)}/2^{n}$`, String.raw`the band fits in a ball of $2^{nH(Q+\varepsilon)}$ words`],
+    ]),
+    triesList([
+      String.raw`At $n=100$, $Q=0.1$: $P(A\text{ in band})=0.936$, $P(B\text{ in band})=2^{-41.9}$, bound $2^{-39.0}$.`,
+      String.raw`Set $k=10$: per word, $7.6\times10^{-15}$ under $A$, $2^{-100}$ under $B$.`]),
+    takeLine(String.raw`Same band, same words: $A$ puts its weight there; $B$ spreads it over all $2^{n}$ words.`));
+  update();
+}
+
+// ---------- slide 7e: Shannon's random-code proof is three counts (worked at n = 100) ----------
+function slideRandomCode(widget, side) {
+  const Q = 0.1, N = 100, lgBand = bandLog2Count(N, Q, EPS), lgBound = N * Hb(Q + EPS), leave = leaveProb(N, Q, EPS);
+  let R = 0.3, plot = null;
+  const sR = slider(String.raw`$R$, rate ($n = 100$, band $5$ to $15$)`, { id: 'R', name: 'rate R', min: 0, max: 0.6, step: 0.01, value: R, fmt: v => v.toFixed(2), onInput: v => { R = v; update(); } });
+  const rU = readout('union', String.raw`union bound, $2^{nR}\cdot 2^{-39.0}$`);
+  const rX = readout('exact', String.raw`with the exact count`);
+  const rL = readout('leave', 'true word leaves the band');
+  rL.set(leave.toFixed(3));
+  function update() {
+    const u = N * R + lgBound - N, x = N * R + lgBand - N;
+    rU.set(pow2(u) + (u < 0 ? String.raw` $\approx$ ` + texExp(Math.pow(2, u)) : ': useless, above 1'), u > 0);
+    rX.set(pow2(x) + (x < 0 ? String.raw` $\approx$ ` + texExp(Math.pow(2, x)) : ''), x > 0);
+    if (plot) plot.redraw();
+  }
+  // log2 of the union bound against R: with the formula's band count, and with the exact count.
+  function drawU(svg, W, H) {
+    const L = 46, R2 = 20, T = 12, B = 44, base = H - B, pw = W - L - R2, YMIN = -40, YMAX = 20;
+    const X = r => L + r / 0.6 * pw, Y = v => T + (YMAX - Math.max(YMIN, Math.min(YMAX, v))) / (YMAX - YMIN) * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R2, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [-40, -20, 0, 20]) svgTex(svg, L - 6, Y(v), '$2^{' + v + '}$', { w: 50, anchor: 'end', size: 13 });
+    for (const r of [0, 0.2, 0.4, 0.6]) svgText(svg, X(r), base + 18, String(r), { 'text-anchor': 'middle', 'font-size': 14 });
+    svgNode('line', { x1: L, y1: Y(0), x2: W - R2, y2: Y(0), stroke: COL.ink, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'one' }, svg);
+    haloTex(svg, L + 6, Y(0) - 12, 'bound = 1: useless above this line', { w: 300, anchor: 'start', size: 14, fill: COL.ink });
+    const line = (lg, col, id, wd) => svgNode('line', { x1: X(0), y1: Y(lg - N), x2: X(0.6), y2: Y(60 + lg - N), stroke: col, 'stroke-width': wd, 'data-item': 'mark', 'data-id': id }, svg);
+    line(lgBound, COL.accent, 'bound', 2.5);
+    line(lgBand, COL.grey, 'exact', 2.5);
+    svgNode('circle', { cx: X(R).toFixed(1), cy: Y(N * R + lgBound - N).toFixed(1), r: 5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'your-R' }, svg);
+    svgTex(svg, (L + W - R2) / 2, H - 10, String.raw`$R$, rate; up: chance that some wrong word lands in the band`, { w: 460, size: 14 });
+  }
+  widget.append(hh('div', 'sliders', sR.el), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue: bound, band count $2^{61.0}$` },
+    { color: 'var(--pal-grey)', text: String.raw`grey: exact count $2^{58.1}$` }]));
+  plot = fillPlot(widget, drawU);
+  widget.append(hh('div', 'readouts', rU.el, rX.el, rL.el),
+    proofLines([
+      [String.raw`$\#\mathcal T\le 2^{nH(Q+\varepsilon)}$ of the $2^{n}$ words`, String.raw`the band fits in the ball of radius $n(Q+\varepsilon)$`],
+      [String.raw`$P(\text{a wrong word in }\mathcal T)\le 2^{-n(1-H(Q+\varepsilon))}$`, String.raw`a random word: each of the $2^{n}$ equally likely`],
+      [String.raw`$P(\text{some wrong word in }\mathcal T)\le 2^{nR}\,2^{-n(1-H(Q+\varepsilon))}$`, String.raw`union bound: add the chances of the $2^{nR}$ wrong words`],
+      [String.raw`$P(\text{error})\le P(\text{true word leaves }\mathcal T)+2^{-n(1-H(Q+\varepsilon)-R)}$`, 'averaged over random books: some book does as well'],
+    ]));
+  side.append(
+    sym(String.raw`$R$: rate, message bits per bit sent. A book of rate $R$ holds $2^{nR}$ random code words; all but one are wrong for the message sent.`),
+    triesList([
+      String.raw`Set $R = 0.3$. The bound is $2^{-9.0}\approx 1.9\times10^{-3}$; the exact count gives $2^{-11.9}\approx 2.6\times10^{-4}$.`,
+      String.raw`Set $R = 0.4$. The bound is $2^{1.0}$, above $1$: useless. The exact count still gives $2^{-1.9}$.`,
+      String.raw`Read the other term: the true word leaves the band with chance $0.064$, the larger term at $R = 0.3$.`]),
+    takeLine(String.raw`The proof never builds a code. It counts: the band is small, a random word rarely lands in it, and $2^{nR}$ words are few enough. At $n=100$ the bound works up to $R<1-H(0.15)=0.39$.`));
+  update();
+}
+
+// ---------- slide 7f: the band shrinks, so the rate climbs to capacity ----------
+function slideRandomLimit(widget, side) {
+  const Q = 0.1, cap = 1 - Hb(Q);
+  const NL = [100, 300, 1000, 3000, 10000, 100000, 1000000];
+  let R = 0.3, ni = 0, plot = null;
+  const limit = n => 1 - Hb(Q + epsAt(n));
+  const nTex = n => n >= 10000 ? '10^{' + Math.round(Math.log10(n)) + '}' : String(n);
+  const sR = slider(String.raw`$R$, rate`, { id: 'R', name: 'rate R', min: 0, max: 0.6, step: 0.01, value: R, fmt: v => v.toFixed(2), onInput: v => { R = v; update(); } });
+  const sN = slider(String.raw`$n$, block length`, { id: 'n', name: 'block length', min: 0, max: NL.length - 1, step: 1, value: ni, fmt: v => '$' + nTex(NL[v]) + '$', onInput: v => { ni = v; update(); } });
+  const rE = readout('eps', String.raw`band half-width $\varepsilon_n$`);
+  const rL = readout('leave', 'true word leaves the band');
+  const rB = readout('bound', String.raw`wrong-word bound $2^{-n(1-H(Q+\varepsilon_n)-R)}$`);
+  const rC = readout('limit', String.raw`rate allowed, $1-H(Q+\varepsilon_n)$`);
+  widget.append(hh('div', 'sliders', sR.el, sN.el), legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue: rate the proof allows, $1-H(Q+\varepsilon_n)$` },
+    { color: 'var(--pal-ink)', text: String.raw`dashed: capacity $1-H(Q)=0.531$`, dash: true }]));
+  plot = fillPlot(widget, drawR);
+  widget.append(hh('div', 'readouts', rE.el, rL.el, rB.el, rC.el));
+  function update() {
+    const n = NL[ni], e = epsAt(n), lg = -n * (1 - Hb(Q + e) - R), lv = leaveProb(n, Q, e);
+    rE.set(e.toFixed(4));
+    rL.set(lv >= 0.001 ? lv.toFixed(3) : lv < 1e-300 ? '$< 10^{-300}$' : sci(lv));
+    rB.set(Math.abs(lg) < 1000 ? '$2^{' + lg.toFixed(1) + '}$' : '$2^{' + lg.toFixed(0) + '}$', lg > 0);
+    rC.set(limit(n).toFixed(3), limit(n) < R);
+    plot.redraw();
+  }
+  function drawR(svg, W, H) {
+    const L = 46, R2 = 20, T = 12, B = 44, base = H - B, pw = W - L - R2;
+    const X = n => L + (Math.log10(n) - 2) / 4 * pw, Y = v => base - v / 0.6 * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R2, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 0.2, 0.4, 0.6]) svgText(svg, L - 8, Y(v) + 5, v.toFixed(1), { 'text-anchor': 'end', 'font-size': 14 });
+    for (const e of [2, 3, 4, 5, 6]) svgTex(svg, X(Math.pow(10, e)), base + 16, '$10^{' + e + '}$', { w: 60, size: 14, anchor: e === 6 ? 'end' : 'middle' });
+    svgNode('line', { x1: L, y1: Y(cap), x2: W - R2, y2: Y(cap), stroke: COL.ink, 'stroke-dasharray': '6 4', 'data-item': 'mark', 'data-id': 'capacity' }, svg);
+    svgNode('line', { x1: L, y1: Y(R), x2: W - R2, y2: Y(R), stroke: COL.grey, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'your-R' }, svg);
+    let d = '';
+    for (let i = 0; i <= 80; i++) { const n = Math.pow(10, 2 + 4 * i / 80); d += (i ? 'L' : 'M') + X(n).toFixed(1) + ' ' + Y(limit(n)).toFixed(1); }
+    svgNode('path', { d, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'allowed' }, svg);
+    const n = NL[ni];
+    svgNode('circle', { cx: X(n).toFixed(1), cy: Y(limit(n)).toFixed(1), r: 5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'n-dot' }, svg);
+    haloTex(svg, W - R2, Y(cap) - 12, 'capacity', { w: 120, anchor: 'end', size: 14, fill: COL.ink });
+    haloTex(svg, W - R2, Y(R) + 12, String.raw`your $R$`, { w: 120, anchor: 'end', size: 14, fill: COL.muted });
+    svgTex(svg, (L + W - R2) / 2, H - 10, String.raw`$n$, block length (log scale); up: rate`, { w: 360, size: 14 });
+  }
+  side.append(
+    sym(String.raw`$\varepsilon_n=0.05\,(100/n)^{1/3}$: the band's half-width at block length $n$; $0.05$ at $n=100$, as before.`),
+    proofLines([
+      [String.raw`wobble of $k/n$: $\sqrt{Q(1-Q)/n}=0.3/\sqrt{n}$`, 'a sum of $n$ flips, as in the first step'],
+      [String.raw`$\varepsilon_n/\text{wobble}=\tfrac53\,(n/100)^{1/6}\to\infty$`, 'so the true word leaves the band less and less'],
+      [String.raw`$1-H(Q+\varepsilon_n)\to 1-H(Q)=0.531$`, 'the band closes in on $Q$: capacity'],
+    ]),
+    triesList([
+      String.raw`Set $R = 0.3$ and move $n$: the wrong-word bound falls from $2^{-9.0}$ to $2^{-161.5}$ at $n=1000$.`,
+      String.raw`Set $R = 0.5$. Up to $n=10^{4}$ the bound is above $1$. At $n=10^{5}$ the blue curve passes $R$.`]),
+    takeLine(String.raw`A wider band than the limit costs rate at small $n$. As $n$ grows the band shrinks, and any $R$ below capacity $1-H(Q)$ works.`));
+  update();
+}
+
+// ---------- slide 7g: next-word prediction and the entropy rate ----------
+function slideTypicalText(widget, side) {
+  const TEXT = 'data/alice.txt';
+  let order = 2, models = null, plotBars = null, plotRun = null;
+  const note = h('p', 'sym', 'Loading the Alice text sample…');
+  widget.append(note);
+  const sK = slider(String.raw`order $k$: characters of context`, { id: 'order', name: 'context order', min: 0, max: 3, step: 1, value: order,
+    fmt: v => String(v), onInput: v => { order = v; if (models) { paintRun(); paintReadouts(); } } });
+  const rCur = readout('cur', String.raw`bits per character, order $k$`);
+  const rFin = readout('fin', String.raw`best over orders $0$ to $3$: upper bound on $H$`);
+  side.append(
+    setTex(h('p', 'sym'), String.raw`Made-up numbers: after “The cat sat on the”, “mat” $0.30$, “floor” $0.15$, “couch” $0.10$. Generation samples one.`),
+    panel('Why typicality still holds', [
+      String.raw`For a stationary, ergodic source, $-\tfrac1n\log_2 p(x_1..x_n)$ settles near the entropy rate $H$. The chain rule makes $\log p$ a sum of $n$ per-token surprises: the sum of $n$ pieces from the first step, with dependent pieces. Real text is only roughly stationary.`,
+      { cite: 'Algoet and Cover (1988), Ann. Probab. 16(2); Cover and Thomas, ch. 16.' }]),
+    triesList([
+      String.raw`The model learns from the first $80\%$ of an excerpt from Alice’s Adventures in Wonderland. Compare orders $0$, $2$, and $3$ on the remaining text.`,
+      String.raw`The lowest measured loss estimates an upper bound on $H$.`]),
+    takeLine(String.raw`Text is random to whoever predicts it. Long texts are typical, and a model’s loss bounds their entropy rate from above.`));
+  function paintReadouts() {
+    const m = models[order];
+    rCur.set(m.avg.toFixed(3));
+    rFin.set(Math.min(...models.map(x => x.avg)).toFixed(3));
+  }
+  function paintRun() { if (plotRun) plotRun.redraw(); }
+  function build(raw) {
+    const s = raw.toLowerCase().replace(/[^a-z]+/g, ' ').trim().replace(/ +/g, ' ');
+    const cut = Math.floor(s.length * 0.8), tr = s.slice(0, cut), te = s.slice(cut);
+    models = [0, 1, 2, 3].map(k => {
+      const tab = new Map();
+      for (let i = 0; i < tr.length; i++) {
+        const ctx = tr.slice(Math.max(0, i - k), i);
+        let e = tab.get(ctx); if (!e) { e = { t: 0, c: new Map() }; tab.set(ctx, e); }
+        e.t++; e.c.set(tr[i], (e.c.get(tr[i]) || 0) + 1);
+      }
+      const out = new Float64Array(te.length);
+      for (let i = 0; i < te.length; i++) {
+        const e = tab.get(te.slice(Math.max(0, i - k), i));
+        const t = e ? e.t : 0, n = e ? (e.c.get(te[i]) || 0) : 0;
+        out[i] = -Math.log2((n + 1) / (t + 27));
+      }
+      let sum = 0; for (const v of out) sum += v;
+      return { k, surprise: out, avg: sum / out.length };
+    });
+    widget.replaceChildren();
+    widget.append(hh('div', 'sliders', sK.el), legend([
+      { chip: true, color: 'var(--pal-grey)', text: 'bars: average bits per character, test text' },
+      { chip: true, color: 'var(--pal-accent)', text: 'line: running average, order k' }]));
+    plotBars = fillPlot(widget, drawBars);
+    plotRun = fillPlot(widget, drawRun);
+    widget.append(hh('div', 'readouts', rCur.el, rFin.el), howPanel);
+    paintReadouts();
+    plotBars.redraw(); plotRun.redraw();
+  }
+  function drawBars(svg, W, H) {
+    if (!models) return;
+    const L = 46, R = 14, T = 14, B = 34, base = H - B, pw = W - L - R, bw = pw / 4;
+    const Y = v => base - v / 5 * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 2, 4]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 14 });
+    models.forEach((m, j) => {
+      svgNode('rect', { x: (L + j * bw + bw * 0.2).toFixed(1), y: Y(m.avg).toFixed(1), width: (bw * 0.6).toFixed(1),
+        height: (base - Y(m.avg)).toFixed(1), fill: j === order ? COL.accent : COL.grey, 'data-item': 'mark', 'data-id': 'order-' + j }, svg);
+      svgTex(svg, L + j * bw + bw / 2, base + 16, String.raw`order $${j}$: ` + m.avg.toFixed(2), { w: 160, size: 14 });
+    });
+  }
+  function drawRun(svg, W, H) {
+    if (!models) return;
+    const m = models[order], L = 46, R = 14, T = 14, B = 30, base = H - B, pw = W - L - R;
+    const Y = v => base - v / 5 * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 2, 4]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 14 });
+    const N = m.surprise.length, pts = 300;
+    let d = '', sum = 0, cnt = 0;
+    const cum = new Float64Array(N);
+    for (let i = 0; i < N; i++) { sum += m.surprise[i]; cum[i] = sum / (i + 1); }
+    for (let p = 1; p <= pts; p++) {
+      const i = Math.floor(N * p / pts) - 1;
+      d += (p === 1 ? 'M' : 'L') + (L + pw * p / pts).toFixed(1) + ' ' + Y(cum[i]).toFixed(1);
+    }
+    svgNode('path', { d, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'running' }, svg);
+    svgNode('line', { x1: L, y1: Y(m.avg), x2: W - R, y2: Y(m.avg), stroke: COL.ink, 'stroke-dasharray': '4 3' }, svg);
+    svgTex(svg, (L + W - R) / 2, H - 10, String.raw`characters of test text, order $${order}$`, { w: 320, size: 14 });
+  }
+  note.textContent = '';
+  const howPanel = panel('How to measure H', [
+    String.raw`We never know $p$. A model $q$ scores real text with average surprise $H(p)+D(p\|q)\ge H(p)$: its cross-entropy, or loss. So a model’s loss bounds $H$ from above.`,
+    { cite: 'Lecture 13 deck: the gibbs and cross-entropy steps.' }]);
+  if (!window.fluid || typeof window.fluid.readFile !== 'function') { note.textContent = 'Could not read the Alice text sample.'; return; }
+  window.fluid.readFile(TEXT).then(build).catch(() => { note.textContent = 'Could not read the Alice text sample.'; });
+}
+
+
+// ---------- companion slides: in practice (papers, limits, one small try) ----------
+// 1. Attention: scores grow like sqrt(d); the 1/sqrt(d) scale keeps softmax mixing.
+function slideAttnP(widget, side) {
+  const DS = [4, 16, 64, 256, 512];
+  let di = 4, scaled = false, data = null, plot = null;
+  const sl = slider(String.raw`$d$, dimension of each key`, { id: 'd', name: 'dimension', min: 0, max: DS.length - 1, step: 1, value: di, fmt: v => String(DS[v]), onInput: v => { di = v; update(); } });
+  const btn = mark(h('button', 'btn'), 'control', 'scale-toggle');
+  const rMax = readout('max', 'largest weight of 8 keys');
+  const rSd = readout('sd', 'sd of the scores');
+  function paintBtn() { setTex(btn, scaled ? String.raw`$1/\sqrt{d}$ scale: on` : String.raw`$1/\sqrt{d}$ scale: off`); btn.classList.toggle('on', scaled); }
+  btn.addEventListener('click', () => { scaled = !scaled; paintBtn(); update(); });
+  widget.append(hh('div', 'sliders', sl.el, btn), legend([{ chip: true, color: 'var(--pal-grey)', text: 'grey: weight of each key' }, { chip: true, color: 'var(--pal-accent)', text: 'blue: the largest' }]));
+  plot = fillPlot(widget, drawA);
+  widget.append(hh('div', 'readouts', rMax.el, rSd.el));
+  paintBtn();
+  function update() {
+    const d = DS[di], rnd = mulberry32(900 + d), q = gaussVec(rnd, d, new Float64Array(d)), sc = [];
+    for (let j = 0; j < 8; j++) {
+      const kv = gaussVec(rnd, d, new Float64Array(d));
+      let s = 0;
+      for (let i = 0; i < d; i++) s += q[i] * kv[i];
+      sc.push(scaled ? s / Math.sqrt(d) : s);
+    }
+    data = softmax(sc);
+    rMax.set(Math.max(...data).toFixed(3));
+    rSd.set(scaled ? '1' : Math.sqrt(d).toFixed(2));
+    plot.redraw();
+  }
+  function drawA(svg, W, H) {
+    if (!data) return;
+    const L = 46, R = 14, T = 16, B = 52, base = H - B, pw = W - L - R, bw = pw / 8;
+    const Y = v => base - v * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 0.5, 1]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end' });
+    const top = Math.max(...data);
+    data.forEach((v, j) => {
+      svgNode('rect', { x: (L + j * bw + bw * 0.15).toFixed(1), y: Y(v).toFixed(1), width: (bw * 0.7).toFixed(1),
+        height: (base - Y(v)).toFixed(1), fill: v === top ? COL.accent : COL.grey, 'data-item': 'mark', 'data-id': 'key-' + (j + 1) }, svg);
+      svgTex(svg, L + j * bw + bw / 2, base + 16, '$k_{' + (j + 1) + '}$', { w: 50, size: 14 });
+    });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`softmax weight of each key $k_j$`, { w: 320, size: 15 });
+  }
+  practiceParts(widget, side, {
+    seen: [String.raw`Each score is a sum of $d$ products of random entries, so its spread grows like $\sqrt{d}$: $22.6$ at $d=512$. Softmax then gives about $0.95$ of the weight to the top of 8 keys (our simulation).`, { cite: 'Vaswani et al. (2017), arXiv:1706.03762, section 3.2.1.' }],
+    helps: [String.raw`He et al. use the same sum argument for weights, so each layer’s signal size can stay fixed. The chain has four steps.`, { cite: 'He et al. (2015), arXiv:1502.01852, Eq. 10.' }],
+    expand: { steps: [
+      String.raw`(a) A neuron’s input is a sum of $n$ terms, weight times input: its variance is $n\,\mathrm{Var}(w)\,\mathbb{E}[x^2]$.`,
+      String.raw`(b) ReLU sets about half the inputs to $0$, which halves that mean square.`,
+      String.raw`(c) So each layer multiplies the signal’s variance by $\tfrac12 n\,\mathrm{Var}(w)$.`,
+      String.raw`(d) With $\mathrm{Var}(w)=2/n$ that factor is exactly $1$ at every layer. With $1/n$ it is $\tfrac12$, so after $30$ layers $0.5^{30}\approx 10^{-9}$.`],
+      cite: 'Steps follow He et al. (2015), arXiv:1502.01852, Eqs. 8 to 10.' },
+    bites: [String.raw`Near one-hot, softmax weights have a derivative near $0$, so the gradient vanishes and learning stalls. Dividing by $\sqrt{d}$ keeps the top key near $0.36$ instead.`, { cite: 'Vaswani et al. (2017), section 3.2.1; the 0.36 is our simulation.' }],
+    fails: [String.raw`The argument needs independent coordinates with variance $1$. Trained models have a few massive activations, about $100{,}000$ times the rest, that are the same for every input. They act as fixed biases, not as signal.`, { cite: 'Sun et al. (2024), arXiv:2402.17762.' }],
+    tries: [String.raw`Set $d = 512$ with the scale off. One key takes almost all the weight.`],
+    take: String.raw`The $\sqrt{d}$ scale keeps softmax in the range where it still mixes.`,
+  });
+  update();
+}
+
+// 2. Ball sampling: rejection from the cube keeps V_n / 2^n of the tries.
+function slideBallP(widget, side) {
+  const NB = [2, 3, 5, 10, 15, 20, 30];
+  let ni = 3, plot = null;
+  const accOf = n => Math.exp(lnBall(n) - n * Math.LN2);
+  const rAcc = readout('acc', String.raw`share kept, $V_n/2^{n}$`);
+  const rTries = readout('tries', 'tries per kept point');
+  const sl = slider(String.raw`$n$, dimension`, { id: 'n', name: 'dimension', min: 0, max: NB.length - 1, step: 1, value: ni, fmt: v => String(NB[v]), onInput: v => { ni = v; update(); } });
+  widget.append(hh('div', 'sliders', sl.el), legend([{ chip: true, color: 'var(--pal-grey)', text: 'bars: tries per kept point, log scale' }, { chip: true, color: 'var(--pal-accent)', text: 'blue: your n' }]));
+  plot = fillPlot(widget, drawB);
+  widget.append(hh('div', 'readouts', rAcc.el, rTries.el));
+  function update() {
+    const a = accOf(NB[ni]);
+    rAcc.set(a >= 0.01 ? a.toFixed(4) : sci(a));
+    rTries.set(1 / a >= 1e4 ? texExp(1 / a) : (1 / a).toFixed(1));
+    plot.redraw();
+  }
+  function drawB(svg, W, H) {
+    const L = 60, R = 14, T = 14, B = 44, base = H - B, pw = W - L - R, bw = pw / NB.length;
+    const lv = NB.map(n => Math.log10(1 / accOf(n)));
+    const ymax = Math.max(...lv) * 1.1;
+    const Y = v => base - v / ymax * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (let t = 0; t <= ymax; t += 4) svgTex(svg, L - 8, Y(t), '$10^{' + t + '}$', { w: 60, anchor: 'end', size: 14 });
+    NB.forEach((n, j) => {
+      svgNode('rect', { x: (L + j * bw + bw * 0.15).toFixed(1), y: Y(lv[j]).toFixed(1), width: (bw * 0.7).toFixed(1),
+        height: (base - Y(lv[j])).toFixed(1), fill: j === ni ? COL.accent : COL.grey, 'data-item': 'mark', 'data-id': 'n-' + n }, svg);
+      svgText(svg, L + j * bw + bw / 2, base + 18, String(n), { 'text-anchor': 'middle', 'font-size': 15 });
+    });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`$n$, dimension`, { w: 160, size: 15 });
+  }
+  practiceParts(widget, side, {
+    seen: [String.raw`A random point in the cube lands in the ball with chance $V_n/2^{n}$, and in $n$ dimensions most of the ball’s volume lies in its outer layer (the thin-shell step). Betancourt says the same for typical targets: volume is “largest out in the tails, away from the mode”.`, { cite: 'Betancourt (2017), arXiv:1701.02434, section 1.3.' }],
+    helps: [String.raw`A Gaussian vector points in a uniformly random direction. Divide it by its length, and it is a uniform point on the sphere; every try is kept.`, { cite: 'Standard fact, not from a paper.' }],
+    bites: [String.raw`Rejection keeps $V_n/2^{n}$ of the tries: about $1$ in $400$ at $n = 10$, and about $4\times10^{7}$ tries per point at $n = 20$.`, { cite: 'Volume of the unit ball: standard formula.' }],
+    fails: [String.raw`Natural images occupy a thin, low-dimensional set inside pixel space: image datasets have very low intrinsic dimension relative to their pixels. Points sampled from the ball are not images.`, { cite: 'Pope et al. (2021), arXiv:2104.08894.' }],
+    tries: [String.raw`Set $n = 20$. The count grows by about $10^{5}$ from $n = 10$.`],
+    take: 'In high dimensions, filling the space wastes nearly every try. Sample the shell, or the data’s own shape.',
+  });
+  update();
+}
+
+// 3. Latent interpolation: straight line drops toward the middle; slerp stays on the shell.
+function slideSlerpP(widget, side) {
+  const n = 100, rnd = mulberry32(4242), sq = Math.sqrt(n);
+  const a = gaussVec(rnd, n, new Float64Array(n)), b = gaussVec(rnd, n, new Float64Array(n));
+  const ua = a.map(x => x / Math.sqrt(a.reduce((s, y) => s + y * y, 0)));
+  const ub = b.map(x => x / Math.sqrt(b.reduce((s, y) => s + y * y, 0)));
+  const om = Math.acos(Math.max(-1, Math.min(1, ua.reduce((s, x, i) => s + x * ub[i], 0))));
+  let t = 0.5, plot = null;
+  const linAt = tt => a.map((x, i) => (1 - tt) * x + tt * b[i]);
+  const slerpAt = tt => { const s = Math.sin(om); return ua.map((x, i) => (Math.sin((1 - tt) * om) * x + Math.sin(tt * om) * ub[i]) / s * sq); };
+  const normR = v => Math.sqrt(v.reduce((s, x) => s + x * x, 0)) / sq;
+  const sl = slider(String.raw`$t$, position from $a$ to $b$`, { id: 't', name: 'position t', min: 0, max: 1, step: 0.01, value: t, fmt: v => v.toFixed(2), onInput: v => { t = v; update(); } });
+  const rLin = readout('lin', String.raw`straight line: norm $/\sqrt{n}$`);
+  const rSl = readout('slerp', String.raw`slerp: norm $/\sqrt{n}$`);
+  widget.append(hh('div', 'sliders', sl.el), legend([{ color: 'var(--pal-grey)', text: 'grey: straight line' }, { color: 'var(--pal-accent)', text: 'blue: slerp' }, { color: 'var(--pal-ink)', text: String.raw`dashed: $\sqrt{n}$`, dash: true }]));
+  plot = fillPlot(widget, drawS);
+  widget.append(hh('div', 'readouts', rLin.el, rSl.el));
+  function drawS(svg, W, H) {
+    const L = 46, R = 14, T = 14, B = 44, base = H - B, pw = W - L - R;
+    const X = tt => L + tt * pw, Y = v => base - v / 1.2 * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 0.5, 1]) svgText(svg, L - 8, Y(v) + 5, String(v), { 'text-anchor': 'end' });
+    for (const tt of [0, 0.5, 1]) svgText(svg, X(tt), base + 18, String(tt), { 'text-anchor': 'middle', 'font-size': 15 });
+    let dl = '', ds = '';
+    for (let i = 0; i <= 100; i++) {
+      const tt = i / 100;
+      dl += (i ? 'L' : 'M') + X(tt).toFixed(1) + ' ' + Y(normR(linAt(tt))).toFixed(1);
+      ds += (i ? 'L' : 'M') + X(tt).toFixed(1) + ' ' + Y(normR(slerpAt(tt))).toFixed(1);
+    }
+    svgNode('path', { d: dl, fill: 'none', stroke: COL.grey, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'straight' }, svg);
+    svgNode('path', { d: ds, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'slerp' }, svg);
+    svgNode('line', { x1: L, y1: Y(1), x2: W - R, y2: Y(1), stroke: COL.ink, 'stroke-dasharray': '4 3' }, svg);
+    svgNode('line', { x1: X(t), y1: T, x2: X(t), y2: base, stroke: COL.muted, 'stroke-dasharray': '2 3' }, svg);
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`$t$, position between $a$ and $b$`, { w: 300, size: 15 });
+    haloTex(svg, L + 8, Y(1) - 12, String.raw`$\sqrt{n}$`, { w: 60, anchor: 'start', size: 15, fill: COL.ink });
+  }
+  function update() {
+    rLin.set(normR(linAt(t)).toFixed(3));
+    rSl.set(normR(slerpAt(t)).toFixed(3));
+    plot.redraw();
+  }
+  practiceParts(widget, side, {
+    seen: [String.raw`The midpoint of two prior samples is $(a+b)/2$. Its squared norm is about $n/2$, because the cross term averages to $0$, so its norm is $\sqrt{n/2}=0.71\sqrt{n}$: inside the shell, where the prior has little mass.`, { cite: 'White (2016), arXiv:1609.04468.' }],
+    helps: [String.raw`Slerp follows the arc between the two directions and rescales to $\sqrt{n}$. Every point then has the norm of a prior sample, and White reports sharper samples.`, { cite: 'White (2016), arXiv:1609.04468.' }],
+    bites: [String.raw`A straight line through a Gaussian latent dips toward the middle. At $n = 100$ the midpoint’s norm is about $7$, against $\sqrt{100}=10$ (our simulation).`, { cite: 'Our simulation at n = 100.' }],
+    fails: [String.raw`Slerp keeps the arc on the prior’s shell only if the prior is an isotropic Gaussian. A learned latent may have another shape, and then the arc can leave its mass.`, { cite: 'Reasoning from the assumption.' }],
+    tries: [String.raw`Set $t = 0.5$. The straight line dips; slerp stays on the dashed line.`],
+    take: 'Interpolate along the shell, not across the empty middle.',
+  });
+  update();
+}
+
+// 4. Unrelated vectors: a shared offset pushes cosines up; the random floor is 1/sqrt(d).
+function slidePerpP(widget, side) {
+  const d = 100;
+  let c = 0, plot = null, data = [];
+  const sl = slider(String.raw`$c$, shared offset per coordinate`, { id: 'c', name: 'shared offset', min: 0, max: 2, step: 0.1, value: c, fmt: v => v.toFixed(1), onInput: v => { c = v; update(); } });
+  const rMean = readout('mean', 'measured mean cosine');
+  const rForm = readout('formula', String.raw`$c^{2}/(1+c^{2})$`);
+  const rFloor = readout('floor', String.raw`random floor $1/\sqrt{d}$`);
+  widget.append(hh('div', 'sliders', sl.el), legend([{ chip: true, color: 'var(--pal-accent)', text: 'dots: cosine of one random pair' }, { chip: true, color: 'var(--pal-ink)', text: 'solid bar: measured mean' }]));
+  plot = fillPlot(widget, drawP);
+  widget.append(hh('div', 'readouts', rMean.el, rForm.el, rFloor.el));
+  function update() {
+    const rnd = mulberry32(5150 + Math.round(c * 10)), cs = [];
+    for (let p = 0; p < 200; p++) {
+      const u = gaussVec(rnd, d, new Float64Array(d)), v = gaussVec(rnd, d, new Float64Array(d));
+      let du = 0, dv = 0, dd = 0;
+      for (let i = 0; i < d; i++) { const x = u[i] + c, y = v[i] + c; du += x * x; dv += y * y; dd += x * y; }
+      cs.push(dd / Math.sqrt(du * dv));
+    }
+    data = cs;
+    rMean.set(mean(cs).toFixed(3));
+    rForm.set((c * c / (1 + c * c)).toFixed(3));
+    rFloor.set((1 / Math.sqrt(d)).toFixed(3));
+    plot.redraw();
+  }
+  function drawP(svg, W, H) {
+    const L = 30, R = 30, T = 14, B = 44, base = H - B, pw = W - L - R;
+    const X = x => L + (x + 1) / 2 * pw;
+    svgNode('line', { x1: L, y1: (T + base) / 2, x2: W - R, y2: (T + base) / 2, stroke: COL.grey }, svg);
+    data.forEach((x, i) => {
+      svgNode('circle', { cx: X(x).toFixed(1), cy: ((T + base) / 2 + ((i * 29) % 11 - 5) * 6).toFixed(1), r: 4, fill: COL.accent, opacity: 0.7, 'data-item': 'mark', 'data-id': 'pair-' + i }, svg);
+    });
+    const m = mean(data);
+    svgNode('line', { x1: X(m).toFixed(1), y1: T, x2: X(m).toFixed(1), y2: base, stroke: COL.ink, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'mean' }, svg);
+    for (const v of [-1, 0, 1]) svgText(svg, X(v), base + 18, String(v), { 'text-anchor': 'middle', 'font-size': 15 });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`cosine between two random vectors`, { w: 320, size: 15 });
+  }
+  practiceParts(widget, side, {
+    seen: [String.raw`Two random unit vectors have a cosine with spread $1/\sqrt{d}$ (the near-perpendicular step). Elhage et al.: models store more sparse features than dimensions, each in a nearly orthogonal direction, so the leak from another active feature is about $1/\sqrt{d}=0.036$ at $d=768$.`, { cite: 'Elhage et al. (2022), arXiv:2209.10652 (abstract); the 1/√d leak is our calculation.' }],
+    helps: [String.raw`If few features are active at once, the leaks are rare. Many features then fit in one space, each with a small error.`, { cite: 'Elhage et al. (2022), arXiv:2209.10652.' }],
+    bites: [String.raw`If the vectors share an offset $c$ in every coordinate, both point partly along it, so their cosine is $c^{2}/(1+c^{2})$: $0.50$ at $c = 1$ (our simulation). The $1/\sqrt{d}$ floor is gone.`, { cite: 'Ethayarajh (2019), arXiv:1909.00512: representations are “not isotropic in any layer”.' }],
+    fails: [String.raw`The $1/\sqrt{d}$ floor needs vectors spread evenly over all directions. Measure the mean cosine of a model’s embeddings: a high mean means the floor is wrong.`, { cite: 'Ethayarajh (2019), arXiv:1909.00512.' }],
+    tries: [String.raw`Set $c = 0$, then $c = 1$. The random parts do not change; the cosines move up to about $0.5$.`],
+    take: 'Nearly perpendicular needs isotropic vectors. Check the mean cosine first.',
+  });
+  update();
+}
+
+// 5. Intrinsic dimension: the gap depends on the dimension the points really use.
+function slideIntrinsicP(widget, side) {
+  const KS = [2, 5, 10, 50, 200, 1000];
+  let ki = 1, plot = null;
+  function gapK(k) {
+    const rnd = mulberry32(77 + k), q = gaussVec(rnd, k, new Float64Array(k)), x = new Float64Array(k);
+    let mn = Infinity, mx = 0;
+    for (let m = 0; m < 100; m++) {
+      gaussVec(rnd, k, x);
+      let s = 0;
+      for (let i = 0; i < k; i++) { const t = x[i] - q[i]; s += t * t; }
+      const dd = Math.sqrt(s);
+      if (dd < mn) mn = dd;
+      if (dd > mx) mx = dd;
+    }
+    return (mx - mn) / mn;
+  }
+  const gaps = KS.map(gapK);
+  const sl = slider(String.raw`$k$, intrinsic dimension`, { id: 'k', name: 'intrinsic dimension', min: 0, max: KS.length - 1, step: 1, value: ki, fmt: v => String(KS[v]), onInput: v => { ki = v; update(); } });
+  const rGap = readout('gap', String.raw`gap ratio at this $k$`);
+  const rNum = readout('numbers', 'numbers per point, fixed');
+  widget.append(hh('div', 'sliders', sl.el), legend([{ chip: true, color: 'var(--pal-grey)', text: 'bars: gap ratio for each k, 100 points' }, { chip: true, color: 'var(--pal-accent)', text: 'blue: your k' }]));
+  plot = fillPlot(widget, drawI);
+  widget.append(hh('div', 'readouts', rGap.el, rNum.el));
+  rNum.set('1000');
+  function update() { rGap.set(gaps[ki].toFixed(3)); plot.redraw(); }
+  function drawI(svg, W, H) {
+    const L = 46, R = 14, T = 14, B = 44, base = H - B, pw = W - L - R, bw = pw / KS.length;
+    const ymax = Math.max(...gaps) * 1.1;
+    const Y = v => base - v / ymax * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    KS.forEach((k, j) => {
+      svgNode('rect', { x: (L + j * bw + bw * 0.15).toFixed(1), y: Y(gaps[j]).toFixed(1), width: (bw * 0.7).toFixed(1),
+        height: (base - Y(gaps[j])).toFixed(1), fill: j === ki ? COL.accent : COL.grey, 'data-item': 'mark', 'data-id': 'k-' + k }, svg);
+      svgText(svg, L + j * bw + bw / 2, base + 18, String(k), { 'text-anchor': 'middle', 'font-size': 15 });
+    });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`$k$, intrinsic dimension`, { w: 260, size: 15 });
+  }
+  practiceParts(widget, side, {
+    seen: [String.raw`Each distance is a sum of $n$ squared pieces, so its relative spread shrinks like $1/\sqrt{n}$, and all distances look alike (the distances step). Beyer et al. show the nearest-to-farthest gap shrinks as dimension grows.`, { cite: 'Beyer et al. (1999), “When Is ‘Nearest Neighbor’ Meaningful?”, ICDT.' }],
+    helps: [String.raw`Real data sit on a low-dimensional set, so the gap follows the few real directions: about $15$ at $k = 2$, against $0.1$ at $k = 1000$ (our simulation).`, { cite: 'Pope et al. (2021), arXiv:2104.08894.' }],
+    bites: [String.raw`Hubs are points that land in many others’ nearest-neighbor lists. In our simulation of 300 Gaussian points, the most popular is in the 5-nearest lists of 64 others at $d = 100$, against 11 at $d = 3$.`, { cite: 'Radovanović et al. (2010), JMLR 11; the counts are our simulation.' }],
+    fails: [String.raw`The shrinking gap assumes independent coordinates. Correlated coordinates behave like their intrinsic dimension, so count that, not the numbers per point.`, { cite: 'Reasoning from the assumption.' }],
+    tries: [String.raw`Set $k = 2$, then $k = 1000$. Read the gap bars.`],
+    take: 'Predict the gap from the intrinsic dimension, not from the number of numbers per point.',
+  });
+  update();
+}
+
+// 6. Small aligned changes add up: worst case grows like n, random signs like sqrt(n).
+function slideLinfP(widget, side) {
+  const NL = [10, 30, 100, 300, 1000];
+  const Wt = gaussVec(mulberry32(606), 1000, new Float64Array(1000));
+  let ni = 2, eps = 0.01, plot = null;
+  const sN = slider(String.raw`$n$, inputs`, { id: 'n', name: 'inputs', min: 0, max: NL.length - 1, step: 1, value: ni, fmt: v => String(NL[v]), onInput: v => { ni = v; update(); } });
+  const sE = slider(String.raw`$\varepsilon$, change per input`, { id: 'eps', name: 'change per input', min: 0.001, max: 0.1, step: 0.001, value: eps, fmt: v => v.toFixed(3), onInput: v => { eps = v; update(); } });
+  const rA = readout('aligned', String.raw`aligned: $\varepsilon\sum_i |w_i|$`);
+  const rR = readout('random', String.raw`random signs: $\varepsilon\,\|w\|_2$`);
+  widget.append(hh('div', 'sliders tight', sN.el, sE.el), legend([{ chip: true, color: 'var(--pal-accent)', text: 'blue: every input moved against the score' }, { chip: true, color: 'var(--pal-grey)', text: 'grey: every input moved at random' }]));
+  plot = fillPlot(widget, drawL);
+  widget.append(hh('div', 'readouts', rA.el, rR.el));
+  function vals() {
+    const n = NL[ni];
+    let s1 = 0, s2 = 0;
+    for (let i = 0; i < n; i++) { s1 += Math.abs(Wt[i]); s2 += Wt[i] * Wt[i]; }
+    return { aligned: eps * s1, random: eps * Math.sqrt(s2) };
+  }
+  function update() {
+    const v = vals();
+    rA.set(v.aligned.toFixed(3));
+    rR.set(v.random.toFixed(3));
+    plot.redraw();
+  }
+  function drawL(svg, W, H) {
+    const L = 46, R = 14, T = 14, B = 52, base = H - B, pw = W - L - R;
+    const v = vals(), ymax = Math.max(v.aligned, 1e-9) * 1.15;
+    const Y = x => base - x / ymax * (base - T);
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    const bars = [[v.aligned, COL.accent, 'aligned'], [v.random, COL.grey, 'random']];
+    bars.forEach(([val, col, lab], j) => {
+      const x = L + (j + 0.5) * pw / 2 - pw / 8;
+      svgNode('rect', { x: x.toFixed(1), y: Y(val).toFixed(1), width: (pw / 4).toFixed(1), height: (base - Y(val)).toFixed(1), fill: col, 'data-item': 'mark', 'data-id': lab }, svg);
+      svgTex(svg, x + pw / 8, base + 20, lab === 'aligned' ? String.raw`aligned $\varepsilon\sum|w_i|$` : String.raw`random $\varepsilon\|w\|_2$`, { w: 220, size: 14 });
+    });
+    svgTex(svg, (L + W - R) / 2, H - 12, String.raw`change in the score $w\cdot x$`, { w: 260, size: 15 });
+  }
+  practiceParts(widget, side, {
+    seen: [String.raw`Each input moved by $\varepsilon$ in the direction that pushes the score up changes the linear score $w\cdot x$ by $\varepsilon\sum_i|w_i|$: every change adds to the score. Goodfellow et al. argue this linearity is the cause.`, { cite: 'Goodfellow, Shlens and Szegedy (2014), arXiv:1412.6572.' }],
+    helps: [String.raw`Train on the attacked inputs as well as the clean ones. Goodfellow et al. report lower test error on MNIST for a maxout network trained this way.`, { cite: 'Goodfellow et al. (2014), arXiv:1412.6572.' }],
+    bites: [String.raw`That sum grows like $n$: about $0.8\,\varepsilon n$ for Gaussian weights. At $n = 1000$, $\varepsilon = 0.01$, it is about $8$; random signs give about $0.2$.`, { cite: 'Our simulation; E|w| = √(2/π) for Gaussian weights.' }],
+    fails: [String.raw`The sum is a worst case, with every change aligned to its weight. Real networks are only roughly linear, so $8$ is an upper estimate.`, { cite: 'Reasoning from the assumption.' }],
+    tries: [String.raw`Set $n = 1000$, $\varepsilon = 0.01$. Compare the two bars.`],
+    take: 'Many small aligned changes add up. Random ones mostly cancel.',
+  });
+  update();
+}
+
+// 7. Text: the most likely word is not the typical one (toy next-word distribution).
+function slideDecodeP(widget, side) {
+  const raw = [0.30, 0.20, 0.15, 0.10, 0.08, 0.06, 0.06, 0.05];
+  const tot = raw.reduce((a, b) => a + b, 0);
+  const p = raw.map(x => x / tot);
+  const H = p.reduce((s, x) => s - x * log2(x), 0);
+  let delta = 0.5, plot = null;
+  const sD = slider(String.raw`$\delta$, allowed gap in bits`, { id: 'delta', name: 'allowed gap', min: 0, max: 2.5, step: 0.05, value: delta, fmt: v => v.toFixed(2), onInput: v => { delta = v; update(); } });
+  const rH = readout('H', String.raw`entropy $H$, bits per word`);
+  const rKept = readout('kept', 'words kept');
+  const rMass = readout('mass', 'probability kept');
+  widget.append(hh('div', 'sliders', sD.el), legend([{ chip: true, color: 'var(--pal-accent)', text: 'blue: kept, surprise within δ of H' }, { chip: true, color: 'var(--pal-grey)', text: 'grey: dropped' }]));
+  plot = fillPlot(widget, drawD);
+  widget.append(hh('div', 'readouts', rH.el, rKept.el, rMass.el));
+  rH.set(H.toFixed(3));
+  function kept() { return p.map(x => Math.abs(-log2(x) - H) <= delta + 1e-9); }
+  function update() {
+    const kp = kept();
+    rKept.set(String(kp.filter(Boolean).length) + ' of ' + p.length);
+    rMass.set(p.reduce((s, x, i) => s + (kp[i] ? x : 0), 0).toFixed(3));
+    plot.redraw();
+  }
+  function drawD(svg, W, H2) {
+    const L = 46, R = 14, T = 14, B = 52, base = H2 - B, pw = W - L - R, bw = pw / p.length;
+    const Y = v => base - v / 0.36 * (base - T);
+    const kp = kept();
+    svgNode('line', { x1: L, y1: base, x2: W - R, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, y1: T, x2: L, y2: base, stroke: COL.grey }, svg);
+    for (const v of [0, 0.1, 0.2, 0.3]) svgText(svg, L - 8, Y(v) + 5, v.toFixed(1), { 'text-anchor': 'end' });
+    p.forEach((x, j) => {
+      svgNode('rect', { x: (L + j * bw + bw * 0.15).toFixed(1), y: Y(x).toFixed(1), width: (bw * 0.7).toFixed(1),
+        height: (base - Y(x)).toFixed(1), fill: kp[j] ? COL.accent : COL.grey, 'data-item': 'mark', 'data-id': 'word-' + (j + 1) }, svg);
+      svgText(svg, L + j * bw + bw / 2, base + 18, String(j + 1), { 'text-anchor': 'middle', 'font-size': 15 });
+    });
+    svgTex(svg, (L + W - R) / 2, H2 - 12, String.raw`word rank (1 is the most likely), bar: probability`, { w: 380, size: 14 });
+    haloTex(svg, L + 8, T + 10, String.raw`word 1 is the most likely: surprise $-\log_2 p_1 = 1.7$ bits`, { w: 380, anchor: 'start', size: 14, fill: COL.ink });
+  }
+  practiceParts(widget, side, {
+    seen: [String.raw`A typical text has about the same surprise per word, $H$. Meister et al. keep words whose surprise $-\log_2 p$ is near $H$. Holtzman et al. found that always taking likely words gives text that is “bland and strangely repetitive”.`, { cite: 'Meister et al. (2022), arXiv:2202.00666; Holtzman et al. (2019), arXiv:1904.09751.' }],
+    helps: [String.raw`Keep words with $|{-\log_2 p}-H|\le\delta$. Meister et al. report quality matching top-k and nucleus sampling, with less repetition.`, { cite: 'Meister et al. (2022), arXiv:2202.00666.' }],
+    bites: [String.raw`In this toy distribution the most likely word has surprise $1.7$ bits, against an average $H = 2.7$ bits. Always taking it picks a word far from the average.`, { cite: 'Toy numbers, our calculation.' }],
+    fails: [String.raw`This toy distribution is not a model. Real text has context, so typicality is per step, given the words so far.`, { cite: 'Reasoning from the assumption.' }],
+    tries: [String.raw`Set $\delta = 0.5$: the most likely word is dropped. Set $\delta = 2.5$: every word is kept.`],
+    take: 'Typical text comes from words whose surprise matches the average.',
+  });
+  update();
+}
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'mechanism', title: 'One mechanism: a length is a sum of n pieces', tag: 'Builds on Lecture 13: var-sum, clt',
+    question: String.raw`Where is a random point in $n$ dimensions: near the center, where the density peaks?`,
+    formula: String.raw`$$\|x\|^{2}=\sum_{i=1}^{n}x_i^{2}\approx n$$`, mount: slideMech },
+  { id: 'mechanism-practice', title: 'In practice: attention scores and the √d scale', tag: 'In practice · Vaswani et al., 2017',
+    question: String.raw`Why does attention divide its scores by $\sqrt{d}$?`, mount: slideAttnP },
+  { id: 'norm-practice', title: 'In practice: a straight line through latent space', tag: 'In practice · White, 2016',
+    question: String.raw`Why does a straight line between two latent samples pass through atypical points?`, mount: slideSlerpP },
+  { id: 'shell', title: 'Volume lives in a thin shell', tag: 'Lecture 9, 19:14 to 20:15',
+    question: String.raw`What share of a ball's volume sits in a thin layer at its surface?`,
+    formula: String.raw`$$1-(1-\varepsilon)^{n}$$`, mount: slideShell },
+  { id: 'shell-practice', title: 'In practice: filling a ball by rejection', tag: 'In practice · Betancourt, 2017',
+    question: String.raw`How many random tries does a uniform sample from a ball cost as $n$ grows?`, mount: slideBallP },
+  { id: 'perpendicular', title: 'Random directions are nearly perpendicular', tag: 'Lecture 9, 24:28 to 27:06',
+    question: String.raw`How close to perpendicular are two random directions in $n$ dimensions?`,
+    formula: String.raw`$$\mathrm{sd}(\cos\theta)=\frac{1}{\sqrt{n}}$$`, mount: slidePerp },
+  { id: 'perp-practice', title: 'In practice: unrelated vectors in a model', tag: 'In practice · Elhage et al., 2022',
+    question: 'Do unrelated vectors in a trained model behave like random directions?', mount: slidePerpP },
+  { id: 'bunching', title: 'Distances bunch together', tag: 'Recitation 1 · distances',
+    question: String.raw`As $n$ grows, does the nearest point stand out from the farthest one?`,
+    formula: String.raw`$$\frac{d_{\max}-d_{\min}}{d_{\min}}\to 0$$`, mount: slideBunch },
+  { id: 'bunch-practice', title: 'In practice: nearest neighbors and intrinsic dimension', tag: 'In practice · Beyer et al., 1999',
+    question: 'Does the nearest-neighbor gap vanish when the data use few dimensions?', mount: slideIntrinsicP },
+  { id: 'sphere-cube', title: String.raw`Hamming's sphere in the cube (Lecture 9)`, tag: 'Lecture 9, 28:43 to 30:48',
+    question: String.raw`Does the ball in the middle of a grid of corner balls stay inside the cube?`,
+    formula: String.raw`$$r_n=\sqrt{n}-1$$`, mount: slideSphereCube },
+  { id: 'sphere-practice', title: 'In practice: small changes that add up', tag: 'In practice · Goodfellow et al., 2014',
+    question: 'Why can a tiny change to every input flip a model’s answer?', mount: slideLinfP },
+  { id: 'typical-cube', title: 'What does typical mean?', tag: 'Lecture 13, 31:15',
+    question: 'What noise rows does the channel actually produce?', mount: slideTypicalA },
+  { id: 'typical-positions', title: 'Choosing which bits flip', tag: 'Lecture 13, entropy',
+    question: String.raw`A typical row has about $nQ$ flips. Why about $2^{nH(Q)}$ such rows, not $2^{nQ}$?`, mount: slidePositions },
+  { id: 'typical-surprise', title: 'Every typical row is about equally likely', tag: 'Lecture 13: surprise and entropy',
+    question: 'How likely is one typical row, and what does that say about how many there are?', mount: slideTypicalSurprise },
+  { id: 'typical-share', title: 'Typical rows are a sliver: what that buys', tag: 'Lecture 13: entropy and capacity',
+    question: String.raw`How big is the band next to all $2^{n}$ rows, and what can you do with that?`, mount: slideTypicalShare },
+  { id: 'random-code-why', title: 'Why a random code works: two distances', tag: 'Lecture 13: random codes, distances',
+    question: 'Why can random code words be told apart after noise?', mount: slideRandomWhy },
+  { id: 'random-code-chance', title: 'Same received word, two different chances', tag: 'Lecture 13: random codes, weights',
+    question: String.raw`For one received word, why does the sent word get a large chance, a random word a tiny one?`, mount: slideChance },
+  { id: 'random-code-proof', title: "Shannon's random-code proof: three counts", tag: 'Lecture 13: codebook, random-bound, rate, average-to-one',
+    question: 'How can a random book of code words work, without building one?', mount: slideRandomCode },
+  { id: 'random-code-limit', title: 'Up to capacity: the band shrinks as n grows', tag: 'Lecture 13: capacity',
+    question: String.raw`Why does the rate the proof allows climb to capacity $1-H(Q)$?`, mount: slideRandomLimit },
+  { id: 'typical-text', title: 'Next-word prediction: where the randomness is', tag: 'Lecture 13: entropy, cross-entropy',
+    question: 'Why does typicality hold for text, and how do we measure H?', mount: slideTypicalText },
+  { id: 'typical-practice', title: 'In practice: the most likely text is not typical', tag: 'In practice · Holtzman et al., 2019',
+    question: 'Why does always taking the most likely next word give dull text?', mount: slideDecodeP },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  epoch++;
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  PLOTS = [];
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side',
+    h('div', 'tag', s.tag),
+    setTex(h('h2'), s.title),
+    setTex(h('p', 'question'), s.question),
+    s.formula ? setTex(h('div', 'formula'), s.formula) : null);
+  const sec = mark(h('section', 'slide'), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  s.mount(widget, side);
+  if (cur === SLIDES.length - 1) {
+    side.append(
+      setTex(h('p', 'closing'), String.raw`In high dimensions, random things are predictable: every length is near its typical value.`),
+      setTex(h('p', 'next'), 'Next: where high dimensions show up in your work, and how to use them.'));
+    if (!endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>

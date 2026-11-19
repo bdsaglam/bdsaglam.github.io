@@ -1,0 +1,7 @@
+{
+  "title": "Primer · Feedback: loops that settle, add up, or explode",
+  "group": "p-feedback",
+  "about": "Primer 0.16 (1 of 3): a difference equation makes each value from the last; a feedback loop turns one clap into 1, a, a^2, ...; a loss curve's moving average settles; with a steady input a loop settles, adds up or explodes; too strong a correction flips the error; why the gap to the resting value shrinks by a each step.",
+  "w": 1280,
+  "h": 720
+}

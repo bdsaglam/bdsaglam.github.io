@@ -1,0 +1,1747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Primer · Fourier series</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="../../components/theme.js"></script>
+<style>
+:root{
+  --fg:var(--pal-fg); --muted:var(--pal-muted); --line:var(--pal-line);
+  --accent:var(--pal-accent); --chip:var(--pal-accent-soft);
+  --red:var(--pal-red); --redbg:var(--pal-red-bg);
+  --u:clamp(16px,1.35vw,20px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font:var(--u)/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--fg);background:var(--pal-bg);display:flex;flex-direction:column;overflow:hidden}
+header{padding:8px 24px 0;font-size:clamp(13px,1.1vw,16px);color:var(--muted)}
+#stage{flex:1;min-height:0;display:flex;padding:clamp(6px,1vh,12px) 24px}
+footer{display:flex;align-items:center;gap:10px;padding:8px 24px;border-top:1px solid var(--line)}
+footer .btn{min-width:84px}
+#dots{display:flex;gap:8px;align-items:center}
+#dots button{width:12px;height:12px;border-radius:50%;padding:0;border:1px solid var(--pal-grey);background:var(--pal-panel);cursor:pointer}
+#dots button.on{background:var(--accent);border-color:var(--accent)}
+#count{margin-left:auto;color:var(--muted);white-space:nowrap}
+
+/* Slide frame: widget on the left (3/5), text on the right (2/5). */
+.slide{flex:1;min-height:0;width:100%;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(18px,2.4vw,40px)}
+.widget{position:relative;min-width:0;min-height:0;display:flex;flex-direction:column;gap:clamp(5px,1vh,10px);overflow:hidden}
+.side{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:space-evenly;gap:clamp(6px,1.1vh,12px);overflow:hidden}
+.tag{font:13px ui-monospace,Menlo,monospace;color:var(--muted)}
+h2{font-size:clamp(20px,1.9vw,28px);line-height:1.2;margin:0;font-weight:650}
+.question{margin:0;font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.formula{font-size:clamp(17px,1.7vw,23px)}
+.formula .katex-display{margin:.3em 0}
+.sym{margin:0;font-size:16px;color:var(--muted)}
+.tries{margin:0;padding-left:24px;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.tries li::marker{color:var(--accent);font-weight:600}
+.takeaway{margin:0;padding:10px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.takeaway.pending{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--pal-panel);border-left:4px dashed var(--line);color:var(--muted)}
+
+/* Controls, readouts, legends */
+.btn{font:inherit;padding:6px 12px;border:1px solid var(--line);background:var(--pal-panel);border-radius:8px;cursor:pointer;font-size:16px}
+.btn.on{background:var(--chip);border-color:var(--accent);color:var(--pal-accent-deep)}
+.btn:disabled{opacity:.45;cursor:default}
+.btnrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chips .chip-lab{font-size:15px;color:var(--muted);min-width:70px}
+.chips .btn{padding:3px 9px;font-size:15px}
+.slide-ctl{display:flex;align-items:center;gap:8px;font-size:16px}
+.slide-ctl input{width:clamp(110px,10vw,150px);vertical-align:middle;accent-color:var(--accent)}
+.slide-ctl .val{min-width:40px}
+.readouts{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.readout{flex:1 1 150px;min-width:0;padding:4px 8px;border-radius:10px;background:var(--pal-soft);font-size:15px;overflow-wrap:anywhere}
+.readout .k{color:var(--muted);font-size:14px}
+.readout .val{font-size:16px;font-weight:600}
+.legend{display:flex;gap:2px 16px;flex-wrap:wrap;font-size:15px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:20px;height:0;vertical-align:middle;margin-right:6px}
+.chip{display:inline-block;width:18px;height:12px;vertical-align:middle;margin-right:6px;border-radius:2px}
+
+/* Plots fill the height left in the widget */
+.fill{flex:1 1 0;min-height:120px;position:relative;width:100%}
+.fill>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.row2{display:flex;gap:12px;align-items:stretch;flex:1 1 0;min-height:0}
+.aside{flex:0 0 226px;min-width:0;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.aside .asideh{color:var(--muted);font-size:14px}
+.gram{font-size:15px;overflow-wrap:anywhere}
+.clist{display:flex;flex-direction:column;gap:1px;font-size:15px}
+
+/* Proof slides: test and picture on the left, the proof (fl-proof-steps) on the right */
+.slide.proof-slide{grid-template-columns:minmax(0,11fr) minmax(0,9fr)}
+.slide.proof-slide .side{justify-content:flex-start}
+.slide.proof-slide .question{margin-bottom:14px}
+.slide.proof-slide .fill{min-height:100px}
+.slide.proof-slide .slide-ctl input{width:clamp(90px,8vw,130px)}
+.slide.proof-slide .slide-ctl .val{min-width:30px}
+.slide.proof-slide .legend{gap:2px 12px}
+.slide.proof-slide .chips .btn{padding:3px 7px}
+.slide.proof-slide .chips .chip-lab{min-width:0}
+.ctlrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px}
+.part{margin:0;font-weight:600;color:var(--muted)}
+.test{display:flex;flex-direction:column;gap:3px}
+.test .tries{gap:3px}
+.model{margin:0;padding:8px 12px;border-left:4px solid var(--accent);background:var(--chip);border-radius:6px;font-size:16px}
+.name i{font-style:italic}
+
+/* Short windows (1100x620 and similar): tighter spacing, text stays 16px */
+@media (max-height: 680px){
+  header{padding-top:4px}
+  #stage{padding:4px 24px}
+  footer{padding:4px 24px}
+  .widget{gap:4px}
+  .side{gap:5px}
+  .tries{gap:2px}
+  .sym,.tries{line-height:1.2}
+  .takeaway{padding:6px 10px}
+  .formula{font-size:19px}
+  .fill{min-height:110px}
+  .readout{padding:3px 8px}
+  .aside{flex-basis:200px}
+  h2{font-size:20px}
+  .model{padding:5px 10px}
+  .test .tries{gap:1px}
+  .slide.proof-slide h2{font-size:19px}
+  .slide.proof-slide .question{margin-bottom:0}
+}
+</style>
+</head>
+<body>
+<header>Primer · Fourier series</header>
+<main id="stage"></main>
+<footer>
+  <button class="btn" id="prev">Prev</button>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button class="btn" id="next">Next</button>
+</footer>
+
+<script src="../../lib/fluid.js"></script>
+<script src="../../components/proof-steps.js"></script>
+<script>
+// ---------- palette and redraw ----------
+// COL holds the palette colors for the SVG being drawn. fillBox sets it at every paint, so a draw always uses
+// the current theme; no color is cached at load. Light values are the old literals, so light looks as before.
+let COL = {};
+const PAL_NAMES = ['accent', 'accent-2', 'accent-deep', 'accent-ink', 'accent-soft', 'accent-tint', 'amber', 'amber-bg', 'amber-ink', 'blue-deep', 'blue-light', 'blue-pale', 'blue-strong', 'fg', 'grey', 'grey-blue', 'guide', 'bg', 'hue-orange', 'ink', 'line', 'muted', 'panel', 'slate-2', 'soft', 'soft-2', 'soft-3', 'soft-hover', 'text-2'];
+function readPalette() {
+  const o = {};
+  for (const n of PAL_NAMES) o[n.replace(/-(\w)/g, (_, c) => c.toUpperCase())] = FluidTheme.color(n);
+  return o;
+}
+let PLOTS = [];   // the plots on the current slide; a theme switch redraws them, and keeps every control's state
+window.addEventListener('fluid-themechange', () => PLOTS.forEach(p => p.redraw()));
+
+// ---------- helpers (same frame as the other slide views) ----------
+const $ = s => document.querySelector(s);
+const NSV = 'http://www.w3.org/2000/svg', NHT = 'http://www.w3.org/1999/xhtml';
+const MATH = { delimiters: [
+  { left: '$$', right: '$$', display: true },
+  { left: '$', right: '$', display: false } ], throwOnError: false };
+// Render $...$ and $$...$$ in a node. If the CDN did not load, the text stays as typed.
+function tex(node) {
+  if (node && typeof renderMathInElement === 'function') renderMathInElement(node, MATH);
+  return node;
+}
+function setTex(node, text) { node.textContent = text; return tex(node); }
+function h(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function hh(tag, cls, ...kids) {
+  const e = h(tag, cls);
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+function mark(e, kind, id, title) {
+  e.dataset.item = kind;
+  if (id != null) e.dataset.id = id;
+  if (title != null) e.dataset.title = title;
+  return e;
+}
+function svgNode(tag, attrs, parent) {
+  const e = document.createElementNS(NSV, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgRoot(w, ht) {
+  return svgNode('svg', { viewBox: '0 0 ' + w + ' ' + ht, role: 'img', 'font-family': 'system-ui, sans-serif', 'font-size': 14 });
+}
+function svgText(parent, x, y, s, attrs) {
+  const t = svgNode('text', Object.assign({ x: x, y: y, fill: COL.muted }, attrs || {}), parent);
+  t.textContent = s;
+  return t;
+}
+// A KaTeX label over an SVG: a foreignObject holding a rendered formula.
+function svgTex(parent, x, y, s, o) {
+  o = o || {};
+  const w = o.w || 220, ht = 26, anchor = o.anchor || 'middle';
+  const x0 = anchor === 'end' ? x - w : anchor === 'start' ? x : x - w / 2;
+  const fo = svgNode('foreignObject', { x: x0, y: y - ht / 2, width: w, height: ht }, parent);
+  if (o.dim) fo.setAttribute('class', 'dim');
+  const d = document.createElementNS(NHT, 'div');
+  const jc = anchor === 'end' ? 'flex-end' : anchor === 'start' ? 'flex-start' : 'center';
+  d.setAttribute('style', 'display:flex;align-items:center;height:100%;white-space:nowrap;font-size:' +
+    (o.size || 15) + 'px;color:' + (o.fill || 'var(--pal-text-2)') + ';justify-content:' + jc);
+  const span = document.createElementNS(NHT, 'span');
+  span.textContent = s;
+  if (o.bg) span.setAttribute('style', 'background:' + o.bg + ';border-radius:5px;padding:1px 5px');
+  d.appendChild(span);
+  fo.appendChild(d);
+  tex(span);
+  return fo;
+}
+// Same label with a white halo, so it reads over a curve.
+function haloTex(parent, x, y, s, o) {
+  const fo = svgTex(parent, x, y, s, o);
+  fo.firstChild.style.textShadow = '0 0 3px var(--pal-bg), 0 0 3px var(--pal-bg), 0 0 2px var(--pal-bg)';
+  return fo;
+}
+// A plot that takes the height left in its box. draw(svg, W, H) runs on every resize.
+function fillBox(box, draw) {
+  const wrap = h('div', 'fill');
+  box.append(wrap);
+  let key = '';
+  const paint = force => {
+    const w = Math.floor(wrap.clientWidth), ht = Math.floor(wrap.clientHeight);
+    if (w < 60 || ht < 60) return;
+    if (!force && key === w + 'x' + ht) return;
+    key = w + 'x' + ht;
+    const svg = svgRoot(w, ht);
+    COL = readPalette();
+    draw(svg, w, ht);
+    wrap.replaceChildren(svg);
+  };
+  new ResizeObserver(() => paint(false)).observe(wrap);
+  const plot = { wrap: wrap, redraw: () => paint(true) };
+  PLOTS.push(plot);
+  return plot;
+}
+// A readout box: label and value are KaTeX-ready text.
+function readout(id, label) {
+  const box = mark(h('div', 'readout'), 'readout', id);
+  const k = h('div', 'k');
+  setTex(k, label);
+  const v = h('div', 'val');
+  box.append(k, v);
+  return {
+    el: box,
+    label(t) { setTex(k, t); },
+    set(text, bad) { setTex(v, text); box.classList.toggle('bad', !!bad); },
+  };
+}
+function legend(items) {
+  const d = h('div', 'legend');
+  for (const it of items) {
+    const s = h('span');
+    const sw = it.chip ? h('span', 'chip') : h('span', 'sw');
+    if (it.chip) sw.style.background = it.color;
+    else sw.style.borderTop = '2px ' + (it.dash ? 'dashed' : 'solid') + ' ' + it.color;
+    const t = h('span');
+    setTex(t, it.text);
+    s.append(sw, t);
+    d.appendChild(s);
+  }
+  return d;
+}
+// A row of toggle chips. items: [[id, KaTeX label]]. onPick(id) on click.
+function chipRow(label, items, initial, onPick, prefix) {
+  const row = h('div', 'chips');
+  row.append(setTex(h('span', 'chip-lab'), label));
+  const btns = items.map(([id, t]) => {
+    const b = mark(h('button', 'btn'), 'control', prefix + '-' + id);
+    setTex(b, t);
+    b.addEventListener('click', () => onPick(id));
+    row.append(b);
+    return [id, b];
+  });
+  return {
+    el: row,
+    set(id) { btns.forEach(([i, b]) => b.classList.toggle('on', i === id)); },
+  };
+}
+// A labelled range input whose label and range can change.
+function ctlSlider(id, name, min, max, value, fmt, onInput) {
+  const wrap = h('label', 'slide-ctl');
+  const lab = h('span');
+  const val = h('span', 'val');
+  const inp = h('input');
+  inp.type = 'range'; inp.min = min; inp.max = max; inp.step = 1; inp.value = value;
+  mark(inp, 'control', id, name);
+  wrap.append(lab, inp, val);
+  const api = {
+    el: wrap, input: inp,
+    show() { setTex(val, fmt(+inp.value)); },
+    label(t) { setTex(lab, t); },
+    range(mx, v) { inp.max = mx; inp.value = v; api.show(); },
+  };
+  inp.addEventListener('input', () => { api.show(); onInput(+inp.value); });
+  return api;
+}
+function sym(text) { return setTex(h('p', 'sym'), text); }
+function triesList(items) { return hh('ol', 'tries', ...items.map(t => setTex(h('li'), t))); }
+// The takeaway waits for the first try: a dashed placeholder with a Show button keeps the column full.
+function takeSlot(text) {
+  const box = h('div', 'takeaway pending');
+  const btn = mark(h('button', 'btn', 'Show'), 'control', 'show-takeaway');
+  box.append(h('span', '', 'Takeaway: after your first try.'), btn);
+  let shown = false;
+  function reveal() {
+    if (shown) return;
+    shown = true;
+    box.className = 'takeaway';
+    box.replaceChildren();
+    setTex(box, text);
+  }
+  btn.addEventListener('click', reveal);
+  return { el: box, reveal: reveal };
+}
+// Session events. Optional: with no bridge, nothing is sent.
+function emit(kind, data) {
+  try {
+    if (window.fluid && typeof window.fluid.emit === 'function') Promise.resolve(window.fluid.emit(kind, data)).catch(() => {});
+  } catch (e) { /* the view works without the bridge */ }
+}
+
+// ---------- math: N = 8 samples, frequency k means k full cycles over the 8 samples ----------
+const TAU = 2 * Math.PI, N = 8;
+const SAMPLES = [0, 1, 2, 3, 4, 5, 6, 7];
+const U0 = [4, 3, 1, 0, 1, 0, 2, 3];                 // default input, energy 40
+const WV = {};                                        // basis waves, as functions of an angle x
+function wave(id, tex, kind, k) {
+  const f = kind === 'one' ? () => 1 : kind === 'cos' ? x => Math.cos(k * x) : x => Math.sin(k * x);
+  WV[id] = { id: id, tex: tex, kind: kind, k: k, f: f };
+}
+wave('one', String.raw`$1$`, 'one', 0);
+wave('c1', String.raw`$\cos 1$`, 'cos', 1);
+wave('s1', String.raw`$\sin 1$`, 'sin', 1);
+wave('c2', String.raw`$\cos 2$`, 'cos', 2);
+wave('s2', String.raw`$\sin 2$`, 'sin', 2);
+wave('c3', String.raw`$\cos 3$`, 'cos', 3);
+wave('s3', String.raw`$\sin 3$`, 'sin', 3);
+wave('c4', String.raw`$\cos 4$`, 'cos', 4);
+wave('s4', String.raw`$\sin 4$`, 'sin', 4);
+const TERM_IDS = ['one', 'c1', 's1', 'c2', 's2', 'c3', 's3', 'c4'];   // order of the projection terms
+const CH_WAVES = [['one', WV.one.tex], ['c1', WV.c1.tex], ['s1', WV.s1.tex], ['c2', WV.c2.tex], ['s2', WV.s2.tex],
+  ['c3', WV.c3.tex], ['s3', WV.s3.tex], ['c4', WV.c4.tex], ['s4', WV.s4.tex]];
+const sampleVec = f => SAMPLES.map(n => f(TAU * n / N));
+const dot = (a, b) => a.reduce((s, v, i) => s + v * b[i], 0);
+const GRID = Array.from({ length: 1000 }, (_, i) => -Math.PI + TAU * (i + 0.5) / 1000);
+const CURVE_X = Array.from({ length: 201 }, (_, i) => -Math.PI + TAU * i / 200);
+const contDot = (f, g) => GRID.reduce((s, x) => s + f(x) * g(x), 0) * TAU / 1000;
+const num = x => Math.abs(x) < 1e-9 ? '0' : String(+x.toFixed(3));
+const stripD = s => s.replace(/\$/g, '');
+// Modified Bessel I_k(1), by its series. Used for the e^{cos x} coefficients.
+function besselI1(k) {
+  let s = 0;
+  for (let m = 0; m < 30; m++) s += Math.pow(0.5, 2 * m + k) / (factorial(m) * factorial(m + k));
+  return s;
+}
+function factorial(n) { let f = 1; for (let i = 2; i <= n; i++) f *= i; return f; }
+// Solve A x = b for a small square system (Gauss-Jordan with pivoting).
+function solveLin(A, b) {
+  const n = b.length, M = A.map((row, i) => row.concat([b[i]]));
+  for (let i = 0; i < n; i++) {
+    let p = i;
+    for (let r = i + 1; r < n; r++) if (Math.abs(M[r][i]) > Math.abs(M[p][i])) p = r;
+    [M[i], M[p]] = [M[p], M[i]];
+    for (let r = 0; r < n; r++) {
+      if (r === i) continue;
+      const f = M[r][i] / M[i][i];
+      for (let c = i; c <= n; c++) M[r][c] -= f * M[i][c];
+    }
+  }
+  return M.map((row, i) => row[n] / row[i]);
+}
+
+// ---------- step 2: waves at different frequencies are perpendicular ----------
+function slideOrth(widget, side) {
+  let a = 'c1', b = 'c2', cont = false;
+  const take = takeSlot(String.raw`Waves at different frequencies are perpendicular, so each frequency can be measured on its own.`);
+  const user = fn => id => { take.reveal(); fn(id); };
+  const rowA = chipRow(String.raw`wave $w_1$`, CH_WAVES, a, user(id => { a = id; update(); }), 'w1');
+  const rowB = chipRow(String.raw`wave $w_2$`, CH_WAVES, b, user(id => { b = id; update(); }), 'w2');
+  const rowM = chipRow('view', [['samples', 'samples'], ['cont', String.raw`continuous, $[-\pi,\pi]$`]],
+    'samples', user(id => { cont = id === 'cont'; update(); }), 'view');
+  const legS = legend([
+    { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue stems: $w_1$` },
+    { color: 'var(--pal-fg)', text: String.raw`solid stems: $w_2$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue stems: $w_1 w_2$, the product` }]);
+  const legC = legend([
+    { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue curve: $w_1$` },
+    { color: 'var(--pal-fg)', text: String.raw`solid curve: $w_2$` },
+    { color: 'var(--pal-accent-3)', chip: true, text: String.raw`blue area: product above $0$` },
+    { color: 'var(--pal-guide)', chip: true, text: String.raw`grey area: product below $0$` }]);
+  widget.append(rowA.el, rowB.el, rowM.el, legS, legC);
+  const plot = fillBox(widget, drawOrth);
+  const rD = readout('dot', '');
+  const rS = readout('self', String.raw`$w_1\cdot w_1$, same wave twice`);
+  widget.append(hh('div', 'readouts', rD.el, rS.el));
+  side.append(
+    sym(String.raw`$\cos k$: $\cos\frac{2\pi kn}{8}$ at $n=0,\dots,7$, so $f=k/8$ rotations per sample. Example: $\cos 1=(1,\ 0.71,\ 0,\ -0.71,\ -1,\ -0.71,\ 0,\ 0.71)$. $w_1\cdot w_2$: multiply sample by sample, then add (Primer · Vectors, step 4). Hamming's word for perpendicular is orthogonal (Primer · Vectors, step 7).`),
+    setTex(h('div', 'formula'), String.raw`$$\cos k\cdot\cos m=0 \text{ for } k\ne m$$`),
+    triesList([
+      String.raw`Keep $\cos 1$ and $\cos 2$. The stems at $n=0$ and $n=4$ are $+1$ and $-1$ and cancel: the dot product is $0$.`,
+      String.raw`Set both waves to $\cos 1$: the dot product is $4$. Set both to $1$: it is $8$. Turn on continuous: the same pairs give $\pi$ and $2\pi$.`,
+      String.raw`Set wave 1 to $\sin 4$. Every sample is $0$, so every product is $0$.`]),
+    take.el);
+  function update() {
+    rowA.set(a); rowB.set(b); rowM.set(cont ? 'cont' : 'samples');
+    legS.hidden = cont; legC.hidden = !cont;
+    rD.label(cont ? String.raw`$w_1\cdot w_2$ as an integral, $\int_{-\pi}^{\pi}w_1w_2\,dx$` : String.raw`$w_1\cdot w_2$, sum over samples`);
+    const fa = WV[a].f, fb = WV[b].f;
+    let d, s;
+    if (cont) { d = contDot(fa, fb); s = contDot(fa, fa); }
+    else { const va = sampleVec(fa), vb = sampleVec(fb); d = dot(va, vb); s = dot(va, va); }
+    rD.set(num(d));
+    rS.set(num(s));
+    plot.redraw();
+  }
+  function drawOrth(svg, Wd, H) {
+    const L = 124, R = 14, AX = 24, pw = Wd - L - R, ph = (H - AX) / 3;
+    const A = (ph / 2 - 8) / 1.2;          // pixels per unit; values stay within plus or minus 1
+    const fa = WV[a].f, fb = WV[b].f;
+    const rows = [
+      { lab: String.raw`$w_1=` + stripD(WV[a].tex) + '$', col: COL.greyBlue, fn: fa, id: 'w1' },
+      { lab: String.raw`$w_2=` + stripD(WV[b].tex) + '$', col: COL.fg, fn: fb, id: 'w2' },
+      { lab: String.raw`$w_1 w_2$`, col: COL.accent, fn: x => fa(x) * fb(x), id: 'prod', prod: true },
+    ];
+    const Xs = t => cont ? L + (t + Math.PI) / TAU * pw : L + (t + 0.5) * pw / N;
+    const ts = cont ? CURVE_X : SAMPLES;
+    rows.forEach((r, i) => {
+      const zy = i * ph + ph / 2;
+      const vals = ts.map(t => r.fn(cont ? t : TAU * t / N));
+      svgNode('line', { x1: L, x2: Wd - R, y1: zy, y2: zy, stroke: COL.line }, svg);
+      svgTex(svg, 6, zy, r.lab, { anchor: 'start', w: L - 12, size: 15, fill: COL.text2 });
+      if (cont) {
+        if (r.prod) {
+          for (let j = 0; j < ts.length - 1; j++) {
+            const x0 = Xs(ts[j]), x1 = Xs(ts[j + 1]);
+            const y0 = zy - A * vals[j], y1 = zy - A * vals[j + 1];
+            const pos = vals[j] + vals[j + 1] >= 0;
+            svgNode('polygon', { points: x0 + ',' + zy + ' ' + x0 + ',' + y0 + ' ' + x1 + ',' + y1 + ' ' + x1 + ',' + zy,
+              fill: pos ? COL.bluePale : COL.guide }, svg);
+          }
+        }
+        let d = '';
+        ts.forEach((t, j) => { d += (j ? 'L' : 'M') + Xs(t).toFixed(1) + ' ' + (zy - A * vals[j]).toFixed(1); });
+        svgNode('path', { d: d, fill: 'none', stroke: r.col, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': r.id }, svg);
+      } else {
+        ts.forEach((t, j) => {
+          const x = Xs(t), y = zy - A * vals[j];
+          svgNode('line', { x1: x, x2: x, y1: zy, y2: y, stroke: r.col, 'stroke-width': 2 }, svg);
+          svgNode('circle', { cx: x, cy: y, r: 4, fill: r.col, 'data-item': 'mark', 'data-id': r.id + '-' + t }, svg);
+        });
+      }
+    });
+    if (cont) {
+      [[-Math.PI, '$-\\pi$', 'start'], [0, '$0$', 'middle'], [Math.PI, '$\\pi$', 'end']].forEach(([x, lab, an]) =>
+        svgTex(svg, Xs(x), H - 10, lab, { w: 50, size: 15, anchor: an }));
+    } else {
+      SAMPLES.forEach(n => svgText(svg, Xs(n), H - 6, String(n), { 'text-anchor': 'middle', 'font-size': 14 }));
+      svgTex(svg, Wd - R - 4, H - 10, '$n$', { w: 30, size: 15, anchor: 'end' });
+    }
+  }
+  update();
+}
+
+// ---------- step 4: a coefficient is a projection ----------
+const PROJ_LAB = [String.raw`$\frac{a_0}{2}$`, String.raw`$a_1\cos 1$`, String.raw`$b_1\sin 1$`, String.raw`$a_2\cos 2$`,
+  String.raw`$b_2\sin 2$`, String.raw`$a_3\cos 3$`, String.raw`$b_3\sin 3$`, String.raw`$a_4\cos 4$`];
+const TERM_VEC = TERM_IDS.map(id => sampleVec(WV[id].f));
+const TERM_NORM = TERM_VEC.map(v => dot(v, v));          // 8, 4, 4, 4, 4, 4, 4, 8
+const PRESETS_U = {
+  default: U0, spike: [1, 0, 0, 0, 0, 0, 0, 0], tones: [2, 0, 0, 0, -2, 0, 0, 0], ramp: [0, 1, 2, 3, 4, 5, 6, 7],
+};
+function slideProj(widget, side) {
+  let u = U0.slice(), used = 0, preset = 'default', geo = null, dragging = false;
+  const take = takeSlot(String.raw`A Fourier coefficient is a projection, and $N$ samples give $N$ coefficients.`);
+  const user = fn => (...args) => { take.reveal(); fn(...args); };
+  const coefs = () => TERM_VEC.map((v, i) => dot(u, v) / TERM_NORM[i]);
+  function rebuild() {
+    const cs = coefs(), out = new Array(N).fill(0);
+    for (let j = 0; j < used; j++) for (let n = 0; n < N; n++) out[n] += cs[j] * TERM_VEC[j][n];
+    return out;
+  }
+  const rowP = chipRow('input $u$', [['default', 'default'], ['spike', 'spike'], ['tones', 'two tones'], ['ramp', 'ramp']],
+    preset, user(id => { preset = id; u = PRESETS_U[id].slice(); update(); }), 'preset');
+  const addBtn = mark(h('button', 'btn', 'Add next term'), 'control', 'add-term');
+  const resetBtn = mark(h('button', 'btn', 'Start over'), 'control', 'reset-terms');
+  addBtn.addEventListener('click', user(() => { used = Math.min(TERM_IDS.length, used + 1); update(); }));
+  resetBtn.addEventListener('click', user(() => { used = 0; update(); }));
+  const legTop = legend([
+    { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue stems: input $u_n$, drag a stem` },
+    { color: 'var(--pal-accent)', text: String.raw`blue rings: rebuild from the terms used` }]);
+  const legBars = legend([
+    { color: 'var(--pal-accent)', chip: true, text: String.raw`blue bars: terms used` },
+    { color: 'var(--pal-guide)', chip: true, text: String.raw`grey bars: not yet used` }]);
+  widget.append(rowP.el, legTop);
+  const top = fillBox(widget, drawTop);
+  const bars = fillBox(widget, drawBars);
+  const rUsed = readout('used', 'terms used');
+  const rMiss = readout('miss', String.raw`largest miss $\max_n|u_n-\hat u_n|$`);
+  widget.append(legBars, hh('div', 'btnrow', addBtn, resetBtn), hh('div', 'readouts', rUsed.el, rMiss.el));
+  // Drag a stem: the nearest sample takes the pointer's height, in steps of 0.1.
+  const setFromPoint = (x, y) => {
+    if (!geo) return;
+    const n = Math.max(0, Math.min(N - 1, Math.floor((x - geo.L) / (geo.pw / N))));
+    let v = geo.YMIN + (geo.base - y) / (geo.base - geo.T) * (geo.YMAX - geo.YMIN);
+    v = Math.max(geo.YMIN, Math.min(geo.YMAX, Math.round(v * 10) / 10));
+    u[n] = v || 0;
+    preset = 'custom';
+    take.reveal();
+    update();
+  };
+  top.wrap.style.cursor = 'crosshair';
+  top.wrap.addEventListener('pointerdown', e => {
+    dragging = true;
+    top.wrap.setPointerCapture(e.pointerId);
+    const r = top.wrap.getBoundingClientRect();
+    setFromPoint(e.clientX - r.left, e.clientY - r.top);
+  });
+  top.wrap.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const r = top.wrap.getBoundingClientRect();
+    setFromPoint(e.clientX - r.left, e.clientY - r.top);
+  });
+  const stop = () => { dragging = false; };
+  top.wrap.addEventListener('pointerup', stop);
+  top.wrap.addEventListener('pointercancel', stop);
+  side.append(
+    sym(String.raw`$u_n$: input at sample $n$, 8 numbers. Example: $u=(4,3,1,0,1,0,2,3)$, so $u_0=4$. $a_k$, $b_k$: how much $\cos k$ and $\sin k$ are in $u$. Example: $u\cdot\cos 1=7.24$, so $a_1=7.24/4=1.81$. The shadow of Primer · Vectors, step 7, divided by $\cos k\cdot\cos k$ because the wave's length is not 1.`),
+    setTex(h('div', 'formula'), String.raw`$$a_k=\frac{u\cdot\cos k}{\cos k\cdot\cos k}$$`),
+    triesList([
+      String.raw`Drag one stem up or down. The bars move; the eight waves stay the same.`,
+      String.raw`Choose spike. The $\cos 1$, $\cos 2$ and $\cos 3$ bars are $0.25$; the constant bar and the $\cos 4$ bar are $0.125$.`,
+      String.raw`Press Add next term eight times. The rings sit on the stems: eight samples, eight coefficients, a miss of $0$.`]),
+    take.el);
+  function drawTop(svg, Wd, H) {
+    const L = 124, R = 14, T = 12, B = 22, base = H - B, pw = Wd - L - R, YMIN = -5, YMAX = 5;
+    geo = { L: L, pw: pw, base: base, T: T, YMIN: YMIN, YMAX: YMAX };
+    const Y = v => base - (v - YMIN) / (YMAX - YMIN) * (base - T);
+    const X = n => L + (n + 0.5) * pw / N;
+    const rb = rebuild();
+    svgNode('line', { x1: L, x2: Wd - R, y1: Y(0), y2: Y(0), stroke: COL.grey, 'stroke-dasharray': '4 3' }, svg);
+    svgText(svg, L - 8, Y(0) + 5, '0', { 'text-anchor': 'end', 'font-size': 14 });
+    svgTex(svg, 8, T + 10, String.raw`$u_n$: input`, { anchor: 'start', w: L - 16, size: 15, fill: COL.slate2 });
+    svgTex(svg, 8, base + 16, String.raw`$n$: sample`, { anchor: 'start', w: L - 16, size: 15, fill: COL.muted });
+    for (let n = 0; n < N; n++) {
+      const x = X(n);
+      svgNode('line', { x1: x, x2: x, y1: Y(0), y2: Y(u[n]), stroke: COL.greyBlue, 'stroke-width': 3 }, svg);
+      svgNode('circle', { cx: x, cy: Y(u[n]), r: 7, fill: COL.greyBlue, 'data-item': 'mark', 'data-id': 'in-' + n }, svg);
+      svgNode('circle', { cx: x, cy: Y(rb[n]), r: 6, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5,
+        'data-item': 'mark', 'data-id': 'rebuild-' + n }, svg);
+      svgText(svg, x, base + 16, String(n), { 'text-anchor': 'middle', 'font-size': 14 });
+    }
+  }
+  function drawBars(svg, Wd, H) {
+    const L = 124, VR = 56, R = 14, T = 4, pw = Wd - L - VR - R, rowH = (H - T - 4) / TERM_IDS.length;
+    const x0 = L + pw / 2, sc = (pw / 2) / 5;      // a bar of 5 reaches the edge
+    const cs = coefs();
+    TERM_IDS.forEach((id, i) => {
+      const top0 = T + i * rowH, yc = top0 + rowH / 2, v = cs[i], on = i < used;
+      svgNode('line', { x1: x0, x2: x0, y1: top0 + 2, y2: top0 + rowH - 2, stroke: COL.grey }, svg);
+      const len = Math.min(Math.abs(v), 5) * sc;
+      svgNode('rect', { x: v >= 0 ? x0 : x0 - len, y: yc - rowH * 0.3, width: len, height: rowH * 0.6,
+        fill: on ? COL.accent : COL.guide, 'data-item': 'mark', 'data-id': 'coef-' + id }, svg);
+      svgTex(svg, 8, yc, PROJ_LAB[i], { anchor: 'start', w: L - 14, size: 15, fill: on ? COL.fg : COL.muted });
+      svgText(svg, Wd - R, yc + 5, num(v), { 'text-anchor': 'end', 'font-size': 15, fill: on ? COL.fg : COL.muted });
+    });
+  }
+  function update() {
+    rowP.set(preset);
+    rUsed.set(used + ' of ' + TERM_IDS.length);
+    const rb = rebuild();
+    let miss = 0;
+    for (let n = 0; n < N; n++) miss = Math.max(miss, Math.abs(u[n] - rb[n]));
+    rMiss.set(num(miss));
+    addBtn.disabled = used >= TERM_IDS.length;
+    top.redraw();
+    bars.redraw();
+  }
+  update();
+}
+
+// ---------- step 6: least squares with perpendicular waves ----------
+const FOUR_LEN = [1, 3, 5, 7, 8];   // columns used for m = 0..4 frequencies
+const LS_NAMES = [String.raw`$\frac{a_0}{2}$`, String.raw`$a_1$`, String.raw`$b_1$`, String.raw`$a_2$`, String.raw`$b_2$`,
+  String.raw`$a_3$`, String.raw`$b_3$`, String.raw`$a_4$`];
+const POW_NAMES = [String.raw`$1$`, String.raw`$n$`, String.raw`$n^2$`];
+const LS_COLS = TERM_IDS.map((id, i) => ({ name: LS_NAMES[i], g: t => WV[id].f(TAU * t / N) }));
+function colsOf(md, lv) {
+  if (md === 'fourier') return LS_COLS.slice(0, FOUR_LEN[lv]);
+  return [0, 1, 2].slice(0, lv + 1).map(j => ({ name: POW_NAMES[j], g: t => Math.pow(t, j) }));
+}
+// Least squares of the default input on the chosen columns.
+function fitOf(md, lv) {
+  const cols = colsOf(md, lv);
+  const vecs = cols.map(c => SAMPLES.map(t => c.g(t)));
+  const G = vecs.map(a => vecs.map(b => dot(a, b)));
+  const r = vecs.map(a => dot(a, U0));
+  const c = solveLin(G, r);
+  const fitv = SAMPLES.map((_, n) => c.reduce((s, cj, j) => s + cj * vecs[j][n], 0));
+  const err = dot(U0.map((v, n) => v - fitv[n]), U0.map((v, n) => v - fitv[n]));
+  return { cols: cols, G: G, c: c, err: err };
+}
+function slideLS(widget, side) {
+  let mode = 'fourier', lev = 0;
+  const take = takeSlot(String.raw`With perpendicular waves, least squares splits into one projection per term, so a cut-off series is the best fit. Bessel's inequality: the kept terms never hold more energy than the whole signal.`);
+  const user = fn => (...args) => { take.reveal(); fn(...args); };
+  const maxLev = () => mode === 'fourier' ? 4 : 2;
+  const rowMode = chipRow('fit with', [['fourier', 'Fourier waves'], ['powers', String.raw`powers $1, n, n^2$`]],
+    mode, user(id => { mode = id; lev = 0; sl.range(maxLev(), 0); update(); }), 'mode');
+  const sl = ctlSlider('level', 'terms', 0, 4, 0, v => String(v), user(v => { lev = v; update(); }));
+  const legend1 = legend([
+    { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue stems: data $u_n$` },
+    { color: 'var(--pal-accent)', text: String.raw`blue curve: the fit with these terms` },
+    { color: 'var(--pal-accent)', text: String.raw`blue dots: the fit at each sample` }]);
+  const rErr = readout('err', String.raw`error $\sum_n(u_n-\hat u_n)^2$`);
+  const rDrop = readout('drop', 'drop from the newest term');
+  const row2 = h('div', 'row2');
+  const gramNote = h('div', 'gram');
+  const gramBox = h('div', 'gram');
+  const clist = h('div', 'clist');
+  const aside = hh('div', 'aside', setTex(h('div', 'asideh'), String.raw`$X^\top X$, the Gram matrix`), gramBox,
+    gramNote, setTex(h('div', 'asideh'), 'coefficients $c$'), clist);
+  widget.append(rowMode.el, hh('div', 'sliders', sl.el), legend1);
+  widget.append(row2);
+  const plot = fillBox(row2, drawLS);
+  row2.append(aside);
+  widget.append(hh('div', 'readouts', rErr.el, rDrop.el));
+  side.append(
+    sym(String.raw`$X$: one column per wave ($m=1$: $1$, $\cos 1$, $\sin 1$). Fit $\hat u=Xc$ from $X^\top Xc=X^\top u$ (Primer · Least squares, step 4); perpendicular columns make $X^\top X$ diagonal.`),
+    setTex(h('div', 'formula'), String.raw`$$\hat c_j=\frac{u\cdot x_j}{x_j\cdot x_j}$$`),
+    triesList([
+      String.raw`Press $m=1$, then $2$, $3$, $4$. The error falls $15.5 \to 2.136 \to 1.136 \to 0.5 \to 0$; earlier coefficients stay put.`,
+      String.raw`Switch to powers, degree $1$ to $2$. The constant moves from $2.333$ to $4.25$: powers are not perpendicular, so a new column moves the others.`,
+      String.raw`Read the drop when $m$ goes up. At $m=3$ it is $0.636=4(a_3^2+b_3^2)$; at $m=4$ it is $0.5=8a_4^2$.`]),
+    take.el);
+  function drawLS(svg, Wd, H) {
+    const L = 40, R = 14, T = 12, B = 24, base = H - B, pw = Wd - L - R, YMIN = -2, YMAX = 5;
+    const Y = v => base - (v - YMIN) / (YMAX - YMIN) * (base - T);
+    const X = t => L + (t + 0.5) * pw / N;
+    const F = fitOf(mode, lev);
+    const at = t => F.cols.reduce((s, col, j) => s + F.c[j] * col.g(t), 0);
+    svgNode('line', { x1: L, x2: Wd - R, y1: Y(0), y2: Y(0), stroke: COL.line }, svg);
+    svgText(svg, L - 6, Y(0) + 5, '0', { 'text-anchor': 'end', 'font-size': 14 });
+    svgText(svg, L - 6, Y(4) + 5, '4', { 'text-anchor': 'end', 'font-size': 14 });
+    SAMPLES.forEach(n => {
+      svgNode('line', { x1: X(n), x2: X(n), y1: Y(0), y2: Y(U0[n]), stroke: COL.greyBlue, 'stroke-width': 3 }, svg);
+      svgText(svg, X(n), base + 16, String(n), { 'text-anchor': 'middle', 'font-size': 14 });
+    });
+    let d = '';
+    for (let i = 0; i <= 140; i++) {
+      const t = 7 * i / 140;
+      d += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(at(t)).toFixed(1);
+    }
+    svgNode('path', { d: d, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'fit-curve' }, svg);
+    SAMPLES.forEach(n => svgNode('circle', { cx: X(n), cy: Y(at(n)), r: 4, fill: COL.accent, 'data-item': 'mark', 'data-id': 'fit-' + n }, svg));
+  }
+  function update() {
+    rowMode.set(mode);
+    sl.label(mode === 'fourier' ? String.raw`$m$, frequencies` : String.raw`$d$, highest power`);
+    sl.range(maxLev(), lev);
+    const F = fitOf(mode, lev);
+    rErr.set(num(F.err));
+    rDrop.set(mode === 'fourier' && lev > 0 ? num(fitOf(mode, lev - 1).err - F.err) : '—');
+    // Gram matrix: a diagonal list for perpendicular waves, a full matrix otherwise.
+    const isDiag = F.G.every((row, i) => row.every((v, j) => i === j || Math.abs(v) < 1e-9));
+    if (isDiag) {
+      setTex(gramBox, '$\\operatorname{diag}(' + F.G.map((row, i) => Math.round(row[i])).join(', ') + ')$');
+      setTex(gramNote, 'off-diagonal entries: $0$');
+    } else {
+      const rows = F.G.map(row => row.map(v => String(Math.round(v))).join(' & ')).join(' \\\\ ');
+      setTex(gramBox, '$$\\begin{pmatrix}' + rows + '\\end{pmatrix}$$');
+      setTex(gramNote, 'columns are not perpendicular');
+    }
+    clist.replaceChildren(...F.cols.map((col, j) => setTex(h('div'), col.name + ' = ' + num(F.c[j]))));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 8: smoothness sets how fast the terms shrink ----------
+function besselTable() { const t = []; for (let k = 0; k <= 49; k++) t.push(besselI1(k)); return t; }
+const BESSEL = besselTable();
+const SM = {
+  square: { name: 'square wave', lo: -1.5, hi: 1.5, jump: 2, top: 1,
+    base: () => 0, f: x => ((x % TAU) + TAU) % TAU < Math.PI ? 1 : -1,
+    term: (k, x) => k % 2 ? 4 / (Math.PI * k) * Math.sin(k * x) : 0,
+    coef: k => k % 2 ? 4 / (Math.PI * k) : 0 },
+  saw: { name: 'sawtooth', lo: -3.6, hi: 3.6, jump: TAU, top: Math.PI,
+    base: () => 0, f: x => ((((x + Math.PI) % TAU) + TAU) % TAU) - Math.PI,
+    term: (k, x) => 2 * (k % 2 ? 1 : -1) / k * Math.sin(k * x),
+    coef: k => 2 / k },
+  tri: { name: 'triangle', lo: -1.3, hi: 1.3, jump: 0, top: 0,
+    base: () => 0, f: x => (2 / Math.PI) * Math.asin(Math.sin(x)),
+    term: (k, x) => k % 2 ? 8 / (Math.PI * Math.PI * k * k) * ((((k - 1) / 2) % 2) ? -1 : 1) * Math.sin(k * x) : 0,
+    coef: k => k % 2 ? 8 / (Math.PI * Math.PI * k * k) : 0 },
+  bump: { name: 'bump', lo: -0.3, hi: 3.0, jump: 0, top: 0,
+    base: () => BESSEL[0], f: x => Math.exp(Math.cos(x)),
+    term: (k, x) => 2 * BESSEL[k] * Math.cos(k * x),
+    coef: k => 2 * BESSEL[k] },
+};
+function partialSum(F, K, x) {
+  let s = F.base();
+  for (let k = 1; k <= K; k++) s += F.term(k, x);
+  return s;
+}
+// Largest value of the partial sum just right of the jump, and its place: the Gibbs overshoot.
+function overshoot(F, K) {
+  if (!F.jump) return null;
+  let best = -Infinity, bx = 0;
+  for (let i = 1; i < 4000; i++) {
+    const x = Math.PI * i / 4000;
+    const s = partialSum(F, K, x);
+    if (s > best) { best = s; bx = x; }
+  }
+  return { pct: (best - F.top) / F.jump * 100, x: bx, y: best };
+}
+function slideSmooth(widget, side) {
+  let fk = 'square', K = 9;
+  const take = takeSlot(String.raw`Smoother functions need fewer terms. At a jump the peak stays about $9\%$ high at any $K$: the partial sums do not converge uniformly.`);
+  const user = fn => (...args) => { take.reveal(); fn(...args); };
+  const rowF = chipRow('function', [['square', 'square wave'], ['saw', String.raw`sawtooth $x$`], ['tri', 'triangle'],
+    ['bump', String.raw`$e^{\cos x}$`]], fk, user(id => { fk = id; update(); }), 'fun');
+  const sl = ctlSlider('K', 'highest frequency K', 1, 49, K, v => String(v), user(v => { K = v; update(); }));
+  sl.label(String.raw`$K$, highest frequency`);
+  const legF = legend([
+    { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue: $f$, the function` },
+    { color: 'var(--pal-accent)', text: String.raw`blue: $S_K$, its waves up to $K$` },
+    { color: 'var(--pal-ink)', text: String.raw`dot: overshoot peak` }]);
+  const legC = legend([
+    { color: 'var(--pal-accent)', text: String.raw`blue dots: $A_k$ for $k \le K$` },
+    { color: 'var(--pal-grey)', text: String.raw`grey dots: $A_k$ above $K$` },
+    { color: 'var(--pal-ink)', text: String.raw`dashed: $1/k$, $1/k^2$, $1/k^3$` }]);
+  const rOv = readout('overshoot', 'overshoot, % of the jump');
+  const rC = readout('ck', String.raw`$A_K$ at $K$`);
+  widget.append(rowF.el, hh('div', 'sliders', sl.el), legF);
+  const fplot = fillBox(widget, drawFun);
+  widget.append(legC);
+  const cplot = fillBox(widget, drawCoef);
+  widget.append(hh('div', 'readouts', rOv.el, rC.el));
+  let ov = null;
+  side.append(
+    sym(String.raw`$f$: the function, period $2\pi$. $S_K$: its waves up to $K$. $A_k=\sqrt{a_k^2+b_k^2}$: the height of wave $k$; square wave: $A_1=\frac{4}{\pi}$, $A_2=0$.`),
+    nameLine(String.raw`<i>uniform</i>: Latin <i>uniformis</i>, of one form: one error bound for all $x$ at once.`),
+    setTex(h('div', 'formula'), String.raw`$$A_k=\frac{4}{\pi k}\quad (k \text{ odd})$$`),
+    triesList([
+      String.raw`Choose square wave, then triangle, then $e^{\cos x}$: they fall like $1/k$, like $1/k^2$, and under $1/k^3$ from $k=4$.`,
+      String.raw`Choose square wave. Raise $K$ from $9$ to $19$, then $49$. The overshoot goes $9.12\% \to 8.99\% \to 8.96\%$: the ripple moves in, but its height barely falls.`,
+      String.raw`Choose sawtooth $x$: $A_k=2/k$, by parts in Primer · Integrals: techniques, step 5. Overshoot: $3.87\%$ at $K=9$, $7.95\%$ at $K=49$.`]),
+    take.el);
+  function drawFun(svg, Wd, H) {
+    const F = SM[fk];
+    const L = 44, R = 14, T = 12, B = 24, base = H - B, pw = Wd - L - R;
+    const X = x => L + (x + 2 * Math.PI) / (4 * Math.PI) * pw;
+    const Y = v => base - (v - F.lo) / (F.hi - F.lo) * (base - T);
+    svgNode('line', { x1: L, x2: Wd - R, y1: Y(0), y2: Y(0), stroke: COL.line }, svg);
+    svgText(svg, L - 6, Y(0) + 5, '0', { 'text-anchor': 'end', 'font-size': 14 });
+    [[-2 * Math.PI, '$-2\\pi$'], [-Math.PI, '$-\\pi$'], [0, '$0$'], [Math.PI, '$\\pi$'], [2 * Math.PI, '$2\\pi$']]
+      .forEach(([x, lab]) => svgTex(svg, X(x), base + 13, lab, { w: 60, size: 15 }));
+    const pts = Array.from({ length: 601 }, (_, i) => -2 * Math.PI + 4 * Math.PI * i / 600);
+    let df = '', ds = '';
+    pts.forEach((x, i) => {
+      df += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(F.f(x)).toFixed(1);
+      ds += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(partialSum(F, K, x)).toFixed(1);
+    });
+    svgNode('path', { d: df, fill: 'none', stroke: COL.greyBlue, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'f' }, svg);
+    svgNode('path', { d: ds, fill: 'none', stroke: COL.accent, 'stroke-width': 2, 'data-item': 'mark', 'data-id': 'S-K' }, svg);
+    if (ov) {
+      svgNode('circle', { cx: X(ov.x), cy: Y(ov.y), r: 4.5, fill: COL.ink, 'data-item': 'mark', 'data-id': 'overshoot' }, svg);
+      haloTex(svg, X(ov.x) + 10, Y(ov.y) + 4, '$' + ov.pct.toFixed(2) + '\\%$ overshoot', { anchor: 'start', w: 200, size: 15, fill: COL.ink });
+    }
+  }
+  function drawCoef(svg, Wd, H) {
+    const F = SM[fk];
+    const L = 44, R = 14, T = 8, B = 24, base = H - B, pw = Wd - L - R;
+    const LX1 = Math.log10(49), LY0 = -8, LY1 = 1;
+    const X = k => L + Math.log10(k) / LX1 * pw;
+    const Y = v => base - (Math.log10(v) - LY0) / (LY1 - LY0) * (base - T);
+    svgNode('line', { x1: L, x2: Wd - R, y1: base, y2: base, stroke: COL.grey }, svg);
+    svgNode('line', { x1: L, x2: L, y1: T, y2: base, stroke: COL.grey }, svg);
+    [1, 2, 5, 10, 20].forEach(k => svgText(svg, X(k), base + 16, String(k), { 'text-anchor': 'middle', 'font-size': 14 }));
+    svgTex(svg, Wd - R - 4, base + 16, '$k$', { w: 30, size: 15, anchor: 'end' });
+    [1, -1, -3, -5, -7].forEach(e => svgTex(svg, L - 4, Y(Math.pow(10, e)), '$10^{' + e + '}$', { w: 50, size: 14, anchor: 'end' }));
+    [[1, '$1/k$'], [2, '$1/k^2$'], [3, '$1/k^3$']].forEach(([p, lab]) => {
+      let d = '';
+      for (let k = 1; k <= 49; k++) d += (k > 1 ? 'L' : 'M') + X(k).toFixed(1) + ' ' + Y(Math.pow(k, -p)).toFixed(1);
+      svgNode('path', { d: d, fill: 'none', stroke: COL.ink, 'stroke-dasharray': '4 3', 'stroke-width': 1.2 }, svg);
+      haloTex(svg, X(49) - 4, Y(Math.pow(49, -p)) - 12, lab, { anchor: 'end', w: 80, size: 14, fill: COL.ink });
+    });
+    for (let k = 1; k <= 49; k++) {
+      const v = F.coef(k);
+      if (v < 1e-8) continue;   // zero for even k, or off the chart
+      svgNode('circle', { cx: X(k).toFixed(1), cy: Y(v).toFixed(1), r: 3.5, fill: k <= K ? COL.accent : COL.grey,
+        'data-item': 'mark', 'data-id': 'ck-' + k }, svg);
+    }
+  }
+  function update() {
+    rowF.set(fk);
+    sl.range(49, K);
+    const F = SM[fk];
+    ov = overshoot(F, K);
+    rOv.set(ov ? ov.pct.toFixed(2) : 'none (no jump)');
+    rC.set(num(F.coef(K)));
+    fplot.redraw();
+    cplot.redraw();
+  }
+  update();
+}
+
+// ---------- step 1: a few waves add up to a shape ----------
+// Two shapes, both built from odd frequencies only. The square wave is odd (sines); |x| is even (cosines).
+const SHP = {
+  sq: { lo: -1.6, hi: 1.6,
+    f: x => ((x % TAU) + TAU) % TAU < Math.PI ? 1 : -1,
+    S: (T, x) => { let s = 0; for (let k = 1; k <= 2 * T - 1; k += 2) s += 4 / (Math.PI * k) * Math.sin(k * x); return s; },
+    term: (k, x) => 4 / (Math.PI * k) * Math.sin(k * x),
+    tex: String.raw`$$S_K(x)=\frac{4}{\pi}\sum_{k\ \mathrm{odd}\le K}\frac{\sin kx}{k}$$` },
+  ab: { lo: -0.6, hi: 3.6,
+    f: x => Math.abs(x),
+    S: (T, x) => { let s = Math.PI / 2; for (let k = 1; k <= 2 * T - 1; k += 2) s -= 4 / (Math.PI * k * k) * Math.cos(k * x); return s; },
+    term: (k, x) => -4 / (Math.PI * k * k) * Math.cos(k * x),
+    tex: String.raw`$$S_K(x)=\frac{\pi}{2}-\frac{4}{\pi}\sum_{k\ \mathrm{odd}\le K}\frac{\cos kx}{k^2}$$` },
+};
+function slideShape(widget, side) {
+  let fk = 'sq', T = 1;
+  const take = takeSlot(String.raw`Whole-number frequencies, with the right weights, build a shape. Each new term is smaller.`);
+  const user = fn => (...args) => { take.reveal(); fn(...args); };
+  const rowF = chipRow('shape $f$', [['sq', 'square wave'], ['ab', String.raw`$|x|$`]], fk,
+    user(id => { fk = id; update(); }), 'shape');
+  const sl = ctlSlider('terms', 'terms', 1, 5, T, v => String(v), user(v => { T = v; update(); }));
+  sl.label(String.raw`terms $T$`);
+  const legF = legend([
+    { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue: $f$, the shape` },
+    { color: 'var(--pal-accent)', text: String.raw`blue: $S_K$, the sum of its waves` },
+    { color: 'var(--pal-hue-orange)', text: String.raw`amber: the newest term alone` }]);
+  const rK = readout('K', String.raw`highest frequency $K=2T-1$`);
+  const rGap = readout('gap', String.raw`mean squared gap $\frac{1}{2\pi}\int(f-S_K)^2$`);
+  widget.append(rowF.el, hh('div', 'sliders', sl.el), legF);
+  const plot = fillBox(widget, drawShape);
+  widget.append(hh('div', 'readouts', rK.el, rGap.el));
+  const fNode = setTex(h('div', 'formula'), '');
+  side.append(
+    sym(String.raw`$f$: the shape, repeated every $2\pi$. $S_K$: the sum of its waves up to $K$. Example: the square wave is $+1$ on $(0,\pi)$, then $-1$. Its first term is $\frac{4}{\pi}\sin x$. Step 9 proves the weights.`),
+    fNode,
+    triesList([
+      String.raw`Square wave, terms $1$: the blue curve is one sine wave. Terms $5$: the top flattens and the sides steepen.`,
+      String.raw`Choose $|x|$. Its waves are cosines only: the shape is even, $f(-x)=f(x)$. The square wave is odd, so it has sines only.`,
+      String.raw`Watch the amber line shrink as $k$ grows. The gap falls at each step.`]),
+    take.el);
+  function drawShape(svg, Wd, H) {
+    const F = SHP[fk];
+    const L = 44, R = 14, Tp = 12, B = 24, base = H - B, pw = Wd - L - R;
+    const X = x => L + (x + Math.PI) / TAU * pw;
+    const Y = v => base - (v - F.lo) / (F.hi - F.lo) * (base - Tp);
+    svgNode('line', { x1: L, x2: Wd - R, y1: Y(0), y2: Y(0), stroke: COL.line }, svg);
+    svgText(svg, L - 6, Y(0) + 5, '0', { 'text-anchor': 'end', 'font-size': 14 });
+    [[-Math.PI, '$-\\pi$'], [0, '$0$'], [Math.PI, '$\\pi$']].forEach(([x, lab]) => svgTex(svg, X(x), base + 13, lab, { w: 60, size: 15 }));
+    const pts = Array.from({ length: 401 }, (_, i) => -Math.PI + TAU * i / 400);
+    const trace = (fn, id, stroke, w) => {
+      let d = '';
+      pts.forEach((x, i) => { d += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(fn(x)).toFixed(1); });
+      svgNode('path', { d: d, fill: 'none', stroke: stroke, 'stroke-width': w, 'data-item': 'mark', 'data-id': id }, svg);
+    };
+    trace(F.f, 'f', COL.greyBlue, 3);
+    trace(x => F.S(T, x), 'S-K', COL.accent, 2.5);
+    trace(x => F.term(2 * T - 1, x), 'newest', COL.hueOrange, 2);   // drawn last, so it shows at terms 1
+  }
+  function update() {
+    rowF.set(fk);
+    sl.range(5, T);
+    const F = SHP[fk];
+    rK.set(String(2 * T - 1));
+    let e = 0;
+    for (const x of GRID) e += (F.f(x) - F.S(T, x)) ** 2;
+    e /= GRID.length;
+    rGap.set(e < 0.001 ? e.toExponential(1) : e.toFixed(3));
+    setTex(fNode, F.tex);
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 10: N samples give N frequency sizes, and the FFT is fast ----------
+const DFT_IN = { default: U0, tone: Array.from({ length: N }, (_, n) => Math.cos(TAU * 2 * n / N)) };
+// |U_k| = |1/N sum_n u_n e^{-i 2 pi k n / N}| for k = 0..N-1
+function dftMag(u) {
+  return Array.from({ length: N }, (_, k) => {
+    let re = 0, im = 0;
+    for (let n = 0; n < N; n++) { const a = -TAU * k * n / N; re += u[n] * Math.cos(a); im += u[n] * Math.sin(a); }
+    return Math.hypot(re, im) / N;
+  });
+}
+const fmtCount = v => Math.round(v).toLocaleString('en-US');
+function slideDiscrete(widget, side) {
+  let inp = 'default', M = 8;
+  const take = takeSlot(String.raw`$N$ samples give $N$ frequency sizes; the FFT finds them in about $N\log_2 N$ steps, not $N^2$.`);
+  const user = fn => (...args) => { take.reveal(); fn(...args); };
+  const rowI = chipRow('input $u$', [['default', 'default'], ['tone', String.raw`one tone, $k=2$`]], inp,
+    user(id => { inp = id; update(); }), 'input');
+  const rowN = chipRow('operations for $N$', [[8, '8'], [1024, '1024'], [10000, '10000']], M,
+    user(id => { M = id; update(); }), 'size');
+  const legB = legend([
+    { color: 'var(--pal-accent)', chip: true, text: String.raw`blue bars: $k=0$ to $4$` },
+    { color: 'var(--pal-guide)', chip: true, text: String.raw`grey bars: $k=5$ to $7$, equal to $|U_{8-k}|$` }]);
+  const rN2 = readout('n2', String.raw`direct sum: $N^2$ steps`);
+  const rNl = readout('nlogn', String.raw`FFT: $N\log_2 N$ steps`);
+  const rRatio = readout('ratio', String.raw`ratio $N/\log_2 N$`);
+  widget.append(rowI.el, legB);
+  const plot = fillBox(widget, drawBars);
+  widget.append(rowN.el, hh('div', 'readouts', rN2.el, rNl.el, rRatio.el));
+  side.append(
+    sym(String.raw`$U_k$: a complex number for $f=k/N$; $|U_k|$: its size. The $N$ samples are one period. Example: $|U_0|=1.75$, the mean of $u$.`),
+    setTex(h('div', 'formula'), String.raw`$$U_k=\frac{1}{N}\sum_{n=0}^{N-1}u_n\,e^{-i2\pi kn/N}$$`),
+    triesList([
+      String.raw`Pick one tone: bars at $k=2$ and $6$, both $0.5$. A cosine is two opposite arrows (Primer · Complex numbers, step 6); $\tfrac68$ is the alias of $-\tfrac28$ (Primer · Sampling, step 5).`,
+      String.raw`Pick default: bars $k=5,6,7$ copy $k=3,2,1$.`,
+      String.raw`Set $N$ to $10000$: direct sums need $10^8$ steps, the FFT about $1.3\times10^5$.`]),
+    take.el);
+  function drawBars(svg, Wd, H) {
+    const L = 44, R = 14, Tp = 12, B = 26, base = H - B, pw = Wd - L - R, YMAX = 2;
+    const Y = v => base - v / YMAX * (base - Tp);
+    const mags = dftMag(DFT_IN[inp]);
+    const slot = pw / N;
+    svgNode('line', { x1: L, x2: Wd - R, y1: base, y2: base, stroke: COL.grey }, svg);
+    [0, 1, 2].forEach(v => svgText(svg, L - 6, Y(v) + 5, String(v), { 'text-anchor': 'end', 'font-size': 14 }));
+    for (let k = 0; k < N; k++) {
+      const v = mags[k], x = L + k * slot + slot * 0.2, w = slot * 0.6;
+      svgNode('rect', { x: x, y: Y(v), width: w, height: base - Y(v), fill: k > N / 2 ? COL.guide : COL.accent,
+        'data-item': 'mark', 'data-id': 'ck-' + k }, svg);
+      svgText(svg, x + w / 2, Y(v) - 5, num(v), { 'text-anchor': 'middle', 'font-size': 14, fill: COL.fg });
+      svgText(svg, x + w / 2, base + 17, String(k), { 'text-anchor': 'middle', 'font-size': 14 });
+    }
+    svgTex(svg, Wd - R - 4, base + 17, '$k$', { w: 30, size: 15, anchor: 'end' });
+    svgTex(svg, L + 6, Tp + 4, String.raw`$|U_k|$ of the 8 samples`, { anchor: 'start', w: 200, size: 15, fill: COL.text2 });
+  }
+  function update() {
+    rowI.set(inp);
+    rowN.set(M);
+    rN2.set(fmtCount(M * M));
+    rNl.set(fmtCount(M * Math.log2(M)));
+    rRatio.set((M / Math.log2(M)).toFixed(1));
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- proof slides: shared parts ----------
+// Amber marks what the newest proof line is about, in the picture.
+const litSet = s => new Set(String(s || '').split(' ').filter(Boolean));
+function glowBox(svg, x, y, w, ht, pad) {
+  pad = pad == null ? 4 : pad;
+  return svgNode('rect', { x: (x - pad).toFixed(1), y: (y - pad).toFixed(1), width: Math.max(0, w + 2 * pad).toFixed(1),
+    height: Math.max(0, ht + 2 * pad).toFixed(1), rx: 6, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.2 }, svg);
+}
+function glowPath(svg, d, wdt) {
+  return svgNode('path', { d: d, fill: 'none', stroke: COL.amberBg, 'stroke-width': wdt || 10, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, svg);
+}
+function glowDot(svg, x, y, r) {
+  return svgNode('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: r || 9, fill: COL.amberBg, stroke: COL.amber, 'stroke-width': 1.2 }, svg);
+}
+const polyD = pts => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+// An arrow from (x1, y1) to (x2, y2) with a small head.
+function arrow(svg, x1, y1, x2, y2, col, w, id) {
+  const g = svgNode('g', id ? { 'data-item': 'mark', 'data-id': id } : {}, svg);
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  if (len < 0.5) return g;
+  const ux = (x2 - x1) / len, uy = (y2 - y1) / len, s = Math.min(9, len * 0.45);
+  svgNode('line', { x1: x1.toFixed(1), y1: y1.toFixed(1), x2: (x2 - ux * s * 0.6).toFixed(1), y2: (y2 - uy * s * 0.6).toFixed(1),
+    stroke: col, 'stroke-width': w || 2 }, g);
+  const bx = x2 - ux * s, by = y2 - uy * s;
+  svgNode('polygon', { points: [x2, y2, bx - uy * s * 0.45, by + ux * s * 0.45, bx + uy * s * 0.45, by - ux * s * 0.45]
+    .map(v => v.toFixed(1)).join(' '), fill: col }, g);
+  return g;
+}
+// The title row of a proof picture: what amber shows while a line is lit, otherwise what the picture is.
+function picCaption(svg, W, litText, plain) {
+  if (litText) svgTex(svg, W / 2, 12, litText, { w: W - 8, size: 15, fill: COL.amberInk, bg: COL.amberBg });
+  else svgTex(svg, 4, 12, plain, { w: W - 8, anchor: 'start', size: 15, fill: COL.muted });
+}
+function nameLine(html) { const p = h('p', 'sym name'); p.innerHTML = html; return tex(p); }
+// Left column of a proof slide: controls, the picture, legend, readouts, the test, the mental model.
+function proofLeft(widget, o) {
+  for (const c of o.controls || []) widget.append(c);
+  const plot = fillBox(widget, o.draw);
+  widget.append(legend(o.legend));
+  if (o.readouts && o.readouts.length) widget.append(hh('div', 'readouts', ...o.readouts.map(r => r.el)));
+  const test = hh('div', 'test', h('p', 'part', 'Test it'), triesList(o.tests));
+  const model = h('p', 'model');
+  model.append(h('span', 'part', 'The picture: '), tex(h('span', '', o.model)));
+  widget.append(test, model);
+  plot.test = test;
+  return plot;
+}
+// Right column: the proof. Each revealed line lights its part of the picture; once the proof is
+// done, the look-back questions take the place of the test under the picture.
+function proofRight(side, spec, plot, onLight, hint) {
+  const el = document.createElement('fl-proof-steps');
+  el.onEvent = d => emit('view.action', d);
+  el.onHighlight = key => onLight(key);
+  el.lookBackHost = plot.test;
+  el.lookBackHint = hint || 'Look back: under the picture.';
+  el.data = spec;
+  side.append(el);
+  return el;
+}
+
+// ---------- step 3: why different waves are perpendicular (proof) ----------
+const cosSamples = j => SAMPLES.map(n => Math.cos(TAU * j * n / N));
+const sumC = j => cosSamples(j).reduce((s, v) => s + v, 0);
+const cosLab = j => j < 0 ? String.raw`\cos(${j})` : String.raw`\cos ${j}`;
+function drawWhyOrth(svg, W, H, k, m, lit) {
+  const L = litSet(lit), T = 30, B = 22, jm = k - m, jp = k + m;
+  const cap = L.has('product') ? String.raw`amber: the product, sample by sample; it adds to $\cos ${k}\cdot\cos ${m}$`
+    : L.has('split') ? String.raw`amber: the two half waves, at $k-m=${jm}$ and $k+m=${jp}$`
+    : L.has('arrows') ? String.raw`amber: the arrows $z^n$; the samples are their shadows`
+    : L.has('chain') ? String.raw`amber: the 8 arrows $z^n$ laid head to tail`
+    : L.has('zero') ? String.raw`amber: the sums; both are $0$ when $k\ne m$` : '';
+  picCaption(svg, W, cap, String.raw`left: stems over $n=0,\dots,7$; right: the arrows of each half wave`);
+  const SW = Math.round(W * 0.54), LL = 100, RR = 62, pw = SW - LL - RR, rowH = (H - T - B) / 3;
+  const X = n => LL + (n + 0.5) * pw / N, A = rowH / 2 - 7;
+  const prod = SAMPLES.map(n => Math.cos(TAU * k * n / N) * Math.cos(TAU * m * n / N));
+  const rows = [
+    { lab: String.raw`$\cos ${k}\,\cos ${m}$`, col: COL.accent, v: prod, key: 'product', id: 'prod' },
+    { lab: String.raw`$\tfrac12${cosLab(jm)}$`, col: COL.greyBlue, v: cosSamples(jm).map(x => x / 2), key: 'split', id: 'half-minus' },
+    { lab: String.raw`$\tfrac12${cosLab(jp)}$`, col: COL.fg, v: cosSamples(jp).map(x => x / 2), key: 'split', id: 'half-plus' }];
+  rows.forEach((r, i) => {
+    const y0 = T + i * rowH, zy = y0 + rowH / 2;
+    if (L.has(r.key)) glowBox(svg, 2, y0 + 2, SW - RR - 2, rowH - 4, 0);
+    svgNode('line', { x1: LL - 6, x2: SW - RR + 4, y1: zy, y2: zy, stroke: COL.line }, svg);
+    svgTex(svg, 4, zy, r.lab, { anchor: 'start', w: LL - 8, size: 15 });
+    r.v.forEach((v, n) => {
+      const x = X(n), y = zy - A * v;
+      svgNode('line', { x1: x, x2: x, y1: zy, y2: y, stroke: r.col, 'stroke-width': 2 }, svg);
+      svgNode('circle', { cx: x, cy: y, r: 3.5, fill: r.col, 'data-item': 'mark', 'data-id': r.id + '-' + n }, svg);
+    });
+    const s = r.v.reduce((a, b) => a + b, 0);
+    if (L.has('zero')) glowBox(svg, SW - RR + 10, zy - 11, RR - 14, 22, 1);
+    svgTex(svg, SW - 4, zy, '$\\Sigma=' + num(s) + '$', { anchor: 'end', w: RR - 6, size: 15, fill: COL.ink });
+  });
+  SAMPLES.forEach(n => svgText(svg, X(n), H - 6, String(n), { 'text-anchor': 'middle', 'font-size': 14 }));
+  svgTex(svg, LL - 12, H - 10, '$n$', { anchor: 'end', w: 30, size: 15 });
+  // Right: the arrows z^n of each half wave, from the centre (light) and head to tail (dark).
+  // Two figures, side by side when the space is wide, else one above the other.
+  const x0 = SW + 8, RW = W - x0 - 2, RH = H - T, wide = RW > RH * 0.9;
+  const FW = wide ? RW / 2 : RW, FH = wide ? RH : RH / 2;
+  [[jm, COL.greyBlue, 'minus'], [jp, COL.fg, 'plus']].forEach(([j, col, id], i) => {
+    const fx = x0 + (wide ? i * FW : 0), top = T + (wide ? 0 : i * FH);
+    svgTex(svg, fx + FW / 2, top + 9, String.raw`$C_{${j}}=${num(sumC(j))}$`, { w: FW, size: 15, fill: col === COL.fg ? COL.ink : COL.slate2 });
+    const cx = fx + FW / 2, cy = top + 20 + (FH - 22) / 2;
+    if (((j % N) + N) % N === 0) {   // all 8 arrows point one way: the chain runs straight to 8
+      const s = (FW - 16) / N;
+      if (L.has('arrows') || L.has('chain')) glowPath(svg, 'M' + (fx + 8) + ' ' + cy + ' L' + (fx + 8 + N * s) + ' ' + cy, 12);
+      for (let n = 0; n < N; n++) arrow(svg, fx + 8 + n * s, cy, fx + 8 + (n + 1) * s, cy, col, 2, 'arrow-' + id + '-' + n);
+      if (L.has('zero')) glowDot(svg, fx + 8 + N * s, cy, 8);
+      svgTex(svg, cx, cy + 18, 'one way: sum $8$', { w: FW, size: 14, fill: COL.muted });
+      return;
+    }
+    const uu = Math.min(FW - 6, FH - 24) / 2.9;
+    const spoke = n => [cx + uu * Math.cos(TAU * j * n / N), cy - uu * Math.sin(TAU * j * n / N)];
+    if (L.has('arrows')) for (let n = 0; n < N; n++) { const p = spoke(n); glowPath(svg, 'M' + cx + ' ' + cy + ' L' + p[0].toFixed(1) + ' ' + p[1].toFixed(1), 8); }
+    for (let n = 0; n < N; n++) { const p = spoke(n); arrow(svg, cx, cy, p[0], p[1], COL.guide, 1.5); }
+    const pts = [[0, 0]];
+    for (let n = 0; n < N; n++) { const a = TAU * j * n / N, p = pts[n]; pts.push([p[0] + Math.cos(a), p[1] + Math.sin(a)]); }
+    const mx = pts.slice(0, N).reduce((s, p) => s + p[0], 0) / N, my = pts.slice(0, N).reduce((s, p) => s + p[1], 0) / N;
+    const P = p => [cx + uu * (p[0] - mx), cy - uu * (p[1] - my)];
+    if (L.has('chain')) glowPath(svg, polyD(pts.map(P)), 10);
+    for (let n = 0; n < N; n++) { const a = P(pts[n]), b = P(pts[n + 1]); arrow(svg, a[0], a[1], b[0], b[1], col, 2, 'arrow-' + id + '-' + n); }
+    const st = P(pts[0]);
+    if (L.has('zero')) glowDot(svg, st[0], st[1], 9);
+    svgNode('circle', { cx: st[0].toFixed(1), cy: st[1].toFixed(1), r: 4, fill: COL.ink, 'data-item': 'mark', 'data-id': 'start-' + id }, svg);
+  });
+}
+function slideWhyOrth(widget, side) {
+  let k = 1, m = 2, lit = '';
+  const sK = ctlSlider('k', 'frequency k', 0, 4, k, v => String(v), v => { k = v; update(); });
+  sK.label('$k$');
+  const sM = ctlSlider('m', 'frequency m', 0, 4, m, v => String(v), v => { m = v; update(); });
+  sM.label('$m$');
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'ctlrow', sK.el, sM.el)],
+    draw: (svg, W, Hh) => drawWhyOrth(svg, W, Hh, k, m, lit),
+    legend: [
+      { color: 'var(--pal-accent)', text: String.raw`blue: product $\cos k\,\cos m$` },
+      { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue: at $k-m$` },
+      { color: 'var(--pal-fg)', text: String.raw`solid: at $k+m$` },
+      { color: 'var(--pal-guide)', text: String.raw`thin arrows: $z^n$` }],
+    readouts: [],
+    tests: [
+      String.raw`Set $k=1$, $m=2$: the product's 8 stems add to $0$. Try $k=3$, $m=4$, then $k=m=2$. Guess when the sum is $0$.`,
+      String.raw`Watch the solid arrows on the right as you change $k$ and $m$. When do they close up? Cases are evidence, not proof.`],
+    model: String.raw`A sampled cosine is the shadow of an arrow that turns a whole number of times in 8 samples. Its 8 positions spread evenly round the circle, so head to tail they come back to the start: they cancel, and so do their shadows.` });
+  proofRight(side, {
+    id: 'orthogonal-waves',
+    goal: { tex: String.raw`\cos k\cdot\cos m=0`, words: String.raw`for whole $k\ne m$ from 0 to 4, over 8 samples.` },
+    facts: [
+      { tex: String.raw`\cos A\cos B=\tfrac12\cos(A-B)+\tfrac12\cos(A+B)`, ref: 'Primer · Complex numbers, step 8' },
+      { tex: String.raw`\textstyle\sum_{n=0}^{7}z^n=\frac{1-z^8}{1-z}`, words: String.raw`if $z\ne1$`, ref: 'Primer · Series, step 3' }],
+    lines: [
+      { tex: String.raw`\cos k\cdot\cos m=\textstyle\sum_n\cos\frac{2\pi kn}{8}\cos\frac{2\pi mn}{8}`, move: 'Unfold the definition',
+        why: 'the dot product: multiply sample by sample, add', choices: ['Name a piece', 'Change variables'], highlight: 'product' },
+      { tex: String.raw`=\tfrac12\textstyle\sum_n\cos\frac{2\pi(k-m)n}{8}+\tfrac12\sum_n\cos\frac{2\pi(k+m)n}{8}`, move: 'Use an earlier result',
+        why: 'split each product into two half waves', choices: ['Rearrange', 'Use symmetry'], highlight: 'split' },
+      { tex: String.raw`C_j=\textstyle\sum_n\cos\frac{2\pi jn}{8}=\operatorname{Re}\sum_nz^n,\ \ z=e^{i2\pi j/8}`, move: 'Name a piece',
+        why: String.raw`call each sum $C_j$; a cosine is the shadow of an arrow (Complex numbers, step 6)`, choices: ['Change variables', 'Unfold the definition'], highlight: 'arrows' },
+      { tex: String.raw`\textstyle\sum_{n=0}^{7}z^n=\frac{1-z^8}{1-z}=0`, move: 'Use an earlier result',
+        why: String.raw`$z^8=1$: $j$ whole turns. Needs $z\ne1$: $j$ not a multiple of 8`,
+        choices: ['Telescope', 'Take a limit'], highlight: 'chain' },
+      { tex: String.raw`\cos k\cdot\cos m=\tfrac12C_{k-m}+\tfrac12C_{k+m}=0`, move: 'Compare or bound',
+        why: String.raw`$0<|k-m|\le4$, $0<k+m<8$: no multiple of 8`, choices: ['Induction', 'Rearrange'], highlight: 'zero' }],
+    lookBack: [
+      { q: String.raw`What changes when $k=m$?`,
+        a: String.raw`Then $k-m=0$ gives $z=1$: the 8 arrows point one way, $C_0=8$, and line 4 cannot divide by $1-z=0$. So $\cos k\cdot\cos k=4$, or $8$ at $k=0$ and $4$: step 2's readouts.` },
+      { q: String.raw`What does it give for integrals on $[-\pi,\pi]$?`,
+        a: String.raw`For whole $j\ne0$, $\int_{-\pi}^{\pi}\cos jx\,dx=\big[\frac{\sin jx}{j}\big]_{-\pi}^{\pi}=0$ replaces line 4 (Primer · Integrals: area, step 5). Different waves give $0$; a wave with itself gives $\pi$.` },
+      { q: String.raw`Why do the waves stop at $k=4$?`,
+        a: String.raw`At $k=1$, $m=7$: $k+m=8$, so $\cos1\cdot\cos7=4$. On 8 samples $\cos7$ is $\cos1$ again, an alias (Primer · Sampling, step 5).` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    sK.show(); sM.show();
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 5: why a coefficient is one dot product (proof) ----------
+const WK_LAB = ['1', '\\cos 1', '\\sin 1', '\\cos 2', '\\sin 2', '\\cos 3', '\\sin 3', '\\cos 4'];
+function drawWhyProj(svg, W, H, u, kk, lit) {
+  const L = litSet(lit), T = 30;
+  const cs = TERM_VEC.map((v, i) => dot(u, v) / TERM_NORM[i]);
+  const uk = dot(u, TERM_VEC[kk]), nk = TERM_NORM[kk];
+  const cap = L.has('sum') ? String.raw`amber: $u$ as the sum of the 8 waves, with weights $c_j$`
+    : L.has('dots') ? String.raw`amber: dot both sides with $w_k=${WK_LAB[kk]}$`
+    : L.has('zeros') ? String.raw`amber: each $w_j\cdot w_k$ with $j\ne k$ is $0$`
+    : L.has('divide') ? String.raw`amber: $c_k=${num(uk)}/${num(nk)}=${num(uk / nk)}$` : '';
+  picCaption(svg, W, cap, String.raw`top: the input $u$; below: the 8 waves $w_j$, each with its weight $c_j$`);
+  const unit = (H - T - 6) / 5.6, uh = 1.6 * unit;
+  // Input row.
+  const LLu = 120, RRu = 112, pwu = W - LLu - RRu, uz = T + uh / 2;
+  const Xu = n => LLu + (n + 0.5) * pwu / N, ua = (uh / 2 - 4) / Math.max(1, ...u.map(Math.abs));
+  if (L.has('sum')) glowBox(svg, 2, T + 1, W - RRu - 2, uh - 2, 0);
+  svgNode('line', { x1: LLu - 6, x2: W - RRu + 4, y1: uz, y2: uz, stroke: COL.line }, svg);
+  svgTex(svg, 4, uz, String.raw`$u=\sum_j c_jw_j$`, { anchor: 'start', w: LLu - 8, size: 15, fill: COL.slate2 });
+  u.forEach((v, n) => {
+    svgNode('line', { x1: Xu(n), x2: Xu(n), y1: uz, y2: uz - ua * v, stroke: COL.greyBlue, 'stroke-width': 3 }, svg);
+    svgNode('circle', { cx: Xu(n), cy: uz - ua * v, r: 4.5, fill: COL.greyBlue, 'data-item': 'mark', 'data-id': 'u-' + n }, svg);
+  });
+  if (L.has('dots') || L.has('divide')) glowBox(svg, W - RRu + 8, uz - 11, RRu - 10, 22, 1);
+  svgTex(svg, W - 2, uz, String.raw`$u\cdot w_k=${num(uk)}$`, { anchor: 'end', w: RRu - 4, size: 14, fill: COL.ink });
+  // The 8 waves, in two columns of four: weight times wave on the left, w_j . w_k on the right.
+  const colW = (W - 6) / 2, LB = Math.min(120, colW * 0.43), VW = 30, y1 = T + uh + 4, wa = unit / 2 - 3, fsz = colW < 290 ? 13 : 14;
+  TERM_VEC.forEach((vec, j) => {
+    const cx0 = 2 + (j < 4 ? 0 : colW + 2), y0 = y1 + (j % 4) * unit, zy = y0 + unit / 2, sel = j === kk;
+    const d = dot(vec, TERM_VEC[kk]), vx = cx0 + colW - VW - 4;
+    if (L.has('divide') && sel) glowBox(svg, cx0, y0 + 1, colW - 4, unit - 2, 0);
+    if (L.has('sum')) glowBox(svg, cx0, y0 + 2, LB - 4, unit - 4, 0);
+    if (L.has('dots') || (L.has('zeros') && !sel)) glowBox(svg, vx, y0 + 2, VW, unit - 4, 0);
+    svgTex(svg, cx0 + 2, zy, '$' + num(cs[j]) + '\\times ' + WK_LAB[j] + '$', { anchor: 'start', w: LB - 4, size: fsz, fill: sel ? COL.accentInk : COL.text2 });
+    const sx0 = cx0 + LB, sw = vx - 6 - sx0, Xw = n => sx0 + (n + 0.5) * sw / N, col = sel ? COL.accent : COL.muted;
+    svgNode('line', { x1: sx0, x2: sx0 + sw, y1: zy, y2: zy, stroke: COL.soft3 }, svg);
+    vec.forEach((v, n) => {
+      svgNode('line', { x1: Xw(n), x2: Xw(n), y1: zy, y2: zy - wa * v, stroke: col, 'stroke-width': 1.6 }, svg);
+      svgNode('circle', { cx: Xw(n), cy: zy - wa * v, r: 2.6, fill: col, 'data-item': 'mark', 'data-id': 'w' + j + '-' + n }, svg);
+    });
+    svgTex(svg, vx + VW - 2, zy, '$' + num(d) + '$', { anchor: 'end', w: VW, size: 14, fill: sel ? COL.accentInk : COL.muted });
+  });
+}
+function slideWhyProj(widget, side) {
+  let kk = 1, lit = '';
+  const rowK = chipRow('pick $w_k$', WK_LAB.map((t, j) => [j, '$' + t + '$']), kk, id => { kk = id; update(); }, 'wk');
+  const plot = proofLeft(widget, {
+    controls: [rowK.el],
+    draw: (svg, W, Hh) => drawWhyProj(svg, W, Hh, U0, kk, lit),
+    legend: [
+      { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue: input $u$` },
+      { color: 'var(--pal-muted)', text: String.raw`grey: $c_j\times w_j$, then $w_j\cdot w_k$` },
+      { color: 'var(--pal-accent)', text: String.raw`blue: the chosen $w_k$` }],
+    readouts: [],
+    tests: [
+      String.raw`Pick $w_k=\cos 1$. Of the 8 numbers $w_j\cdot w_k$ at the right ends, only one is not $0$. Which one?`,
+      String.raw`$u\cdot\cos1=7.243$ and $\cos1\cdot\cos1=4$: is their ratio the weight $1.811$? Check $\sin1$ too. Cases are evidence, not proof.`],
+    model: String.raw`Each wave is its own direction, at right angles to the other seven. A dot product with one direction cannot see the others, so it reads off that weight alone.` });
+  proofRight(side, {
+    id: 'coefficient-projection',
+    goal: { tex: String.raw`c_k=\frac{u\cdot w_k}{w_k\cdot w_k}`, words: String.raw`when $u$ is built from the 8 waves $w_j$ ($1,\cos1,\sin1,\dots,\cos4$); for $w_k=\cos k$, $c_k=a_k$.` },
+    facts: [
+      { tex: String.raw`w_j\cdot w_k=0`, words: String.raw`for $j\ne k$, sines too`, ref: 'step 3' }],
+    lines: [
+      { tex: String.raw`u=c_0w_0+c_1w_1+\dots+c_7w_7`, move: 'Name a piece',
+        why: 'give each unknown weight a letter', choices: ['Unfold the definition', 'Change variables'], highlight: 'sum' },
+      { tex: String.raw`u\cdot w_k=\textstyle\sum_j c_j\,(w_j\cdot w_k)`, move: 'Rearrange',
+        why: String.raw`dot both sides with $w_k$, as in Vectors, step 8: a dot product splits over a sum`, choices: ['Compute it two ways', 'Use an earlier result'], highlight: 'dots' },
+      { tex: String.raw`u\cdot w_k=c_k\,(w_k\cdot w_k)`, move: 'Use an earlier result',
+        why: String.raw`every other $w_j\cdot w_k$ is 0 (step 3)`, choices: ['Telescope', 'Compare or bound'], highlight: 'zeros' },
+      { tex: String.raw`c_k=\frac{u\cdot w_k}{w_k\cdot w_k}`, move: 'Rearrange',
+        why: String.raw`divide by $w_k\cdot w_k$: 4 or 8, never 0`, choices: ['Undo with the inverse', 'Take a limit'], highlight: 'divide' }],
+    lookBack: [
+      { q: 'What if the waves were not perpendicular?',
+        a: String.raw`Line 3 would keep every term, and you would solve 8 equations at once: the normal equations of Primer · Least squares, step 4. Step 6 shows this with the powers $1,n,n^2$.` },
+      { q: String.raw`Why can every $u$ be built from the 8 waves?`,
+        a: String.raw`If $\sum_jc_jw_j=0$, lines 2 to 4 give every $c_k=0$: 8 independent directions. That they fill all 8-number lists is linear algebra these primers do not prove; step 4 shows the rebuild is exact.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    rowK.set(kk);
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 7: why the cut-off series is the best fit (proof) ----------
+const FREQ_COLS = [[0], [1, 2], [3, 4], [5, 6], [7]];       // columns of each frequency 0..4
+const FIT_C = TERM_VEC.map((v, i) => dot(U0, v) / TERM_NORM[i]);
+const FIT_PIECE = FREQ_COLS.map(g => g.reduce((s, j) => s + FIT_C[j] * FIT_C[j] * TERM_NORM[j], 0));   // 24.5, 13.364, 1, 0.636, 0.5
+const UU = dot(U0, U0);                                      // 40
+function drawWhyFit(svg, W, H, m, lit) {
+  // One blue per frequency, from the darkest to the lightest.
+  const PIECE_COL = [COL.accentInk, COL.accent, COL.blueStrong, COL.accent2, COL.blueLight];
+  const L = litSet(lit), T = 30, on = FOUR_LEN[m];
+  const kept = FIT_PIECE.slice(0, m + 1).reduce((a, b) => a + b, 0), E = UU - kept;
+  const cap = L.has('gram') ? String.raw`amber: the columns in use; entry $(i,j)$ is $x_i\cdot x_j$`
+    : L.has('diag') ? String.raw`amber: the diagonal; every other entry is $0$`
+    : L.has('coef') ? String.raw`amber: each $\hat c_j$ comes from its own row alone`
+    : L.has('pyth') ? String.raw`amber: $u\cdot u=40$, split into the fit and the error`
+    : L.has('pieces') ? String.raw`amber: the fit's part, one piece per frequency`
+    : L.has('bessel') ? String.raw`amber: $E\ge0$, so the pieces never pass $u\cdot u$` : '';
+  picCaption(svg, W, cap, String.raw`left: $X^\top X$ and the coefficients $\hat c_j$; right: $u\cdot u$ in pieces`);
+  // Left: the Gram matrix, with each row's coefficient beside it.
+  const S = Math.max(96, Math.min(H - T - 30, W - 30 - 60 - 66 - 150)), cell = S / 8, mx0 = 30, my0 = T + 20;
+  const fs = Math.max(11, Math.min(14, cell * 0.55));
+  for (let j = 0; j < 8; j++) svgTex(svg, mx0 + (j + 0.5) * cell, T + 10, '$x_' + j + '$', { w: cell + 6, size: Math.min(14, fs + 1), fill: COL.text2, dim: j >= on });
+  if (L.has('gram')) glowBox(svg, mx0, my0, on * cell, on * cell, 3);
+  for (let i = 0; i < 8; i++) {
+    svgTex(svg, mx0 - 3, my0 + (i + 0.5) * cell, '$x_' + i + '$', { anchor: 'end', w: 30, size: Math.min(14, fs + 1), fill: COL.text2, dim: i >= on });
+    for (let j = 0; j < 8; j++) {
+      const act = i < on && j < on, diag = i === j;
+      const fill = act && diag ? (L.has('diag') ? COL.amberBg : COL.accentTint) : 'none';
+      svgNode('rect', { x: mx0 + j * cell, y: my0 + i * cell, width: cell, height: cell, fill: fill, stroke: L.has('diag') && act && diag ? COL.amber : COL.soft2 }, svg);
+      svgText(svg, mx0 + (j + 0.5) * cell, my0 + (i + 0.5) * cell + fs * 0.36, diag ? String(Math.round(TERM_NORM[i])) : '0',
+        { 'text-anchor': 'middle', 'font-size': fs, fill: diag ? COL.ink : COL.muted, class: act ? '' : 'dim', 'font-weight': act && diag ? 600 : 400 });
+    }
+  }
+  const cx0 = mx0 + S + 8, cw = 52;
+  svgTex(svg, cx0 + cw / 2, T + 10, String.raw`$\hat c_j$`, { w: cw + 10, size: 14 });
+  if (L.has('coef')) glowBox(svg, cx0, my0, cw, on * cell, 2);
+  for (let i = 0; i < on; i++)
+    svgText(svg, cx0 + cw - 4, my0 + (i + 0.5) * cell + fs * 0.36, String(+FIT_C[i].toFixed(2)), { 'text-anchor': 'end', 'font-size': fs, fill: COL.accentDeep });
+  // Right: the energy bar, u.u = 40 = the kept pieces + the error.
+  const bx = cx0 + cw + 26, bw = 40, yT = T + 14, yB = H - 10, Y = v => yB - v / UU * (yB - yT);
+  if (L.has('pyth')) glowBox(svg, bx, yT, bw, yB - yT, 4);
+  if (L.has('pieces')) glowBox(svg, bx, Y(kept), bw, yB - Y(kept), 4);
+  if (L.has('bessel')) glowBox(svg, bx, yT, bw, Y(kept) - yT, 4);
+  let acc = 0;
+  const labs = [];
+  for (let f = 0; f <= m; f++) {
+    const y0 = Y(acc + FIT_PIECE[f]), y1b = Y(acc);
+    svgNode('rect', { x: bx, y: y0, width: bw, height: Math.max(0.5, y1b - y0), fill: PIECE_COL[f], stroke: COL.panel, 'stroke-width': 0.6, 'data-item': 'mark', 'data-id': 'piece-' + f }, svg);
+    labs.push({ y: (y0 + y1b) / 2, t: '$k=' + f + '$: $' + num(FIT_PIECE[f]) + '$', c: COL.fg });
+    acc += FIT_PIECE[f];
+  }
+  if (E > 1e-9) {
+    svgNode('rect', { x: bx, y: Y(UU), width: bw, height: Math.max(0.5, Y(kept) - Y(UU)), fill: COL.soft2, 'data-item': 'mark', 'data-id': 'error' }, svg);
+    labs.push({ y: (Y(UU) + Y(kept)) / 2, t: 'error $E=' + num(E) + '$', c: COL.muted });
+  }
+  svgNode('line', { x1: bx - 6, x2: bx + bw + 6, y1: Y(UU), y2: Y(UU), stroke: COL.ink, 'stroke-dasharray': '4 3' }, svg);
+  labs.push({ y: Y(UU), t: String.raw`$u\cdot u=40$`, c: COL.ink });
+  // Labels right of the bar, pushed apart so they never overlap; a thin line goes to each piece.
+  const gap = 19, lx = bx + bw + 26;
+  labs.sort((a, b) => b.y - a.y);
+  let prev = Infinity;
+  for (const lb of labs) { lb.ly = Math.min(lb.y, prev - gap); prev = lb.ly; }
+  const over = yT + 8 - labs[labs.length - 1].ly;
+  if (over > 0) labs.forEach(lb => { lb.ly += over; });
+  for (const lb of labs) {
+    svgNode('line', { x1: bx + bw + 2, x2: lx - 4, y1: lb.y, y2: lb.ly, stroke: COL.grey }, svg);
+    svgTex(svg, lx, lb.ly, lb.t, { anchor: 'start', w: Math.max(60, W - lx - 2), size: 14, fill: lb.c });
+  }
+}
+function slideWhyFit(widget, side) {
+  let m = 1, lit = '';
+  const sl = ctlSlider('m', 'frequencies m', 0, 4, m, v => String(v), v => { m = v; update(); });
+  sl.label(String.raw`$m$, frequencies`);
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'ctlrow', sl.el)],
+    draw: (svg, W, Hh) => drawWhyFit(svg, W, Hh, m, lit),
+    legend: [
+      { color: 'var(--pal-accent-tint)', chip: true, text: String.raw`shaded: $x_j\cdot x_j$` },
+      { color: 'var(--pal-accent)', chip: true, text: 'blue: the fit, by frequency' },
+      { color: 'var(--pal-soft-2)', chip: true, text: String.raw`grey: error $E$` }],
+    readouts: [],
+    tests: [
+      String.raw`Move $m$ from $0$ to $1$: the error falls from $15.5$ to $2.136$, by $13.364$. Is that $4(a_1^2+b_1^2)$, with $a_1=1.81$, $b_1=-0.25$?`,
+      String.raw`Move $m$ up to $4$. Do the blue pieces ever pass $u\cdot u=40$? Cases are evidence, not proof.`],
+    model: String.raw`The fit is the shadow of $u$ on the chosen waves, and the miss is at right angles to it. So $u\cdot u$ splits like Pythagoras: one piece per wave, plus the error. A new wave moves its piece from the error into the fit.` });
+  proofRight(side, {
+    id: 'best-fit-split',
+    goal: { tex: String.raw`\hat c_j=\frac{u\cdot x_j}{x_j\cdot x_j},\ \ E=u\cdot u-\textstyle\sum_j\hat c_j^{\,2}\,x_j\cdot x_j`,
+      words: String.raw`for perpendicular columns $x_j$, however many.` },
+    facts: [
+      { tex: String.raw`X^\top X\hat c=X^\top u`, words: String.raw`gives the fit $\hat u$; its miss $r=u-\hat u$ is perpendicular to it`, ref: 'Primer · Least squares, steps 4, 6' },
+      { tex: String.raw`(X^\top X)_{ij}=x_i\cdot x_j`, words: 'row times column' }],
+    lines: [
+      { tex: String.raw`X^\top X=\operatorname{diag}(x_j\cdot x_j)`, move: 'Use an earlier result',
+        why: String.raw`off the diagonal $x_i\cdot x_j=0$ (step 3)`, choices: ['Rearrange', 'Use symmetry'], highlight: 'diag' },
+      { tex: String.raw`\hat c_j=\frac{u\cdot x_j}{x_j\cdot x_j}`, move: 'Rearrange',
+        why: String.raw`row $j$ is $(x_j\cdot x_j)\,\hat c_j=x_j\cdot u$: divide. No other column enters`, choices: ['Telescope', 'Undo with the inverse'], highlight: 'coef' },
+      { tex: String.raw`u\cdot u=\hat u\cdot\hat u+r\cdot r`, move: 'Use an earlier result',
+        why: 'Pythagoras, as the miss is perpendicular to the fit (Least squares, step 7)', choices: ['Add zero or multiply by one', 'Compare or bound'], highlight: 'pyth' },
+      { tex: String.raw`\hat u\cdot\hat u=\textstyle\sum_j\hat c_j^{\,2}\,x_j\cdot x_j`, move: 'Rearrange',
+        why: String.raw`expand $\hat u=\sum_j\hat c_jx_j$; cross terms are 0 (step 3)`, choices: ['Induction', 'Change variables'], highlight: 'pieces' },
+      { tex: String.raw`E=u\cdot u-\textstyle\sum_j\hat c_j^{\,2}\,x_j\cdot x_j\ge0`, move: 'Compare or bound',
+        why: String.raw`$E=r\cdot r$, a sum of squares, is never below 0: Bessel's inequality`, choices: ['Contradiction', 'Take a limit'], highlight: 'bessel' }],
+    lookBack: [
+      { q: String.raw`Where is the drop of step 6's try 3?`,
+        a: String.raw`Line 5: $m=2\to3$ adds the pieces of $\cos3$ and $\sin3$, so $E$ falls by $4a_3^2+4b_3^2=0.636$, whatever came before.` },
+      { q: String.raw`What breaks for the powers $1,n,n^2$?`,
+        a: String.raw`Line 1: $1\cdot n=0+1+\dots+7=28\ne0$, so every equation holds every unknown. A new column moves the old ones ($2.333$ to $4.25$), and line 4 gets cross terms.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    sl.show();
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 9: why a jump gives 1/k and a kink 1/k^2 (proof) ----------
+const DEC_X = Array.from({ length: 481 }, (_, i) => -Math.PI + TAU * i / 480);
+const sqWave = x => ((x % TAU) + TAU) % TAU < Math.PI ? 1 : -1;
+function bByArea(k) { let s = 0; for (const x of GRID) s += sqWave(x) * Math.sin(k * x); return s * TAU / GRID.length / Math.PI; }
+function drawWhyDecay(svg, W, H, k, lit) {
+  const L = litSet(lit), T = 30, odd = k % 2 === 1;
+  const cap = L.has('product') ? String.raw`amber: the product $f(x)\sin ${k}x$; $b_{${k}}$ is its area over $\pi$`
+    : L.has('half') ? String.raw`amber: the right half; the left half is its mirror image`
+    : L.has('humps') ? (odd ? String.raw`amber: ${k} humps; pairs cancel, one of area $\frac{2}{${k}}$ is left`
+      : String.raw`amber: ${k} humps; they cancel in pairs, area $0$`)
+    : L.has('dots') ? String.raw`amber: the square wave's heights, on the line $\frac{4}{\pi k}$`
+    : L.has('integrate') ? String.raw`amber: integrating a wave divides its height by $k$`
+    : L.has('kink') ? String.raw`amber: $|x|$, the running area of $f$, and its heights` : '';
+  picCaption(svg, W, cap, String.raw`top: $f$, $\sin ${k}x$ and their product; below: $|x|$, and the heights`);
+  // Top: f, sin kx and their product on [-pi, pi].
+  const Lx = 40, Rx = 12, pw = W - Lx - Rx, base1 = T + (H - T) * 0.56 - 16;
+  const X = x => Lx + (x + Math.PI) / TAU * pw, Y = v => T + 4 + (1.35 - v) / 2.7 * (base1 - T - 4);
+  if (L.has('half')) glowBox(svg, X(0), T + 2, X(Math.PI) - X(0), base1 - T - 2, 0);
+  if (L.has('humps')) {
+    if (odd) glowBox(svg, X((k - 1) * Math.PI / k), Y(1), X(Math.PI) - X((k - 1) * Math.PI / k), Y(0) - Y(1), 2);
+    else glowBox(svg, X(0), Y(1), X(Math.PI) - X(0), Y(-1) - Y(1), 2);
+  }
+  if (L.has('product')) glowBox(svg, Lx, Y(1.05), pw, Y(-1.05) - Y(1.05), 2);
+  for (let i = 0; i < DEC_X.length - 1; i++) {
+    const a = DEC_X[i], b = DEC_X[i + 1], va = sqWave((a + b) / 2) * Math.sin(k * a), vb = sqWave((a + b) / 2) * Math.sin(k * b);
+    svgNode('polygon', { points: [X(a), Y(0), X(a), Y(va), X(b), Y(vb), X(b), Y(0)].map(v => v.toFixed(1)).join(' '),
+      fill: va + vb >= 0 ? COL.bluePale : COL.soft2 }, svg);
+  }
+  svgNode('line', { x1: Lx, x2: W - Rx, y1: Y(0), y2: Y(0), stroke: COL.grey }, svg);
+  svgText(svg, Lx - 6, Y(0) + 5, '0', { 'text-anchor': 'end', 'font-size': 14 });
+  let df = '', ds = '';
+  DEC_X.forEach((x, i) => {
+    df += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(sqWave(x)).toFixed(1);
+    ds += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + Y(Math.sin(k * x)).toFixed(1);
+  });
+  svgNode('path', { d: df, fill: 'none', stroke: COL.greyBlue, 'stroke-width': 3, 'data-item': 'mark', 'data-id': 'f' }, svg);
+  svgNode('path', { d: ds, fill: 'none', stroke: COL.fg, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'sin-k' }, svg);
+  for (let i = 0; i < k; i++) {   // the humps on (0, pi), each pi/k wide, signs alternate
+    const xc = X((i + 0.5) * Math.PI / k), up = i % 2 === 0;
+    svgText(svg, xc, up ? Y(0.45) + 5 : Y(-0.45) + 5, up ? '+' : '−', { 'text-anchor': 'middle', 'font-size': 15, fill: COL.blueDeep, 'font-weight': 700 });
+  }
+  [[-Math.PI, '$-\\pi$'], [0, '$0$'], [Math.PI, '$\\pi$']].forEach(([x, lab]) => svgTex(svg, X(x), base1 + 9, lab, { w: 50, size: 14 }));
+  haloTex(svg, X(-Math.PI / 2), Y(-1) - 12, '$f=-1$', { w: 70, size: 14, fill: COL.slate2 });
+  haloTex(svg, X(-Math.PI) + 4, Y(1.2), String.raw`$b_{${k}}=\frac{\text{area}}{\pi}=${num(bByArea(k))}$`, { anchor: 'start', w: 220, size: 15, fill: COL.ink });
+  haloTex(svg, X(Math.PI / 2), Y(1) + 12, '$f=1$', { w: 60, size: 14, fill: COL.slate2 });
+  // Bottom left: |x|, the running area under f.
+  const bT = base1 + 24, bB = H - 20, bw = Math.round(W * 0.42);
+  const X2 = x => Lx + (x + Math.PI) / TAU * (bw - Lx - 6), Y2 = v => bT + (3.5 - v) / 4.8 * (bB - bT);
+  let dA = '', dF = '';
+  DEC_X.forEach((x, i) => {
+    dA += (i ? 'L' : 'M') + X2(x).toFixed(1) + ' ' + Y2(Math.abs(x)).toFixed(1);
+    dF += (i ? 'L' : 'M') + X2(x).toFixed(1) + ' ' + Y2(sqWave(x)).toFixed(1);
+  });
+  if (L.has('kink')) glowPath(svg, dA, 10);
+  svgNode('line', { x1: Lx, x2: bw - 6, y1: Y2(0), y2: Y2(0), stroke: COL.line }, svg);
+  svgNode('path', { d: dF, fill: 'none', stroke: COL.greyBlue, 'stroke-width': 1.5 }, svg);
+  svgNode('path', { d: dA, fill: 'none', stroke: COL.accent, 'stroke-width': 2.5, 'data-item': 'mark', 'data-id': 'abs' }, svg);
+  haloTex(svg, X2(0), bT + 4, String.raw`$|x|=\int_0^x f\,dt$`, { w: bw - Lx, size: 14, fill: COL.accentDeep });
+  [[-Math.PI, '$-\\pi$'], [0, '$0$'], [Math.PI, '$\\pi$']].forEach(([x, lab]) => svgTex(svg, X2(x), bB + 10, lab, { w: 44, size: 13 }));
+  // Bottom right: heights on log scales, the square wave against |x|.
+  const hx0 = bw + 46, hx1 = W - 16, KM = 15, KA = 40;
+  const X3 = q => hx0 + Math.log(q) / Math.log(KA) * (hx1 - hx0);
+  const LY0 = Math.log10(1.6), LY1 = Math.log10(0.004), Y3 = v => bT + (LY0 - Math.log10(v)) / (LY0 - LY1) * (bB - bT);
+  svgNode('line', { x1: hx0, x2: hx1, y1: bB, y2: bB, stroke: COL.grey }, svg);
+  svgNode('line', { x1: hx0, x2: hx0, y1: bT, y2: bB, stroke: COL.grey }, svg);
+  [1, 3, 5, 9, 15].forEach(q => svgText(svg, X3(q), bB + 14, String(q), { 'text-anchor': 'middle', 'font-size': 13 }));
+  svgTex(svg, hx1, bB + 12, '$k$', { anchor: 'end', w: 20, size: 14 });
+  [[1, '1'], [0.1, '0.1'], [0.01, '0.01']].forEach(([v, t]) => svgText(svg, hx0 - 4, Y3(v) + 4, t, { 'text-anchor': 'end', 'font-size': 13 }));
+  const lineD = p => { let d = ''; for (let q = 1; q <= KM; q += 0.5) d += (q > 1 ? 'L' : 'M') + X3(q).toFixed(1) + ' ' + Y3(4 / (Math.PI * Math.pow(q, p))).toFixed(1); return d; };
+  svgNode('path', { d: lineD(1), fill: 'none', stroke: COL.greyBlue, 'stroke-dasharray': '4 3', 'stroke-width': 1.2 }, svg);
+  svgNode('path', { d: lineD(2), fill: 'none', stroke: COL.accent, 'stroke-dasharray': '4 3', 'stroke-width': 1.2 }, svg);
+  haloTex(svg, X3(KM) + 6, Y3(4 / (Math.PI * KM)), String.raw`$\frac{4}{\pi k}$`, { anchor: 'start', w: 50, size: 14, fill: COL.slate2 });
+  haloTex(svg, X3(KM) + 6, Y3(4 / (Math.PI * KM * KM)), String.raw`$\frac{4}{\pi k^2}$`, { anchor: 'start', w: 60, size: 14, fill: COL.accentDeep });
+  for (let q = 1; q <= KM; q += 2) {
+    const a = 4 / (Math.PI * q), b = a / q;
+    if (L.has('integrate') && q > 1) glowPath(svg, 'M' + X3(q).toFixed(1) + ' ' + Y3(a).toFixed(1) + ' L' + X3(q).toFixed(1) + ' ' + Y3(b).toFixed(1), 7);
+    if (L.has('dots')) glowDot(svg, X3(q), Y3(a), 7);
+    if (L.has('kink')) glowDot(svg, X3(q), Y3(b), 7);
+    if (q > 1) svgNode('line', { x1: X3(q), x2: X3(q), y1: Y3(a), y2: Y3(b), stroke: COL.soft2 }, svg);
+    svgNode('circle', { cx: X3(q).toFixed(1), cy: Y3(a).toFixed(1), r: 3.5, fill: COL.greyBlue, 'data-item': 'mark', 'data-id': 'b-' + q }, svg);
+    svgNode('circle', { cx: X3(q).toFixed(1), cy: Y3(b).toFixed(1), r: 3.5, fill: COL.accent, 'data-item': 'mark', 'data-id': 'abs-' + q }, svg);
+  }
+  if (odd) svgNode('circle', { cx: X3(k).toFixed(1), cy: Y3(4 / (Math.PI * k)).toFixed(1), r: 7, fill: 'none', stroke: COL.ink, 'stroke-width': 1.5, 'data-item': 'mark', 'data-id': 'this-k' }, svg);
+}
+function slideWhyDecay(widget, side) {
+  let k = 3, lit = '';
+  const sl = ctlSlider('k', 'frequency k', 1, 9, k, v => String(v), v => { k = v; update(); });
+  sl.label('$k$');
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'ctlrow', sl.el)],
+    draw: (svg, W, Hh) => drawWhyDecay(svg, W, Hh, k, lit),
+    legend: [
+      { color: 'var(--pal-grey-blue)', text: String.raw`grey-blue: $f$, its heights` },
+      { color: 'var(--pal-accent)', text: String.raw`blue: $|x|$, its heights` },
+      { color: 'var(--pal-fg)', text: String.raw`solid: $\sin kx$` },
+      { color: 'var(--pal-blue-pale)', chip: true, text: 'shaded: product' }],
+    readouts: [],
+    tests: [
+      String.raw`Set $k=1,2,3$: the picture reads $b_k=1.273$, $0$, $0.424$. Guess the rule, then test it at $k=5$.`,
+      String.raw`Count the humps of $\sin kx$ on $(0,\pi)$. Which ones does nothing cancel? Cases are evidence, not proof.`],
+    model: String.raw`On $(0,\pi)$, $\sin kx$ has $k$ humps, each $\frac{\pi}{k}$ wide with area $\frac{2}{k}$. Neighbours cancel; for odd $k$ one hump is left. A narrower hump holds less area: that is the $\frac1k$.` });
+  proofRight(side, {
+    id: 'jump-kink',
+    goal: { tex: String.raw`b_k=\frac{4}{\pi k}\ \ (k\text{ odd}),\qquad |x|:\ \frac{4}{\pi k^2}`,
+      words: String.raw`for the square wave $f$ ($1$ on $(0,\pi)$, $-1$ on $(-\pi,0)$), and for its running area $|x|$.` },
+    facts: [
+      { tex: String.raw`b_k=\tfrac1\pi\textstyle\int_{-\pi}^{\pi}f(x)\sin kx\,dx`, ref: 'steps 2, 5' }],
+    lines: [
+      { tex: String.raw`b_k=\tfrac2\pi\textstyle\int_0^{\pi}\sin kx\,dx`, move: 'Use symmetry',
+        why: String.raw`$f\sin kx$ is even: the left half equals the right, where $f=1$ (Primer · Waves, step 8)`,
+        choices: ['Change variables', 'Rearrange'], highlight: 'half' },
+      { tex: String.raw`b_k=\tfrac2\pi\cdot\frac{1-\cos k\pi}{k}`, move: 'Use an earlier result',
+        why: String.raw`$-\frac{\cos kx}{k}$ has slope $\sin kx$, so it gives the area (Integrals: area, step 6). The $\frac1k$ is born here`,
+        choices: ['Take a limit', 'Undo with the inverse'], highlight: 'humps' },
+      { tex: String.raw`b_k=\tfrac{4}{\pi k}\ (k\text{ odd}),\ \ 0\ (k\text{ even})`, move: 'Unfold the definition',
+        why: String.raw`$\cos k\pi$: $k$ half turns end at $-1$ or $1$`, choices: ['Compare or bound', 'Induction'], highlight: 'dots' },
+      { tex: String.raw`\textstyle\int_0^{x}\tfrac{4}{\pi k}\sin kt\,dt=\tfrac{4}{\pi k^2}(1-\cos kx)`, move: 'Use an earlier result',
+        why: String.raw`$-\frac{\cos kt}{k^2}$ has slope $\frac{\sin kt}{k}$, so it gives the area: the height divides by $k$ again`, choices: ['Rearrange', 'Undo with the inverse'], highlight: 'integrate' },
+      { tex: String.raw`|x|=\tfrac\pi2-\textstyle\sum_{k\,\mathrm{odd}}\tfrac{4}{\pi k^2}\cos kx`, move: 'Compute it two ways',
+        why: String.raw`$|x|=\int_0^xf\,dt$, the running area of $f$: add line 4 over odd $k$. A kink costs one more $k$`,
+        choices: ['Use symmetry', 'Name a piece'], highlight: 'kink' }],
+    lookBack: [
+      { q: String.raw`Why does $|x|$ have no sines, and $f$ no cosines?`,
+        a: String.raw`Line 1's move: $|x|\sin kx$ is odd, so its area over $[-\pi,\pi]$ is 0 (Primer · Waves, step 8); likewise $f\cos kx$. This is step 1's try 2.` },
+      { q: 'What about smoother shapes?',
+        a: String.raw`Each derivative without a jump earns one more $\frac1k$ (by parts, Primer · Integrals: techniques, step 5). The triangle of step 8 has a kink: $\frac1{k^2}$. $e^{\cos x}$ has no jump in any derivative, so its heights fall faster than any power.` },
+      { q: 'Does this explain the 9% overshoot?',
+        a: String.raw`No: the heights say how fast the gap shrinks on average, not at the worst point. The 9% needs a limit of the partial sums near the jump, not proved here; so does integrating a series term by term (line 5) in general. The constant $\frac\pi2$ in line 5 is the average of $|x|$.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    sl.show();
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 11: why the bars mirror (proof) ----------
+const MIR_IN = { default: U0, tone: DFT_IN.tone };
+function chainOf(u, k) {   // the arrows u_n e^{-i 2 pi k n / N} / N, head to tail from 0
+  const pts = [[0, 0]];
+  u.forEach((v, n) => { const a = -TAU * k * n / N, p = pts[n]; pts.push([p[0] + v / N * Math.cos(a), p[1] + v / N * Math.sin(a)]); });
+  return pts;
+}
+const fmtC = (re, im) => num(re) + (Math.abs(im) < 5e-4 ? '' : (im < 0 ? '-' : '+') + num(Math.abs(im)) + 'i');
+function drawWhyMirror(svg, W, H, u, k, lit) {
+  const L = litSet(lit), T = 30, kb = N - k;
+  const A = chainOf(u, k), Bc = chainOf(u, kb), ea = A[N], eb = Bc[N];
+  let n1 = 1;
+  while (n1 < N - 1 && Math.abs(u[n1]) < 1e-9) n1++;
+  const cap = L.has('chainB') ? String.raw`amber: the arrows of $U_{${kb}}$, turning $\frac{${kb}}{8}$ of a circle per sample`
+    : L.has('turns') ? String.raw`amber: arrow $n=${n1}$; $\frac{${kb}}{8}$ turn clockwise per step $=\frac{${k}}{8}$ counterclockwise`
+    : L.has('mirror') ? String.raw`amber: the mirror; each grey arrow mirrors a blue one`
+    : L.has('ends') ? String.raw`amber: the ends, both at distance $${num(Math.hypot(ea[0], ea[1]))}$ from $0$` : '';
+  picCaption(svg, W, cap, String.raw`blue: the arrows $\tfrac18u_ne^{-i2\pi kn/8}$ head to tail; grey: the same for $8-k$`);
+  let xmin = 0, xmax = 0.2, ymax = 0.25;
+  for (const p of A.concat(Bc)) { xmin = Math.min(xmin, p[0]); xmax = Math.max(xmax, p[0]); ymax = Math.max(ymax, Math.abs(p[1])); }
+  const LBW = 168;   // room on the right for the end labels
+  const spanX = xmax - xmin + 0.5, uu = Math.min((W - LBW - 20) / spanX, (H - T - 22) / (2 * ymax + 0.3));
+  const ox = (W - LBW - spanX * uu) / 2 + 0.25 * uu + 10, cy = T + 8 + (H - T - 8) / 2;
+  const P = p => [ox + (p[0] - xmin) * uu, cy - p[1] * uu];
+  const o = P([0, 0]);
+  if (L.has('mirror')) glowPath(svg, 'M4 ' + cy + ' L' + (W - 4) + ' ' + cy, 10);
+  svgNode('line', { x1: 4, x2: W - 4, y1: cy, y2: cy, stroke: COL.grey, 'stroke-dasharray': '5 4' }, svg);
+  svgNode('line', { x1: o[0], x2: o[0], y1: T + 6, y2: H - 4, stroke: COL.soft2 }, svg);
+  svgTex(svg, 6, cy + 13, 'real axis: the mirror', { anchor: 'start', w: 200, size: 14, fill: COL.muted });
+  const chainPath = c => polyD(c.map(P));
+  if (L.has('chainB')) glowPath(svg, chainPath(Bc), 10);
+  if (L.has('mirror')) { glowPath(svg, chainPath(Bc), 7); glowPath(svg, chainPath(A), 7); }
+  if (L.has('turns')) {
+    glowPath(svg, polyD([A[n1], A[n1 + 1]].map(P)), 11);
+    glowPath(svg, polyD([Bc[n1], Bc[n1 + 1]].map(P)), 11);
+  }
+  if (L.has('ends')) { glowPath(svg, polyD([[0, 0], ea].map(P)), 7); glowPath(svg, polyD([[0, 0], eb].map(P)), 7); glowDot(svg, ...P(ea), 10); glowDot(svg, ...P(eb), 10); }
+  [ea, eb].forEach(e => { const q = P(e); svgNode('line', { x1: o[0], y1: o[1], x2: q[0], y2: q[1], stroke: COL.grey, 'stroke-dasharray': '3 3' }, svg); });
+  for (let n = 0; n < N; n++) { const a = P(Bc[n]), b = P(Bc[n + 1]); arrow(svg, a[0], a[1], b[0], b[1], COL.greyBlue, 2.2, 'grey-' + n); }
+  for (let n = 0; n < N; n++) { const a = P(A[n]), b = P(A[n + 1]); arrow(svg, a[0], a[1], b[0], b[1], COL.accent, 2.2, 'blue-' + n); }
+  svgNode('circle', { cx: o[0], cy: o[1], r: 3.5, fill: COL.ink }, svg);
+  svgTex(svg, o[0] - 6, o[1] - 12, '$0$', { anchor: 'end', w: 20, size: 14 });
+  const qa = P(ea), qb = P(eb);
+  svgNode('circle', { cx: qb[0].toFixed(1), cy: qb[1].toFixed(1), r: 5, fill: COL.greyBlue, 'data-item': 'mark', 'data-id': 'end-grey' }, svg);
+  svgNode('circle', { cx: qa[0].toFixed(1), cy: qa[1].toFixed(1), r: 5, fill: COL.accent, 'data-item': 'mark', 'data-id': 'end-blue' }, svg);
+  if (Math.hypot(qa[0] - qb[0], qa[1] - qb[1]) < 6) {
+    haloTex(svg, qa[0] + 8, qa[1] - 14, String.raw`$U_{${k}}=U_{${kb}}=${fmtC(ea[0], ea[1])}$`, { anchor: 'start', w: LBW + 10, size: 15, fill: COL.ink });
+  } else {
+    const upA = ea[1] >= 0;
+    const lab = (q, dy, t, c) => haloTex(svg, q[0] + 8, q[1] + dy, t, { anchor: 'start', w: LBW + 10, size: 15, fill: c });
+    lab(qa, upA ? -14 : 14, String.raw`$U_{${k}}=${fmtC(ea[0], ea[1])}$`, COL.accentDeep);
+    lab(qb, upA ? 14 : -14, String.raw`$U_{${kb}}=${fmtC(eb[0], eb[1])}$`, COL.slate2);
+  }
+}
+function slideWhyMirror(widget, side) {
+  let inp = 'default', k = 1, lit = '';
+  const rowI = chipRow('input $u$', [['default', 'default'], ['tone', String.raw`one tone, $k=2$`]], inp, id => { inp = id; update(); }, 'mirror-input');
+  const sl = ctlSlider('k', 'frequency k', 1, 7, k, v => String(v), v => { k = v; update(); });
+  sl.label('$k$');
+  const plot = proofLeft(widget, {
+    controls: [hh('div', 'ctlrow', rowI.el, sl.el)],
+    draw: (svg, W, Hh) => drawWhyMirror(svg, W, Hh, MIR_IN[inp], k, lit),
+    legend: [
+      { color: 'var(--pal-accent)', text: String.raw`blue: arrows of $U_k$` },
+      { color: 'var(--pal-grey-blue)', text: String.raw`grey: arrows of $U_{8-k}$` },
+      { color: 'var(--pal-grey)', dash: true, text: 'dashed: the real axis, and each end' }],
+    readouts: [],
+    tests: [
+      String.raw`Set $k=1$: the blue chain ends at $U_1=0.905+0.125i$. Where will the grey chain for $U_7$ end? Guess, then look.`,
+      String.raw`Pick one tone and $k=2$: both chains end at $0.5$. Try $k=3$. Cases are evidence, not proof.`],
+    model: String.raw`Turning $8-k$ eighths of a circle one way is turning $k$ eighths the other way. So each arrow of $U_{8-k}$ is the mirror image of the matching arrow of $U_k$, and so are their sums.` });
+  proofRight(side, {
+    id: 'mirror-bars',
+    goal: { tex: String.raw`U_{N-k}=\overline{U_k},\ \text{ so }\ |U_{N-k}|=|U_k|`, words: String.raw`for real samples $u_n$ and every $k$.` },
+    facts: [
+      { tex: String.raw`U_k=\frac1N\sum_{n=0}^{N-1}u_n\,e^{-i2\pi kn/N}`, ref: 'step 10' },
+      { tex: String.raw`\overline{a+bi}=a-bi`, words: 'is its mirror image in the real axis' }],
+    lines: [
+      { tex: String.raw`U_{N-k}=\tfrac1N\textstyle\sum_n u_n\,e^{-i2\pi(N-k)n/N}`, move: 'Unfold the definition',
+        why: String.raw`put $N-k$ in place of $k$`, choices: ['Change variables', 'Name a piece'], highlight: 'chainB' },
+      { tex: String.raw`e^{-i2\pi(N-k)n/N}=e^{-i2\pi n}\,e^{i2\pi kn/N}=e^{i2\pi kn/N}`, move: 'Use an earlier result',
+        why: String.raw`angles add, and $e^{-i2\pi n}=1$: $n$ whole turns change nothing (Complex numbers, step 5)`, choices: ['Rearrange', 'Add zero or multiply by one'], highlight: 'turns' },
+      { tex: String.raw`U_{N-k}=\tfrac1N\textstyle\sum_n u_n\,\overline{e^{-i2\pi kn/N}}=\overline{U_k}`, move: 'Use symmetry',
+        why: String.raw`each arrow mirrors one of $U_k$; a real $u_n$ only stretches it`,
+        choices: ['Compute it two ways', 'Contradiction'], highlight: 'mirror' },
+      { tex: String.raw`|U_{N-k}|=\sqrt{a^2+(-b)^2}=\sqrt{a^2+b^2}=|U_k|`, move: 'Unfold the definition',
+        why: String.raw`with $U_k=a+bi$: a mirror image has the same length`, choices: ['Compare or bound', 'Take a limit'], highlight: 'ends' }],
+    lookBack: [
+      { q: String.raw`Where does the tone's $0.5$ at $k=2$ and $k=6$ come from?`,
+        a: String.raw`$\cos\frac{2\pi2n}{8}=\tfrac12e^{i2\pi2n/8}+\tfrac12e^{-i2\pi2n/8}$, two half arrows (Primer · Complex numbers, step 6), and line 2 turns $e^{-i2\pi2n/8}$ into $e^{i2\pi6n/8}$. The wave's height 1 splits into $U_2=U_6=\tfrac12$.` },
+      { q: String.raw`What about $k=0$ and $k=N/2$?`,
+        a: String.raw`Each is its own mirror image, so $U_0$ and $U_4$ are real. For the default input, $U_0=1.75$, the mean, and $U_4=\tfrac18\sum_n(-1)^nu_n=0.25$.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  function update() {
+    rowI.set(inp); sl.show();
+    plot.redraw();
+  }
+  update();
+}
+
+// ---------- step 12: why the FFT takes N log2 N steps (proof) ----------
+function fftRows(n) {   // each row splits every box into its even and odd positions
+  const rows = [[Array.from({ length: n }, (_, i) => i)]];
+  while (rows[rows.length - 1][0].length > 1)
+    rows.push(rows[rows.length - 1].flatMap(b => [b.filter((_, i) => i % 2 === 0), b.filter((_, i) => i % 2 === 1)]));
+  return rows;
+}
+function drawWhyFFT(svg, W, H, n, lit) {
+  const L = litSet(lit), T = 30, rows = fftRows(n), lev = rows.length - 1, RR = 150;
+  const cap = L.has('split') ? String.raw`amber: the sum over all samples, split into even and odd $n$`
+    : L.has('halves') ? String.raw`amber: two sums of the same kind, each over ${n / 2} samples`
+    : L.has('share') ? String.raw`amber: outputs $k$ and $k+${n / 2}$ use the same $E_k$ and $O_k$`
+    : L.has('join') ? String.raw`amber: joining the two halves: one step per output, $${n}$ in all`
+    : L.has('levels') ? String.raw`amber: $${lev}$ rows to join, $${n}$ steps each: $${lev}\times${n}=${lev * n}$` : '';
+  picCaption(svg, W, cap, String.raw`the samples split into even and odd, again and again; right: the cost`);
+  const x0 = 6, TW = W - RR - x0, rowH = (H - T - 2) / (lev + 2), bh = Math.min(28, rowH - 8);
+  const rowY = r => T + 2 + (r + 1) * rowH + (rowH - bh) / 2;   // r = -1 is the outputs strip
+  // Outputs strip: the N values N U_k.
+  const sy = rowY(-1), cw = TW / n;
+  if (L.has('share')) { glowBox(svg, x0, sy, TW / 2 - 4, bh, 3); glowBox(svg, x0 + TW / 2 + 4, sy, TW / 2 - 4, bh, 3); }
+  for (let q = 0; q < n; q++) {
+    svgNode('rect', { x: x0 + q * cw + 1, y: sy, width: cw - 2, height: bh, rx: 3, fill: q < n / 2 ? COL.accentSoft : COL.softHover, stroke: COL.guide, 'data-item': 'mark', 'data-id': 'out-' + q }, svg);
+    svgText(svg, x0 + (q + 0.5) * cw, sy + bh / 2 + 5, String(q), { 'text-anchor': 'middle', 'font-size': 13, fill: COL.text2 });
+  }
+  svgTex(svg, W - 2, sy + bh / 2, String.raw`outputs $NU_k$`, { anchor: 'end', w: RR - 8, size: 14 });
+  // The tree of splits.
+  rows.forEach((boxes, r) => {
+    const y = rowY(r), slot = TW / boxes.length;
+    boxes.forEach((b, i) => {
+      const bx = x0 + i * slot + 2, bwid = slot - 4;
+      if (r > 0) {
+        const py = rowY(r - 1) + bh, px = x0 + (Math.floor(i / 2) + 0.5) * (TW / rows[r - 1].length);
+        svgNode('line', { x1: px, y1: py, x2: bx + bwid / 2, y2: y, stroke: COL.guide }, svg);
+      }
+      if ((L.has('split') && r === 0) || (L.has('halves') && r === 1)) glowBox(svg, bx, y, bwid, bh, 3);
+      const fill = r === 1 ? (i === 0 ? COL.accentTint : COL.soft) : COL.panel;
+      svgNode('rect', { x: bx, y: y, width: bwid, height: bh, rx: 4, fill: fill, stroke: COL.grey, 'data-item': 'mark', 'data-id': 'box-' + r + '-' + i }, svg);
+      const txt = b.join(' ');
+      if (r === 1) svgTex(svg, bx + bwid / 2, y + bh / 2, (i === 0 ? '$E$: ' : '$O$: ') + txt, { w: bwid, size: 13, fill: COL.fg });
+      else svgText(svg, bx + bwid / 2, y + bh / 2 + 5, txt, { 'text-anchor': 'middle', 'font-size': 13, fill: COL.fg });
+    });
+    if (r > 0) {   // joining row r back into row r-1 costs one step per output
+      const ly = (rowY(r - 1) + bh + rowY(r)) / 2;
+      if (L.has('levels') || (L.has('join') && r === 1)) glowBox(svg, W - RR + 10, ly - 10, RR - 14, 20, 1);
+      svgText(svg, W - 6, ly + 5, 'join: ' + n + ' steps', { 'text-anchor': 'end', 'font-size': 14, fill: COL.ink });
+    }
+  });
+}
+function slideWhyFFT(widget, side) {
+  let n = 8, lit = '';
+  const rowN = chipRow('samples $N$', [[4, '4'], [8, '8'], [16, '16']], n, id => { n = id; update(); }, 'fft-n');
+  const rD = readout('direct', String.raw`direct sums: $N^2$`);
+  const rF = readout('fft', String.raw`FFT: $N\log_2N$`);
+  const rR = readout('ratio', String.raw`ratio $N/\log_2N$`);
+  const plot = proofLeft(widget, {
+    controls: [rowN.el],
+    draw: (svg, W, Hh) => drawWhyFFT(svg, W, Hh, n, lit),
+    legend: [
+      { color: 'var(--pal-accent-tint)', chip: true, text: String.raw`$E$: the even samples` },
+      { color: 'var(--pal-soft)', chip: true, text: String.raw`$O$: the odd samples` },
+      { color: 'var(--pal-guide)', text: 'lines: each box splits in two' }],
+    readouts: [rD, rF, rR],
+    tests: [
+      String.raw`Pick $N=8$: the samples split 3 times, down to single samples. Joining each row back costs 8 steps. Guess the total for $N=16$, then pick it.`,
+      String.raw`At $N=16$, compare the readouts: $64$ against $256$. Cases are evidence, not proof.`],
+    model: String.raw`Split the samples into even and odd, then split each half again, until single samples are left: $\log_2N$ rows. Joining one row back costs one multiply-add per output, $N$ in all.` });
+  proofRight(side, {
+    id: 'fft-count',
+    goal: { tex: String.raw`T(N)=N\log_2N`, words: String.raw`for $N$ a power of 2; direct sums take $N^2$.` },
+    facts: [
+      { tex: String.raw`NU_k=\textstyle\sum_nu_n\,w^{nk}`, words: String.raw`with $w=e^{-i2\pi/N}$`, ref: 'step 10' },
+      { words: String.raw`$\log_2N$ halvings take $N$ to 1`, ref: 'Primer · Logarithms, step 1' }],
+    lines: [
+      { tex: String.raw`NU_k=\textstyle\sum_mu_{2m}w^{2mk}+\sum_mu_{2m+1}w^{(2m+1)k}`, move: 'Rearrange',
+        why: String.raw`split into even samples $n=2m$ and odd samples $n=2m+1$`, choices: ['Telescope', 'Use symmetry'], highlight: 'split' },
+      { tex: String.raw`NU_k=E_k+w^k\,O_k`, move: 'Name a piece',
+        why: String.raw`$E_k=\sum_mu_{2m}(w^2)^{mk}$, the same sum for $\frac N2$ samples, as $w^2=e^{-i2\pi/(N/2)}$; $O_k$ alike`,
+        choices: ['Change variables', 'Unfold the definition'], highlight: 'halves' },
+      { tex: String.raw`E_{k+N/2}=E_k,\ \ O_{k+N/2}=O_k`, move: 'Use an earlier result',
+        why: String.raw`the extra factor is $(w^2)^{mN/2}=1$, whole turns (Complex numbers, step 5): $\frac N2$ values serve all $N$ outputs`, choices: ['Use symmetry', 'Add zero or multiply by one'], highlight: 'share' },
+      { tex: String.raw`T(N)=2\,T(\tfrac N2)+N,\ \ T(1)=0`, move: 'Name a piece',
+        why: String.raw`$T(N)$: steps (a multiply and an add) for $N$ samples: two halves, then one per output`,
+        choices: ['Compute it two ways', 'Rearrange'], highlight: 'join' },
+      { tex: String.raw`T(N)=N\log_2N`, move: 'Induction',
+        why: String.raw`true at $N=1$; if true at $\frac N2$, $T(N)=N(\log_2N-1)+N$`, choices: ['Telescope', 'Take a limit'], highlight: 'levels' }],
+    lookBack: [
+      { q: String.raw`Where are the $N\log_2N$ steps in the picture?`,
+        a: String.raw`$\log_2N$ rows of splitting, and $N$ steps to join each row back. $N=8$: 3 rows of 8, 24 steps against 64. $N=1024$: about 100 times fewer than $N^2$.` },
+      { q: String.raw`What if $N$ is not a power of 2?`,
+        a: String.raw`Line 1 needs an even count at every level. Splitting into 3 or 5 parts works the same way, with a few more steps per row, so any $N$ made of small factors stays fast: $10000=2^4\cdot5^4$.` }] },
+    plot, key => { lit = key || ''; plot.redraw(); });
+  side.querySelector('fl-proof-steps').primerMoves = PRIMER_MOVES;
+  side.querySelector('fl-proof-steps').endNote = NEXT;
+  function update() {
+    rowN.set(n);
+    rD.set(fmtCount(n * n)); rF.set(fmtCount(n * Math.log2(n))); rR.set(String(+(n / Math.log2(n)).toFixed(1)));
+    plot.redraw();
+  }
+  update();
+}
+// The view's close. The primer's last proof lists every move the primer's proofs used, in order of first
+// use, once it is proved, so the list never gives a pick away; the last step names what comes next.
+const PRIMER_MOVES = ['Unfold the definition', 'Use an earlier result', 'Name a piece', 'Compare or bound', 'Rearrange', 'Use symmetry', 'Compute it two ways', 'Induction'];
+const NEXT = 'Next: Primer · Signals: filters.';
+
+// ---------- frame ----------
+const SLIDES = [
+  { id: 'shape', title: 'A few waves add up to a shape',
+    tag: 'Used in L14 07:23, 37:36–38:38 · L7 14:33',
+    question: 'What is a Fourier series, and why build a shape from waves?', mount: slideShape },
+  { id: 'orthogonal', title: 'Waves at different frequencies are perpendicular',
+    tag: 'Used in L14 39:11 · L16 07:21–08:59',
+    question: 'Why can each frequency be measured on its own?', mount: slideOrth },
+  { id: 'why-orthogonal', proof: true, title: String.raw`Why it's true: $\cos k\cdot\cos m=0$`,
+    tag: 'Used in L14 39:11 · L16 07:21–08:59',
+    question: String.raw`Why do different waves give dot product $0$?`, mount: slideWhyOrth },
+  { id: 'projection', title: 'A coefficient is a projection',
+    tag: 'Used in L14 40:13 · L16 01:06, 08:27',
+    question: 'How do you find how much of each frequency a signal holds?', mount: slideProj },
+  { id: 'why-projection', proof: true, title: String.raw`Why it's true: $a_k=\frac{u\cdot\cos k}{\cos k\cdot\cos k}$`,
+    tag: 'Used in L14 40:13 · L16 01:06, 08:27',
+    question: 'Why does one dot product find one weight?', mount: slideWhyProj },
+  { id: 'least-squares', title: 'Least squares: a cut-off series is the best fit',
+    tag: 'Used in L14 41:15 · L15 13:55',
+    question: 'Why is a cut-off Fourier series the best fit?', mount: slideLS },
+  { id: 'why-best-fit', proof: true, title: "Why it's true: a cut-off series is the best fit",
+    tag: 'Used in L14 41:15 · L15 13:55',
+    question: 'Why do the coefficients stay put as waves are added?', mount: slideWhyFit },
+  { id: 'smoothness', title: 'Smoother functions need fewer terms',
+    tag: 'Used in L15 15:25–18:37, 31:45 · L23 28:24',
+    question: 'What sets how many terms a function needs?', mount: slideSmooth },
+  { id: 'why-decay', proof: true, title: String.raw`Why it's true: a jump gives $\frac{1}{k}$, a kink $\frac{1}{k^2}$`,
+    tag: 'Used in L15 15:25–18:37, 31:45 · L23 28:24',
+    question: String.raw`Where does the $\frac{1}{k}$ come from, and why $\frac{1}{k^2}$ for a kink?`, mount: slideWhyDecay },
+  { id: 'discrete', title: 'N samples give N frequency sizes',
+    tag: 'Used in L16 07:55–09:30 · L16 14:16 · L16 15:49–17:24',
+    question: 'How many numbers does a record of $N$ samples give, and how fast can you find them?', mount: slideDiscrete },
+  { id: 'why-mirror', proof: true, title: String.raw`Why it's true: $|U_{N-k}|=|U_k|$`,
+    tag: 'Used in L16 08:27 · L16 17:55',
+    question: String.raw`Why do the bars past $k=N/2$ copy the first half?`, mount: slideWhyMirror },
+  { id: 'why-fft', proof: true, title: String.raw`Why it's true: the FFT takes $N\log_2N$ steps`,
+    tag: 'Used in L16 09:30 · L16 14:16–14:47',
+    question: 'Why does halving again and again save work?', mount: slideWhyFFT },
+];
+
+let cur = 0, shownId = null, endSent = false;
+function goTo(i) {
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i));
+  const s = SLIDES[cur];
+  if (shownId !== null && shownId !== s.id) emit('view.step', { step: s.id });
+  shownId = s.id;
+  const stage = $('#stage');
+  stage.innerHTML = '';
+  const widget = h('div', 'widget');
+  const side = hh('div', 'side',
+    h('div', 'tag', s.tag),
+    setTex(h('h2'), s.title),
+    setTex(h('p', 'question'), s.question));
+  const sec = mark(h('section', 'slide' + (s.proof ? ' proof-slide' : '')), 'step', s.id, s.title.replace(/\$/g, ''));
+  sec.append(widget, side);
+  stage.append(sec);
+  stage.scrollTop = 0;
+  PLOTS = [];
+  s.mount(widget, side);
+  if (cur === SLIDES.length - 1 && !endSent) { endSent = true; emit('view.action', { action: 'deck-end' }); }
+  tex(sec);
+  $('#prev').disabled = cur === 0;
+  $('#next').disabled = cur === SLIDES.length - 1;
+  $('#count').textContent = 'step ' + (cur + 1) + ' of ' + SLIDES.length;
+  [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+}
+// A cue is a state: go to the named step, and do nothing if it is already shown.
+function onCue(msg) {
+  if (!msg || typeof msg.step !== 'string') return;
+  const i = SLIDES.findIndex(s => s.id === msg.step);
+  if (i >= 0 && i !== cur) goTo(i);
+}
+(function init() {
+  const dots = $('#dots');
+  SLIDES.forEach((s, i) => {
+    const b = h('button');
+    b.setAttribute('aria-label', 'Go to step ' + (i + 1));
+    b.title = s.title.replace(/\$/g, '');
+    b.addEventListener('click', () => goTo(i));
+    dots.appendChild(b);
+  });
+  $('#prev').addEventListener('click', () => goTo(cur - 1));
+  $('#next').addEventListener('click', () => goTo(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.matches && e.target.matches('input[type=range],input[type=text],textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+  });
+  goTo(0);
+  if (window.fluid && typeof window.fluid.onCue === 'function') window.fluid.onCue(onCue);
+})();
+</script>
+</body>
+</html>
