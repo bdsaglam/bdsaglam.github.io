@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reading Links · Barış Deniz Sağlam</title>
+  <link rel="stylesheet" href="../../fonts/fonts.css">
+  <style>
+    :root { color-scheme: light; --bg: #fefbf4; --fg: #1c1e21; --muted: #5e636a; --line: #e4dfd3; --accent: #2346a0; --card: #faf6ec; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font: 1rem/1.65 "Fira Sans", system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+    main { width: min(64rem, calc(100% - 3rem)); margin: 3rem auto 5rem; }
+    .crumb { font-size: .9rem; color: var(--muted); margin: 0 0 .6rem; }
+    .crumb a { color: var(--accent); text-decoration: none; }
+    .crumb a:hover { text-decoration: underline; }
+    h1, h2 { font-family: "JetBrains Mono", monospace; font-weight: 500; line-height: 1.3; }
+    h1 { margin: 0 0 .5rem; font-size: 1.85rem; }
+    .lede { margin: 0 0 1.4rem; color: var(--muted); font-size: 1.02rem; }
+    .toc { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 2.2rem; padding: 12px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+    .toc a { font-size: .84rem; color: var(--accent); text-decoration: none; padding: 2px 8px; border-radius: 6px; background: #fff; border: 1px solid var(--line); }
+    .toc a:hover { border-color: var(--accent); }
+    h2 { margin: 2.6rem 0 .9rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 1.15rem; scroll-margin-top: 16px; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .card { display: flex; flex-direction: column; gap: 7px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; transition: border-color .15s ease, background-color .15s ease; }
+    .card:hover { border-color: #c8c0ae; background: #fff; }
+    .card-head { display: flex; align-items: center; gap: 10px; }
+    .card-head img.fav { width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0; object-fit: contain; background: #fff; }
+    .card-head a.title { font-weight: 600; font-size: .96rem; line-height: 1.35; color: var(--accent); text-decoration: none; }
+    .card-head a.title:hover { text-decoration: underline; }
+    .card-head .tier { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: .72rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; flex-shrink: 0; }
+    .tier-s { background: #e3f2e8; color: #166534; }
+    .tier-a { background: #fef0c7; color: #92400e; }
+    .tier-b { background: #ece8de; color: #52504a; }
+    .card-covers { margin: 0; font-size: .88rem; line-height: 1.5; color: var(--fg); }
+    .card-meta { margin: 0; font-size: .82rem; line-height: 1.45; color: var(--muted); }
+    .card-also { margin: 2px 0 0; font-size: .82rem; color: var(--muted); }
+    .card-also a { color: var(--accent); text-decoration: none; }
+    .card-also a:hover { text-decoration: underline; }
+    @media (max-width: 680px) { main { margin: 2rem auto 3.5rem; } .card-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="crumb"><a href="../../">Home</a> / <a href="../">Materials</a></p>
+    <h1>Reading Links</h1>
+    <p class="lede">Tiered blogs, publications, and research utilities across science, philosophy, AI, systems, and strategy.</p>
+    <nav class="toc" aria-label="Categories"><a href="#science">1. Science, Math &amp; Physics</a> <a href="#philosophy">2. Philosophy, Futurism &amp; Progress</a> <a href="#essays">3. Essays, Rationality &amp; Mental Models</a> <a href="#writing">4. Technical Writing, Design &amp; Visualization</a> <a href="#ai-ml">5. AI, ML &amp; Research</a> <a href="#ai-safety">6. AI Safety, Alignment &amp; Evaluations</a> <a href="#swe">7. Software Engineering &amp; Systems</a> <a href="#hardware">8. Hardware, Chips &amp; AI Infrastructure</a> <a href="#strategy">9. Startups, Product &amp; Tech Strategy</a> <a href="#tools">10. Research Tools, Aggregators &amp; Publishers</a></nav>
+    <h2 id="science">1. Science, Math &amp; Physics</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.feynmanlectures.caltech.edu&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://www.feynmanlectures.caltech.edu/">The Feynman Lectures on Physics</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Mechanics, electromagnetism, quantum mechanics, and physical intuition from first principles.</p>
+<p class="card-meta">Richard Feynman (Nobel laureate in physics); Caltech's free online edition of his canonical undergraduate lectures.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=betterexplained.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://betterexplained.com/">BetterExplained</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Calculus, linear algebra, imaginary numbers, and probability through visual and intuitive analogies.</p>
+<p class="card-meta">Kalid Azad; focuses on building mental models of math concepts before formal symbol manipulation.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.3blue1brown.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.3blue1brown.com/">3Blue1Brown</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Linear algebra, calculus, differential equations, neural networks, and information theory.</p>
+<p class="card-meta">Grant Sanderson; creator of the Manim animation engine, known for visual geometric proofs.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.quantamagazine.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.quantamagazine.org/">Quanta Magazine</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Research breakthroughs in mathematics, theoretical physics, theoretical computer science, and biology.</p>
+<p class="card-meta">Editorially independent science publication funded by the Simons Foundation; rigorous yet accessible reporting on active research.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=terrytao.wordpress.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://terrytao.wordpress.com/">What's new</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Analysis, combinatorics, PDEs, random matrices, and mathematical exposition.</p>
+<p class="card-meta">Terence Tao (UCLA professor, Fields Medalist); mixes research updates, expository notes, and career advice for mathematicians.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=theoreticalminimum.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://theoreticalminimum.com/">The Theoretical Minimum</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Classical mechanics, quantum mechanics, special relativity, and statistical mechanics.</p>
+<p class="card-meta">Leonard Susskind (Stanford physicist, co-founder of string theory); bridges popular science and graduate-level physics.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=simons.berkeley.edu&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://simons.berkeley.edu/workshop-symposia">Simons Institute — Workshops &amp; Symposia</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Theoretical computer science, machine learning theory, complexity, and optimization.</p>
+<p class="card-meta">UC Berkeley's premier theory institute; hosts recorded semester-long workshops and talks by leading researchers.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=nautil.us&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://nautil.us/">Nautilus</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Cross-disciplinary essays connecting physics, neuroscience, biology, and philosophy.</p>
+<p class="card-meta">Long-form science magazine organized around monthly thematic issues.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.youtube.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.youtube.com/watch?v=udSXJ6z6aaM&amp;list=PLAwxTw4SYaPlh6Q9KI7YtD3R6V2Ahf4-7">Landmarks in Physics (YouTube)</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Introductory physics structured around historical experiments and breakthroughs.</p>
+<p class="card-meta">Udacity course playlist teaching classical physics through landmark discoveries.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.scientificamerican.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://www.scientificamerican.com/">Scientific American</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">General science news, health, climate, physics, and technology.</p>
+<p class="card-meta">Oldest continuously published US monthly science magazine; broad coverage for general readers.</p>
+</div>
+</div>
+
+<h2 id="philosophy">2. Philosophy, Futurism &amp; Progress</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=plato.stanford.edu&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://plato.stanford.edu/">Stanford Encyclopedia of Philosophy</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Epistemology, metaphysics, logic, ethics, philosophy of mind, and philosophy of science.</p>
+<p class="card-meta">Dynamic, peer-reviewed academic reference maintained by Stanford University; the standard starting point for philosophical literature.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=worksinprogress.co&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://worksinprogress.co/">Works in Progress</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">History of science, technological bottlenecks, urbanism, institutions, and economic growth.</p>
+<p class="card-meta">Online magazine (Stripe Press) publishing deeply researched essays on why and how human progress happens.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=rootsofprogress.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://rootsofprogress.org/">Roots of Progress</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Industrial history, invention, scientific method, and the philosophy of progress.</p>
+<p class="card-meta">Jason Crawford; founder of The Roots of Progress Institute, examining historical breakthroughs from metallurgy to computing.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=ourworldindata.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://ourworldindata.org/">Our World in Data</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Long-run empirical data on energy, technology, health, poverty, education, and AI.</p>
+<p class="card-meta">Max Roser and Oxford researchers; open-access charts and research articles on global living standards.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=nickbostrom.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://nickbostrom.com/">Nick Bostrom</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Existential risk, superintelligence, anthropic reasoning, simulation argument, and technological governance.</p>
+<p class="card-meta">Oxford philosopher and author of <em>Superintelligence</em>; foundational papers on long-term AI and civilization trajectories.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=aeon.co&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://aeon.co/">Aeon</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Philosophy, psychology, culture, and the history of ideas.</p>
+<p class="card-meta">Digital magazine known for thoughtful long-form essays by academics and public intellectuals.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=asteriskmag.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://asteriskmag.com/">Asterisk Magazine</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Forecasting, biosecurity, AI policy, global health, and effective altruism.</p>
+<p class="card-meta">Quarterly journal combining rigorous quantitative analysis with narrative essays on neglected global problems.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=press.asimov.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://press.asimov.com/">Asimov Press</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Biotechnology, synthetic biology, longevity, and scientific infrastructure.</p>
+<p class="card-meta">Publishing house and magazine focused on metascience and biological progress.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=iep.utm.edu&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://iep.utm.edu/">Internet Encyclopedia of Philosophy</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">All major areas of philosophy, logic, and key historical figures.</p>
+<p class="card-meta">Peer-reviewed academic reference; often more introductory and accessible than SEP.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=marginalrevolution.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://marginalrevolution.com/">Marginal Revolution</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Economics, technology, books, AI, and global culture.</p>
+<p class="card-meta">Tyler Cowen and Alex Tabarrok (George Mason economists); daily high-frequency links and commentary.</p>
+</div>
+</div>
+
+<h2 id="essays">3. Essays, Rationality &amp; Mental Models</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.gwern.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.gwern.net/index">Gwern.net</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">AI scaling laws, statistics, spaced repetition, genetics, economics, and self-experimentation.</p>
+<p class="card-meta">Gwern Branwen; known for exhaustive, heavily footnoted empirical investigations and early scaling analyses.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=waitbutwhy.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://waitbutwhy.com/">Wait But Why</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">AI, spaceflight, neuroscience, procrastination, and big-picture human history.</p>
+<p class="card-meta">Tim Urban; famous for stick-figure illustrations and deeply researched, accessible deep dives.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=paulgraham.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://paulgraham.com/articles.html">Paul Graham — Essays</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Startups, clear writing, independent thinking, programming languages, and wealth creation.</p>
+<p class="card-meta">Co-founder of Y Combinator and Viaweb; benchmark for plain, direct essay prose.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.astralcodexten.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.astralcodexten.com/">Astral Codex Ten</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Psychiatry, statistics, book reviews, forecasting, and rationality.</p>
+<p class="card-meta">Scott Alexander (psychiatrist, formerly Slate Star Codex); known for steelmanning opposing arguments and Bayesian reasoning.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=fs.blog&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://fs.blog/blog/">Farnam Street</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Mental models, decision-making, reading, and multidisciplinary thinking.</p>
+<p class="card-meta">Shane Parrish; distills timeless principles from philosophy, physics, and investing (inspired by Charlie Munger).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.kalzumeus.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.kalzumeus.com/archive/">Patrick McKenzie (kalzumeus)</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Software business mechanics, career negotiation, pricing, and financial infrastructure.</p>
+<p class="card-meta">Patrick McKenzie (patio11, Stripe); famous for pragmatic, insider essays on how software businesses and institutions actually work.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.ribbonfarm.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.ribbonfarm.com/">ribbonfarm</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Organizational dynamics, systems thinking, legibility, and long-term tech strategy.</p>
+<p class="card-meta">Venkatesh Rao; known for frameworks like The Gervais Principle and Tempo.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.lesswrong.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.lesswrong.com/">LessWrong 2.0</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Rationality, decision theory, Bayesianism, and AI alignment.</p>
+<p class="card-meta">Community forum founded by Eliezer Yudkowsky; high-density technical and philosophical discussions on AI risk and epistemology.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.calnewport.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://www.calnewport.com/blog/">Study Hacks</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Deep work, academic productivity, attention management, and career craftsmanship.</p>
+<p class="card-meta">Cal Newport (Georgetown CS professor, author of <em>Deep Work</em>).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=news.ycombinator.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://news.ycombinator.com/item?id=15155833">Ask HN: Books that shaped mental models</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Curated book recommendations on systems thinking, epistemology, and decision-making.</p>
+<p class="card-meta">High-signal Hacker News community thread.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=masonjwang.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://masonjwang.com/bookshelf">Mason Wang — Bookshelf</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Reading notes, book summaries, and productivity reflections.</p>
+<p class="card-meta">Mason Wang; concise notes across technical and non-fiction books.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.bzarg.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.bzarg.com/">Bzarg</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Robotics, Kalman filters, science, and future technology.</p>
+<p class="card-meta">Tim Babb; famous for intuitive visual explanations like "How a Kalman filter works, in pictures."</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.anishathalye.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.anishathalye.com/2015/03/07/designing-a-better-judging-system/">Designing a Better Judging System</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Pairwise comparison algorithms and hackathon judging design.</p>
+<p class="card-meta">Anish Athalye (MIT CSAIL); practical application of ranking theory.</p>
+</div>
+</div>
+
+<h2 id="writing">4. Technical Writing, Design &amp; Visualization</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=distill.pub&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://distill.pub/">Distill</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Interactive, visual explanations of machine learning concepts (attention, circuits, momentum, GNNs).</p>
+<p class="card-meta">Peer-reviewed ML journal co-founded by Chris Olah and Shan Carter; set the gold standard for interactive scientific publishing.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.edwardtufte.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.edwardtufte.com/tufte/">Edward Tufte</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Information design, statistical graphics, and visual clarity.</p>
+<p class="card-meta">Yale professor emeritus and pioneer of data visualization (<em>The Visual Display of Quantitative Information</em>).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=diataxis.fr&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://diataxis.fr/">Diátaxis Documentation Framework</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Four-quadrant documentation architecture: tutorials, how-to guides, reference, and explanation.</p>
+<p class="card-meta">Daniele Procida; widely adopted standard for structuring technical docs.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=grantslatton.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://grantslatton.com/">Grant Slatton</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Technical design documents, writing complex software, and systems engineering.</p>
+<p class="card-meta">Staff engineer; known for crisp, opinionated essays on engineering clarity.</p>
+</div>
+</div>
+
+<h2 id="ai-ml">5. AI, ML &amp; Research</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.incompleteideas.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://www.incompleteideas.net/">Rich Sutton's Home Page</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Reinforcement learning foundations, continual learning, and the bitter lesson of compute vs. hand-crafted priors.</p>
+<p class="card-meta">Richard Sutton (Turing Award laureate, co-author of <em>Reinforcement Learning: An Introduction</em>).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=karpathy.github.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://karpathy.github.io/">Andrej Karpathy blog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Deep learning mechanics, RNNs, Software 2.0, neural net debugging recipes, and LLM internals.</p>
+<p class="card-meta">Founding member of OpenAI, former Director of AI at Tesla; renowned for clear, code-first pedagogy.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=colah.github.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://colah.github.io/">colah's blog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Neural network geometry, LSTMs, information theory, and mechanistic interpretability.</p>
+<p class="card-meta">Christopher Olah (Anthropic co-founder, Distill co-founder); seminal visual intuition for deep learning.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=lilianweng.github.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://lilianweng.github.io/lil-log/">Lil'Log</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Comprehensive literature surveys on RL, diffusion models, LLM agents, hallucination, and test-time compute.</p>
+<p class="card-meta">Lilian Weng (former VP of Safety Systems at OpenAI); go-to technical reference for rapid field onboarding.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=evjang.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://evjang.com/">Eric Jang</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Generalization, robotics, embodied AI, and research methodology.</p>
+<p class="card-meta">VP of AI at 1X, ex-Google Brain; known for "Just Ask for Generalization" and practical ML research essays.</p>
+<p class="card-also">Also: <a href="https://blog.evjang.com/">Old blog (blog.evjang.com)</a></p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=jalammar.github.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://jalammar.github.io/">Jay Alammar</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Visual step-by-step walkthroughs of Transformers, BERT, GPT, Word2Vec, and Stable Diffusion.</p>
+<p class="card-meta">Director of Engineering at Cohere; co-author of <em>Hands-On Large Language Models</em>.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=magazine.sebastianraschka.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://magazine.sebastianraschka.com/">Sebastian Raschka — Ahead of AI</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">LLM architectures, post-training, reasoning models, and paper deep dives.</p>
+<p class="card-meta">ML researcher and author of <em>Build a Large Language Model (From Scratch)</em>.</p>
+<p class="card-also">Also: <a href="https://sebastianraschka.com/">sebastianraschka.com</a></p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.anthropic.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.anthropic.com/engineering">Anthropic — Engineering</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Production agent architectures, tool use, context engineering, and evals.</p>
+<p class="card-meta">Anthropic's engineering team sharing concrete lessons from building Claude and Claude Code.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=thinkingmachines.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://thinkingmachines.ai/blog">Thinking Machines — Connectionism</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">LLM inference determinism, RL systems, and frontier model training.</p>
+<p class="card-meta">Research blog from Thinking Machines Lab (Mira Murati, John Schulman, Barret Zoph, et al.).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=joschu.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://joschu.net/blog.html">John Schulman's Blog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Policy gradients, RL theory, and practical ML research habits ("An Opinionated Guide to ML Research").</p>
+<p class="card-meta">Co-founder of OpenAI, inventor of PPO and TRPO.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=sander.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://sander.ai/posts/">Sander Dieleman</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Diffusion models, generative modeling, audio/image synthesis, and training dynamics.</p>
+<p class="card-meta">Staff research scientist at Google DeepMind (WaveNet, diffusion models).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=rush-nlp.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://rush-nlp.com/">Sasha Rush</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">NLP, structured prediction, Transformers, GPU programming (Triton/CUDA), and state-space models.</p>
+<p class="card-meta">Cornell Tech professor; creator of The Annotated Transformer and Tensor Puzzles.</p>
+<p class="card-also">Also: <a href="https://www.youtube.com/@srush_nlp">Sasha Rush on YouTube</a></p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=huyenchip.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://huyenchip.com/blog/">Chip Huyen</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">ML systems design, AI engineering, agents, and data-centric ML.</p>
+<p class="card-meta">Author of <em>Designing Machine Learning Systems</em> and <em>AI Engineering</em>.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=eugeneyan.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://eugeneyan.com/">Eugene Yan</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Applied ML, recommender systems, LLM evals, and production ML patterns.</p>
+<p class="card-meta">Principal Applied Scientist at Amazon; writes pragmatic, experience-backed engineering notes.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=thegradient.pub&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://thegradient.pub/">The Gradient</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Long-form AI research retrospectives, field syntheses, and researcher interviews.</p>
+<p class="card-meta">Digital magazine run by Stanford/AI researchers bridging academic papers and broader trends.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.fast.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.fast.ai/">fast.ai</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Practical deep learning, top-down ML pedagogy, and open-source AI tooling.</p>
+<p class="card-meta">Jeremy Howard and Rachel Thomas; pioneers of accessible, code-first deep learning education.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.interconnects.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.interconnects.ai/">Interconnects</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">RLHF, post-training, open-weights models, and AI research ecosystem analysis.</p>
+<p class="card-meta">Nathan Lambert (Ai2 RLHF lead, author of <em>RLHF Book</em>).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=norvig.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://norvig.com/">Peter Norvig</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Classic AI algorithms, Python problem-solving, and programming mastery.</p>
+<p class="card-meta">Co-author of <em>Artificial Intelligence: A Modern Approach</em>, former Director of Research at Google.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=yosinski.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://yosinski.com/">Jason Yosinski</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Deep learning visualization, transfer learning, and AI research.</p>
+<p class="card-meta">Co-founder of ML Collective and Windscape AI, ex-Uber AI Labs.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=rockt.github.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://rockt.github.io/2018/08/29/msc-advice">Tim Rocktäschel</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Open-endedness, RL, and practical advice for ML theses and research.</p>
+<p class="card-meta">UCL professor and Google DeepMind research scientist.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=stanford.edu&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://stanford.edu/~shervine/">Shervine Amidi</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Concise visual cheatsheets for Stanford CS 229, CS 230, CS 221, and CME 102.</p>
+<p class="card-meta">Stanford/MIT alumnus; widely used ML/deep learning quick-reference sheets.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=aman.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://aman.ai/">Aman's AI Journal</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Structured primers on Transformers, diffusion, RL, and curated paper lists.</p>
+<p class="card-meta">Aman Chadha; broad, well-organized CS/AI study notes.</p>
+<p class="card-also">Also: <a href="https://aman.ai/papers/">Papers List</a></p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.julian.ac&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.julian.ac/">Julian Schrittwieser</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Search, planning, RL (AlphaGo, MuZero), and AI progress.</p>
+<p class="card-meta">AI researcher (Anthropic, formerly DeepMind MuZero/AlphaGo lead).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=explained.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://explained.ai/">explained.ai</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Deep intuitive explanations of matrix calculus, gradient boosting, and decision trees.</p>
+<p class="card-meta">Terence Parr (University of San Francisco professor, creator of ANTLR) and Jeremy Howard.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=lewish.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://lewish.io/">lewish.io</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">ARC-AGI, program synthesis, induction vs. transduction, and reasoning benchmarks.</p>
+<p class="card-meta">Lewis Hemens; writes thorough, well-structured research reviews.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.philschmid.de&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.philschmid.de/philipp-schmid">Philschmid</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Hands-on tutorials for fine-tuning, serving, and deploying open-weights LLMs.</p>
+<p class="card-meta">Philipp Schmid (Google DeepMind, formerly Hugging Face Technical Lead).</p>
+<p class="card-also">Also: <a href="https://github.com/philschmid">GitHub</a></p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=leehanchung.github.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://leehanchung.github.io/">Han, Not Solo</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">AI/ML engineering, agentic coding tools, and product architecture.</p>
+<p class="card-meta">Han Lee; detailed engineering teardowns and practical AI workflows.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.turingpost.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.turingpost.com/">The Turing Post</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">AI history, model lineages, and structured explainers of ML concepts.</p>
+<p class="card-meta">Ksenia Se; connects historical AI milestones to modern LLM architectures.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.primeintellect.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.primeintellect.ai/blog">Prime Intellect Blog</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Decentralized training, open RL environments, and recursive language models.</p>
+<p class="card-meta">Engineering and research updates from the Prime Intellect team.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.youtube.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.youtube.com/@aiexplained-official/videos">AI Explained (YouTube)</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Frontier model releases, benchmark skepticism, and paper reviews.</p>
+<p class="card-meta">Philip; known for careful reading of model cards and spotting benchmark caveats.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=smerity.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://smerity.com/articles/articles.html">Smerity.com</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">NLP, RNNs/QRNNs, and deep learning engineering (older archive).</p>
+<p class="card-meta">Stephen Merity (Salesforce Research alumnus).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.microsoft.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.microsoft.com/en-us/research/">Microsoft Research</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Broad industrial research across AI, systems, theory, and HCI.</p>
+<p class="card-meta">Official research portal for Microsoft's global labs.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.breloff.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://www.breloff.com/">Tom Breloff</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Julia ecosystem, visualization (Plots.jl), and ML experiments.</p>
+<p class="card-meta">Creator of Plots.jl; mostly historical posts.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=kyrylai.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://kyrylai.com/">Kyryl Opens ML</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Applied ML, computer vision, and MLOps notes.</p>
+<p class="card-meta">Kyryl Truskovskyi.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=blog.mariusvach.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://blog.mariusvach.com/">Marius Vach Blog</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">LLMs, agents, DSPy, and AI engineering.</p>
+<p class="card-meta">Marius Vach.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=aipapersacademy.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://aipapersacademy.com/">AI Papers Academy</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Accessible paper walkthroughs and summaries.</p>
+<p class="card-also">Also: <a href="https://www.youtube.com/@aipapersacademy">YouTube channel</a></p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=mail.bycloud.ai&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://mail.bycloud.ai/">The AI Timeline (ByCloud)</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">AI paper reviews and weekly field news.</p>
+<p class="card-also">Also: <a href="https://www.youtube.com/@bycloudAI">YouTube channel</a></p>
+</div>
+</div>
+
+<h2 id="ai-safety">6. AI Safety, Alignment &amp; Evaluations</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=alignment.anthropic.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://alignment.anthropic.com/">Anthropic — Alignment Science</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Scalable oversight, alignment faking, reward hacking, and empirical safety research.</p>
+<p class="card-meta">Anthropic's alignment science team publishing technical studies on frontier model behavior.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=transformer-circuits.pub&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://transformer-circuits.pub/">Transformer Circuits Thread</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Mechanistic interpretability, superposition, sparse autoencoders, and circuit analysis.</p>
+<p class="card-meta">Anthropic's interpretability team (Chris Olah et al.) publishing monograph-length research papers.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=metr.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://metr.org/">METR</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Autonomous capability evaluations, task-horizon scaling, and pre-deployment safety testing.</p>
+<p class="card-meta">Independent research nonprofit (formerly ARC Evals) measuring frontier AI agent capabilities.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=arcprize.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://arcprize.org/">ARC Prize</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Fluid intelligence benchmarks (ARC-AGI), program synthesis, and test-time adaptation.</p>
+<p class="card-meta">Co-founded by François Chollet and Mike Knoop to measure general reasoning beyond memorization.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=hamel.dev&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://hamel.dev/">Hamel Husain</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">LLM evaluations, error analysis, fine-tuning, and practical AI engineering workflows.</p>
+<p class="card-meta">Independent ML engineer (ex-GitHub, Airbnb); known for no-nonsense evals guidance.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.sh-reya.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.sh-reya.com/blog">Shreya Shankar</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">LLM evaluation pipelines, criteria drift, and data-centric ML systems.</p>
+<p class="card-meta">UC Berkeley PhD researcher studying human-in-the-loop AI systems and evals.</p>
+</div>
+</div>
+
+<h2 id="swe">7. Software Engineering &amp; Systems</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=simonwillison.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://simonwillison.net/">Simon Willison’s Weblog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Practical LLM tooling, prompt injection security, SQLite, Datasette, and Python.</p>
+<p class="card-meta">Co-creator of Django and Datasette; daily high-signal field notes on AI engineering.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=jvns.ca&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://jvns.ca/">Julia Evans</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Linux, networking, Git, DNS, debugging, and technical explanation patterns.</p>
+<p class="card-meta">Author of Wizard Zines; turns intimidating systems concepts into crisp mental models.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=lemire.me&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://lemire.me/blog/">Daniel Lemire's blog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Low-level performance, SIMD, parsing, hashing, and empirical microbenchmarking.</p>
+<p class="card-meta">Computer science professor (TELUQ) and author of simdjson and Roaring Bitmaps.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=martinfowler.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://martinfowler.com/">martinfowler.com</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Software architecture, refactoring, microservices, testing, and evolutionary design.</p>
+<p class="card-meta">Chief Scientist at ThoughtWorks; canonical reference for enterprise and distributed architecture patterns.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.redblobgames.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.redblobgames.com/">Red Blob Games</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Pathfinding (A*, Dijkstra), hexagonal grids, procedural generation, and interactive algorithms.</p>
+<p class="card-meta">Amit Patel; gold standard for interactive, explorable algorithm visualizations.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=danluu.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://danluu.com/">Dan Luu</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">CPU/hardware architecture, latency, postmortems, engineering culture, and empirical software studies.</p>
+<p class="card-meta">Systems engineer; known for thorough, measurement-driven essays that challenge industry folklore.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=rachelbythebay.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://rachelbythebay.com/w/">Rachel by the Bay</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Production debugging, Unix/Linux edge cases, distributed systems failures, and ops war stories.</p>
+<p class="card-meta">Rachel Kroll; decades of battle-tested systems engineering lessons.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=eli.thegreenplace.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://eli.thegreenplace.net/">Eli Bendersky's website</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Compilers, Go, Python internals, C++, concurrency, and linear algebra implementations.</p>
+<p class="card-meta">Google software engineer; crystal-clear, code-backed technical deep dives.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=fabiensanglard.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://fabiensanglard.net/">Fabien Sanglard</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Game engine architecture (Doom, Quake, Wolfenstein), rendering, and low-level systems.</p>
+<p class="card-meta">Author of the <em>Game Engine Black Book</em> series; masterclass in reading and explaining real codebases.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.brendangregg.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.brendangregg.com/blog/index.html">Brendan Gregg's Blog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Linux kernel performance, eBPF, flame graphs, and observability.</p>
+<p class="card-meta">Author of <em>Systems Performance</em> and inventor of flame graphs.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=martin.kleppmann.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://martin.kleppmann.com/">Martin Kleppmann's blog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Distributed systems, consensus, CRDTs, local-first software, and data-intensive architectures.</p>
+<p class="card-meta">Cambridge researcher and author of <em>Designing Data-Intensive Applications</em>.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=blog.codinghorror.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://blog.codinghorror.com/">Coding Horror</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Software craftsmanship, developer ergonomics, and engineering culture.</p>
+<p class="card-meta">Jeff Atwood (co-founder of Stack Overflow and Discourse).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=jakevdp.github.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://jakevdp.github.io/">Pythonic Perambulations</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Scientific Python, NumPy/SciPy internals, Bayesian methods, and data science.</p>
+<p class="card-meta">Jake VanderPlas (author of <em>Python Data Science Handbook</em>, Google Research).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=medium.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://medium.com/s/story/notes-to-myself-on-software-engineering-c890f16f4e4d">Notes to Myself on Software Engineering</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">API design, simplicity, maintainability, and engineering taste.</p>
+<p class="card-meta">François Chollet (creator of Keras and ARC-AGI).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.swyx.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.swyx.io/">swyx's site</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">AI engineering, developer tools, career strategy ("Learn in Public").</p>
+<p class="card-meta">Shawn Wang (Latent Space podcast co-host, AI Engineer Summit organizer).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=alexgaynor.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://alexgaynor.net/">Alex Gaynor</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Memory safety, Python, Rust, and software security.</p>
+<p class="card-meta">Former Python Software Foundation director and Django core developer.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=world.hey.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://world.hey.com/dhh">DHH (Hey World)</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Monolithic architectures, developer productivity, and contrarian tech opinions.</p>
+<p class="card-meta">David Heinemeier Hansson (creator of Ruby on Rails, co-founder of Basecamp/37signals).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=ahmet.im&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://ahmet.im/blog/">Ahmet Alp Balkan</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Kubernetes, Go, cloud infrastructure, and CLI tooling.</p>
+<p class="card-meta">Staff software engineer (ex-Google Cloud, Microsoft); creator of kubectx.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=clevercoder.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://clevercoder.net/">CleverCoder.net</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Algorithms, software engineering, and interview/problem-solving notes.</p>
+<p class="card-meta">Gil Vegliach.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=tryolabs.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://tryolabs.com/blog/">Tryolabs Blog</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Applied ML, computer vision, and Python tutorials.</p>
+<p class="card-meta">Engineering blog of ML consultancy Tryolabs.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=dx.tips&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://dx.tips/">dx.tips</a><span class="tier tier-b">B</span></div>
+<p class="card-covers">Developer experience, local-first patterns, and pragmatic architecture ("Oops, You Wrote a Database").</p>
+<p class="card-meta">Developer-experience essays and notes.</p>
+</div>
+</div>
+
+<h2 id="hardware">8. Hardware, Chips &amp; AI Infrastructure</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.semianalysis.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.semianalysis.com/">SemiAnalysis</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Semiconductors, GPU clusters, packaging (CoWoS/HBM), datacenters, and AI training economics.</p>
+<p class="card-meta">Dylan Patel and team; industry-leading technical and supply-chain analysis of AI compute.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=horace.io&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://horace.io/">Horace He</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">GPU performance, PyTorch internals, memory bandwidth vs. compute ("Making Deep Learning Go Brrrr").</p>
+<p class="card-meta">PyTorch core developer (Meta / Thinking Machines).</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=modal.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://modal.com/blog">Modal Blog</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Serverless GPU infrastructure, distributed RL samplers, container cold starts, and CUDA tooling.</p>
+<p class="card-meta">Engineering blog from Modal; deep practical posts on running AI workloads at scale.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=chipsandcheese.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://chipsandcheese.com/">Chips and Cheese</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">CPU and GPU microarchitecture, cache hierarchies, branch predictors, and silicon benchmarks.</p>
+<p class="card-meta">Independent hardware engineering group doing die-level and microbenchmark analysis.</p>
+</div>
+</div>
+
+<h2 id="strategy">9. Startups, Product &amp; Tech Strategy</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=stratechery.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://stratechery.com/">Stratechery</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Tech strategy, business models, platforms, semiconductors, and AI industry dynamics.</p>
+<p class="card-meta">Ben Thompson; creator of Aggregation Theory and benchmark tech-business analysis.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.startupschool.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.startupschool.org/library">Startup School</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Product-market fit, talking to users, growth, fundraising, and company building.</p>
+<p class="card-meta">Y Combinator's curated library of founder lectures and guides.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.ben-evans.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.ben-evans.com/benedictevans">Benedict Evans</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Macro tech trends, platform shifts, mobile, e-commerce, and AI adoption.</p>
+<p class="card-meta">Independent tech analyst (formerly a16z partner); known for data-rich annual presentations.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.indiehackers.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.indiehackers.com/">Indie Hackers</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Bootstrapped software businesses, solo founders, and revenue transparency.</p>
+<p class="card-meta">Founded by Courtland Allen; community and interviews with independent builders.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=ecorner-legacy.stanford.edu&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="http://ecorner-legacy.stanford.edu/podcasts.html">Stanford eCorner Podcasts</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Entrepreneurship, leadership, and innovation talks from Stanford.</p>
+<p class="card-meta">Stanford Technology Ventures Program archive of founder interviews.</p>
+</div>
+</div>
+
+<h2 id="tools">10. Research Tools, Aggregators &amp; Publishers</h2>
+<div class="card-grid">
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=news.ycombinator.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://news.ycombinator.com/">Hacker News</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Computer science, startups, AI, systems engineering, and tech news.</p>
+<p class="card-meta">Y Combinator's link aggregator; highest-signal daily pulse for technical builders.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=lobste.rs&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://lobste.rs/">Lobsters</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Systems programming, compilers, security, databases, and computing.</p>
+<p class="card-meta">Invite-only computing link aggregator with high signal-to-noise ratio and minimal hype.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=arxiv.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://arxiv.org/">arXiv</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Preprints in computer science, machine learning, physics, and mathematics.</p>
+<p class="card-meta">Primary open-access preprint repository operated by Cornell University.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=openreview.net&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://openreview.net/">OpenReview</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">ML conference submissions, public peer reviews, author rebuttals, and camera-ready papers (ICLR, NeurIPS, ICML).</p>
+<p class="card-meta">Open peer-review platform; invaluable for seeing reviewer critiques and method weaknesses.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.alphaxiv.org&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.alphaxiv.org/">alphaXiv</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">arXiv paper reading, community annotations, and structured paper overviews.</p>
+<p class="card-meta">Collaborative discussion layer built directly on top of arXiv papers.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=paperswithcode.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://paperswithcode.com/">Papers with Code</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">ML papers paired with official/community GitHub implementations and benchmark leaderboards.</p>
+<p class="card-meta">Free resource linking academic results to runnable code.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=mitpress.mit.edu&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://mitpress.mit.edu/">The MIT Press</a><span class="tier tier-s">S</span></div>
+<p class="card-covers">Foundational textbooks and monographs in AI, cognitive science, CS, and philosophy.</p>
+<p class="card-meta">MIT's university press; publishes many of the canonical textbooks in ML and computing.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=www.connectedpapers.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://www.connectedpapers.com/">Connected Papers</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Visual citation graphs, prior works, and derivative works around a seed paper.</p>
+<p class="card-meta">Literature-mapping tool for quickly surveying a research area.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=researchrabbitapp.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://researchrabbitapp.com/home">Research Rabbit</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Citation-based paper discovery, author networks, and reading collections.</p>
+<p class="card-meta">Interactive literature-exploration app for building and tracking paper collections.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=aideadlin.es&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://aideadlin.es/?sub=ML,CV,CG,NLP,RO,SP,DM">AI Conference Deadlines</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Submission and notification countdowns for ML, NLP, CV, and robotics venues.</p>
+<p class="card-meta">Community-maintained deadline tracker for top AI conferences.</p>
+</div>
+
+<div class="card">
+<div class="card-head"><img class="fav" src="https://www.google.com/s2/favicons?domain=github.com&amp;sz=64" alt="" width="20" height="20" loading="lazy" onerror="this.style.display='none'"><a class="title" href="https://github.com/eugeneyan/applied-ml">eugeneyan/applied-ml</a><span class="tier tier-a">A</span></div>
+<p class="card-covers">Curated papers and engineering articles on applied ML from industry labs.</p>
+<p class="card-meta">Eugene Yan; organized by domain (recsys, search, NLP, MLOps, LLM).</p>
+</div>
+</div>
+  </main>
+</body>
+</html>
