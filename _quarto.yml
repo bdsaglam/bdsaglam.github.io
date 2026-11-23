@@ -16,6 +16,7 @@ project:
     - materials/index.html
     - materials/hamming/**
     - materials/learning-from-hamming/**
+    - materials/reading-links/**
 
 website:
   title: "Barış Deniz Sağlam"
