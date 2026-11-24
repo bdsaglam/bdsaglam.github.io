@@ -1276,37 +1276,30 @@
   {
     "objectID": "privacy.html",
     "href": "privacy.html",
-    "title": "Privacy and cookies",
+    "title": "Privacy",
     "section": "",
-    "text": "This is a personal website. It has no accounts, comments, or ads, and I don’t sell or share data with anyone.\n\n\nIf you accept cookies in the banner, the site loads Google Analytics 4 to count visits and see which pages people read. It sets two cookies, _ga and _ga_498T1C2SN2, which last up to two years. Google Analytics 4 does not log or store IP addresses (Google). Google processes this data under its privacy policy.\nIf you decline or ignore the banner, Google Analytics never loads.\n\n\n\nThe banner remembers your choice in one cookie, analytics_consent, for six months. You can change it at any time through cookie preferences at the bottom of every page; declining also deletes the Google Analytics cookies.\n\n\n\nFonts are served from this site itself. A few other requests set no cookies, but they send your IP address to the service:\n\nThe site is hosted on GitHub Pages, which may log visitor IP addresses for security (GitHub’s privacy statement).\nPages with equations load MathJax from the jsDelivr CDN, and a small compatibility script from Cloudflare’s cdnjs.\nCourse notebooks show an “Open in Colab” badge loaded from Google Colab.\nThe slide decks under /slides/ load their fonts from Google Fonts.\n\n\n\n\nQuestions, or a request about your data: bdsaglam@gmail.com.\nLast updated October 2026."
+    "text": "This is a personal website. It has no accounts, comments, or ads, sets no cookies, and I don’t sell or share data with anyone.\n\n\nThe site counts visits with Cloudflare Web Analytics. It sets no cookies, stores nothing in your browser, and does not follow you across sites. It records the page you open, the site that linked you here, and your browser, device type, and country. Cloudflare receives your IP address to serve the script and processes this data under its privacy policy.\n\n\n\nFonts are served from this site itself. A few other requests also send your IP address to the service:\n\nThe site is hosted on GitHub Pages, which may log visitor IP addresses for security (GitHub’s privacy statement).\nPages with equations load MathJax from the jsDelivr CDN, and a small compatibility script from Cloudflare’s cdnjs.\nCourse notebooks show an “Open in Colab” badge loaded from Google Colab.\nThe slide decks under /slides/ load their fonts from Google Fonts.\n\n\n\n\nQuestions, or a request about your data: bdsaglam@gmail.com.\nLast updated November 2026."
   },
   {
-    "objectID": "privacy.html#analytics-only-if-you-accept",
-    "href": "privacy.html#analytics-only-if-you-accept",
-    "title": "Privacy and cookies",
+    "objectID": "privacy.html#visit-counts",
+    "href": "privacy.html#visit-counts",
+    "title": "Privacy",
     "section": "",
-    "text": "If you accept cookies in the banner, the site loads Google Analytics 4 to count visits and see which pages people read. It sets two cookies, _ga and _ga_498T1C2SN2, which last up to two years. Google Analytics 4 does not log or store IP addresses (Google). Google processes this data under its privacy policy.\nIf you decline or ignore the banner, Google Analytics never loads."
-  },
-  {
-    "objectID": "privacy.html#your-choice",
-    "href": "privacy.html#your-choice",
-    "title": "Privacy and cookies",
-    "section": "",
-    "text": "The banner remembers your choice in one cookie, analytics_consent, for six months. You can change it at any time through cookie preferences at the bottom of every page; declining also deletes the Google Analytics cookies."
+    "text": "The site counts visits with Cloudflare Web Analytics. It sets no cookies, stores nothing in your browser, and does not follow you across sites. It records the page you open, the site that linked you here, and your browser, device type, and country. Cloudflare receives your IP address to serve the script and processes this data under its privacy policy."
   },
   {
     "objectID": "privacy.html#other-services",
     "href": "privacy.html#other-services",
-    "title": "Privacy and cookies",
+    "title": "Privacy",
     "section": "",
-    "text": "Fonts are served from this site itself. A few other requests set no cookies, but they send your IP address to the service:\n\nThe site is hosted on GitHub Pages, which may log visitor IP addresses for security (GitHub’s privacy statement).\nPages with equations load MathJax from the jsDelivr CDN, and a small compatibility script from Cloudflare’s cdnjs.\nCourse notebooks show an “Open in Colab” badge loaded from Google Colab.\nThe slide decks under /slides/ load their fonts from Google Fonts."
+    "text": "Fonts are served from this site itself. A few other requests also send your IP address to the service:\n\nThe site is hosted on GitHub Pages, which may log visitor IP addresses for security (GitHub’s privacy statement).\nPages with equations load MathJax from the jsDelivr CDN, and a small compatibility script from Cloudflare’s cdnjs.\nCourse notebooks show an “Open in Colab” badge loaded from Google Colab.\nThe slide decks under /slides/ load their fonts from Google Fonts."
   },
   {
     "objectID": "privacy.html#contact",
     "href": "privacy.html#contact",
-    "title": "Privacy and cookies",
+    "title": "Privacy",
     "section": "",
-    "text": "Questions, or a request about your data: bdsaglam@gmail.com.\nLast updated October 2026."
+    "text": "Questions, or a request about your data: bdsaglam@gmail.com.\nLast updated November 2026."
   },
   {
     "objectID": "tutorials/on-policy-distillation/index.html",
