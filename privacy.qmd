@@ -2,23 +2,17 @@
 pagetitle: "Privacy"
 ---
 
-# Privacy and cookies
+# Privacy
 
-This is a personal website. It has no accounts, comments, or ads, and I don't sell or share data with anyone.
+This is a personal website. It has no accounts, comments, or ads, sets no cookies, and I don't sell or share data with anyone.
 
-## Analytics, only if you accept
+## Visit counts
 
-If you accept cookies in the banner, the site loads Google Analytics 4 to count visits and see which pages people read. It sets two cookies, `_ga` and `_ga_498T1C2SN2`, which last up to two years. Google Analytics 4 does not log or store IP addresses ([Google](https://support.google.com/analytics/answer/2763052)). Google processes this data under its [privacy policy](https://policies.google.com/privacy).
-
-If you decline or ignore the banner, Google Analytics never loads.
-
-## Your choice
-
-The banner remembers your choice in one cookie, `analytics_consent`, for six months. You can change it at any time through **cookie preferences** at the bottom of every page; declining also deletes the Google Analytics cookies.
+The site counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/). It sets no cookies, stores nothing in your browser, and does not follow you across sites. It records the page you open, the site that linked you here, and your browser, device type, and country. Cloudflare receives your IP address to serve the script and processes this data under its [privacy policy](https://www.cloudflare.com/privacypolicy/).
 
 ## Other services
 
-Fonts are served from this site itself. A few other requests set no cookies, but they send your IP address to the service:
+Fonts are served from this site itself. A few other requests also send your IP address to the service:
 
 - The site is hosted on GitHub Pages, which may log visitor IP addresses for security ([GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement)).
 - Pages with equations load MathJax from the jsDelivr CDN, and a small compatibility script from Cloudflare's cdnjs.
@@ -29,4 +23,4 @@ Fonts are served from this site itself. A few other requests set no cookies, but
 
 Questions, or a request about your data: [bdsaglam@gmail.com](mailto:bdsaglam@gmail.com).
 
-[Last updated October 2026.]{.cvmeta}
+[Last updated November 2026.]{.cvmeta}

@@ -37,12 +37,12 @@ website:
       - text: CV
         href: cv.html
   page-footer:
-    center: "[privacy](/privacy.html) · [cookie preferences](#cookie-preferences)"
+    center: "[privacy](/privacy.html)"
 
 format:
   html:
     theme: theme.scss
-    include-in-header: _consent.html
+    include-in-header: _analytics.html
     toc: false
     grid:
       body-width: 720px
